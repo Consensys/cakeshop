@@ -28,7 +28,7 @@
       </activation>
       <properties>
         <geth.file>geth-1.5.4-b70acf3c-windows.zip</geth.file>
-        <geth.sha512>a09e9dbc72c27ad7f5c2ae91138baf6f512f7367851e21b29077b04a606d20a5ed1413f02e5c5069ed05d42b87527ef53feaa7492c797619c5a122b51e2d4593</geth.sha512>
+        <geth.sha512>4d5bb0b451aa9b59babba6007d56aa1538f5c7fe141ca9071c8e2fcb37e11c136ba3b9d98a810d41a5d39c5e8ad1b0a7bfd1a2aa3fcd2553d6e84b0033c4b652</geth.sha512>
         <geth.dir>win</geth.dir>
       </properties>
     </profile>
