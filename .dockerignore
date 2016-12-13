@@ -1,0 +1,46 @@
+
+# IDE-specific files and folders
+.classpath
+.tomcatplugin
+.project
+.settings/
+.idea/
+*.iml
+nb-configuration.xml
+.externalToolBuilders/
+
+# temp build files
+data
+target
+test-output
+/test.json
+logs/
+*.log
+meth.log
+meth.pid
+node.conf
+.DS_Store
+WebContent/
+pom.xml.versionsBackup
+dependency-reduced-pom.xml
+
+# node stuff
+npm-debug.log*
+.grunt
+node_modules
+.npm
+bower_components/
+dist/
+node/
+
+# local testing
+*/**/FooTest.java
+*/**/SandboxTest.java
+cakeshop-client-java/src/test/java/SimpleStorageContract.java
+testing/
+
+# bundle testing
+.otto*
+app/
+Appfile
+

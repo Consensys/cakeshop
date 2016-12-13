@@ -1,0 +1,363 @@
+
+.container-fs {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow: hidden;
+}
+
+#editor {
+    padding-left: 0;
+    padding-right: 0;
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+}
+
+#sidebar {
+    padding-left: 15px;
+    padding-right: 0;
+    display: inline-block;
+    width: 100%;
+    /*height: 100%;*/
+}
+
+nav.sidenav {
+    margin-left: 5px;
+    margin-right: 20px;
+    margin-bottom: 0;
+    min-height: 0;
+}
+
+nav.sidenav .container-fluid {
+    padding-left: 0;
+}
+
+ul.sidenav {
+    margin-left: 0;
+}
+
+nav.sidenav ul.navbar-right a {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    font-size: 2em;
+}
+
+nav ul {
+  cursor: pointer;
+}
+
+nav.sidenav ul.navbar-right li.block_number a {
+    font-weight: bold;
+}
+
+nav.sidenav ul.navbar-right li.mining_status a {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    cursor: pointer;
+}
+
+.editor {
+   border-right:3px #eee solid;
+}
+
+.container-fs .col-md-6, .container-fs .col-md-3 {
+    padding-right: 5px;
+    padding-left: 5px;
+}
+
+/*
+@media (max-width: 939px) {
+	.row .sidebar {
+    	width:48.62% !important;
+	}
+}
+@media (max-width: 767px) {
+	.row .sidebar {
+    	width:100% !important;
+        height:auto !important;
+	}
+}
+@media (max-width: 1200px) {
+	.row .sidebar {
+    	width:49.62% !important;
+	}
+}
+@media (max-width: 767px) {
+	.row .sidebar {
+    	width:100% !important;
+        height:auto !important;
+	}
+}
+*/
+
+.start_hidden {
+    display: none;
+}
+
+.sidebar .tab {
+    padding-top: 10px;
+}
+
+.sidebar .tab {
+    overflow-y: auto;
+    padding-right: 15px;
+}
+
+.inner {
+	overflow-y:auto;
+    overflow-x:hidden;
+    height:100%;
+}
+
+/*.ui-resizable { position: relative;}*/
+/*.ui-resizable-handle { position: absolute;font-size: 0.1px;z-index: 99999; display: block; }*/
+.ui-resizable-e { cursor: col-resize; }
+
+.sidebar {
+    padding-top: 10px;
+}
+
+.sidebar-right {
+    padding-right: 25px;
+}
+
+#editor_input {
+    height: 300px;
+}
+
+/* TX VIEW */
+.shrink, .trash {
+    cursor: pointer;
+}
+
+.trash {
+    padding-right: 3px;
+}
+
+.papertape .panel-body {
+    padding: 0;
+}
+
+.papertape div.tx {
+    padding: 5px;
+    border-bottom: 2px dotted transparent;
+    color: #8a6d3b;
+    background-color: #fcf8e3;
+    border-color: #faebcc;
+}
+
+.papertape div.tx .time {
+	color: #9e9ea6;
+	font-size: 9pt;
+	font-family: source-sans-pro,pt sans,calibri,sans-serif;
+	padding-top: 2px;
+}
+
+.papertape div.tx .addr, .papertape div.tx .tx, .papertape div.tx .block {
+    font-weight: bold;
+}
+
+.col3 .panel-body, .panel-overflow {
+    overflow-y: auto;
+}
+
+.col2 table, .col3 table {
+    margin-bottom: 0;
+}
+
+/*.papertape .panel-body {
+    max-height: 600px;
+}*/
+
+
+/* Transact form inputs */
+
+.transact .table td.send {
+    text-align: right;
+}
+
+.transact tr.from_address {
+    background-color: rgba(190, 255, 190, 0.54);
+}
+
+.transact tr.private_from, .transact tr.private_for {
+  background-color: rgba(190, 255, 190, 0.54);
+}
+
+.transact tr.private_from textarea,
+.transact tr.private_for textarea {
+  width: 100%;
+}
+
+.method-inputs {
+    padding-bottom: 5px;
+	width: 100%;
+}
+
+.method-inputs a {
+    cursor: pointer;
+}
+
+.method-inputs a.disabled {
+    cursor: not-allowed;
+    color: gray;
+}
+
+
+div.panel.accounts table {
+    table-layout: fixed;
+}
+
+div.panel.accounts table td:last {
+}
+
+div.panel.accounts table td.address {
+    width: 80%;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+
+/* FILE TABS */
+.red {
+    color: red;
+}
+.filetabs li a {
+    cursor: pointer !important;
+}
+
+
+/* COMPILER OUTPUT */
+
+.sol.error, .sol.warning {
+    border-radius: 0;
+    word-wrap: break-word;
+    cursor: pointer;
+    position: relative;
+    margin: 0.25em;
+}
+
+.sol.error pre, .sol.warning pre {
+    background-color: transparent;
+    margin: 0;
+    font-size: 10px;
+    border: 0 none;
+}
+
+.sol.error .close, .sol.warning .close {
+    font-weight: bold;
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 0.5em;
+}
+
+.sol.error {
+    background-color: rgba(255, 0, 0, 0.5);
+    border: 1px solid #D00909;
+}
+
+.sol.warning {
+    background-color: rgba(210, 202, 36, 0.5);
+    border: 1px solid #BBB427;
+}
+
+#output h3 {
+    text-decoration: underline;
+}
+
+.udapp .contract > .title {
+    cursor:pointer;
+}
+
+.udapp .contract > .title:before {
+    content: "\25BC";
+    opacity: 0.5;
+    margin-right: 0.4em;
+    font-size: 10px;
+}
+
+.contract.expand > .title:before {
+    content: "\25B6";
+}
+
+.udapp .title {
+	margin-bottom: 0.4em;
+	display: inline-block;
+	padding: 0.2em;
+	background-color: rgba( 255,255,255,0.5 );
+	display: block;
+	font-weight: bold;
+	padding-right: 2em;
+	word-wrap: break-word;
+	position: relative;
+}
+
+.udapp .title .size {
+	position: absolute;
+	right: 2.2em;
+	top: 0.2em;
+	font-weight: normal;
+}
+
+.gethDeployText {
+    border-color: #bebebe;
+    height: 2.5em;
+    width: 100%;
+    display: block;
+}
+
+.keyval-row {
+    overflow: auto;
+    display: block;
+    clear: both;
+    margin-top: 0.5em;
+}
+
+input[readonly] {
+    padding: .4em;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+}
+
+/* CONTRACT LIBRARY */
+
+#libView a.contract {
+    cursor: pointer;
+}
+
+.refresh {
+	float: right;
+	margin-bottom: 5px;
+}
+
+.compiled_contracts .form-control {
+	margin-top: 6px;
+}
+
+.withRefreshLabel {
+	padding-top: 6px;
+    margin-bottom: 0px;
+}
+
+button.send {
+    float: right;
+    width: 75px;
+}
+
+.transact-inputs {
+    padding-top: 13px;
+}
+
+button.deploy {
+    float: right;
+    margin-top: -20px;
+    width: 75px;
+}
+
+div.contracts .withRefreshLabel {
+	margin-bottom: 7px;
+}

@@ -1,0 +1,8 @@
+
+  public interface METHODS {
+#foreach( $entry in $abi )
+#if( $entry.type == "function" )
+    public static final String $entry.name = "$entry.name";
+#end
+#end
+  }

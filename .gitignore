@@ -1,0 +1,50 @@
+
+# IDE-specific files and folders
+.classpath
+.tomcatplugin
+.project
+.settings/
+.idea/
+*.iml
+nb-configuration.xml
+nbactions.xml
+.externalToolBuilders/
+
+# temp build files
+data
+target
+*.war
+*.jar
+test-output
+/test.json
+logs/
+*.log
+geth.pid
+shared.properties
+node.conf
+.DS_Store
+WebContent/
+pom.xml.versionsBackup
+dependency-reduced-pom.xml
+
+# node stuff
+npm-debug.log*
+.grunt
+node_modules
+.npm
+bower_components/
+dist/
+node/
+cakeshop-api/src/main/webapp/js/index-gen.js*
+cakeshop-api/src/main/webapp/js/*hot-update*
+cakeshop-api/src/main/webapp/js/vendor/cakeshop.js
+
+# local testing
+FooTest.java
+SandboxTest.java
+
+# bundle testing
+.otto*
+app/
+Appfile
+

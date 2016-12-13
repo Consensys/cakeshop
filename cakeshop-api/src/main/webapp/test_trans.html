@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket</title>
+    <meta charset="utf-8">
+    <script src="js/vendor/sockjs-0.3.4.min.js"></script>
+    <script src="js/vendor/stomp.min.js"></script>
+    <script type="text/javascript">
+        var stompClient = null;
+
+        function initilizeSocket() {
+            var socket = new SockJS('/cakeshop/ws');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame){});
+        }
+
+        function subscribe(trans_id) {
+            console.log("Trans_ID :" + trans_id);
+            if (null !== stompClient) {
+                console.log('Connecting TRANS: ');
+//                    stompClient.connect({}, function (frame) {
+//                        console.log('Connected TRANS: ' + frame);
+                        stompClient.subscribe('/topic/transaction/' + trans_id, function (apiResponse) {
+                            showTransaction(apiResponse.body);
+//                        });
+                    });
+            } else {
+                console.log("STOMP is null");
+            }
+        }
+
+        function unsubscribe(trans_id) {
+            if (stompClient !== null) {
+                stompClient.unsubscribe('/topic/transaction/' + trans_id);
+                console.log("Unsubscribed");
+            }
+        }
+
+        function disconnect() {
+            if (stompClient !== null) {
+                stompClient.disconnect();
+                console.log("Disconnected");
+            }
+
+        }
+
+        function showTransaction(message) {
+            var response = document.getElementById('trans-response');
+            var p = document.createElement('p');
+            p.style.wordWrap = 'break-word';
+            p.appendChild(document.createTextNode(message));
+            response.appendChild(p);
+        }
+    </script>
+</head>
+<body onload="initilizeSocket();" onclose="disconnect();">
+<noscript><h2 style="color: #ff0000">Seems your browser doesn't support Javascript! Websocket relies on Javascript being enabled. Please enable
+    Javascript and reload this page!</h2></noscript>
+<div>
+    <div>
+        <button id="connect" onclick="subscribe(document.getElementById('trans_id').value);">Subscribe</button>
+        <button id="disconnect" onclick="unsubscribe(document.getElementById('trans_id').value);">Unsubscribe</button>
+    </div>
+    <div id="conversationDiv">
+       <label>Enter transaction id :</label><input type="text" id="trans_id" />
+        <p id="trans-response">Transaction</p>
+    </div>
+</div>
+</body>
+</html>

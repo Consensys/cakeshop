@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+# resolve paths
+ABSPATH=$(perl -MCwd=realpath -e "print realpath '$0'")
+export ABSDIR=$(dirname $ABSPATH)
+CONF="$ABSDIR/nginx.conf"
+ROOT=$(perl -MCwd=realpath -e 'print realpath "$ENV{ABSDIR}/.."')
+
+cd $ROOT
+cakeshop-api/src/main/resources/geth/bin/mac/geth --datadir ~/.ethereum attach rpc:http://127.0.0.1:8102

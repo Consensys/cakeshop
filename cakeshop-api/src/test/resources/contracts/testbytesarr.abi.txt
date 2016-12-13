@@ -1,0 +1,1 @@
+[{"constant":false,"inputs":[],"name":"foo","outputs":[{"name":"_ret","type":"bytes32[]"}],"type":"function"}]

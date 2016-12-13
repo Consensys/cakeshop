@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket</title>
+    <meta charset="utf-8">
+    <script src="js/vendor/sockjs-0.3.4.min.js"></script>
+    <script src="js/vendor/stomp.min.js"></script>
+    <script type="text/javascript">
+        var stompClient = null;
+//        var stompBlockClient = null;
+//        var stompTransClient = null;
+
+        function connect() {
+            var socket = new SockJS('/cakeshop/ws');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function(frame) {
+                console.log('Connected NODE: ' + frame);
+                stompClient.subscribe('/topic/node/status', function(apiResponse){
+                    showNode(apiResponse.body);
+                });
+//            });
+//            var socket2 = new SockJS('/ethereum-enterprise/block');
+//            stompBlockClient = Stomp.over(socket2);
+//            stompClient.connect({}, function(frame) {
+                console.log('Connected BLOCK: ' + frame);
+                stompClient.subscribe('/topic/block', function(apiResponse){
+                    showBlock(apiResponse.body);
+                });
+//            });
+//            var socket3 = new SockJS('/ethereum-enterprise/transaction');
+//            stompTransClient = Stomp.over(socket3);
+//            stompClient.connect({}, function(frame) {
+            });
+        }
+
+        function disconnect() {
+            if (stompClient !== null) {
+                stompClient.disconnect();
+            }
+//            if (stompBlockClient !== null) {
+//                stompBlockClient.disconnect();
+//            }
+//            if (stompTransClient !== null) {
+//                stompTransClient.disconnect();
+//            }
+            console.log("Disconnected");
+        }
+
+        function showNode(message) {
+            var response = document.getElementById('node-response');
+            var p = document.createElement('p');
+            p.style.wordWrap = 'break-word';
+            p.appendChild(document.createTextNode(message));
+            response.appendChild(p);
+        }
+
+        function showBlock(message) {
+            var response = document.getElementById('block-response');
+            var p = document.createElement('p');
+            p.style.wordWrap = 'break-word';
+            p.appendChild(document.createTextNode(message));
+            response.appendChild(p);
+        }
+
+    </script>
+</head>
+<body onload="connect();" onclose="disconnect();">
+<noscript><h2 style="color: #ff0000">Seems your browser doesn't support Javascript! Websocket relies on Javascript being enabled. Please enable
+    Javascript and reload this page!</h2></noscript>
+<div>
+<!--    <div>
+        <button id="connect" onclick="connect();">Connect</button>
+        <button id="disconnect" disabled="disabled" onclick="disconnect();">Disconnect</button>
+    </div>-->
+    <div id="conversationDiv">
+<!--        <label>What is your name?</label><input type="text" id="name" />-->
+
+        <p id="node-response">Node</p>
+        <p id="block-response">Block</p>
+    </div>
+</div>
+</body>
+</html>

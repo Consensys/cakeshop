@@ -1,0 +1,7 @@
+{
+	"status": "running",
+	"peers": 2,
+	"latestBlock": 8765,
+	"queuedTxn": 0,
+	"mining": true
+}

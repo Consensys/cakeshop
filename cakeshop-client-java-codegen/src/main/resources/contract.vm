@@ -1,0 +1,60 @@
+package $packageName;
+
+import static com.jpmorgan.cakeshop.client.ContractUtil.*;
+
+import com.jpmorgan.cakeshop.client.ContractProxy;
+import com.jpmorgan.cakeshop.client.api.ContractApi;
+import com.jpmorgan.cakeshop.client.model.TransactionResult;
+import com.jpmorgan.cakeshop.client.model.res.APIData;
+import com.jpmorgan.cakeshop.client.model.res.APIResponse;
+import com.jpmorgan.cakeshop.model.ContractABI;
+
+import java.io.IOException;
+import java.math.BigInteger;
+import java.util.List;
+
+import org.apache.commons.io.IOUtils;
+
+public class $className extends ContractProxy<$className> {
+
+  #parse("methods-ref.vm")
+
+#if( $abiFile )
+  public static final String jsonAbi;
+  static {
+      try {
+          jsonAbi = IOUtils.toString(${className}.class.getClassLoader().getResourceAsStream("${abiFile}"));
+      } catch (IOException e) {
+          throw new RuntimeException("Unable to load ABI file ${abiFile} from classpath", e);
+      }
+  }
+#else
+  public static final String jsonAbi = "$jsonAbi";
+#end
+
+  public static final ContractABI abi = ContractABI.fromJson(jsonAbi);
+
+  public static $className at(ContractApi contractApi, String contractAddress) {
+      return new $className(contractApi, contractAddress);
+  }
+
+  private $className(ContractApi contractApi, String contractAddress) {
+      super(contractApi, contractAddress);
+  }
+
+  @Override
+  public ContractABI getABI() {
+    return abi;
+  }
+
+  #foreach( $entry in $abi )
+    #if( $entry.type == "function" )
+      #if( $entry.constant )
+        #parse("function-read.vm")
+      #else
+        #parse("function-transact.vm")
+      #end
+    #end
+  #end
+
+}

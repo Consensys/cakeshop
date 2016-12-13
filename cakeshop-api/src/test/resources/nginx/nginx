@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+# make sure we have nginx avail
+cmd=`which nginx 2>/dev/null`
+if [ $? -ne 0 ]; then
+    echo "nginx not found"
+    exit 1
+fi
+
+# resolve paths
+ABSPATH=$(perl -MCwd=realpath -e "print realpath '$0'")
+export ABSDIR=$(dirname $ABSPATH)
+CONF="$ABSDIR/nginx.conf"
+ROOT=$(perl -MCwd=realpath -e 'print realpath "$ENV{ABSDIR}/../../../.."')
+
+# make sure our config is valid (supported by this version of nginx)
+$cmd -p $ROOT -c $CONF -t >/dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo "nginx config not valid for your version!"
+    echo "tested against 1.9.10 and you have:"
+    echo
+    $cmd -v
+    $cmd -p $ROOT -c $CONF -t
+    exit 1
+fi
+
+date
+echo running $($cmd -v 2>&1)
+echo http://127.0.0.1:9000/cakeshop/
+echo
+
+$cmd -p $ROOT -c $CONF

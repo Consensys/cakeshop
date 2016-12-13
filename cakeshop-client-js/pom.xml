@@ -1,0 +1,88 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.jpmorgan</groupId>
+    <artifactId>cakeshop-parent</artifactId>
+    <version>0.9.0</version>
+  </parent>
+
+  <artifactId>cakeshop-client-js</artifactId>
+  <packaging>pom</packaging>
+
+  <name>Cakeshop.js</name>
+
+  <build>
+    <plugins>
+
+      <plugin>
+        <groupId>com.github.eirslett</groupId>
+        <artifactId>frontend-maven-plugin</artifactId>
+        <version>1.2</version>
+
+        <configuration>
+          <workingDirectory>src/main/javascript</workingDirectory>
+          <installDirectory>target</installDirectory>
+          <nodeVersion>v6.9.1</nodeVersion>
+          <npmVersion>3.10.9</npmVersion>
+        </configuration>
+
+        <executions>
+
+          <execution>
+            <id>install node and npm</id>
+            <goals>
+              <goal>install-node-and-npm</goal>
+            </goals>
+          </execution>
+
+          <execution>
+            <id>npm install</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+          </execution>
+
+          <execution>
+            <id>bower install</id>
+            <goals>
+              <goal>bower</goal>
+            </goals>
+          </execution>
+
+          <execution>
+            <id>gulp build</id>
+            <goals>
+              <goal>gulp</goal>
+            </goals>
+            <configuration>
+              <arguments>install</arguments>
+            </configuration>
+          </execution>
+
+        </executions>
+
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-clean-plugin</artifactId>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>src/main/javascript/node_modules</directory>
+              <followSymlinks>false</followSymlinks>
+            </fileset>
+            <fileset>
+              <directory>src/main/javascript/bower_components</directory>
+              <followSymlinks>false</followSymlinks>
+            </fileset>
+          </filesets>
+        </configuration>
+      </plugin>
+
+    </plugins>
+  </build>
+
+</project>

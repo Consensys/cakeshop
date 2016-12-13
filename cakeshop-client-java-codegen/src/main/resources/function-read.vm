@@ -1,0 +1,11 @@
+
+  public List<Object> ${entry.name}(${util.methodSignature($entry.inputs)}) {
+#if( $entry.inputs.size() > 0)
+    Object[] inputs = new Object[]{ ${util.inputList($entry.inputs)} };
+    processInputArgs(inputs);
+    APIResponse<List<Object>, Object> res = contractApi.read(newCall(METHODS.${entry.name}, inputs));
+#else
+    APIResponse<List<Object>, Object> res = contractApi.read(newCall(METHODS.${entry.name}));
+#end
+    return processOutputArgs(res.getApiData(), abi.getFunction(METHODS.${entry.name}).outputs);
+  }

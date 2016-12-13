@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>Cakeshop // Dashboard</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">
+	<link rel="stylesheet" type="text/css" href="css/reset.css">
+	<link rel="stylesheet" type="text/css" href="css/font-awesome.min.css">
+	<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="css/epoch.min.css">
+	<link rel="stylesheet" type="text/css" href="css/vendor/bootstrap-tour.min.css">
+	<link rel="stylesheet" type="text/css" href="css/style.css">
+	<script type="text/javascript" src="js/index-gen.js"></script>
+</head>
+
+<body>
+
+	<section>
+		<header>
+			<nav class="tower-navigation">
+				<div class="tower-logo-container">
+					<a href="#" class="tower-logo">Cakeshop // Dashboard</a>
+					<!-- <a href="#" class="tower-toggle-btn pull-right"><i class="fa fa-bars"></i></a> -->
+				</div>
+				<a href="#" class="tower-logo-hidden">Tower Control</a>
+				<div class="dropdown settings">
+					<i class="fa fa-cog dropdown-toggle"  data-toggle="dropdown" aria-hidden="true" aria-haspopup="true" aria-expanded="false"></i>
+					<div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+						<div class="dropdown-arrow"><div class="arrow-up"></div></div>
+						<ul>
+							<li class="dropdown-item" href="#"><h4>Settings</li></h4>
+							<hr />
+							<li id="reset" class="dropdown-item" href="#">Reset Section</li>
+							<li id="reset-all" class="dropdown-item" href="#">Reset All Sections</li>
+						</ul>
+					</div>
+				</div>
+			</nav>
+		</header>
+	</section>
+
+	<aside>
+		<nav class="tower-sidebar">
+			<ul>
+				<li id="console">
+					<a href="#" class="inbox">
+						<i class="fa fa-dashboard"><span class="icon-bg"></span></i>
+						<span class="tower-sidebar-item">Console</span>
+					</a>
+				</li>
+				<li id="contracts">
+					<a href="#" class="done">
+						<i class="fa fa-bank"><span class="icon-bg"></span></i>
+						<span class="tower-sidebar-item">Contracts</span>
+					</a>
+				</li>
+				<li id="sandbox">
+					<a href="sandbox.html" target="_sandbox">
+						<i class="fa fa-send"><span class="icon-bg"></span></i>
+						<span class="tower-sidebar-item">Sandbox</span>
+					</a>
+				</li>
+				<li id="explorer">
+					<a href="#" class="done">
+						<i class="fa fa-cubes"><span class="icon-bg"></span></i>
+						<span class="tower-sidebar-item">Chain Explorer</span>
+					</a>
+				</li>
+				<li id="wallet">
+					<a href="#" class="done">
+						<i class="fa fa-google-wallet"><span class="icon-bg"></span></i>
+						<span class="tower-sidebar-item">Wallet</span>
+					</a>
+				</li>
+				<li id="peers">
+					<a href="#">
+						<i class="fa fa-users"><span class="icon-bg"></span></i>
+						<span class="tower-sidebar-item">Peers</span>
+					</a>
+				</li>
+				<li id="api">
+					<a href="#" class="snooz">
+						<i class="fa fa-book"><span class="icon-bg"></span></i>
+						<span class="tower-sidebar-item">API</span>
+					</a>
+				</li>
+				<li id="help">
+					<a href="#" class="done">
+						<i class="fa fa-question"><span class="icon-bg"></span></i>
+						<span class="tower-sidebar-item">Help</span>
+					</a>
+				</li>
+			</ul>
+		</nav>
+	</aside>
+
+	<!-- WIDGETS -->
+
+	<main>
+		<section>
+			<div class="tower-body-wrapper">
+				<div class="container-fluid">
+					<header class="tower-page-title">
+						<span>Console</span>
+					</header>
+
+					<div class="row" id="heads-up">
+						<div class="col-lg-3 col-xs-6">
+							<div class="tower-nugget tower-txt-success">
+								<i class="fa fa-play"></i>
+								<span class="heading">Node Status</span>
+								<span class="value default" id="default-node-status">
+									<span>Refreshing</span>
+								</span>
+							</div>
+						</div>
+
+						<div class="col-lg-3 col-xs-6">
+							<div class="tower-nugget">
+								<i class="fa fa-users"></i>
+								<span class="heading">Peers</span>
+								<span class="value default" id="default-peers">
+									<span>-</span>
+								</span>
+							</div>
+						</div>
+
+						<div class="col-lg-3 col-xs-6">
+							<div class="tower-nugget tower-txt-primary">
+								<i class="fa fa-cubes"></i>
+								<span class="heading">Blocks</span>
+								<span class="value default" id="default-blocks">
+									<span>-</span>
+								</span>
+							</div>
+						</div>
+
+						<div class="col-lg-3 col-xs-6">
+							<div class="tower-nugget tower-txt-danger">
+								<i class="fa fa-exchange"></i>
+								<span class="heading">Queued Txns</span>
+								<span class="value default" id="default-txn">
+									<span>-</span>
+								</span>
+							</div>
+						</div>
+
+					</div>
+
+					<div class="row" id="grounds">
+						<div class="widget-sizer col-lg-1 col-md-1 col-xs-12" style="height: 250px;"></div>
+					</div>
+
+				</div>
+			</div>
+		</section>
+	</main>
+
+
+	<p style="width: 1px; height: 1px;">
+		<input type="text" id="_clipboard"/>
+		<button id="_clipboard_button" data-copytarget="#_clipboard">copy</button>
+	</p>
+</body>
+
+</html>

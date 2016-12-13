@@ -1,0 +1,25 @@
+{
+  "name": "js-client",
+  "description": "Blockchain SDK Client",
+  "main": "lib/client.js",
+  "authors": [
+    "Chetan Sarva <chetan@pixelcop.net>"
+  ],
+  "license": "MIT",
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "2.1.4",
+    "sockjs-client": "https://github.com/sockjs/sockjs-client.git#^1.1.0",
+    "backbone": "1.2.3",
+    "stomp-websocket": "^2.3.4",
+    "bluebird": "^3.4.0"
+  }
+}

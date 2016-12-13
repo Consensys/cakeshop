@@ -1,0 +1,7 @@
+
+  public TransactionResult ${entry.name}(${util.methodSignature($entry.inputs)}) {
+    Object[] inputs = new Object[]{ ${util.inputList($entry.inputs)} };
+    processInputArgs(inputs);
+    APIResponse<APIData<TransactionResult>, TransactionResult> res = contractApi.transact(newCall(METHODS.${entry.name}, inputs));
+    return res.getData();
+  }

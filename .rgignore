@@ -1,0 +1,10 @@
+
+**/*/*.min.js
+*.min.css
+cakeshop-api/src/main/webapp/js/index-gen.js
+cakeshop-api/src/main/webapp/js/index-gen.js.map
+cakeshop-api/src/main/webapp/js/*.hot-update.js*
+cakeshop-api/src/main/webapp/js/vendor/
+cakeshop-api/src/main/webapp/js/vendor/stomp.min.js
+cakeshop-api/src/main/webapp/js/api/swagger-ui.js
+
