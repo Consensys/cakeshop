@@ -18,6 +18,10 @@ compiler and all dependencies.
 It provides tools for managing a local blockchain node, setting up clusters,
 exploring the state of the chain, and working with contracts.
 
+## Download
+
+Binary packages are available for macOS, Windows, and Linux platforms on the [releases](https://github.com/jpmorganchase/cakeshop/releases) page.
+
 ## Quickstart
 
 ### Requirements
@@ -79,6 +83,12 @@ You can change the node you're connected to by running the last two commands aga
 
 Further documentation can be found on the [wiki](https://github.com/jpmorganchase/cakeshop/wiki/) and in the [docs](docs/) folder.
 
+## See Also
+
+* [JIF Dashboard](https://github.com/jpmorganchase/jif-dashboard) - The Cakeshop UI was built using the JIF Dashboard framework.
+
+* [solc-cli](https://github.com/jpmorganchase/solc-cli) - The solidity compiler used behind the scenes is `solc-cli`, a thin wrapper atop the [solc](https://github.com/ethereum/solc-js) JS binding.
+
 ## Contributing
 
 Thank you for your interest in contributing to Cakeshop!
@@ -100,3 +110,5 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
+See the [LICENSE](LICENSE) and [THIRD_PARTY](THIRD_PARTY) files for additional license information.
