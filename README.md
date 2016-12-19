@@ -45,13 +45,21 @@ Binary packages are available for macOS, Windows, and Linux platforms on the [re
 
 ### Running via Docker
 
+Run via docker and access UI on [http://localhost:8080/cakeshop/](http://localhost:8080/cakeshop/)
 ```
-docker run -it jpmc/cakeshop
+docker run -it -p 8080:8080 jpmc/cakeshop
 ```
 
 Running under a specific environment
+
 ```
-docker run -it -e JAVA_OPTS="-Dspring.profiles.active=local" jpmc/cakeshop
+docker run -it -p 8080:8080 -e JAVA_OPTS="-Dspring.profiles.active=local" jpmc/cakeshop
+```
+
+Note that DAG generation will take time and Cakeshop will not be available until it's complete. If you already have a DAG for epoch 0 in your `$HOME/.ethash` folder, then you can expose that to your container:
+
+```
+docker run -it -p 8080:8080 -v $HOME/.ethash:/opt/cakeshop/.ethash jpmc/cakeshop
 ```
 
 ### Running with Quorum
