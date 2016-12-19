@@ -36,8 +36,8 @@
       var url = window.location.pathname;
       url = url.substring(0, url.lastIndexOf("/"));
 
-	  rest_url = url + "/api/swagger.json";
-	  socket_url = url + "/api/swagger-socket.json";
+      var rest_url = url + "/api/swagger.json";
+      var socket_url = url + "/api/swagger-socket.json";
 
       hljs.configure({
         highlightSizeThreshold: 5000
@@ -63,10 +63,11 @@
         jsonEditor: true,
         apisSorter: "alpha",
         defaultModelRendering: 'schema',
-        showRequestHeaders: true
+        showRequestHeaders: true,
+        validatorUrl: null
       });
 
-	  window.swaggerUiSocket = new SwaggerUi({
+      window.swaggerUiSocket = new SwaggerUi({
         url: socket_url,
         dom_id: "swagger-ui-socket-container",
         supportedSubmitMethods: [],
@@ -82,11 +83,12 @@
         //jsonEditor: true,
         apisSorter: "alpha",
         defaultModelRendering: 'schema',
-        showRequestHeaders: true
+        showRequestHeaders: true,
+        validatorUrl: null
       });
 
       window.swaggerUi.load();
-	  window.swaggerUiSocket.load();
+      window.swaggerUiSocket.load();
 
       function log() {
         if ('console' in window) {
