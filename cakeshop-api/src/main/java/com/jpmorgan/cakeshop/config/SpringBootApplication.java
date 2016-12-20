@@ -39,6 +39,10 @@ public class SpringBootApplication {
             System.setProperty("spring.profiles.active", "local");
         }
 
+        if (StringUtils.isNotBlank(System.getProperty("spring.profiles.active"))) {
+          System.setProperty("spring.config.location", "file:" + FileUtils.expandPath(AppConfig.getConfigPath(), "application.properties"));
+        }
+
         // extract geth from WAR (if necessary)
         try {
             extractGeth(configDir);

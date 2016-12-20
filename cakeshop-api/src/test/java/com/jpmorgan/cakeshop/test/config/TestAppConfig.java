@@ -56,8 +56,7 @@ public class TestAppConfig implements EnvironmentAware {
     @Profile("test")
     public  PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() throws IOException {
         AppConfig appConfig = new AppConfig();
-        appConfig.setEnvironment(env);
-        return appConfig.createPropConfigurer(env, TempFileManager.getTempPath());
+        return appConfig.createPropConfigurer(TempFileManager.getTempPath());
     }
 
     @Bean(name="asyncExecutor")

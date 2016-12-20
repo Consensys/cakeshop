@@ -5,7 +5,6 @@ import com.jpmorgan.cakeshop.dao.WalletDAO;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Account;
 import com.jpmorgan.cakeshop.model.TransactionResult;
-import com.jpmorgan.cakeshop.service.BlockService;
 import com.jpmorgan.cakeshop.service.ContractRegistryService;
 import com.jpmorgan.cakeshop.service.ContractService;
 import com.jpmorgan.cakeshop.service.ContractService.CodeType;
@@ -38,9 +37,6 @@ import org.springframework.stereotype.Component;
 public class BlockchainInitializerTask implements Runnable {
 
     private static final Logger LOG = LoggerFactory.getLogger(BlockchainInitializerTask.class);
-
-    @Autowired
-    private BlockService blockService;
 
     @Autowired
     private GethHttpService geth;
@@ -89,7 +85,7 @@ public class BlockchainInitializerTask implements Runnable {
             return;
         }
 
-        LOG.info("Storing existing wallet accounts");
+        LOG.info("Storing existing wallet account balances");
         try {
             List<Account> list = walletService.list();
             for (Account account : list) {
@@ -120,7 +116,12 @@ public class BlockchainInitializerTask implements Runnable {
             contractRegistryAddress = regAddr;
         }
 
-        if (StringUtils.isNotBlank(contractRegistryAddress)) {
+        if (StringUtils.isBlank(contractRegistryAddress)) {
+            LOG.info("Contract registry address not found");
+
+        } else {
+            // test stored address
+            LOG.info("Loaded contract registry address " + contractRegistryAddress);
             Map<String, Object> contractRes;
             try {
                 contractRes = geth.executeGethCall("eth_getCode", new Object[]{contractRegistryAddress, "latest"});
@@ -130,7 +131,11 @@ public class BlockchainInitializerTask implements Runnable {
             }
 
             String binaryCode = (String) contractRes.get("_result");
-            if (!binaryCode.contentEquals("0x")) {
+            if (binaryCode.contentEquals("0x")) {
+              LOG.warn("eth_getCode for " + contractRegistryAddress + " returned 0x");
+
+            } else {
+                // got code, contract exists
                 try {
                     contractRegistry.updateRegistryAddress(this.contractRegistryAddress);
                 } catch (APIException e) {
@@ -141,7 +146,8 @@ public class BlockchainInitializerTask implements Runnable {
             // continue to deploy
         }
 
-        LOG.info("Initializing empty blockchain");
+        LOG.info("ContractRegistry not found on chain");
+
         try {
             nodeService.update(null, null, null, true, null, null); // make sure mining is enabled
 
