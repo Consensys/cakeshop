@@ -81,7 +81,7 @@ public class BlockScanner extends Thread {
     }
 
     public void shutdown() {
-        LOG.debug("shutdown " + getId());
+        LOG.info("Stopping BlockScanner (thread id=" + getId() + ")");
         this.stopped = true;
         synchronized(wakeup) {
             this.wakeup.notify();

@@ -284,6 +284,7 @@ public class GethHttpServiceImpl implements GethHttpService {
         deletePid();
 
         // stop solc server
+        LOG.info("Stopping solc daemon");
         List<String> args = Lists.newArrayList(
                 gethConfig.getNodePath(),
                 gethConfig.getSolcPath(),
@@ -291,8 +292,9 @@ public class GethHttpServiceImpl implements GethHttpService {
 
         ProcessBuilder builder = ProcessUtils.createProcessBuilder(gethConfig, args);
         try {
-            builder.start();
-        } catch (IOException e) {
+            Process proc = builder.start();
+            proc.waitFor();
+        } catch (IOException | InterruptedException e) {
         }
     }
 

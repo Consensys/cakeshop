@@ -95,9 +95,8 @@ public class SavingBlockListener implements BlockListener {
     @PreDestroy
     @Override
     public void shutdown() {
-        LOG.debug("shutdown " + blockSaver.getId());
+        LOG.info("Stopping SavingBlockListener (thread id=" + blockSaver.getId() + ")");
         blockSaver.running = false;
-        blockSaver.interrupt();
     }
 
     protected void saveBlock(Block block) {
