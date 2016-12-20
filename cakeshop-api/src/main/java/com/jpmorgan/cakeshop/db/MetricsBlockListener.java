@@ -100,10 +100,14 @@ public class MetricsBlockListener implements BlockListener, TickListener {
     @PreDestroy
     @Override
     public void shutdown() {
+        LOG.info("Stopping MetricsBlockListener (thread id=" + metricCollector.getId() + ")");
         LOG.debug("shutdown" + metricCollector.getId());
         if (this.metricCollector != null && this.metricCollector.isAlive()) {
             this.metricCollector.running = false;
-            this.metricCollector.interrupt();
+            try {
+              this.metricCollector.join();
+            } catch (InterruptedException e) {
+            }
         }
     }
 
