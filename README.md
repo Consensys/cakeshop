@@ -46,20 +46,32 @@ Binary packages are available for macOS, Windows, and Linux platforms on the [re
 ### Running via Docker
 
 Run via docker and access UI on [http://localhost:8080/cakeshop/](http://localhost:8080/cakeshop/)
+
+```sh
+docker run -p 8080:8080 jpmc/cakeshop
 ```
-docker run -it -p 8080:8080 jpmc/cakeshop
+
+You'll probably want to mount a data volume:
+
+```sh
+mkdir data
+docker run -p 8080:8080 -v "$PWD/data":/opt/cakeshop/data jpmc/cakeshop
 ```
 
 Running under a specific environment
 
-```
-docker run -it -p 8080:8080 -e JAVA_OPTS="-Dspring.profiles.active=local" jpmc/cakeshop
+```sh
+docker run -p 8080:8080 -v "$PWD/data":/opt/cakeshop/data \
+    -e JAVA_OPTS="-Dspring.profiles.active=local" \
+    jpmc/cakeshop
 ```
 
-Note that DAG generation will take time and Cakeshop will not be available until it's complete. If you already have a DAG for epoch 0 in your `$HOME/.ethash` folder, then you can expose that to your container:
+Note that DAG generation will take time and Cakeshop will not be available until it's complete. If you already have a DAG for epoch 0 in your `$HOME/.ethash` folder, then you can expose that to your container (or just cache it for later):
 
-```
-docker run -it -p 8080:8080 -v $HOME/.ethash:/opt/cakeshop/.ethash jpmc/cakeshop
+```sh
+docker run -p 8080:8080 -v "$PWD/data":/opt/cakeshop/data \
+    -v $HOME/.ethash:/opt/cakeshop/.ethash \
+    jpmc/cakeshop
 ```
 
 ### Running with Quorum
@@ -68,17 +80,17 @@ This will show you how to quickly setup and connect to the `7nodes` Quorum clust
 
 (requires [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Vagrant](https://www.vagrantup.com/downloads.html))
 
-```
+```sh
 git clone https://github.com/jpmorganchase/quorum-examples.git
 cd quorum-examples
 vagrant up
 vagrant ssh
 
-(in vagrant shell)
+# (in vagrant shell)
 vagrant$ cd quorum-examples/7nodes
 vagrant$ ./init.sh && ./start.sh
 
-(in host shell)
+# (in host shell)
 java -jar cakeshop.war example
 java -jar cakeshop.war
 ```
