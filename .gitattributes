@@ -15,3 +15,8 @@
 *.PDF	 diff=astextplain
 *.rtf	 diff=astextplain
 *.RTF	 diff=astextplain
+
+# Fix for github language detection
+cakeshop-api/src/main/webapp/js/vendor/* linguist-vendored
+cakeshop-api/src/main/webapp/css/vendor/* linguist-vendored
+
