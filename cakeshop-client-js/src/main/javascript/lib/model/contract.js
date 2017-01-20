@@ -147,7 +147,7 @@
                         method: options.method,
                         args: options.args,
                         privateFrom: options.privateFrom,
-                        privateFor: options.privateFor,
+                        privateFor: options.privateFor
                     }
                 ).done(function(res, status, xhr) {
                     resolve(res.data.id); // return tx id
@@ -158,7 +158,7 @@
                 });
 
             });
-        },
+        }
     });
 
     Contract.deploy = function(code, optimize, args, binary, privateFrom, privateFor) {
@@ -171,7 +171,7 @@
                     args: args,
                     binary: binary,
                     privateFrom: privateFrom,
-                    privateFor: privateFor,
+                    privateFor: privateFor
                 }
             ).done(function(res, status, xhr) {
                 var txid = res.data.id;
