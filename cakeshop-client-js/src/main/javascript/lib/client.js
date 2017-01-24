@@ -12,7 +12,7 @@
             method: "POST",
             dataType: "json",
             contentType: "application/json",
-            data: data,
+            data: data
         });
     };
 
