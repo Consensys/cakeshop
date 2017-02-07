@@ -26,6 +26,7 @@ window.utils = utils;
 window.moment = moment;
 
 window.Tower = {
+	client: null,
 	ready: false,
 	current: null,
 	status: {},
@@ -155,6 +156,14 @@ window.Tower = {
 				}
 
 				var status = response.data.attributes;
+
+				if (status.quorumInfo === null) {
+					delete status.quorumInfo;
+
+					Tower.client = 'geth';
+				} else {
+					Tower.client = 'quorum';
+				}
 
 				if (status.status === 'running') {
 					$('#default-node-status').html( $('<span>', { html: 'Running' }) );
@@ -303,9 +312,9 @@ $(function() {
 		if (id === 'sandbox') {
 			return;
 		} else if (id === 'help') {
+			$(document).trigger('StartTour');
+			Tower.tour.start(true);
 
-			 $(document).trigger('StartTour');
-			 Tower.tour.start(true);
 			return;
 		}
 
@@ -320,8 +329,6 @@ $(function() {
 
 		$('.tower-page-title').html( $('<span>', { html: $(this).find('.tower-sidebar-item').html() }) );
 	});
-
-
 
 
 	// ---------- INIT -----------

@@ -11,7 +11,7 @@ module.exports = function() {
 		// url: 'api/node/get',
 
 		template: _.template('<table style="width: 100%; table-layout: fixed;" class="table table-striped"><%= rows %></table>'),
-		templateRow: _.template('<tr><td style="width: 100px;"><%= key %></td><td class="value" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= value %></td></tr>'),
+		templateRow: _.template('<tr><td style="width: 150px;"><%= key %></td><td class="value" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= value %></td></tr>'),
 
 
 		subscribe: function() {
@@ -27,7 +27,6 @@ module.exports = function() {
 
 		// TODO: renders after every fetch. May need to re-render only when needed
 		onData: function(status) {
-
 			var customOrder = _.reduce([
 				'nodeUrl',
 				'rpcUrl',
@@ -43,15 +42,11 @@ module.exports = function() {
 				'quorum',
 				'quorumInfo'
 			], function(memo, v, i) {
-				memo[v] = i; return memo;
+				memo[v] = i;
+
+				return memo;
 			}, {});
 
-			if (status.quorumInfo === null) {
-				delete status.quorumInfo;
-				status.quorum = false;
-			} else {
-				status.quorum = true;
-			}
 
 			var rows = [],
 			 keys = _.sortBy(_.keys(status), function(key) {
@@ -59,24 +54,54 @@ module.exports = function() {
 				if (key in customOrder) {
 					return customOrder[key];
 				}
+
 				return (99999);
 			});
 
 			keys = utils.idAlwaysFirst(keys);
 
 			// objects not shown in this widget
-			keys = _.without(keys, 'config', 'peers');
+			keys = _.without(keys, 'config', 'peers', 'quorumInfo');
 
 			_.each(keys, function(val, key) {
-				if (val === 'quorumInfo') {
-					// filter out nulls for the case when we have a quorum node but didn't get all status
-					var qinfo = _.reduce(status[val], function(memo, v, k) { if (v !== null) { memo[k] = v; } return memo; }, {});
-					rows.push( this.templateRow({ key: utils.camelToRegularForm(val), value: JSON.stringify(qinfo) }) );
-				} else {
-					rows.push( this.templateRow({ key: utils.camelToRegularForm(val), value: status[val] }) );
-
-				}
+				rows.push( this.templateRow({ key: utils.camelToRegularForm(val), value: status[val] }) );
 			}.bind(this));
+
+
+			// Appending quorum info if present
+			if (status.hasOwnProperty('quorumInfo')) {
+				rows.push( '<tr><td colspan="2" style="font-weight:bold;padding-top:20px;">Quorum Info</td></tr>' );
+
+				keys =_.keys(status.quorumInfo).sort(function (a, b) {
+					if (a < b) return -1;
+					if (b < a) return 1;
+
+					return 0;
+				});
+
+				keys = _.without(keys, 'blockMakerStrategy');
+
+				_.each(keys, function(val, key) {
+					rows.push( this.templateRow({ key: utils.camelToRegularForm(val), value: status.quorumInfo[val] }) );
+				}.bind(this));
+
+
+				// Strategy
+				if ( status.quorumInfo.hasOwnProperty('blockMakerStrategy') ) {
+					rows.push( '<tr><td colspan="2" style="font-weight:bold;padding-top:20px;">Block Maker Strategy</td></tr>' );
+
+					keys =_.keys(status.quorumInfo.blockMakerStrategy).sort(function (a, b) {
+						if (a < b) return -1;
+						if (b < a) return 1;
+
+						return 0;
+					});
+
+					_.each(keys, function(val, key) {
+						rows.push( this.templateRow({ key: utils.camelToRegularForm(val), value: status.quorumInfo.blockMakerStrategy[val] }) );
+					}.bind(this));
+				}
+			}
 
 			$('#widget-' + this.shell.id).html( this.template({ rows: rows.join('') }) );
 
