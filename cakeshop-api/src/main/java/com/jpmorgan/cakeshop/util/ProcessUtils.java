@@ -39,7 +39,6 @@ public class ProcessUtils {
         env.put("PATH", prefixPathStr(gethConfig.getBinPath() + File.pathSeparator + solcDir, env.get("PATH")));
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("PATH=" + env.get("PATH"));
             LOG.debug(Joiner.on(" ").join(builder.command()));
         }
 
@@ -63,7 +62,8 @@ public class ProcessUtils {
     }
 
     /**
-     * Check if the given PID is running (supports both Unix and Windows systems)
+     * Check if the given PID is running (supports both Unix and Windows
+     * systems)
      *
      * @param pid
      * @return
@@ -222,6 +222,5 @@ public class ProcessUtils {
         }
         return false;
     }
-
 
 }
