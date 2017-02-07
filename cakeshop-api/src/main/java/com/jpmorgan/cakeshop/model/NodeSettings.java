@@ -9,7 +9,6 @@ public class NodeSettings {
 
     private String identity, extraParams, genesisBlock, blockMakerAccount, voterAccount;
     private Integer minBlockTime, maxBlockTime, logLevel, networkId;
-    private Object committingTransactions;
     private Boolean isMining;
 
     public NodeSettings() {
@@ -184,25 +183,6 @@ public class NodeSettings {
 
     public NodeSettings maxBlockTime(Integer maxBlockTime) {
         this.maxBlockTime = maxBlockTime;
-        return this;
-    }
-
-    /**
-     * @return the committingTransactions
-     */
-    public Object getCommittingTransactions() {
-        return committingTransactions;
-    }
-
-    /**
-     * @param committingTransactions the committingTransactions to set
-     */
-    public void setCommittingTransactions(Object committingTransactions) {
-        this.committingTransactions = committingTransactions;
-    }
-
-    public NodeSettings committingTransactions(Object committingTransactions) {
-        this.committingTransactions = committingTransactions;
         return this;
     }
 
