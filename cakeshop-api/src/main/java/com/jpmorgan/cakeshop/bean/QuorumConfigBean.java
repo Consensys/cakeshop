@@ -185,7 +185,7 @@ public class QuorumConfigBean implements InitializingBean {
 
             int ret = process.waitFor();
             if (ret != 0) {
-                LOG.error("Abnormal script exit");
+                LOG.error("Failed to generate keys. Please make sure that berkeley db is installed properly. Version of berkeley db is 6.2.23");
             } else {
                 //create archive keys
                 pb = new ProcessBuilder(getKeyGen(), destination.concat(keyName.concat("a")));
@@ -211,7 +211,7 @@ public class QuorumConfigBean implements InitializingBean {
 
                 ret = process.waitFor();
                 if (ret != 0) {
-                    LOG.error("Abnormal script exit");
+                    LOG.error("Failed to generate keys. Please make sure that berkeley db is installed properly. Version of berkeley db is 6.2.23");
                 }
             }
 
