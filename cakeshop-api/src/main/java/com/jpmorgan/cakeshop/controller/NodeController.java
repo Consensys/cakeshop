@@ -67,7 +67,7 @@ public class NodeController extends BaseController {
             @JsonBodyParam(required = false) Integer maxBlockTime) throws APIException {
 
         Boolean isMining;
-        NodeSettings nodeSetings = new NodeSettings()
+        NodeSettings nodeSettings = new NodeSettings()
                 .extraParams(extraParams)
                 .genesisBlock(genesisBlock)
                 .blockMakerAccount(blockMakerAccount)
@@ -78,11 +78,11 @@ public class NodeController extends BaseController {
         try {
 
             if (!StringUtils.isEmpty(logLevel)) {
-                nodeSetings.logLevel(Integer.parseInt(logLevel));
+                nodeSettings.logLevel(Integer.parseInt(logLevel));
             }
 
             if (!StringUtils.isEmpty(networkId)) {
-                nodeSetings.networkId(Integer.parseInt(networkId));
+                nodeSettings.networkId(Integer.parseInt(networkId));
             }
 
             if (committingTransactions != null) {
@@ -91,10 +91,10 @@ public class NodeController extends BaseController {
                 } else {
                     isMining = (Boolean) committingTransactions;
                 }
-                nodeSetings.setIsMining(isMining);
+                nodeSettings.setIsMining(isMining);
             }
 
-            nodeService.update(nodeSetings);
+            nodeService.update(nodeSettings);
 
             return doGet();
 
