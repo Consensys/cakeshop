@@ -93,6 +93,8 @@ public class GethConfigBean {
     private final String GETH_MINING = "geth.mining";
     private final String GETH_IDENTITY = "geth.identity";
     private final String GETH_EXTRA_PARAMS = "geth.params.extra";
+    private final String GETH_BLOCK_MAKER = "geth.block.maker";
+    private final String GETH_VOTE_ACCOUNT = "geth.vote.account";
 
     public GethConfigBean() {
     }
@@ -384,6 +386,22 @@ public class GethConfigBean {
 
     public void setIdentity(String identity) {
         props.setProperty(GETH_IDENTITY, identity);
+    }
+
+    public String getBlockMaker() {
+        return props.getProperty(GETH_BLOCK_MAKER);
+    }
+
+    public void setBlockMaker(String blockMaker) {
+        props.setProperty(GETH_BLOCK_MAKER, blockMaker);
+    }
+
+    public String getVoteAccount() {
+        return props.getProperty(GETH_VOTE_ACCOUNT);
+    }
+
+    public void setVoteAccount(String voteAccount) {
+        props.setProperty(GETH_VOTE_ACCOUNT, voteAccount);
     }
 
     public String getBinPath() {

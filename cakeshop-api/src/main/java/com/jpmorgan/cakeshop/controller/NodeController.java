@@ -1,11 +1,13 @@
 package com.jpmorgan.cakeshop.controller;
 
+import com.jpmorgan.cakeshop.config.JsonMethodArgumentResolver;
 import com.jpmorgan.cakeshop.config.JsonMethodArgumentResolver.JsonBodyParam;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.APIData;
 import com.jpmorgan.cakeshop.model.APIError;
 import com.jpmorgan.cakeshop.model.APIResponse;
 import com.jpmorgan.cakeshop.model.Node;
+import com.jpmorgan.cakeshop.model.NodeSettings;
 import com.jpmorgan.cakeshop.model.Peer;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.NodeService;
@@ -29,9 +31,9 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping(value = "/api/node",
-    method = RequestMethod.POST,
-    consumes = MediaType.APPLICATION_JSON_VALUE,
-    produces = MediaType.APPLICATION_JSON_VALUE)
+        method = RequestMethod.POST,
+        consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
 public class NodeController extends BaseController {
 
     @Autowired
@@ -40,7 +42,7 @@ public class NodeController extends BaseController {
     @Autowired
     private NodeService nodeService;
 
-    @RequestMapping({ "/get" })
+    @RequestMapping({"/get"})
     protected ResponseEntity<APIResponse> doGet() throws APIException {
 
         Node node = nodeService.get();
@@ -52,27 +54,35 @@ public class NodeController extends BaseController {
     }
 
     @RequestMapping("/update")
-	public ResponseEntity<APIResponse> update(
-	        @JsonBodyParam(required = false) String logLevel,
-			@JsonBodyParam(required = false) String networkId,
-			@JsonBodyParam(required = false) String identity,
-			@JsonBodyParam(required = false) Object committingTransactions,
-			@JsonBodyParam(required = false) String extraParams,
-			@JsonBodyParam(required = false) String genesisBlock) throws APIException {
+    public ResponseEntity<APIResponse> update(
+            @JsonBodyParam(required = false) String logLevel,
+            @JsonBodyParam(required = false) String networkId,
+            @JsonBodyParam(required = false) String identity,
+            @JsonBodyParam(required = false) Object committingTransactions,
+            @JsonBodyParam(required = false) String extraParams,
+            @JsonBodyParam(required = false) String genesisBlock,
+            @JsonBodyParam(required = false) String blockMakerAccount,
+            @JsonBodyParam(required = false) String voterAccount,
+            @JsonBodyParam(required = false) Integer minBlockTime,
+            @JsonBodyParam(required = false) Integer maxBlockTime) throws APIException {
 
-        Boolean isMining = null;
+        Boolean isMining;
+        NodeSettings nodeSetings = new NodeSettings()
+                .extraParams(extraParams)
+                .genesisBlock(genesisBlock)
+                .blockMakerAccount(blockMakerAccount)
+                .voterAccount(voterAccount)
+                .minBlockTime(minBlockTime)
+                .maxBlockTime(maxBlockTime);
 
         try {
 
-            Integer logLevelInt = null,
-                    networkIDInt = null;
-
             if (!StringUtils.isEmpty(logLevel)) {
-                logLevelInt = Integer.parseInt(logLevel);
+                nodeSetings.logLevel(Integer.parseInt(logLevel));
             }
 
             if (!StringUtils.isEmpty(networkId)) {
-                networkIDInt = Integer.parseInt(networkId);
+                nodeSetings.networkId(Integer.parseInt(networkId));
             }
 
             if (committingTransactions != null) {
@@ -81,10 +91,10 @@ public class NodeController extends BaseController {
                 } else {
                     isMining = (Boolean) committingTransactions;
                 }
+                nodeSetings.setIsMining(isMining);
             }
 
-            nodeService.update(logLevelInt, networkIDInt, identity, isMining,
-                    extraParams, genesisBlock);
+            nodeService.update(nodeSetings);
 
             return doGet();
 
@@ -126,20 +136,23 @@ public class NodeController extends BaseController {
     }
 
     @RequestMapping("/start")
-    protected @ResponseBody ResponseEntity<APIResponse> startGeth() {
+    protected @ResponseBody
+    ResponseEntity<APIResponse> startGeth() {
         Boolean started = gethService.start();
         return new ResponseEntity<>(APIResponse.newSimpleResponse(started), HttpStatus.OK);
     }
 
     @RequestMapping("/stop")
-    protected @ResponseBody ResponseEntity<APIResponse> stopGeth() {
+    protected @ResponseBody
+    ResponseEntity<APIResponse> stopGeth() {
         Boolean stopped = gethService.stop();
         gethService.deletePid();
         return new ResponseEntity<>(APIResponse.newSimpleResponse(stopped), HttpStatus.OK);
     }
 
     @RequestMapping("/restart")
-    protected @ResponseBody ResponseEntity<APIResponse> restartGeth() {
+    protected @ResponseBody
+    ResponseEntity<APIResponse> restartGeth() {
         Boolean stopped = gethService.stop();
         Boolean deleted = gethService.deletePid();
         Boolean restarted = false;
@@ -150,13 +163,15 @@ public class NodeController extends BaseController {
     }
 
     @RequestMapping("/reset")
-    protected @ResponseBody ResponseEntity<APIResponse> resetGeth() {
+    protected @ResponseBody
+    ResponseEntity<APIResponse> resetGeth() {
         Boolean reset = gethService.reset();
         return new ResponseEntity<>(APIResponse.newSimpleResponse(reset), HttpStatus.OK);
     }
 
     @RequestMapping("/settings/reset")
-    protected @ResponseBody ResponseEntity<APIResponse> resetNodeInfo() {
+    protected @ResponseBody
+    ResponseEntity<APIResponse> resetNodeInfo() {
         Boolean reset = nodeService.reset();
         return new ResponseEntity<>(APIResponse.newSimpleResponse(reset), HttpStatus.OK);
     }

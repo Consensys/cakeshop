@@ -48,10 +48,6 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
     @Autowired
     private GethConfigBean gethConfig;
 
-    private final String GETH_NODE = System.getProperty("geth.node");
-
-    private final String BOOT_NODE = System.getProperty("geth.boot.node");
-
     private boolean autoStartFired;
 
     private boolean healthy;

@@ -98,7 +98,8 @@ public class BlockchainInitializerTask implements Runnable {
     }
 
     /**
-     * Deploy ContractRegistry (and SimpleStorage) if they don't already exist on the chain
+     * Deploy ContractRegistry (and SimpleStorage) if they don't already exist
+     * on the chain
      */
     private void deployContractRegistry() {
 
@@ -132,7 +133,7 @@ public class BlockchainInitializerTask implements Runnable {
 
             String binaryCode = (String) contractRes.get("_result");
             if (binaryCode.contentEquals("0x")) {
-              LOG.warn("eth_getCode for " + contractRegistryAddress + " returned 0x");
+                LOG.warn("eth_getCode for " + contractRegistryAddress + " returned 0x");
 
             } else {
                 // got code, contract exists
@@ -149,7 +150,7 @@ public class BlockchainInitializerTask implements Runnable {
         LOG.info("ContractRegistry not found on chain");
 
         try {
-            nodeService.update(null, null, null, true, null, null); // make sure mining is enabled
+            nodeService.update(null); // make sure mining is enabled
 
             LOG.info("Deploying ContractRegistry to chain");
             contractRegistry.deploy();
@@ -157,7 +158,6 @@ public class BlockchainInitializerTask implements Runnable {
         } catch (APIException e) {
             LOG.error("Error deploying ContractRegistry to chain: " + e.getMessage(), e);
         }
-
 
         LOG.info("Deploying sample contract (SimpleStorage) to chain");
         try {
@@ -174,13 +174,12 @@ public class BlockchainInitializerTask implements Runnable {
     /**
      * Get the shared contract registry address, if configured
      *
-     * @return String   shared registry address
+     * @return String shared registry address
      */
     private String getSharedNetworkConfig() {
 
         // TODO this is a temp solution to the problem of sharing the ContractRegistry
         // address among multiple Cakeshop nodes running on the same machine.
-
         File fSharedConfig = CakeshopUtils.getSharedNetworkConfigFile();
         if (fSharedConfig == null) {
             return null;
@@ -206,6 +205,5 @@ public class BlockchainInitializerTask implements Runnable {
 
         return null;
     }
-
 
 }
