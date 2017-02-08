@@ -201,7 +201,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
             throw new APIException("Failed to update genesis block", e);
         }
 
-        if (!quorumService.isQuorum() && settings.isMining() != null && settings.isMining().equals(gethConfig.isMining())) {
+        if (!quorumService.isQuorum() && settings.isMining() != null && !settings.isMining().equals(gethConfig.isMining())) {
             gethConfig.setMining(settings.isMining());
 
             if (!restart) {
@@ -223,6 +223,18 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
 
             if (StringUtils.isNotBlank(settings.getVoterAccount()) && !settings.getVoterAccount().contentEquals(gethConfig.getVoteAccount())) {
                 gethConfig.setVoteAccount(settings.getVoterAccount());
+                restart = true;
+            }
+
+            if (null != settings.getMinBlockTime()
+                    && (null != gethConfig.getMinBlockTime() && !settings.getMinBlockTime().equals(gethConfig.getMinBlockTime()))) {
+                restart = true;
+                gethConfig.setMinBlockTime(settings.getMinBlockTime());
+            }
+
+            if (null != settings.getMaxBlockTime()
+                    && (null != gethConfig.getMaxBlockTime() && !settings.getMaxBlockTime().equals(gethConfig.getMaxBlockTime()))) {
+                gethConfig.setMinBlockTime(settings.getMaxBlockTime());
                 restart = true;
             }
         }

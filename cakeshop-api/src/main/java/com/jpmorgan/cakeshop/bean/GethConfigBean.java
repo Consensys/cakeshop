@@ -93,8 +93,11 @@ public class GethConfigBean {
     private final String GETH_MINING = "geth.mining";
     private final String GETH_IDENTITY = "geth.identity";
     private final String GETH_EXTRA_PARAMS = "geth.params.extra";
+    // Quorum specific settings
     private final String GETH_BLOCK_MAKER = "geth.block.maker";
     private final String GETH_VOTE_ACCOUNT = "geth.vote.account";
+    private final String GETH_MIN_BLOCKTIME = "geth.min.blocktime";
+    private final String GETH_MAX_BLOCKTIME = "geth.max.blocktime";
 
     public GethConfigBean() {
     }
@@ -402,6 +405,22 @@ public class GethConfigBean {
 
     public void setVoteAccount(String voteAccount) {
         props.setProperty(GETH_VOTE_ACCOUNT, voteAccount);
+    }
+
+    public Integer getMinBlockTime() {
+        return StringUtils.isNotBlank(props.getProperty(GETH_MIN_BLOCKTIME)) ? Integer.valueOf(props.getProperty(GETH_MIN_BLOCKTIME)) : null;
+    }
+
+    public Integer getMaxBlockTime() {
+        return StringUtils.isNotBlank(props.getProperty(GETH_MAX_BLOCKTIME)) ? Integer.valueOf(props.getProperty(GETH_MAX_BLOCKTIME)) : null;
+    }
+
+    public void setMinBlockTime(Integer minblockTime) {
+        props.setProperty(GETH_MIN_BLOCKTIME, String.valueOf(minblockTime));
+    }
+
+    public void setMaxBlockTime(Integer maxblockTime) {
+        props.setProperty(GETH_MAX_BLOCKTIME, String.valueOf(maxblockTime));
     }
 
     public String getBinPath() {
