@@ -228,8 +228,8 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
 
             if (null != settings.getMinBlockTime()
                     && (null != gethConfig.getMinBlockTime() && !settings.getMinBlockTime().equals(gethConfig.getMinBlockTime()))) {
-                restart = true;
                 gethConfig.setMinBlockTime(settings.getMinBlockTime());
+                restart = true;
             }
 
             if (null != settings.getMaxBlockTime()
