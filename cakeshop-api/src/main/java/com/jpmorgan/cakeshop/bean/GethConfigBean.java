@@ -98,6 +98,7 @@ public class GethConfigBean {
     private final String GETH_VOTE_ACCOUNT = "geth.vote.account";
     private final String GETH_MIN_BLOCKTIME = "geth.min.blocktime";
     private final String GETH_MAX_BLOCKTIME = "geth.max.blocktime";
+    private final String GETH_VOTE_CONTARCT_ADDRESS = "geth.vote.contract.addr";
 
     public GethConfigBean() {
     }
@@ -421,6 +422,14 @@ public class GethConfigBean {
 
     public void setMaxBlockTime(Integer maxblockTime) {
         props.setProperty(GETH_MAX_BLOCKTIME, String.valueOf(maxblockTime));
+    }
+
+    public String getVoteContractAddress() {
+        return props.getProperty(GETH_VOTE_CONTARCT_ADDRESS);
+    }
+
+    public void setVoteContractAddress(String address) {
+        props.setProperty(GETH_VOTE_CONTARCT_ADDRESS, address);
     }
 
     public String getBinPath() {

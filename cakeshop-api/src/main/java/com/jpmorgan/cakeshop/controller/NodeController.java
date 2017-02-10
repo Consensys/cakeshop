@@ -1,5 +1,6 @@
 package com.jpmorgan.cakeshop.controller;
 
+import com.jpmorgan.cakeshop.bean.GethConfigBean;
 import com.jpmorgan.cakeshop.config.JsonMethodArgumentResolver.JsonBodyParam;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.APIData;
@@ -8,13 +9,19 @@ import com.jpmorgan.cakeshop.model.APIResponse;
 import com.jpmorgan.cakeshop.model.Node;
 import com.jpmorgan.cakeshop.model.NodeSettings;
 import com.jpmorgan.cakeshop.model.Peer;
+import com.jpmorgan.cakeshop.model.RequestModel;
+import com.jpmorgan.cakeshop.model.TransactionRequest;
+import com.jpmorgan.cakeshop.model.TransactionResult;
+import com.jpmorgan.cakeshop.service.ContractService;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.NodeService;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.bouncycastle.util.encoders.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -40,6 +47,11 @@ public class NodeController extends BaseController {
 
     @Autowired
     private NodeService nodeService;
+
+    @Autowired
+    private ContractService contractService;
+    @Autowired
+    private GethConfigBean gethConfig;
 
     @RequestMapping({"/get"})
     protected ResponseEntity<APIResponse> doGet() throws APIException {
@@ -91,6 +103,22 @@ public class NodeController extends BaseController {
                     isMining = (Boolean) committingTransactions;
                 }
                 nodeSettings.setIsMining(isMining);
+            }
+
+            if (StringUtils.isNotBlank(nodeSettings.getBlockMakerAccount()) && (StringUtils.isNotBlank(gethConfig.getBlockMaker())
+                    && !nodeSettings.getBlockMakerAccount().contentEquals(gethConfig.getBlockMaker()))) {
+                updateVoteContract("addBlockMaker", new Object[]{nodeSettings.getBlockMakerAccount()});
+                updateVoteContract("removeBlockMaker", new Object[]{gethConfig.getBlockMaker()});
+            } else if (StringUtils.isNotBlank(nodeSettings.getBlockMakerAccount()) && StringUtils.isBlank(gethConfig.getBlockMaker())) {
+                updateVoteContract("addBlockMaker", new Object[]{nodeSettings.getBlockMakerAccount()});
+            }
+
+            if (StringUtils.isNotBlank(nodeSettings.getVoterAccount()) && (StringUtils.isNotBlank(gethConfig.getVoteAccount())
+                    && !nodeSettings.getVoterAccount().contentEquals(gethConfig.getVoteAccount()))) {
+                updateVoteContract("addVoter", new Object[]{nodeSettings.getVoterAccount()});
+                updateVoteContract("removeVoter", new Object[]{gethConfig.getVoteAccount()});
+            } else if (StringUtils.isNotBlank(nodeSettings.getVoterAccount()) && StringUtils.isBlank(gethConfig.getVoteAccount())) {
+                updateVoteContract("addVoter", new Object[]{nodeSettings.getVoterAccount()});
             }
 
             nodeService.update(nodeSettings);
@@ -173,6 +201,11 @@ public class NodeController extends BaseController {
     ResponseEntity<APIResponse> resetNodeInfo() {
         Boolean reset = nodeService.reset();
         return new ResponseEntity<>(APIResponse.newSimpleResponse(reset), HttpStatus.OK);
+    }
+
+    private void updateVoteContract(String method, Object[] args) throws APIException {
+        String address = gethConfig.getVoteContractAddress();
+        contractService.transact(address, null, method, args);
     }
 
 }
