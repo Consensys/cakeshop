@@ -95,6 +95,6 @@ public interface GethHttpService {
      */
     List<ErrorLog> getStartupErrors();
 
-    public List<String> setAdditionalParams();
+    public List<String> setAdditionalParams(String[] additionalParamsArray);
 
 }

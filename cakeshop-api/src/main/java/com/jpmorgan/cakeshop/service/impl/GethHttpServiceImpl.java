@@ -33,9 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
 import javax.annotation.PreDestroy;
-import org.apache.commons.lang3.ArrayUtils;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -380,7 +378,7 @@ public class GethHttpServiceImpl implements GethHttpService {
             }
 
             if (gethConfig.isEmbeddedQuorum()) {
-                additionalParams = setAdditionalParams().toArray(new String[setAdditionalParams().size()]);
+                additionalParams = setAdditionalParams(additionalParams).toArray(new String[setAdditionalParams(additionalParams).size()]);
                 if (!isProcessRunning(readPidFromFile(gethConfig.getConstPidFileName())) && !gethConfig.IS_BOOT_NODE) {
                     startConstellation();
                 }
@@ -435,8 +433,13 @@ public class GethHttpServiceImpl implements GethHttpService {
     }
 
     @Override
-    public List<String> setAdditionalParams() {
-        List<String> additionalParams = new ArrayList<>();
+    public List<String> setAdditionalParams(String[] additionalParamsArray) {
+        List<String> additionalParams;
+        if (null != additionalParamsArray && additionalParamsArray.length > 0) {
+            additionalParams = Lists.newArrayList(additionalParamsArray);
+        } else {
+            additionalParams = new ArrayList<>();
+        }
         Boolean isBootNode = false;
         Boolean saveProps = false;
         //figure out if node is boot node
@@ -448,22 +451,20 @@ public class GethHttpServiceImpl implements GethHttpService {
                 additionalParams.add(" --addr");
                 additionalParams.add(quorumConfig.getBootNodeAddress());
                 isBootNode = true;
-            } else {
-                if (StringUtils.isNotBlank(System.getProperty("geth.bootnode.address"))
-                        && StringUtils.isNotBlank(System.getProperty("geth.bootnode.key"))) {
-                    String nodeport = System.getProperty("geth.bootnode.address", "127.0.0.1:33445").split(":")[1];
-                    gethConfig.setProperty("geth.boot.node", "true");
-                    gethConfig.setProperty("geth.bootnode.address", System.getProperty("geth.bootnode.address", "127.0.0.1:33445"));
-                    gethConfig.setProperty("geth.bootnode.key", System.getProperty("geth.bootnode.key"));
-                    gethConfig.setProperty("geth.node.port", nodeport);
-                    additionalParams.add("bootnode");
-                    additionalParams.add("--nodekeyhex");
-                    additionalParams.add(System.getProperty("geth.bootnode.key"));
-                    additionalParams.add(" --addr");
-                    additionalParams.add(System.getProperty("geth.bootnode.address", "127.0.0.1:33445"));
-                    saveProps = true;
-                    isBootNode = true;
-                }
+            } else if (StringUtils.isNotBlank(System.getProperty("geth.bootnode.address"))
+                    && StringUtils.isNotBlank(System.getProperty("geth.bootnode.key"))) {
+                String nodeport = System.getProperty("geth.bootnode.address", "127.0.0.1:33445").split(":")[1];
+                gethConfig.setProperty("geth.boot.node", "true");
+                gethConfig.setProperty("geth.bootnode.address", System.getProperty("geth.bootnode.address", "127.0.0.1:33445"));
+                gethConfig.setProperty("geth.bootnode.key", System.getProperty("geth.bootnode.key"));
+                gethConfig.setProperty("geth.node.port", nodeport);
+                additionalParams.add("bootnode");
+                additionalParams.add("--nodekeyhex");
+                additionalParams.add(System.getProperty("geth.bootnode.key"));
+                additionalParams.add(" --addr");
+                additionalParams.add(System.getProperty("geth.bootnode.address", "127.0.0.1:33445"));
+                saveProps = true;
+                isBootNode = true;
             }
         }
 
@@ -472,55 +473,67 @@ public class GethHttpServiceImpl implements GethHttpService {
                 additionalParams.add("--bootnodes");
                 additionalParams.add(quorumConfig.getBootNodes());
 
-            } else {
-                if (StringUtils.isNotBlank(System.getProperty("geth.bootnodes.list"))) {
-                    additionalParams.add("--bootnodes");
-                    additionalParams.add(System.getProperty("geth.bootnodes.list"));
-                    gethConfig.setProperty("geth.bootnodes.list", System.getProperty("geth.bootnodes.list"));
-                    saveProps = true;
-                }
+            } else if (StringUtils.isNotBlank(System.getProperty("geth.bootnodes.list"))) {
+                additionalParams.add("--bootnodes");
+                additionalParams.add(System.getProperty("geth.bootnodes.list"));
+                gethConfig.setProperty("geth.bootnodes.list", System.getProperty("geth.bootnodes.list"));
+                saveProps = true;
             }
 
+            //Set Block Maker account
             if (com.jpmorgan.cakeshop.util.StringUtils.isNotBlank(gethConfig.getBlockMaker())) {
                 additionalParams.add("--blockmakeraccount");
                 additionalParams.add(gethConfig.getBlockMaker());
                 additionalParams.add("--blockmakerpassword");
                 additionalParams.add("");
-                additionalParams.add("--singleblockmaker");
+            } else if (StringUtils.isNotBlank(System.getProperty("geth.block.maker"))) {
+                additionalParams.add("--blockmakeraccount");
+                additionalParams.add(System.getProperty("geth.block.maker"));
+                additionalParams.add("--blockmakerpassword");
+                additionalParams.add("");
+                gethConfig.setProperty("geth.block.maker", System.getProperty("geth.block.maker"));
+                saveProps = true;
+            }
+            //Set min and max block time
+            if (null != gethConfig.getMinBlockTime()) {
+                additionalParams.add("--minblocktime");
+                additionalParams.add(String.valueOf(gethConfig.getMinBlockTime()));
+            } else if (StringUtils.isNotBlank(System.getProperty("geth.min.blocktime"))) {
+                additionalParams.add("--minblocktime");
+                additionalParams.add(System.getProperty("geth.min.blocktime"));
+                gethConfig.setProperty("geth.min.blocktime", System.getProperty("geth.min.blocktime"));
+                saveProps = true;
+            } else {
                 additionalParams.add("--minblocktime");
                 additionalParams.add("2");
-                additionalParams.add("--maxblocktime");
-                additionalParams.add("5");
-            } else {
-                if (StringUtils.isNotBlank(System.getProperty("geth.block.maker"))) {
-                    additionalParams.add("--blockmakeraccount");
-                    additionalParams.add(System.getProperty("geth.block.maker"));
-                    additionalParams.add("--blockmakerpassword");
-                    additionalParams.add("");
-                    additionalParams.add("--singleblockmaker");
-                    additionalParams.add("--minblocktime");
-                    additionalParams.add("2");
-                    additionalParams.add("--maxblocktime");
-                    additionalParams.add("5");
-                    gethConfig.setProperty("geth.block.maker", System.getProperty("geth.block.maker"));
-                    saveProps = true;
-                }
             }
 
+            if (null != gethConfig.getMaxBlockTime()) {
+                additionalParams.add("--maxblocktime");
+                additionalParams.add(String.valueOf(gethConfig.getMaxBlockTime()));
+            } else if (StringUtils.isNotBlank(System.getProperty("geth.max.blocktime"))) {
+                additionalParams.add("--maxblocktime");
+                additionalParams.add(System.getProperty("geth.max.blocktime"));
+                gethConfig.setProperty("geth.max.blocktime", System.getProperty("geth.max.blocktime"));
+                saveProps = true;
+            } else {
+                additionalParams.add("--maxblocktime");
+                additionalParams.add("5");
+            }
+
+            //Set Vote Account
             if (StringUtils.isNotBlank(gethConfig.getVoteAccount())) {
                 additionalParams.add("--voteaccount");
                 additionalParams.add(gethConfig.getVoteAccount());
                 additionalParams.add("--votepassword");
                 additionalParams.add("");
-            } else {
-                if (StringUtils.isNotBlank(System.getProperty("geth.vote.account"))) {
-                    additionalParams.add("--voteaccount");
-                    additionalParams.add(System.getProperty("geth.vote.account"));
-                    additionalParams.add("--votepassword");
-                    additionalParams.add("");
-                    gethConfig.setProperty("geth.vote.account", System.getProperty("geth.vote.account"));
-                    saveProps = true;
-                }
+            } else if (StringUtils.isNotBlank(System.getProperty("geth.vote.account"))) {
+                additionalParams.add("--voteaccount");
+                additionalParams.add(System.getProperty("geth.vote.account"));
+                additionalParams.add("--votepassword");
+                additionalParams.add("");
+                gethConfig.setProperty("geth.vote.account", System.getProperty("geth.vote.account"));
+                saveProps = true;
             }
         }
         if (saveProps) {
