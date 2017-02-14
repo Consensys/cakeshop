@@ -6,25 +6,24 @@ import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.APIData;
 import com.jpmorgan.cakeshop.model.APIError;
 import com.jpmorgan.cakeshop.model.APIResponse;
+import com.jpmorgan.cakeshop.model.ContractABI;
 import com.jpmorgan.cakeshop.model.Node;
 import com.jpmorgan.cakeshop.model.NodeSettings;
 import com.jpmorgan.cakeshop.model.Peer;
-import com.jpmorgan.cakeshop.model.RequestModel;
 import com.jpmorgan.cakeshop.model.TransactionRequest;
-import com.jpmorgan.cakeshop.model.TransactionResult;
 import com.jpmorgan.cakeshop.service.ContractService;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.NodeService;
+import com.jpmorgan.cakeshop.util.FileUtils;
+import java.io.IOException;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.bouncycastle.util.encoders.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -38,8 +37,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(value = "/api/node",
         method = RequestMethod.POST,
-        consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+        consumes = APPLICATION_JSON_VALUE,
+        produces = APPLICATION_JSON_VALUE
+)
 public class NodeController extends BaseController {
 
     @Autowired
@@ -52,6 +52,12 @@ public class NodeController extends BaseController {
     private ContractService contractService;
     @Autowired
     private GethConfigBean gethConfig;
+
+    private ContractABI voterAbi;
+
+    public NodeController() throws IOException {
+        voterAbi = ContractABI.fromJson(FileUtils.readClasspathFile("contracts/BlockVoting.sol.json"));
+    }
 
     @RequestMapping({"/get"})
     protected ResponseEntity<APIResponse> doGet() throws APIException {
@@ -107,20 +113,13 @@ public class NodeController extends BaseController {
 
             if (StringUtils.isNotBlank(nodeSettings.getBlockMakerAccount()) && (StringUtils.isNotBlank(gethConfig.getBlockMaker())
                     && !nodeSettings.getBlockMakerAccount().contentEquals(gethConfig.getBlockMaker()))) {
-                updateVoteContract("addBlockMaker", new Object[]{nodeSettings.getBlockMakerAccount()});
-                updateVoteContract("removeBlockMaker", new Object[]{gethConfig.getBlockMaker()});
-            } else if (StringUtils.isNotBlank(nodeSettings.getBlockMakerAccount()) && StringUtils.isBlank(gethConfig.getBlockMaker())) {
-                updateVoteContract("addBlockMaker", new Object[]{nodeSettings.getBlockMakerAccount()});
+                updateVoteContract(gethConfig.getBlockMaker(), "addBlockMaker", new Object[]{nodeSettings.getBlockMakerAccount()});
             }
 
             if (StringUtils.isNotBlank(nodeSettings.getVoterAccount()) && (StringUtils.isNotBlank(gethConfig.getVoteAccount())
                     && !nodeSettings.getVoterAccount().contentEquals(gethConfig.getVoteAccount()))) {
-                updateVoteContract("addVoter", new Object[]{nodeSettings.getVoterAccount()});
-                updateVoteContract("removeVoter", new Object[]{gethConfig.getVoteAccount()});
-            } else if (StringUtils.isNotBlank(nodeSettings.getVoterAccount()) && StringUtils.isBlank(gethConfig.getVoteAccount())) {
-                updateVoteContract("addVoter", new Object[]{nodeSettings.getVoterAccount()});
+                updateVoteContract(gethConfig.getVoteAccount(), "addVoter", new Object[]{nodeSettings.getVoterAccount()});
             }
-
             nodeService.update(nodeSettings);
 
             return doGet();
@@ -203,9 +202,10 @@ public class NodeController extends BaseController {
         return new ResponseEntity<>(APIResponse.newSimpleResponse(reset), HttpStatus.OK);
     }
 
-    private void updateVoteContract(String method, Object[] args) throws APIException {
+    private void updateVoteContract(String from, String method, Object[] args) throws APIException {
         String address = gethConfig.getVoteContractAddress();
-        contractService.transact(address, null, method, args);
+        TransactionRequest request = new TransactionRequest(from, address, voterAbi, method, args, false);
+        contractService.transact(request);
     }
 
 }

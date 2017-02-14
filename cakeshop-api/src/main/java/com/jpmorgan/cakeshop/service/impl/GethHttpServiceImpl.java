@@ -481,9 +481,9 @@ public class GethHttpServiceImpl implements GethHttpService {
                 }
             }
 
-            if (com.jpmorgan.cakeshop.util.StringUtils.isNotBlank(quorumConfig.getBlockMaker())) {
+            if (com.jpmorgan.cakeshop.util.StringUtils.isNotBlank(gethConfig.getBlockMaker())) {
                 additionalParams.add("--blockmakeraccount");
-                additionalParams.add(quorumConfig.getBlockMaker());
+                additionalParams.add(gethConfig.getBlockMaker());
                 additionalParams.add("--blockmakerpassword");
                 additionalParams.add("");
                 additionalParams.add("--singleblockmaker");
@@ -507,9 +507,9 @@ public class GethHttpServiceImpl implements GethHttpService {
                 }
             }
 
-            if (StringUtils.isNotBlank(quorumConfig.getVoteAccount())) {
+            if (StringUtils.isNotBlank(gethConfig.getVoteAccount())) {
                 additionalParams.add("--voteaccount");
-                additionalParams.add(quorumConfig.getVoteAccount());
+                additionalParams.add(gethConfig.getVoteAccount());
                 additionalParams.add("--votepassword");
                 additionalParams.add("");
             } else {

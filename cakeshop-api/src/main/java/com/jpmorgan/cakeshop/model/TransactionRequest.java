@@ -50,36 +50,36 @@ public class TransactionRequest {
         this.privateFrom = null;
         this.privateFor = null;
 
-	    this.function = abi.getFunction(method);
-	    if (this.function == null) {
-	        throw new APIException("Invalid method '" + method + "'");
-	    }
+        this.function = abi.getFunction(method);
+        if (this.function == null) {
+            throw new APIException("Invalid method '" + method + "'");
+        }
     }
 
     public Object[] toGethArgs() {
 
         Map<String, Object> req = new HashMap<>();
-	    req.put("from", fromAddress);
-	    req.put("to", contractAddress);
-	    req.put("gas", DEFAULT_GAS);
-	    req.put("data", function.encodeAsHex(args));
+        req.put("from", fromAddress);
+        req.put("to", contractAddress);
+        req.put("gas", DEFAULT_GAS);
+        req.put("data", function.encodeAsHex(args));
 
-	    if (StringUtils.isNotBlank(privateFrom)) {
-	        req.put("privateFrom", privateFrom);
-	    }
+        if (StringUtils.isNotBlank(privateFrom)) {
+            req.put("privateFrom", privateFrom);
+        }
 
-	    if (privateFor != null && !privateFor.isEmpty()) {
+        if (privateFor != null && !privateFor.isEmpty()) {
             req.put("privateFor", privateFor);
-	    }
+        }
 
         if (isRead) {
             if (blockNumber == null) {
-                return new Object[] { req, BLOCK_LATEST };
+                return new Object[]{req, BLOCK_LATEST};
             } else {
-                return new Object[] { req, blockNumber };
+                return new Object[]{req, blockNumber};
             }
         } else {
-            return new Object[] { req };
+            return new Object[]{req};
         }
     }
 

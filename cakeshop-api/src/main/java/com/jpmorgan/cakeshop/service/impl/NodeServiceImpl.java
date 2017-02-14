@@ -3,6 +3,7 @@ package com.jpmorgan.cakeshop.service.impl;
 import static com.jpmorgan.cakeshop.service.impl.GethHttpServiceImpl.*;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 import com.jpmorgan.cakeshop.bean.GethConfigBean;
 import com.jpmorgan.cakeshop.dao.PeerDAO;
 import com.jpmorgan.cakeshop.error.APIException;
@@ -217,19 +218,27 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
 
             //Quorum specific settings
             if (quorumService.isQuorum()) {
+                List<String> blockMakers = Lists.newArrayList(gethConfig.getBlockMaker().split(","));
+                List<String> voters = Lists.newArrayList(gethConfig.getVoteAccount().split(","));
+
                 if (StringUtils.isNotBlank(settings.getBlockMakerAccount())
                         && (StringUtils.isNotBlank(gethConfig.getBlockMaker()) && !settings.getBlockMakerAccount().contentEquals(gethConfig.getBlockMaker()))) {
-                    gethConfig.setBlockMaker(settings.getBlockMakerAccount());
+                    if (blockMakers.size() > 1) {
+                        blockMakers.remove(0);
+                        blockMakers.add(settings.getBlockMakerAccount());
+                    } else {
+                        blockMakers.add(settings.getBlockMakerAccount());
+                    }
+                    gethConfig.setBlockMaker(StringUtils.join(blockMakers, ","));
                     restart = true;
                 } else if (StringUtils.isNotBlank(settings.getBlockMakerAccount()) && StringUtils.isBlank(gethConfig.getBlockMaker())) {
                     gethConfig.setBlockMaker(settings.getBlockMakerAccount());
                     restart = true;
                 }
 
-                if (StringUtils.isNotBlank(settings.getVoterAccount()) && (StringUtils.isNotBlank(gethConfig.getVoteAccount()) && !settings.getVoterAccount().contentEquals(gethConfig.getVoteAccount()))) {
-                    gethConfig.setVoteAccount(settings.getVoterAccount());
-                    restart = true;
-                } else if (StringUtils.isNotBlank(settings.getVoterAccount()) && StringUtils.isBlank(gethConfig.getVoteAccount())) {
+                if (StringUtils.isNotBlank(settings.getVoterAccount()) && ((StringUtils.isNotBlank(gethConfig.getVoteAccount())
+                        && !settings.getVoterAccount().contentEquals(gethConfig.getVoteAccount()))
+                        || StringUtils.isBlank(gethConfig.getVoteAccount()))) {
                     gethConfig.setVoteAccount(settings.getVoterAccount());
                     restart = true;
                 }

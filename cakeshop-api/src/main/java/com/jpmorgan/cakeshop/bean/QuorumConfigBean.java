@@ -42,10 +42,6 @@ public class QuorumConfigBean implements InitializingBean {
 
     @Value("${geth.bootnodes.list:\"\"}")
     private String bootNodes;
-    @Value("${geth.block.maker:\"\"}")
-    private String blockMaker;
-    @Value("${geth.vote.accounts:\"\"}")
-    private String voteAccount;
     @Value("${geth.bootnode.key:\"\"}")
     private String bootNodeKey;
     @Value("${geth.bootnode.address:\"\"}")
@@ -104,20 +100,6 @@ public class QuorumConfigBean implements InitializingBean {
      */
     public String getBootNodes() {
         return bootNodes;
-    }
-
-    /**
-     * @return the blockMaker
-     */
-    public String getBlockMaker() {
-        return blockMaker;
-    }
-
-    /**
-     * @return the voteAccounts
-     */
-    public String getVoteAccount() {
-        return voteAccount;
     }
 
     /**
