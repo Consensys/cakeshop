@@ -77,7 +77,23 @@ window.widgetRoot = {
 		});
 
 		this.postRender();
-		$(document).trigger("WidgetInternalEvent", ["widget|rendered|" + this.name]);
+		$(document).trigger('WidgetInternalEvent', ['widget|rendered|' + this.name]);
+	},
+
+	_$: function(id) {
+		if (id !== undefined) {
+			return $('#widget-' + this.shell.id).find(id);
+		} else {
+			return $('#widget-' + this.shell.id);
+		}
+	},
+
+	_$shell: function(id) {
+		if (id !== undefined) {
+			return $('#widget-shell-' + this.shell.id).find(id);
+		} else {
+			return $('#widget-shell-' + this.shell.id);
+		}
 	},
 
 	postRender: function() { },
