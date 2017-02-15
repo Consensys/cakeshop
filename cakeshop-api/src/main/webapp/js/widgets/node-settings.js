@@ -12,25 +12,6 @@ module.exports = function() {
 		update_url: 'api/node/update',
 
 		template: _.template(
-			'<div class="form-group quorum-option">' +
-			'	<label for="blockMakerAccount">Block Maker Account</label>' +
-			'	<select id="blockMakerAccount" class="form-control" style="transition: none;">' +
-			'	</select>' +
-			'</div>' +
-			'<div class="form-group quorum-option">' +
-			'	<label for="voterAccount">Voter Account</label>' +
-			'	<select id="voterAccount" class="form-control" style="transition: none;">' +
-			'	</select>' +
-			'</div>' +
-			'<div class="form-group quorum-option">' +
-			'	<label for="minBlockTime">Minimum Block Time</label>' +
-			'	<input type="number" class="form-control" id="minBlockTime">' +
-			'</div>' +
-			'<div class="form-group quorum-option">' +
-			'	<label for="maxBlockTime">Maximum Block Time</label>' +
-			'	<input type="number" class="form-control" id="maxBlockTime">' +
-			'</div>' +
-
 			'<div class="form-group">' +
 			'	<label for="committingTransactions">Commiting Transactions</label>' +
 			'	<select id="committingTransactions" class="form-control" style="transition: none;">' +
@@ -89,31 +70,6 @@ module.exports = function() {
 			this._$('#committingTransactions').val( status.config.committingTransactions ? 'true' : 'false' );
 			this._$('#extraParams').val( status.config.extraParams ? status.config.extraParams : '' );
 			this._$('#genesisBlock').val( status.config.genesisBlock ? status.config.genesisBlock : '' );
-
-			// Show & populate quorum settings if needed
-			if (status.hasOwnProperty('quorumInfo')) {
-				this._$('.quorum-option').show();
-
-				Account.list().then(function(accounts) {
-					var rows = ['<option>None</option>'];
-
-					accounts.forEach(function(acct) {
-						rows.push( '<option>' + acct.get('address') + '</option>' );
-					});
-
-					this._$('#blockMakerAccount')
-						.html( rows.join('') )
-						.val( status.quorumInfo.blockMakerAccount );
-
-					this._$('#voterAccount')
-						.html( rows.join('') )
-						.val( status.quorumInfo.voteAccount );
-
-				}.bind(this));
-
-				this._$('#minBlockTime').val( status.quorumInfo.blockMakerStrategy.minBlockTime );
-				this._$('#maxBlockTime').val( status.quorumInfo.blockMakerStrategy.maxBlockTime );
-			}
 		},
 
 
