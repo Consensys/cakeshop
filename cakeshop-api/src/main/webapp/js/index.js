@@ -80,7 +80,8 @@ window.Tower = {
 
 		// Quorum widgets
 		Dashboard.preregisterWidgets({
-			'quorum-settings': require('./widgets/quorum-settings')
+			'quorum-settings': require('./widgets/quorum-settings'),
+			'constellation': require('./widgets/constellation')
 		});
 
 		Dashboard.init();
@@ -236,7 +237,8 @@ window.Tower = {
 			];
 
 			if (Tower.client === 'quorum') {
-				widgets.push({ widgetId: 'quorum-settings' })
+				widgets.push({ widgetId: 'quorum-settings' });
+				widgets.push({ widgetId: 'constellation' });
 			}
 
 			Dashboard.showSection('console', widgets);
