@@ -234,7 +234,7 @@ public class NodeController extends BaseController {
     protected @ResponseBody
     ResponseEntity<APIResponse> stopConstellation() throws APIException {
         Boolean stopped = gethService.stopConstellation();
-        gethConfig.setConstallationEnabled(false);
+        gethConfig.setConstellationEnabled(false);
         try {
             gethConfig.save();
         } catch (IOException ex) {
@@ -247,7 +247,7 @@ public class NodeController extends BaseController {
     protected @ResponseBody
     ResponseEntity<APIResponse> startConstellation() throws APIException {
         Boolean started = gethService.startConstellation();
-        gethConfig.setConstallationEnabled(true);
+        gethConfig.setConstellationEnabled(true);
         try {
             gethConfig.save();
         } catch (IOException ex) {

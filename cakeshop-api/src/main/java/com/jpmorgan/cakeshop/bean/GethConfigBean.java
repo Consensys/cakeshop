@@ -448,7 +448,7 @@ public class GethConfigBean {
                 : Boolean.TRUE;
     }
 
-    public void setConstallationEnabled(Boolean isEnabled) {
+    public void setConstellationEnabled(Boolean isEnabled) {
         props.setProperty(GETH_CONSTELLATION_ENABLED, String.valueOf(isEnabled));
     }
 
