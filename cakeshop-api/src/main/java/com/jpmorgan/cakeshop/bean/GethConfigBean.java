@@ -1,5 +1,7 @@
 package com.jpmorgan.cakeshop.bean;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import static com.jpmorgan.cakeshop.util.FileUtils.*;
 import static com.jpmorgan.cakeshop.util.ProcessUtils.*;
 
@@ -10,6 +12,7 @@ import com.jpmorgan.cakeshop.util.StringUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Properties;
@@ -61,6 +64,8 @@ public class GethConfigBean {
     private String nodePath;
 
     private String solcPath;
+
+    private String publicKey;
 
     /**
      * Whether or not this is a quorum node
@@ -223,10 +228,14 @@ public class GethConfigBean {
         if (StringUtils.isBlank(EMBEDDED_NODE)) {
             //default to quorum
             setGethPath(quorumConfig.getQuorumPath());
-            quorumConfig.createKeys("node", getDataDirPath().concat("/constellation/"));
-            quorumConfig.createQuorumConfig("node", getDataDirPath().concat("/constellation/"));
+            String destination = getDataDirPath().concat("/constellation/");
+            quorumConfig.createKeys("node", destination);
+            quorumConfig.createQuorumConfig("node", destination);
             setConstPidFileName(expandPath(CONFIG_ROOT, "constellation.pid"));
             setIsEmbeddedQuorum(true);
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode node = objectMapper.readValue(new File(destination.concat("node.key")), JsonNode.class);
+            setPublicKey(node.get("data").get("bytes").asText());
         }
     }
 
@@ -563,6 +572,20 @@ public class GethConfigBean {
      */
     public void setIsEmbeddedQuorum(boolean isEmbeddedQuorum) {
         this.isEmbeddedQuorum = isEmbeddedQuorum;
+    }
+
+    /**
+     * @return the publicKey
+     */
+    public String getPublicKey() {
+        return publicKey;
+    }
+
+    /**
+     * @param publicKey the publicKey to set
+     */
+    public void setPublicKey(String publicKey) {
+        this.publicKey = publicKey;
     }
 
 }
