@@ -172,6 +172,9 @@ window.Tower = {
 						Tower.client = 'geth';
 					} else {
 						Tower.client = 'quorum';
+
+						// Show all quorum controls
+						$('.quorum-control').show();
 					}
 
 					// Redraw the current section

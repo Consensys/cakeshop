@@ -696,10 +696,14 @@ pre {
 }
 
 .version-info {
-    text-align: center;
-    font-size: smaller;
+	text-align: center;
+	font-size: smaller;
 }
 
 #newchainconfirm .modal-dialog {
 	width: 30%;
+}
+
+.quorum-control {
+	display: none;
 }
