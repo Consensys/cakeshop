@@ -54,6 +54,7 @@ window.Tower = {
 			'minHeight': 250
 		});
 
+		// Shared widgets
 		Dashboard.preregisterWidgets({
 			'accounts'               : require('./widgets/accounts'),
 			'block-detail'           : require('./widgets/block-detail'),
@@ -73,7 +74,13 @@ window.Tower = {
 			'peers-add'              : require('./widgets/peers-add'),
 			'peers-list'             : require('./widgets/peers-list'),
 			'peers-neighborhood'     : require('./widgets/peers-neighborhood'),
-			'txn-detail'             : require('./widgets/txn-detail'),
+			'txn-detail'             : require('./widgets/txn-detail')
+		});
+
+
+		// Quorum widgets
+		Dashboard.preregisterWidgets({
+			'quorum-settings': require('./widgets/quorum-settings')
 		});
 
 		Dashboard.init();
@@ -157,12 +164,18 @@ window.Tower = {
 
 				var status = response.data.attributes;
 
-				if (status.quorumInfo === null) {
-					delete status.quorumInfo;
+				// Set the client once status is retrieved
+				if (Tower.client === null) {
+					if (status.quorumInfo === null) {
+						delete status.quorumInfo;
 
-					Tower.client = 'geth';
-				} else {
-					Tower.client = 'quorum';
+						Tower.client = 'geth';
+					} else {
+						Tower.client = 'quorum';
+					}
+
+					// Redraw the current section
+					$('#' + Dashboard.section).click();
 				}
 
 				if (status.status === 'running') {
@@ -218,6 +231,10 @@ window.Tower = {
 				{ widgetId: 'metrix-txn-min' },
 				{ widgetId: 'metrix-blocks-min' }
 			];
+
+			if (Tower.client === 'quorum') {
+				widgets.push({ widgetId: 'quorum-settings' })
+			}
 
 			Dashboard.showSection('console', widgets);
 		},
