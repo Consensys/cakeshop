@@ -15,12 +15,13 @@ import com.jpmorgan.cakeshop.service.ContractService;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.NodeService;
 import com.jpmorgan.cakeshop.util.FileUtils;
-import java.io.IOException;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -41,6 +42,8 @@ import org.springframework.web.bind.annotation.RestController;
         produces = APPLICATION_JSON_VALUE
 )
 public class NodeController extends BaseController {
+
+    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(NodeController.class);
 
     @Autowired
     private GethHttpService gethService;
@@ -211,7 +214,7 @@ public class NodeController extends BaseController {
 
     @RequestMapping("/constellation/add")
     protected @ResponseBody
-    ResponseEntity<APIResponse> addConstellationt(
+    ResponseEntity<APIResponse> addConstellation(
             @JsonBodyParam String constellationNode
     ) throws APIException {
         nodeService.addConstellationNode(constellationNode);
@@ -220,17 +223,47 @@ public class NodeController extends BaseController {
 
     @RequestMapping("/constellation/remove")
     protected @ResponseBody
-    ResponseEntity<APIResponse> removeConstellationt(
+    ResponseEntity<APIResponse> removeConstellation(
             @JsonBodyParam String constellationNode
     ) throws APIException {
         nodeService.removeConstellationNode(constellationNode);
         return doGet();
     }
 
+    @RequestMapping("/constellation/stop")
+    protected @ResponseBody
+    ResponseEntity<APIResponse> stopConstellation() throws APIException {
+        Boolean stopped = gethService.stopConstellation();
+        gethConfig.setConstellationEnabled(false);
+        try {
+            gethConfig.save();
+        } catch (IOException ex) {
+            throw new APIException(ex);
+        }
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(stopped), HttpStatus.OK);
+    }
+
+    @RequestMapping("/constellation/start")
+    protected @ResponseBody
+    ResponseEntity<APIResponse> startConstellation() throws APIException {
+        Boolean started = gethService.startConstellation();
+        gethConfig.setConstellationEnabled(true);
+        try {
+            gethConfig.save();
+        } catch (IOException ex) {
+            throw new APIException(ex);
+        }
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(started), HttpStatus.OK);
+    }
+
     private void updateVoteContract(String from, String method, Object[] args) throws APIException {
         String address = gethConfig.getVoteContractAddress();
         TransactionRequest request = new TransactionRequest(from, address, voterAbi, method, args, false);
         contractService.transact(request);
+    }
+
+    private void saveConfig() throws IOException {
+        gethConfig.save();
     }
 
 }

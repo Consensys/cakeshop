@@ -60,6 +60,7 @@ public class QuorumServiceImpl implements QuorumService {
         info.setCanCreateBlocks((Boolean) data.get("canCreateBlocks"));
         info.setCanVote((Boolean) data.get("canVote"));
         info.setNodeKey(gethConfig.getPublicKey());
+        info.setIsConstellationEnabled(gethConfig.isConstellationEnabled());
         
         Map<String, Object> strat = (Map<String, Object>) data.get("blockmakestrategy");
         if (strat != null && !strat.isEmpty()) {

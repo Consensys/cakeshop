@@ -379,7 +379,7 @@ public class GethHttpServiceImpl implements GethHttpService {
 
             if (gethConfig.isEmbeddedQuorum()) {
                 additionalParams = setAdditionalParams(additionalParams).toArray(new String[setAdditionalParams(additionalParams).size()]);
-                if (!isProcessRunning(readPidFromFile(gethConfig.getConstPidFileName())) && !gethConfig.IS_BOOT_NODE) {
+                if (gethConfig.isConstellationEnabled() && !isProcessRunning(readPidFromFile(gethConfig.getConstPidFileName())) && !gethConfig.IS_BOOT_NODE) {
                     startConstellation();
                 }
             }

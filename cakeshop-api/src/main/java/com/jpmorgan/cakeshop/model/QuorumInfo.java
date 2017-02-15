@@ -58,6 +58,8 @@ public class QuorumInfo {
 
     private Boolean canVote;
 
+    private Boolean isConstellationEnabled;
+
     private BlockMakerStrategy blockMakerStrategy;
 
     public QuorumInfo() {
@@ -117,6 +119,14 @@ public class QuorumInfo {
 
     public void setNodeKey(String nodeKey) {
         this.nodeKey = nodeKey;
+    }
+
+    public Boolean getIsConstellationEnabled() {
+        return isConstellationEnabled;
+    }
+
+    public void setIsConstellationEnabled(Boolean isConstellationEnabled) {
+        this.isConstellationEnabled = isConstellationEnabled;
     }
 
 }
