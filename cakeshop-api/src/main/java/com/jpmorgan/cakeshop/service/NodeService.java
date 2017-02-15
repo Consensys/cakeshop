@@ -55,4 +55,30 @@ public interface NodeService {
      */
     public boolean addPeer(String address) throws APIException;
 
+    /**
+     * Get list of constellation nodes
+     *
+     * @return
+     * @throws APIException
+     */
+    public List<String> getConstellationNodes() throws APIException;
+
+    /**
+     * Add new constellation node
+     *
+     * @param constellationNode
+     * @return
+     * @throws APIException
+     */
+    public NodeConfig addConstellationNode(String constellationNode) throws APIException;
+
+    /**
+     * Remove constellation node from the list
+     *
+     * @param constellationNode
+     * @return
+     * @throws APIException
+     */
+    public NodeConfig removeConstellationNode(String constellationNode) throws APIException;
+
 }

@@ -202,6 +202,31 @@ public class NodeController extends BaseController {
         return new ResponseEntity<>(APIResponse.newSimpleResponse(reset), HttpStatus.OK);
     }
 
+    @RequestMapping("/constellation/list")
+    protected @ResponseBody
+    ResponseEntity<APIResponse> getConstellationList() throws APIException {
+        List<String> constellationList = nodeService.getConstellationNodes();
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(constellationList), HttpStatus.OK);
+    }
+
+    @RequestMapping("/constellation/add")
+    protected @ResponseBody
+    ResponseEntity<APIResponse> addConstellationt(
+            @JsonBodyParam String constellationNode
+    ) throws APIException {
+        nodeService.addConstellationNode(constellationNode);
+        return doGet();
+    }
+
+    @RequestMapping("/constellation/add")
+    protected @ResponseBody
+    ResponseEntity<APIResponse> removeConstellationt(
+            @JsonBodyParam String constellationNode
+    ) throws APIException {
+        nodeService.removeConstellationNode(constellationNode);
+        return doGet();
+    }
+
     private void updateVoteContract(String from, String method, Object[] args) throws APIException {
         String address = gethConfig.getVoteContractAddress();
         TransactionRequest request = new TransactionRequest(from, address, voterAbi, method, args, false);

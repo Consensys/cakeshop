@@ -19,12 +19,19 @@ import com.jpmorgan.cakeshop.util.AbiUtils;
 import com.jpmorgan.cakeshop.util.EEUtils;
 import com.jpmorgan.cakeshop.util.EEUtils.IP;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
@@ -218,20 +225,9 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
 
             //Quorum specific settings
             if (quorumService.isQuorum()) {
-                List<String> blockMakers = Lists.newArrayList(gethConfig.getBlockMaker().split(","));
-                List<String> voters = Lists.newArrayList(gethConfig.getVoteAccount().split(","));
-
                 if (StringUtils.isNotBlank(settings.getBlockMakerAccount())
-                        && (StringUtils.isNotBlank(gethConfig.getBlockMaker()) && !settings.getBlockMakerAccount().contentEquals(gethConfig.getBlockMaker()))) {
-                    if (blockMakers.size() > 1) {
-                        blockMakers.remove(0);
-                        blockMakers.add(settings.getBlockMakerAccount());
-                    } else {
-                        blockMakers.add(settings.getBlockMakerAccount());
-                    }
-                    gethConfig.setBlockMaker(StringUtils.join(blockMakers, ","));
-                    restart = true;
-                } else if (StringUtils.isNotBlank(settings.getBlockMakerAccount()) && StringUtils.isBlank(gethConfig.getBlockMaker())) {
+                        && ((StringUtils.isNotBlank(gethConfig.getBlockMaker()) && !settings.getBlockMakerAccount().contentEquals(gethConfig.getBlockMaker()))
+                        || StringUtils.isBlank(gethConfig.getVoteAccount()))) {
                     gethConfig.setBlockMaker(settings.getBlockMakerAccount());
                     restart = true;
                 }
@@ -259,6 +255,12 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
                 } else if (null != settings.getMaxBlockTime() && null == gethConfig.getMaxBlockTime()) {
                     gethConfig.setMinBlockTime(settings.getMaxBlockTime());
                     restart = true;
+                }
+
+                if (settings.isMining() != null && !settings.isMining() && StringUtils.isNotBlank(gethConfig.getBlockMaker())) {
+                    gethService.executeGethCall("quorum.pauseBlockMaker");
+                } else if (settings.isMining() != null && settings.isMining() && StringUtils.isNotBlank(gethConfig.getBlockMaker())) {
+                    gethService.executeGethCall("quorum.resumeBlockMaker");
                 }
             }
         }
@@ -351,6 +353,52 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
         return added;
     }
 
+    @Override
+    public List<String> getConstellationNodes() throws APIException {
+        try {
+            Properties constellationConfig = getConstellationConfig();
+            List<String> constellationNodes = getConstellationNodesList(constellationConfig);
+            return constellationNodes;
+        } catch (IOException ex) {
+            LOG.error("Error saving constellation config", ex);
+            throw new APIException("Error saving constellation config", ex);
+        }
+    }
+
+    @Override
+    public NodeConfig addConstellationNode(String constellationNode) throws APIException {
+        NodeConfig nodeInfo;
+        try {
+            Properties constellationConfig = getConstellationConfig();
+            List<String> constellationNodes = getConstellationNodesList(constellationConfig);
+            constellationNodes.add(constellationNode);
+            updateConstellationConfig(constellationConfig, constellationNodes);
+            nodeInfo = createNodeConfig();
+            restart();
+            return nodeInfo;
+        } catch (IOException e) {
+            LOG.error("Error saving constellation config", e);
+            throw new APIException("Error saving constellation config", e);
+        }
+    }
+
+    @Override
+    public NodeConfig removeConstellationNode(String constellationNode) throws APIException {
+        NodeConfig nodeInfo;
+        try {
+            Properties constellationConfig = getConstellationConfig();
+            List<String> constellationNodes = getConstellationNodesList(constellationConfig);
+            constellationNodes.remove(constellationNode);
+            updateConstellationConfig(constellationConfig, constellationNodes);
+            nodeInfo = createNodeConfig();
+            restart();
+            return nodeInfo;
+        } catch (IOException e) {
+            LOG.error("Error saving constellation config", e);
+            throw new APIException("Error saving constellation config", e);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private Peer createPeer(Map<String, Object> data) {
         if (data == null || data.isEmpty()) {
@@ -374,6 +422,42 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
         }
 
         return peer;
+    }
+
+    private List<String> getConstellationNodesList(Properties props) throws IOException {
+        String constellations = props.getProperty("otherNodeUrls").replaceAll("[", "").replaceAll("]", "").replaceAll("\"", "");
+        List<String> constellaltionNodes;
+        if (StringUtils.isNotBlank(constellations)) {
+            constellaltionNodes = Lists.newArrayList(constellations.split(","));
+            return constellaltionNodes;
+        } else {
+            return new ArrayList<>();
+        }
+
+    }
+
+    private Properties getConstellationConfig() throws IOException {
+        String destination = gethConfig.getDataDirPath().concat("/constellation/").concat("node.conf");
+        Properties props = new Properties();
+        props.load(new FileReader(new File(destination)));
+        return props;
+    }
+
+    private void updateConstellationConfig(Properties props, List<String> constellaltionNodes) throws IOException {
+        String updatedConstellations = "[";
+        Integer index = 0;
+
+        for (String node : constellaltionNodes) {
+            updatedConstellations.concat("\"").concat(node).concat("\"");
+            index++;
+            if (index < constellaltionNodes.size()) {
+                updatedConstellations.concat("',");
+            }
+        }
+
+        updatedConstellations = updatedConstellations.concat("]");
+        props.setProperty("otherNodeUrls", updatedConstellations);
+        props.store(new FileWriter(new File(gethConfig.getDataDirPath().concat("/constellation/").concat("node.conf"))), null);
     }
 
 }
