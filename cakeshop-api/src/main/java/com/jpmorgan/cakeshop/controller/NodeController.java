@@ -218,7 +218,7 @@ public class NodeController extends BaseController {
         return doGet();
     }
 
-    @RequestMapping("/constellation/add")
+    @RequestMapping("/constellation/remove")
     protected @ResponseBody
     ResponseEntity<APIResponse> removeConstellationt(
             @JsonBodyParam String constellationNode
