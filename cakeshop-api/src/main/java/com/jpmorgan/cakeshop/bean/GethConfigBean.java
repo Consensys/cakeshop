@@ -104,6 +104,7 @@ public class GethConfigBean {
     private final String GETH_MIN_BLOCKTIME = "geth.min.blocktime";
     private final String GETH_MAX_BLOCKTIME = "geth.max.blocktime";
     private final String GETH_VOTE_CONTARCT_ADDRESS = "geth.vote.contract.addr";
+    private final String GETH_CONSTELLATION_ENABLED = "geth.constellation.enabled";
 
     public GethConfigBean() {
     }
@@ -439,6 +440,16 @@ public class GethConfigBean {
 
     public void setVoteContractAddress(String address) {
         props.setProperty(GETH_VOTE_CONTARCT_ADDRESS, address);
+    }
+
+    public Boolean isConstellationEnabled() {
+        return StringUtils.isNotBlank(props.getProperty(GETH_CONSTELLATION_ENABLED))
+                ? Boolean.valueOf(props.getProperty(GETH_CONSTELLATION_ENABLED))
+                : Boolean.TRUE;
+    }
+
+    public void setConstallationEnabled(Boolean isEnabled) {
+        props.setProperty(GETH_CONSTELLATION_ENABLED, String.valueOf(isEnabled));
     }
 
     public String getBinPath() {
