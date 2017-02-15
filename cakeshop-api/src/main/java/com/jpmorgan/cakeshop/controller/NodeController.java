@@ -211,7 +211,7 @@ public class NodeController extends BaseController {
 
     @RequestMapping("/constellation/add")
     protected @ResponseBody
-    ResponseEntity<APIResponse> addConstellationt(
+    ResponseEntity<APIResponse> addConstellation(
             @JsonBodyParam String constellationNode
     ) throws APIException {
         nodeService.addConstellationNode(constellationNode);
@@ -220,11 +220,25 @@ public class NodeController extends BaseController {
 
     @RequestMapping("/constellation/remove")
     protected @ResponseBody
-    ResponseEntity<APIResponse> removeConstellationt(
+    ResponseEntity<APIResponse> removeConstellation(
             @JsonBodyParam String constellationNode
     ) throws APIException {
         nodeService.removeConstellationNode(constellationNode);
         return doGet();
+    }
+
+    @RequestMapping("/constellation/stop")
+    protected @ResponseBody
+    ResponseEntity<APIResponse> stopConstellation() throws APIException {
+        Boolean stopped = gethService.stopConstellation();
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(stopped), HttpStatus.OK);
+    }
+
+    @RequestMapping("/constellation/start")
+    protected @ResponseBody
+    ResponseEntity<APIResponse> startConstellation() throws APIException {
+        Boolean started = gethService.startConstellation();
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(started), HttpStatus.OK);
     }
 
     private void updateVoteContract(String from, String method, Object[] args) throws APIException {
