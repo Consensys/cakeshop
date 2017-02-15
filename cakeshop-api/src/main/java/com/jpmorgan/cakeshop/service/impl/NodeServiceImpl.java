@@ -425,7 +425,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
     }
 
     private List<String> getConstellationNodesList(Properties props) throws IOException {
-        String constellations = props.getProperty("otherNodeUrls").replaceAll("[", "").replaceAll("]", "").replaceAll("\"", "");
+        String constellations = props.getProperty("otherNodeUrls").replaceAll("\\[", "").replaceAll("\\]", "").replaceAll("\"", "");
         List<String> constellaltionNodes;
         if (StringUtils.isNotBlank(constellations)) {
             constellaltionNodes = Lists.newArrayList(constellations.split(","));
