@@ -419,11 +419,11 @@ public class GethConfigBean {
     }
 
     public Integer getMinBlockTime() {
-        return StringUtils.isNotBlank(props.getProperty(GETH_MIN_BLOCKTIME)) ? Integer.valueOf(props.getProperty(GETH_MIN_BLOCKTIME)) : null;
+        return StringUtils.isNotBlank(props.getProperty(GETH_MIN_BLOCKTIME)) ? Integer.valueOf(props.getProperty(GETH_MIN_BLOCKTIME)) : 2;
     }
 
     public Integer getMaxBlockTime() {
-        return StringUtils.isNotBlank(props.getProperty(GETH_MAX_BLOCKTIME)) ? Integer.valueOf(props.getProperty(GETH_MAX_BLOCKTIME)) : null;
+        return StringUtils.isNotBlank(props.getProperty(GETH_MAX_BLOCKTIME)) ? Integer.valueOf(props.getProperty(GETH_MAX_BLOCKTIME)) : 5;
     }
 
     public void setMinBlockTime(Integer minblockTime) {

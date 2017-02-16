@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
@@ -37,11 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Samer Falah
  */
 @RestController
-@RequestMapping(value = "/api/node",
-        method = RequestMethod.POST,
-        consumes = APPLICATION_JSON_VALUE,
-        produces = APPLICATION_JSON_VALUE
-)
+@RequestMapping(value = "/api/node", method = RequestMethod.POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
 public class NodeController extends BaseController {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(NodeController.class);
@@ -75,25 +72,17 @@ public class NodeController extends BaseController {
     }
 
     @RequestMapping("/update")
-    public ResponseEntity<APIResponse> update(
-            @JsonBodyParam(required = false) String logLevel,
-            @JsonBodyParam(required = false) String networkId,
-            @JsonBodyParam(required = false) String identity,
+    public ResponseEntity<APIResponse> update(@JsonBodyParam(required = false) String logLevel,
+            @JsonBodyParam(required = false) String networkId, @JsonBodyParam(required = false) String identity,
             @JsonBodyParam(required = false) Object committingTransactions,
-            @JsonBodyParam(required = false) String extraParams,
-            @JsonBodyParam(required = false) String genesisBlock,
+            @JsonBodyParam(required = false) String extraParams, @JsonBodyParam(required = false) String genesisBlock,
             @JsonBodyParam(required = false) String blockMakerAccount,
-            @JsonBodyParam(required = false) String voterAccount,
-            @JsonBodyParam(required = false) Integer minBlockTime,
+            @JsonBodyParam(required = false) String voterAccount, @JsonBodyParam(required = false) Integer minBlockTime,
             @JsonBodyParam(required = false) Integer maxBlockTime) throws APIException {
 
         Boolean isMining;
-        NodeSettings nodeSettings = new NodeSettings()
-                .extraParams(extraParams)
-                .genesisBlock(genesisBlock)
-                .blockMakerAccount(blockMakerAccount)
-                .voterAccount(voterAccount)
-                .minBlockTime(minBlockTime)
+        NodeSettings nodeSettings = new NodeSettings().extraParams(extraParams).genesisBlock(genesisBlock)
+                .blockMakerAccount(blockMakerAccount).voterAccount(voterAccount).minBlockTime(minBlockTime)
                 .maxBlockTime(maxBlockTime);
 
         try {
@@ -107,7 +96,8 @@ public class NodeController extends BaseController {
             }
 
             if (committingTransactions != null) {
-                if (committingTransactions instanceof String && StringUtils.isNotBlank((String) committingTransactions)) {
+                if (committingTransactions instanceof String
+                        && StringUtils.isNotBlank((String) committingTransactions)) {
                     isMining = Boolean.parseBoolean((String) committingTransactions);
                 } else {
                     isMining = (Boolean) committingTransactions;
@@ -115,14 +105,22 @@ public class NodeController extends BaseController {
                 nodeSettings.setIsMining(isMining);
             }
 
-            if (StringUtils.isNotBlank(nodeSettings.getBlockMakerAccount()) && (StringUtils.isNotBlank(gethConfig.getBlockMaker())
+            if (StringUtils.isNotBlank(nodeSettings.getBlockMakerAccount())
+                    && (StringUtils.isNotBlank(gethConfig.getBlockMaker())
                     && !nodeSettings.getBlockMakerAccount().contentEquals(gethConfig.getBlockMaker()))) {
-                updateVoteContract(gethConfig.getBlockMaker(), "addBlockMaker", new Object[]{nodeSettings.getBlockMakerAccount()});
+                updateVoteContract(gethConfig.getBlockMaker(), "addBlockMaker",
+                        new Object[]{nodeSettings.getBlockMakerAccount()});
+                updateVoteContract(nodeSettings.getBlockMakerAccount(), "removeBlockMaker",
+                        new Object[]{gethConfig.getBlockMaker()});
             }
 
-            if (StringUtils.isNotBlank(nodeSettings.getVoterAccount()) && (StringUtils.isNotBlank(gethConfig.getVoteAccount())
+            if (StringUtils.isNotBlank(nodeSettings.getVoterAccount())
+                    && (StringUtils.isNotBlank(gethConfig.getVoteAccount())
                     && !nodeSettings.getVoterAccount().contentEquals(gethConfig.getVoteAccount()))) {
-                updateVoteContract(gethConfig.getVoteAccount(), "addVoter", new Object[]{nodeSettings.getVoterAccount()});
+                updateVoteContract(gethConfig.getVoteAccount(), "addVoter",
+                        new Object[]{nodeSettings.getVoterAccount()});
+                updateVoteContract(nodeSettings.getVoterAccount(), "removeVoter",
+                        new Object[]{gethConfig.getVoteAccount()});
             }
             nodeService.update(nodeSettings);
 
@@ -143,8 +141,7 @@ public class NodeController extends BaseController {
     @RequestMapping("/peers/add")
     public ResponseEntity<APIResponse> addPeer(@JsonBodyParam String address) throws APIException {
         if (StringUtils.isBlank(address)) {
-            return new ResponseEntity<>(
-                    new APIResponse().error(new APIError().title("Missing param 'address'")),
+            return new ResponseEntity<>(new APIResponse().error(new APIError().title("Missing param 'address'")),
                     HttpStatus.BAD_REQUEST);
         }
         boolean added = nodeService.addPeer(address);
@@ -215,18 +212,16 @@ public class NodeController extends BaseController {
 
     @RequestMapping("/constellation/add")
     protected @ResponseBody
-    ResponseEntity<APIResponse> addConstellation(
-            @JsonBodyParam String constellationNode
-    ) throws APIException {
+    ResponseEntity<APIResponse> addConstellation(@JsonBodyParam String constellationNode)
+            throws APIException {
         nodeService.addConstellationNode(constellationNode);
         return doGet();
     }
 
     @RequestMapping("/constellation/remove")
     protected @ResponseBody
-    ResponseEntity<APIResponse> removeConstellation(
-            @JsonBodyParam String constellationNode
-    ) throws APIException {
+    ResponseEntity<APIResponse> removeConstellation(@JsonBodyParam String constellationNode)
+            throws APIException {
         nodeService.removeConstellationNode(constellationNode);
         return doGet();
     }
@@ -261,6 +256,11 @@ public class NodeController extends BaseController {
         String address = gethConfig.getVoteContractAddress();
         TransactionRequest request = new TransactionRequest(from, address, voterAbi, method, args, false);
         contractService.transact(request);
+        try {
+            TimeUnit.SECONDS.sleep(gethConfig.getMaxBlockTime());
+        } catch (InterruptedException ex) {
+            LOG.error(from, ex);
+        }
     }
 
 }
