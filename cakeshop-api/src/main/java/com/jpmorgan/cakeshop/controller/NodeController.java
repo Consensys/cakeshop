@@ -19,6 +19,7 @@ import com.jpmorgan.cakeshop.util.FileUtils;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
@@ -208,8 +209,8 @@ public class NodeController extends BaseController {
     @RequestMapping("/constellation/list")
     protected @ResponseBody
     ResponseEntity<APIResponse> getConstellationList() throws APIException {
-        List<String> constellationList = nodeService.getConstellationNodes();
-        return new ResponseEntity<>(APIResponse.newSimpleResponse(constellationList), HttpStatus.OK);
+        Map<String, Object> constellations = nodeService.getConstellationNodes();
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(constellations), HttpStatus.OK);
     }
 
     @RequestMapping("/constellation/add")
@@ -260,10 +261,6 @@ public class NodeController extends BaseController {
         String address = gethConfig.getVoteContractAddress();
         TransactionRequest request = new TransactionRequest(from, address, voterAbi, method, args, false);
         contractService.transact(request);
-    }
-
-    private void saveConfig() throws IOException {
-        gethConfig.save();
     }
 
 }

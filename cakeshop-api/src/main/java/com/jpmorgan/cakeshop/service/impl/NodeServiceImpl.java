@@ -18,20 +18,20 @@ import com.jpmorgan.cakeshop.service.QuorumService;
 import com.jpmorgan.cakeshop.util.AbiUtils;
 import com.jpmorgan.cakeshop.util.EEUtils;
 import com.jpmorgan.cakeshop.util.EEUtils.IP;
+import java.io.BufferedWriter;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
@@ -354,10 +354,10 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
     }
 
     @Override
-    public List<String> getConstellationNodes() throws APIException {
+    public Map<String, Object> getConstellationNodes() throws APIException {
         try {
             Properties constellationConfig = getConstellationConfig();
-            List<String> constellationNodes = getConstellationNodesList(constellationConfig);
+            Map<String, Object> constellationNodes = getConstellationNodesMap(constellationConfig);
             return constellationNodes;
         } catch (IOException ex) {
             LOG.error("Error saving constellation config", ex);
@@ -370,7 +370,10 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
         NodeConfig nodeInfo;
         try {
             Properties constellationConfig = getConstellationConfig();
-            List<String> constellationNodes = getConstellationNodesList(constellationConfig);
+            List<String> constellationNodes = (List<String>) getConstellationNodesMap(constellationConfig).get("remote");
+            if (null == constellationNodes) {
+                constellationNodes = new ArrayList<>();
+            }
             constellationNodes.add(constellationNode);
             updateConstellationConfig(constellationConfig, constellationNodes);
             nodeInfo = createNodeConfig();
@@ -387,11 +390,14 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
         NodeConfig nodeInfo;
         try {
             Properties constellationConfig = getConstellationConfig();
-            List<String> constellationNodes = getConstellationNodesList(constellationConfig);
-            constellationNodes.remove(constellationNode);
-            updateConstellationConfig(constellationConfig, constellationNodes);
+            List<String> constellationNodes = (List<String>) getConstellationNodesMap(constellationConfig).get("remote");
+            if (null != constellationNodes) {
+                constellationNodes = new ArrayList<>();
+                constellationNodes.remove(constellationNode);
+                updateConstellationConfig(constellationConfig, constellationNodes);
+                restart();
+            }
             nodeInfo = createNodeConfig();
-            restart();
             return nodeInfo;
         } catch (IOException e) {
             LOG.error("Error saving constellation config", e);
@@ -424,16 +430,18 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
         return peer;
     }
 
-    private List<String> getConstellationNodesList(Properties props) throws IOException {
+    private Map<String, Object> getConstellationNodesMap(Properties props) throws IOException {
         String constellations = props.getProperty("otherNodeUrls").replaceAll("\\[", "").replaceAll("\\]", "").replaceAll("\"", "");
+        String localConstellation = props.getProperty("url").replaceAll("\"", "");
+        Map<String, Object> constellationMap = new LinkedHashMap<>();
+        constellationMap.put("local", localConstellation);
         List<String> constellaltionNodes;
         if (StringUtils.isNotBlank(constellations)) {
             constellaltionNodes = Lists.newArrayList(constellations.split(","));
-            return constellaltionNodes;
-        } else {
-            return new ArrayList<>();
+            constellationMap.put("remote", constellaltionNodes);
+            return constellationMap;
         }
-
+        return constellationMap;
     }
 
     private Properties getConstellationConfig() throws IOException {
@@ -448,16 +456,29 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
         Integer index = 0;
 
         for (String node : constellaltionNodes) {
-            updatedConstellations.concat("\"").concat(node).concat("\"");
+            updatedConstellations = updatedConstellations.concat("\"").concat(node).concat("\"").replaceAll(":", "\\:");
             index++;
             if (index < constellaltionNodes.size()) {
-                updatedConstellations.concat("',");
+                updatedConstellations = updatedConstellations.concat(",");
             }
         }
 
         updatedConstellations = updatedConstellations.concat("]");
         props.setProperty("otherNodeUrls", updatedConstellations);
-        props.store(new FileWriter(new File(gethConfig.getDataDirPath().concat("/constellation/").concat("node.conf"))), null);
+
+        Enumeration keys = props.keys();
+        try (BufferedWriter out = new BufferedWriter(new FileWriter(new File(gethConfig.getDataDirPath().concat("/constellation/").concat("node.conf"))))) {
+            while (keys.hasMoreElements()) {
+                String key = keys.nextElement().toString();
+                String value = props.getProperty(key).replaceAll("\\\\", "");
+                out.write(key);
+                out.write(" = ");
+                out.write(value);
+                out.newLine();
+                System.out.println("Property " + key + " " + value);
+            }
+            out.flush();
+        }
     }
 
 }

@@ -7,6 +7,7 @@ import com.jpmorgan.cakeshop.model.NodeSettings;
 import com.jpmorgan.cakeshop.model.Peer;
 
 import java.util.List;
+import java.util.Map;
 
 public interface NodeService {
 
@@ -61,7 +62,7 @@ public interface NodeService {
      * @return
      * @throws APIException
      */
-    public List<String> getConstellationNodes() throws APIException;
+    public Map<String, Object> getConstellationNodes() throws APIException;
 
     /**
      * Add new constellation node
