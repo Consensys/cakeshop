@@ -16,8 +16,8 @@ module.exports = function() {
 
 		template: _.template(
 			'<table style="width: 100%; table-layout: fixed;" class="table table-striped">' +
-			'	<tr><td style="width: 150px;">Own node</td><td class="value" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">http://127.0.0.1:9000</td></tr>' +
-			'	<tr><td style="width: 150px;">Other nodes</td><td class="value" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">http://127.0.0.1:9001, http://127.0.0.1:9002</td></tr>' +
+			'	<tr><td style="width: 150px;">Own node</td><td class="value" id="own-node" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"></td></tr>' +
+			'	<tr><td style="width: 150px;">Other nodes</td><td class="value" id="other-node" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"></td></tr>' +
 			'</table>' +
 			'<div class="form-group">' +
 			'	<label for="addy">Constellation URL</label>' +
@@ -34,37 +34,27 @@ module.exports = function() {
 		fetch: function() {
 			var _this = this;
 
-			this._$().html( this.template({}) );
-			utils.makeAreaEditable('#widget-' + this.shell.id + ' .value');
+			if (!_this.rendered) {
+				_this._$().html( _this.template({}) );
+			}
+
+			_this.rendered = true;
 
 			$.when(
 				utils.load({ url: this.url.list })
 			).done(function(info) {
-				// TODO!
+				info = info.data.attributes.result;
 
-				// var rows = [];
-				// this.numPeers = info.data.length;
-				//
-				// if (info.data.length > 0) {
-				// 	_.each(info.data, function(peer) {
-				// 		rows.push( _this.templateRow({ o: peer.attributes }) );
-				// 	});
-				//
-				// 	Dashboard.Utils.emit( widget.name + '|fetch|' + JSON.stringify(info.data) );
-				//
-				// 	$('#widget-' + _this.shell.id).html( _this.template({ rows: rows.join('') }) );
-				//
-				// 	utils.makeAreaEditable('#widget-' + _this.shell.id + ' .value');
-				// } else {
-				// 	// no peers
-				// 	$('#widget-' + _this.shell.id).html('');
-				// }
+				_this._$('#own-node').html(info.local);
+				_this._$('#other-node').html(info.remote.join(', '));
 
 				_this.postFetch();
 			}.bind(this));
 		},
 
 		postRender: function() {
+			utils.makeAreaEditable('#widget-' + this.shell.id + ' .value');
+
 			this._$('button').click(this._handler);
 		},
 
@@ -78,7 +68,7 @@ module.exports = function() {
 			}
 
 			$.when(
-				utils.load({ url: _this.url.add, data: { "constellationNode": input.val() } })
+				utils.load({ url: _this.url.add, data: { 'constellationNode': input.val() } })
 			).done(function(r) {
 				notif.show();
 
@@ -98,6 +88,7 @@ module.exports = function() {
 
 					setTimeout(function() {
 						notif.fadeOut();
+						_this.fetch();
 					}, 2000);
 				}
 			});
