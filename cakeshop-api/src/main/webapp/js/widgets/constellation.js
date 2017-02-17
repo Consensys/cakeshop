@@ -46,7 +46,7 @@ module.exports = function() {
 				info = info.data.attributes.result;
 
 				_this._$('#own-node').html(info.local);
-				_this._$('#other-node').html(info.remote.join(', '));
+				_this._$('#other-node').html( info.remote ? info.remote.join(', ') : '' );
 
 				_this.postFetch();
 			}.bind(this));

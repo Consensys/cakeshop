@@ -69,7 +69,7 @@ module.exports = function() {
 
 
 			// Appending quorum info if present
-			if (status.hasOwnProperty('quorumInfo')) {
+			if (status.hasOwnProperty('quorumInfo') && !_.isEmpty(status.quorumInfo)) {
 				rows.push( '<tr><td colspan="2" style="font-weight:bold;padding-top:20px;">Quorum Info</td></tr>' );
 
 				keys =_.keys(status.quorumInfo).sort(function (a, b) {
@@ -85,9 +85,10 @@ module.exports = function() {
 					rows.push( this.templateRow({ key: utils.camelToRegularForm(val), value: status.quorumInfo[val] }) );
 				}.bind(this));
 
-
 				// Strategy
-				if ( status.quorumInfo.hasOwnProperty('blockMakerStrategy') ) {
+				if ( status.quorumInfo.hasOwnProperty('blockMakerStrategy')
+					&& !_.isEmpty(status.quorumInfo.blockMakerStrategy) ) {
+
 					rows.push( '<tr><td colspan="2" style="font-weight:bold;padding-top:20px;">Block Maker Strategy</td></tr>' );
 
 					keys =_.keys(status.quorumInfo.blockMakerStrategy).sort(function (a, b) {
