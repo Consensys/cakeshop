@@ -251,6 +251,10 @@ window.Tower = {
 				{ widgetId: 'peers-neighborhood', data: Tower.status.nodeIP }
 			];
 
+			if (Tower.client === 'quorum') {
+				widgets.push({ widgetId: 'constellation' });
+			}
+
 			Dashboard.showSection('peers', widgets);
 		},
 
