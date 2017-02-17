@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import javax.annotation.PreDestroy;
 
 import org.apache.commons.lang3.StringUtils;
@@ -316,10 +317,22 @@ public class GethHttpServiceImpl implements GethHttpService {
     @Override
     public Boolean startConstellation() {
         Boolean success = false;
-
-        ProcessBuilder builder = new ProcessBuilder(
-                new String[]{quorumConfig.getConstellationPath(), quorumConfig.getConstellationConfigPath().concat("node.conf")});
-
+        File constellationLogDir = new File(quorumConfig.getConstellationConfigPath().concat("logs"));
+        File constellationLog = new File(quorumConfig.getConstellationConfigPath().concat("logs/").concat("constellation.log"));
+        if (!constellationLogDir.exists()) {
+            constellationLogDir.mkdirs();
+            if (!constellationLog.exists()) {
+                try {
+                    constellationLog.createNewFile();
+                } catch (IOException ex) {
+                    LOG.error("Could not create log for constellation", ex.getMessage());
+                    return false;
+                }
+            }
+        }
+        String[] command = new String[]{"/bin/sh", "-c", quorumConfig.getConstellationPath().concat(" ").concat(quorumConfig.getConstellationConfigPath()).concat("node.conf")
+            .concat(" 2>> ").concat(constellationLog.getAbsolutePath())};
+        ProcessBuilder builder = new ProcessBuilder(command);
         try {
             Process process = builder.start();
             Integer constProcessId = getUnixPID(process);

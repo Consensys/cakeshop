@@ -16,6 +16,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Properties;
+import java.util.Scanner;
 
 import javax.annotation.PostConstruct;
 
@@ -234,9 +235,12 @@ public class GethConfigBean {
             quorumConfig.createQuorumConfig("node", destination);
             setConstPidFileName(expandPath(CONFIG_ROOT, "constellation.pid"));
             setIsEmbeddedQuorum(true);
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode node = objectMapper.readValue(new File(destination.concat("node.key")), JsonNode.class);
-            setPublicKey(node.get("data").get("bytes").asText());
+            File pubKey = new File(destination.concat("node.pub"));
+            try (Scanner scanner = new Scanner(pubKey)) {
+                while (scanner.hasNext()) {
+                    setPublicKey(scanner.nextLine());
+                }
+            }
         }
     }
 
