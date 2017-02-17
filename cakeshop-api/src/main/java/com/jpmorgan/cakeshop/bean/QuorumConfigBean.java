@@ -34,6 +34,8 @@ public class QuorumConfigBean implements InitializingBean {
     private static final String CONSTELLATION_MAC_COMMAND = "quorum/constellation/mac/constellation-node";
     private static final String CONSTELLATION_LINUX_KEYGEN = "quorum/constellation/linux/constellation-enclave-keygen";
     private static final String CONSTELLATION_MAC_KEYGEN = "quorum/constellation/mac/constellation-enclave-keygen";
+    private final String CONSTELLATION_URL = StringUtils.isNotBlank(System.getProperty("geth.constellaiton.url"))
+            ? System.getProperty("geth.constellaiton.url") : "http://127.0.0.1:9000";
 
     private String quorumPath;
     private String constellationPath;
@@ -208,9 +210,11 @@ public class QuorumConfigBean implements InitializingBean {
         if (!confFile.exists()) {
             keyName = destination.concat(keyName);
             try (FileWriter writer = new FileWriter(confFile)) {
-                writer.write("url = \"http://127.0.0.1:9000/\"");
+                String url = CONSTELLATION_URL.endsWith("/") ? CONSTELLATION_URL.replaceFirst("(.*)" + "/" + "$", "$1" + "") : CONSTELLATION_URL;
+                String port = url.substring(url.lastIndexOf(":") + 1, url.length());
+                writer.write("url = \"" + url + "/" + "\"");
                 writer.write("\n");
-                writer.write("port = 9000");
+                writer.write("port = " + port);
                 writer.write("\n");
                 writer.write("socketPath = \"" + keyName + ".ipc\"");
                 writer.write("\n");
