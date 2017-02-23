@@ -21,7 +21,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 
 import okhttp3.OkHttpClient;
-
+import org.springframework.web.servlet.ViewResolver;
+import org.thymeleaf.spring4.SpringTemplateEngine;
+import org.thymeleaf.spring4.view.ThymeleafViewResolver;
+import org.thymeleaf.templateresolver.ServletContextTemplateResolver;
 
 /**
  *
@@ -30,16 +33,16 @@ import okhttp3.OkHttpClient;
 @Configuration
 @EnableScheduling
 public class WebConfig extends WebMvcConfigurerAdapter {
-
+    
     @Autowired
     private Environment env;
-
+    
     @Autowired
     private RequestMappingHandlerAdapter adapter;
-
+    
     @Autowired
     private OkHttpClient okHttpClient;
-
+    
     @PostConstruct
     public void prioritizeCustomArgumentMethodHandlers() {
         // existing resolvers
@@ -53,22 +56,22 @@ public class WebConfig extends WebMvcConfigurerAdapter {
         // empty and re-add our custom list
         argumentResolvers.removeAll(customResolvers);
         argumentResolvers.addAll(0, customResolvers);
-
+        
         adapter.setArgumentResolvers(argumentResolvers);
     }
-
+    
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
         super.addArgumentResolvers(argumentResolvers);
         argumentResolvers.add(new JsonMethodArgumentResolver());
     }
-
+    
     @Override
-
+    
     public void configureAsyncSupport(AsyncSupportConfigurer configurer) {
         configurer.setTaskExecutor(createMvcAsyncExecutor());
     }
-
+    
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         if (Boolean.valueOf(env.getProperty("geth.cors.enabled:true"))) {
@@ -77,13 +80,41 @@ public class WebConfig extends WebMvcConfigurerAdapter {
                     .allowedMethods("POST");
         }
     }
-
+    
     @Override
     public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
         // Enable DefaultServlet handler for static resources at /**
         configurer.enable();
     }
-
+    
+    @Bean
+    public ServletContextTemplateResolver templateResolver() {
+        ServletContextTemplateResolver templateResolver = new ServletContextTemplateResolver();
+        templateResolver.setCacheable(false);
+        templateResolver.setTemplateMode("HTML5");
+        templateResolver.setCharacterEncoding("UTF-8");
+        templateResolver.setPrefix("/resources/");
+        templateResolver.setSuffix(".html");
+        
+        return templateResolver;
+    }
+    
+    @Bean
+    public SpringTemplateEngine templateEngine() {
+        SpringTemplateEngine templateEngine = new SpringTemplateEngine();
+        templateEngine.setTemplateResolver(templateResolver());
+        return templateEngine;
+    }
+    
+    @Bean
+    public ViewResolver getViewResolver() {
+        ThymeleafViewResolver resolver = new ThymeleafViewResolver();
+        resolver.setOrder(1);
+        resolver.setViewNames(new String[]{"*.html"});
+        resolver.setTemplateEngine(templateEngine());
+        return resolver;
+    }
+    
     @PreDestroy
     public void shutdown() {
         okHttpClient.connectionPool().evictAll();
@@ -95,7 +126,7 @@ public class WebConfig extends WebMvcConfigurerAdapter {
      *
      * @return
      */
-    @Bean(name="asyncTaskExecutor")
+    @Bean(name = "asyncTaskExecutor")
     public AsyncTaskExecutor createMvcAsyncExecutor() {
         ThreadPoolTaskExecutor exec = new ThreadPoolTaskExecutor();
         exec.setBeanName("asyncTaskExecutor");
@@ -106,7 +137,5 @@ public class WebConfig extends WebMvcConfigurerAdapter {
         exec.afterPropertiesSet();
         return exec;
     }
-
-
-
+    
 }
