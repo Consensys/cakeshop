@@ -218,7 +218,9 @@ public class GethHttpServiceImpl implements GethHttpService {
         LOG.info("Stopping geth");
 
         if (gethConfig.isEmbeddedQuorum()) {
-            stopConstellation();
+            if (!stopConstellation()) {
+                LOG.error("Could not stop constellation");
+            }
         }
 
         try {
@@ -329,8 +331,11 @@ public class GethHttpServiceImpl implements GethHttpService {
                 }
             }
         }
-        String[] command = new String[]{"/bin/sh", "-c", quorumConfig.getConstellationPath().concat(" ").concat(quorumConfig.getConstellationConfigPath()).concat("node.conf")
-            .concat(" 2>> ").concat(constellationLog.getAbsolutePath())};
+        String[] command = new String[]{"/bin/sh", "-c",
+            quorumConfig.getConstellationPath().concat(" ")
+            .concat(quorumConfig.getConstellationConfigPath()).concat("node.conf")
+            .concat(" 2>> ").concat(constellationLog.getAbsolutePath())
+            .concat(" &")};
         ProcessBuilder builder = new ProcessBuilder(command);
         try {
             Process process = builder.start();
@@ -349,7 +354,9 @@ public class GethHttpServiceImpl implements GethHttpService {
     public Boolean stopConstellation() {
         Boolean success = false;
         try {
-            success = killProcess(readPidFromFile(gethConfig.getConstPidFileName()), null);
+            String pid = readPidFromFile(gethConfig.getConstPidFileName());
+            success = killProcess(pid, null);
+            LOG.info("Stopping Constellation with pid " + pid);
             new File(gethConfig.getConstPidFileName()).delete();
         } catch (InterruptedException | IOException ex) {
             LOG.error(ex.getMessage());

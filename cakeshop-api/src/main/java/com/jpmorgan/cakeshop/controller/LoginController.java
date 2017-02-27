@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -42,17 +43,24 @@ public class LoginController {
     public ResponseEntity userInfo(HttpServletRequest request, HttpServletResponse response) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
+        Boolean securityEnabled
+                = StringUtils.isNotBlank(System.getProperty("cakeshop.security.enabled"))
+                ? Boolean.valueOf(System.getProperty("cakeshop.security.enabled"))
+                : false;
+
         String userName = null;
-        if (auth.getCredentials() instanceof String) {
-            userName = ((User) auth.getCredentials()).getUsername();
+        if (null != auth && auth.getCredentials() instanceof String) {
+            userName = auth.getCredentials().toString();
         }
 
         Map<String, Object> userInfo = new HashMap<>();
+
         if (userInfo != null) {
             userInfo.put("username", userName);
         } else {
             userInfo.put("loggedout", Boolean.TRUE);
         }
+        userInfo.put("status", securityEnabled);
         return new ResponseEntity(userInfo, HttpStatus.OK);
     }
 
