@@ -1,7 +1,5 @@
 package com.jpmorgan.cakeshop.service.impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import static com.jpmorgan.cakeshop.service.impl.GethHttpServiceImpl.*;
 
 import com.google.common.base.Joiner;
@@ -20,7 +18,6 @@ import com.jpmorgan.cakeshop.service.QuorumService;
 import com.jpmorgan.cakeshop.util.AbiUtils;
 import com.jpmorgan.cakeshop.util.EEUtils;
 import com.jpmorgan.cakeshop.util.EEUtils.IP;
-import com.jpmorgan.cakeshop.util.FileUtils;
 import java.io.BufferedWriter;
 
 import java.io.File;
@@ -31,13 +28,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
@@ -50,8 +44,6 @@ import org.springframework.web.client.ResourceAccessException;
 public class NodeServiceImpl implements NodeService, GethRpcConstants {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(NodeServiceImpl.class);
-    private final String DESTINATION = System.getProperty("spring.config.location").replaceAll("file:", "")
-            .replaceAll("application.properties", "/").concat("constellation-node/");
 
     @Value("${config.path}")
     private String CONFIG_ROOT;
@@ -477,13 +469,23 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
     }
 
     private Properties getConstellationConfig() throws IOException {
-        String destination = DESTINATION.concat("node.conf");
+        String destination = com.jpmorgan.cakeshop.util.StringUtils.isNotBlank(System.getProperty("spring.config.location"))
+                ? System.getProperty("spring.config.location").replaceAll("file:", "")
+                        .replaceAll("application.properties", "/").concat("constellation-node/")
+                : gethConfig.getDataDirPath().concat("/constellation/");
+        destination = destination.concat("node.conf");
         Properties props = new Properties();
         props.load(new FileReader(new File(destination)));
         return props;
     }
 
     private void updateConstellationConfig(Properties props, List<String> constellaltionNodes) throws IOException {
+        String destination = com.jpmorgan.cakeshop.util.StringUtils.isNotBlank(System.getProperty("spring.config.location"))
+                ? System.getProperty("spring.config.location").replaceAll("file:", "")
+                        .replaceAll("application.properties", "/").concat("constellation-node/")
+                : gethConfig.getDataDirPath().concat("/constellation/");
+        destination = destination.concat("node.conf");
+
         String updatedConstellations = "[";
         Integer index = 0;
 
@@ -499,7 +501,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
         props.setProperty("otherNodeUrls", updatedConstellations);
 
         Enumeration keys = props.keys();
-        try (BufferedWriter out = new BufferedWriter(new FileWriter(DESTINATION.concat("node.conf")))) {
+        try (BufferedWriter out = new BufferedWriter(new FileWriter(destination))) {
             while (keys.hasMoreElements()) {
                 String key = keys.nextElement().toString();
                 String value = props.getProperty(key).replaceAll("\\\\", "");
