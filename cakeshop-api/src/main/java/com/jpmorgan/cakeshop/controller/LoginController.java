@@ -60,7 +60,7 @@ public class LoginController {
         } else {
             userInfo.put("loggedout", Boolean.TRUE);
         }
-        userInfo.put("status", securityEnabled);
+        userInfo.put("securityEnabled", securityEnabled);
         return new ResponseEntity(userInfo, HttpStatus.OK);
     }
 
