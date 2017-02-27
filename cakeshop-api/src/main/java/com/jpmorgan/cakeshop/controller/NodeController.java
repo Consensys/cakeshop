@@ -1,7 +1,6 @@
 package com.jpmorgan.cakeshop.controller;
 
 import com.jpmorgan.cakeshop.bean.GethConfigBean;
-import com.jpmorgan.cakeshop.config.JsonMethodArgumentResolver.JsonBodyParam;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.APIData;
 import com.jpmorgan.cakeshop.model.APIError;
@@ -11,6 +10,7 @@ import com.jpmorgan.cakeshop.model.Node;
 import com.jpmorgan.cakeshop.model.NodeSettings;
 import com.jpmorgan.cakeshop.model.Peer;
 import com.jpmorgan.cakeshop.model.TransactionRequest;
+import com.jpmorgan.cakeshop.model.json.NodePostJsonRequest;
 import com.jpmorgan.cakeshop.service.ContractService;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.NodeService;
@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -72,35 +73,30 @@ public class NodeController extends BaseController {
     }
 
     @RequestMapping("/update")
-    public ResponseEntity<APIResponse> update(@JsonBodyParam(required = false) String logLevel,
-            @JsonBodyParam(required = false) String networkId, @JsonBodyParam(required = false) String identity,
-            @JsonBodyParam(required = false) Object committingTransactions,
-            @JsonBodyParam(required = false) String extraParams, @JsonBodyParam(required = false) String genesisBlock,
-            @JsonBodyParam(required = false) String blockMakerAccount,
-            @JsonBodyParam(required = false) String voterAccount, @JsonBodyParam(required = false) Integer minBlockTime,
-            @JsonBodyParam(required = false) Integer maxBlockTime) throws APIException {
+    public ResponseEntity<APIResponse> update(@RequestBody NodePostJsonRequest jsonRequest) throws APIException {
 
         Boolean isMining;
-        NodeSettings nodeSettings = new NodeSettings().extraParams(extraParams).genesisBlock(genesisBlock)
-                .blockMakerAccount(blockMakerAccount).voterAccount(voterAccount).minBlockTime(minBlockTime)
-                .maxBlockTime(maxBlockTime);
+        NodeSettings nodeSettings = new NodeSettings().extraParams(jsonRequest.getExtraParams()).genesisBlock(jsonRequest.getGenesisBlock())
+                .blockMakerAccount(jsonRequest.getBlockMakerAccount()).voterAccount(jsonRequest.getVoterAccount()).minBlockTime(jsonRequest.getMinBlockTime())
+                .maxBlockTime(jsonRequest.getMaxBlockTime());
 
         try {
 
-            if (!StringUtils.isEmpty(logLevel)) {
-                nodeSettings.logLevel(Integer.parseInt(logLevel));
+            if (!StringUtils.isEmpty(jsonRequest.getLogLevel())) {
+                nodeSettings.logLevel(Integer.parseInt(jsonRequest.getLogLevel()));
             }
 
-            if (!StringUtils.isEmpty(networkId)) {
-                nodeSettings.networkId(Integer.parseInt(networkId));
+            if (!StringUtils.isEmpty(jsonRequest.getNetworkId())) {
+                nodeSettings.networkId(Integer.parseInt(jsonRequest.getNetworkId()));
             }
 
-            if (committingTransactions != null) {
-                if (committingTransactions instanceof String
-                        && StringUtils.isNotBlank((String) committingTransactions)) {
-                    isMining = Boolean.parseBoolean((String) committingTransactions);
+            if (jsonRequest.getCommittingTransactions() != null) {
+
+                if (jsonRequest.getCommittingTransactions() instanceof String
+                        && StringUtils.isNotBlank((String) jsonRequest.getCommittingTransactions())) {
+                    isMining = Boolean.parseBoolean((String) jsonRequest.getCommittingTransactions());
                 } else {
-                    isMining = (Boolean) committingTransactions;
+                    isMining = (Boolean) jsonRequest.getCommittingTransactions();
                 }
                 nodeSettings.setIsMining(isMining);
             }
@@ -139,12 +135,12 @@ public class NodeController extends BaseController {
     }
 
     @RequestMapping("/peers/add")
-    public ResponseEntity<APIResponse> addPeer(@JsonBodyParam String address) throws APIException {
-        if (StringUtils.isBlank(address)) {
+    public ResponseEntity<APIResponse> addPeer(@RequestBody NodePostJsonRequest jsonRequest) throws APIException {
+        if (StringUtils.isBlank(jsonRequest.getAddress())) {
             return new ResponseEntity<>(new APIResponse().error(new APIError().title("Missing param 'address'")),
                     HttpStatus.BAD_REQUEST);
         }
-        boolean added = nodeService.addPeer(address);
+        boolean added = nodeService.addPeer(jsonRequest.getAddress());
         return new ResponseEntity<>(APIResponse.newSimpleResponse(added), HttpStatus.OK);
     }
 
@@ -212,17 +208,17 @@ public class NodeController extends BaseController {
 
     @RequestMapping("/constellation/add")
     protected @ResponseBody
-    ResponseEntity<APIResponse> addConstellation(@JsonBodyParam String constellationNode)
+    ResponseEntity<APIResponse> addConstellation(@RequestBody NodePostJsonRequest jsonRequest)
             throws APIException {
-        nodeService.addConstellationNode(constellationNode);
+        nodeService.addConstellationNode(jsonRequest.getConstellationNode());
         return doGet();
     }
 
     @RequestMapping("/constellation/remove")
     protected @ResponseBody
-    ResponseEntity<APIResponse> removeConstellation(@JsonBodyParam String constellationNode)
+    ResponseEntity<APIResponse> removeConstellation(@RequestBody NodePostJsonRequest jsonRequest)
             throws APIException {
-        nodeService.removeConstellationNode(constellationNode);
+        nodeService.removeConstellationNode(jsonRequest.getConstellationNode());
         return doGet();
     }
 

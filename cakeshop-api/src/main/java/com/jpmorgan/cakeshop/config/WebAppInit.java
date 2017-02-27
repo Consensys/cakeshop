@@ -13,13 +13,14 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.web.SpringBootServletInitializer;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @Configuration
 @EnableAutoConfiguration
+@EnableWebMvc
 @ComponentScan(basePackages = "com.jpmorgan.cakeshop")
 public class WebAppInit extends SpringBootServletInitializer {
-    
-    
+
     public static void setLoggingPath(boolean isSpringBoot) {
         // setup logging path for spring-boot
         if (StringUtils.isNotBlank(System.getProperty("logging.path"))) {
@@ -57,14 +58,12 @@ public class WebAppInit extends SpringBootServletInitializer {
             System.setProperty("logging.path", "/tmp");
         }
 
-
     }
 
 //    @Override
 //    protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
 //        return builder.profiles(env.getActiveProfiles());
 //    }
-
     @Override
     public void onStartup(ServletContext container) throws ServletException {
         setLoggingPath(false);
@@ -75,7 +74,7 @@ public class WebAppInit extends SpringBootServletInitializer {
         }
         container.addListener(new SessionListener());
         super.onStartup(container);
-        
+
     }
 
 }

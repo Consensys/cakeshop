@@ -1,5 +1,7 @@
 package com.jpmorgan.cakeshop.service.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import static com.jpmorgan.cakeshop.service.impl.GethHttpServiceImpl.*;
 
 import com.google.common.base.Joiner;
@@ -18,6 +20,7 @@ import com.jpmorgan.cakeshop.service.QuorumService;
 import com.jpmorgan.cakeshop.util.AbiUtils;
 import com.jpmorgan.cakeshop.util.EEUtils;
 import com.jpmorgan.cakeshop.util.EEUtils.IP;
+import com.jpmorgan.cakeshop.util.FileUtils;
 import java.io.BufferedWriter;
 
 import java.io.File;
@@ -28,10 +31,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
@@ -44,6 +50,8 @@ import org.springframework.web.client.ResourceAccessException;
 public class NodeServiceImpl implements NodeService, GethRpcConstants {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(NodeServiceImpl.class);
+    private final String DESTINATION = System.getProperty("spring.config.location").replaceAll("file:", "")
+            .replaceAll("application.properties", "/").concat("constellation-node/");
 
     @Value("${config.path}")
     private String CONFIG_ROOT;
@@ -348,6 +356,29 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
             peer.setNodeUrl(address);
             peerDAO.save(peer);
             // TODO if db is not enabled, save peers somewhere else? props file?
+            //UNcomment lines below for permissioning
+//            if (gethConfig.isEmbeddedQuorum()) {
+//                //Generate json file if does not exist
+//                File permissionJson = new File(gethConfig.getDataDirPath().concat("/").concat("permissioned-nodes.json"));
+//                List<String> permissionNodes;
+//                ObjectMapper mapper = new ObjectMapper();
+//                try {
+//                    if (!permissionJson.exists()) {
+//                        permissionJson.createNewFile();
+//                        permissionNodes = Lists.newArrayList(address);
+//                        mapper.writeValue(permissionJson, permissionNodes);
+//                    } else {
+//                        permissionNodes = mapper.readValue(permissionJson, new TypeReference<List<String>>() {
+//                        });
+//                        permissionNodes.add(address);
+//                        mapper.writeValue(permissionJson, permissionNodes);
+//                    }
+//                } catch (IOException ex) {
+//                    LOG.error("Could not operate with permission file", ex);
+//                    throw new APIException("Could not operate with permission file");
+//                }
+//            }
+
         }
 
         return added;
@@ -406,7 +437,8 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
     }
 
     @SuppressWarnings("unchecked")
-    private Peer createPeer(Map<String, Object> data) {
+    private Peer createPeer(Map<String, Object> data
+    ) {
         if (data == null || data.isEmpty()) {
             return null;
         }
@@ -445,7 +477,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
     }
 
     private Properties getConstellationConfig() throws IOException {
-        String destination = gethConfig.getDataDirPath().concat("/constellation/").concat("node.conf");
+        String destination = DESTINATION.concat("node.conf");
         Properties props = new Properties();
         props.load(new FileReader(new File(destination)));
         return props;
@@ -467,7 +499,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
         props.setProperty("otherNodeUrls", updatedConstellations);
 
         Enumeration keys = props.keys();
-        try (BufferedWriter out = new BufferedWriter(new FileWriter(new File(gethConfig.getDataDirPath().concat("/constellation/").concat("node.conf"))))) {
+        try (BufferedWriter out = new BufferedWriter(new FileWriter(DESTINATION.concat("node.conf")))) {
             while (keys.hasMoreElements()) {
                 String key = keys.nextElement().toString();
                 String value = props.getProperty(key).replaceAll("\\\\", "");
@@ -475,7 +507,6 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
                 out.write(" = ");
                 out.write(value);
                 out.newLine();
-                System.out.println("Property " + key + " " + value);
             }
             out.flush();
         }

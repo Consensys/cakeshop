@@ -32,21 +32,21 @@ public class AppConfig implements AsyncConfigurer {
     public static final String CONFIG_FILE = "application.properties";
 
     /**
-     * Return the configured environment name (via spring.profiles.active system prop)
+     * Return the configured environment name (via spring.profiles.active system
+     * prop)
      *
      * @return String Environment name
      */
     public static String getEnv() {
-      return System.getProperty("spring.profiles.active");
+        return System.getProperty("spring.profiles.active");
     }
 
     /**
      * Return the configured config location
      *
-     * Search order:
-     * - ETH_CONFIG environment variable
-     * - eth.config.dir system property (-Deth.config.dir param)
-     * - Detect tomcat (container) root relative to classpath
+     * Search order: - ETH_CONFIG environment variable - eth.config.dir system
+     * property (-Deth.config.dir param) - Detect tomcat (container) root
+     * relative to classpath
      *
      * @return
      */
@@ -99,12 +99,12 @@ public class AppConfig implements AsyncConfigurer {
         Properties mergedProps = new Properties();
         mergedProps.load(FileUtils.getClasspathStream(getVendorConfigFile()));
         mergedProps.load(FileUtils.getClasspathStream(getVendorEnvConfigFile()));
-
+        setSecurity(mergedProps);
         SortedProperties.store(mergedProps, new FileOutputStream(configFile));
     }
 
     public static PropertySourcesPlaceholderConfigurer createPropConfigurer(String configDir)
-        throws IOException {
+            throws IOException {
 
         if (StringUtils.isBlank(getEnv())) {
             throw new IOException("System property 'spring.profiles.active' not set; unable to load config");
@@ -116,11 +116,12 @@ public class AppConfig implements AsyncConfigurer {
         File configFile = new File(configPath.getPath() + File.separator + CONFIG_FILE);
 
         if (!configPath.exists() || !configFile.exists()) {
+
             LOG.debug("Config dir does not exist, will init");
 
             configPath.mkdirs();
             if (!configPath.exists()) {
-               throw new IOException("Unable to create config dir: " + configPath.getAbsolutePath());
+                throw new IOException("Unable to create config dir: " + configPath.getAbsolutePath());
             }
 
             initVendorConfig(configFile);
@@ -129,6 +130,7 @@ public class AppConfig implements AsyncConfigurer {
             Properties mergedProps = new Properties();
             mergedProps.load(FileUtils.getClasspathStream(getVendorEnvConfigFile()));
             mergedProps.load(new FileInputStream(configFile)); // overwrite vendor props with our configs
+            setSecurity(mergedProps);
             SortedProperties.store(mergedProps, new FileOutputStream(configFile));
         }
 
@@ -146,7 +148,7 @@ public class AppConfig implements AsyncConfigurer {
         return propConfig;
     }
 
-    @Bean(name="asyncExecutor")
+    @Bean(name = "asyncExecutor")
     @Override
     public Executor getAsyncExecutor() {
         ThreadPoolTaskExecutor exec = new ThreadPoolTaskExecutor();
@@ -170,5 +172,38 @@ public class AppConfig implements AsyncConfigurer {
         return new SimpleAsyncUncaughtExceptionHandler();
     }
 
+    private static void setSecurity(Properties properties) {
+        Boolean securityEnabled
+                = StringUtils.isNotBlank(System.getProperty("cakeshop.security.enabled"))
+                ? Boolean.valueOf(System.getProperty("cakeshop.security.enabled"))
+                : false;
+        if (securityEnabled) {
+            if (StringUtils.isNotBlank(properties.getProperty("management.security.enabled"))) {
+                properties.remove("management.security.enabled");
+                System.setProperty("management.security.enabled", "true");
+            }
+            if (StringUtils.isNotBlank(properties.getProperty("security.basic.enabled"))) {
+                properties.remove("security.basic.enabled");
+                System.setProperty("security.basic.enabled", "true");
+            }
+            if (StringUtils.isNotBlank(properties.getProperty("security.ignored"))) {
+                System.setProperty("security.ignored", "");
+                properties.remove("security.ignored");
+            }
+
+        } else {
+            if (StringUtils.isBlank(properties.getProperty("management.security.enabled"))) {
+                properties.setProperty("management.security.enabled", "false");
+            }
+            if (StringUtils.isBlank(properties.getProperty("security.basic.enabled"))) {
+                properties.setProperty("security.basic.enabled", "false");
+            }
+            if (StringUtils.isBlank(properties.getProperty("security.ignored"))) {
+                properties.setProperty("security.ignored", "/**");
+            }
+            LOG.warn("Authentication disabled.");
+        }
+
+    }
 
 }
