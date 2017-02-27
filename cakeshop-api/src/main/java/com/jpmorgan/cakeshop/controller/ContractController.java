@@ -1,6 +1,5 @@
 package com.jpmorgan.cakeshop.controller;
 
-import com.jpmorgan.cakeshop.config.JsonMethodArgumentResolver.JsonBodyParam;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.APIData;
 import com.jpmorgan.cakeshop.model.APIError;
@@ -13,6 +12,7 @@ import com.jpmorgan.cakeshop.model.SolidityType.Bytes32Type;
 import com.jpmorgan.cakeshop.model.Transaction;
 import com.jpmorgan.cakeshop.model.TransactionRequest;
 import com.jpmorgan.cakeshop.model.TransactionResult;
+import com.jpmorgan.cakeshop.model.json.ContractPostJsonRequest;
 import com.jpmorgan.cakeshop.service.ContractRegistryService;
 import com.jpmorgan.cakeshop.service.ContractService;
 import com.jpmorgan.cakeshop.service.ContractService.CodeType;
@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,24 +34,21 @@ import org.springframework.web.context.request.async.WebAsyncTask;
 
 @RestController
 @RequestMapping(value = "/api/contract",
-    method = RequestMethod.POST,
-    consumes = MediaType.APPLICATION_JSON_VALUE,
-    produces = MediaType.APPLICATION_JSON_VALUE)
+        method = RequestMethod.POST,
+        consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
 public class ContractController extends BaseController {
-
-    private static final String DEFAULT_CODE_TYPE = "solidity";
 
     @Autowired
     private ContractService contractService;
 
-	@Autowired
-	private ContractRegistryService contractRegistry;
+    @Autowired
+    private ContractRegistryService contractRegistry;
 
     @RequestMapping("/get")
-    public ResponseEntity<APIResponse> getContract(
-            @JsonBodyParam String address) throws APIException {
+    public ResponseEntity<APIResponse> getContract(@RequestBody ContractPostJsonRequest jsonRequest) throws APIException {
 
-        Contract contract = contractService.get(address);
+        Contract contract = contractService.get(jsonRequest.getAddress());
 
         APIResponse res = new APIResponse();
 
@@ -67,13 +65,10 @@ public class ContractController extends BaseController {
     }
 
     @RequestMapping("/compile")
-    public ResponseEntity<APIResponse> compile(
-            @JsonBodyParam String code,
-            @JsonBodyParam(defaultValue=DEFAULT_CODE_TYPE) String code_type,
-            @JsonBodyParam(required=false) Boolean optimize) throws APIException {
+    public ResponseEntity<APIResponse> compile(@RequestBody ContractPostJsonRequest jsonRequest) throws APIException {
 
-        List<Contract> contracts = contractService.compile(code, CodeType.valueOf(code_type), optimize);
-
+        List<Contract> contracts = contractService.compile(jsonRequest.getCode(),
+                CodeType.valueOf(jsonRequest.getCode_type()), jsonRequest.getOptimize());
         APIResponse res = new APIResponse();
 
         if (contracts != null) {
@@ -89,18 +84,11 @@ public class ContractController extends BaseController {
     }
 
     @RequestMapping("/create")
-    public ResponseEntity<APIResponse> create(
-            @JsonBodyParam String from,
-            @JsonBodyParam String code,
-            @JsonBodyParam(defaultValue=DEFAULT_CODE_TYPE) String code_type,
-            @JsonBodyParam(required=false) Object[] args,
-            @JsonBodyParam(required=false) String binary,
-            @JsonBodyParam(required=false) Boolean optimize,
-            @JsonBodyParam final String privateFrom,
-            @JsonBodyParam final List<String> privateFor) throws APIException {
+    public ResponseEntity<APIResponse> create(@RequestBody ContractPostJsonRequest jsonRequest) throws APIException {
 
-        TransactionResult tx = contractService.create(from, code, CodeType.valueOf(code_type), args, binary,
-                privateFrom, privateFor);
+        TransactionResult tx = contractService.create(jsonRequest.getFrom(), jsonRequest.getCode(),
+                CodeType.valueOf(jsonRequest.getCode_type()), jsonRequest.getArgs(), jsonRequest.getBinary(),
+                jsonRequest.getPrivateFrom(), jsonRequest.getPrivateFor());
 
         APIResponse res = new APIResponse();
 
@@ -126,14 +114,10 @@ public class ContractController extends BaseController {
     }
 
     @RequestMapping("/read")
-    public ResponseEntity<APIResponse> read(
-            @JsonBodyParam String from,
-            @JsonBodyParam String address,
-            @JsonBodyParam String method,
-            @JsonBodyParam Object[] args,
-            @JsonBodyParam(required=false) Object blockNumber) throws APIException {
+    public ResponseEntity<APIResponse> read(@RequestBody ContractPostJsonRequest jsonRequest) throws APIException {
 
-        Object result = contractService.read(createTransactionRequest(from, address, method, args, true, blockNumber));
+        Object result = contractService.read(createTransactionRequest(jsonRequest.getFrom(), jsonRequest.getAddress(),
+                jsonRequest.getMethod(), jsonRequest.getArgs(), true, jsonRequest.getBlockNumber()));
         APIResponse res = new APIResponse();
         res.setData(result);
 
@@ -157,8 +141,8 @@ public class ContractController extends BaseController {
     }
 
     /**
-     * Handle Base64 encoded byte/string inputs (byte arrays must be base64 encoded to put them on
-     * the wire w/ JSON)
+     * Handle Base64 encoded byte/string inputs (byte arrays must be base64
+     * encoded to put them on the wire w/ JSON)
      *
      * @param method
      * @param args
@@ -183,20 +167,15 @@ public class ContractController extends BaseController {
     }
 
     @RequestMapping("/transact")
-    public WebAsyncTask<ResponseEntity<APIResponse>> transact(
-            @JsonBodyParam final String from,
-            @JsonBodyParam final String address,
-            @JsonBodyParam final String method,
-            @JsonBodyParam final Object[] args,
-            @JsonBodyParam final String privateFrom,
-            @JsonBodyParam final List<String> privateFor) throws APIException {
+    public WebAsyncTask<ResponseEntity<APIResponse>> transact(@RequestBody final ContractPostJsonRequest jsonRequest) throws APIException {
 
         Callable<ResponseEntity<APIResponse>> callable = new Callable<ResponseEntity<APIResponse>>() {
             @Override
             public ResponseEntity<APIResponse> call() throws Exception {
-                TransactionRequest req = createTransactionRequest(from, address, method, args, false, null);
-                req.setPrivateFrom(privateFrom);
-                req.setPrivateFor(privateFor);
+                TransactionRequest req = createTransactionRequest(jsonRequest.getFrom(), jsonRequest.getAddress(),
+                        jsonRequest.getMethod(), jsonRequest.getArgs(), false, null);
+                req.setPrivateFrom(jsonRequest.getPrivateFrom());
+                req.setPrivateFor(jsonRequest.getPrivateFor());
 
                 TransactionResult tr = contractService.transact(req);
                 APIResponse res = new APIResponse();
@@ -210,10 +189,9 @@ public class ContractController extends BaseController {
     }
 
     @RequestMapping("/transactions/list")
-    public ResponseEntity<APIResponse> listTransactions(
-            @JsonBodyParam String address) throws APIException {
+    public ResponseEntity<APIResponse> listTransactions(@RequestBody final ContractPostJsonRequest jsonRequest) throws APIException {
 
-        List<Transaction> txns = contractService.listTransactions(address);
+        List<Transaction> txns = contractService.listTransactions(jsonRequest.getAddress());
 
         List<APIData> data = new ArrayList<>();
         for (Transaction tx : txns) {
@@ -226,7 +204,6 @@ public class ContractController extends BaseController {
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
-
     private APIData toAPIData(Contract c) {
         return new APIData(c.getAddress(), Contract.API_DATA_TYPE, c);
     }
@@ -234,7 +211,7 @@ public class ContractController extends BaseController {
     private List<APIData> toAPIData(List<Contract> contracts) {
         List<APIData> data = new ArrayList<>();
         for (Contract c : contracts) {
-           data.add(toAPIData(c));
+            data.add(toAPIData(c));
         }
         return data;
     }
