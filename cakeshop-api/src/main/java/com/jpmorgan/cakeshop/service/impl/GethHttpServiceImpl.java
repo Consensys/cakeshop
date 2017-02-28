@@ -331,11 +331,12 @@ public class GethHttpServiceImpl implements GethHttpService {
                 }
             }
         }
-        String[] command = new String[]{"/bin/sh", "-c",
-            quorumConfig.getConstellationPath().concat(" ")
-            .concat(quorumConfig.getConstellationConfigPath()).concat("node.conf")
-            .concat(" 2>> ").concat(constellationLog.getAbsolutePath())
-            .concat(" &")};
+        String[] command = {quorumConfig.getConstellationPath(), quorumConfig.getConstellationConfigPath().concat("node.conf")};
+//        String[] command = new String[]{"/bin/sh", "-c",
+//            quorumConfig.getConstellationPath().concat(" ")
+//            .concat(quorumConfig.getConstellationConfigPath()).concat("node.conf")
+//            .concat(" 2>> ").concat(constellationLog.getAbsolutePath())
+//            .concat(" &")};
         ProcessBuilder builder = new ProcessBuilder(command);
         try {
             Process process = builder.start();
