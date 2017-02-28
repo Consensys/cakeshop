@@ -79,7 +79,7 @@ public interface GethHttpService {
      *
      * @return
      */
-    public Boolean reset();
+    public Boolean reset(String... additionalParams);
 
     /**
      * Delete the PID file

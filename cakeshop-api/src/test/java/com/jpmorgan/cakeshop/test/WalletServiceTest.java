@@ -13,7 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
-@Test(singleThreaded=true)
+@Test(singleThreaded = true)
 public class WalletServiceTest extends BaseGethRpcTest {
 
     @Autowired
@@ -22,20 +22,22 @@ public class WalletServiceTest extends BaseGethRpcTest {
     @Autowired
     private WalletDAO walletDAO;
 
-    @Test(priority=1)
+    @Test(priority = 1)
     public void testList() throws APIException {
+        System.out.println("Running  WalletServiceTest.testList-------------------------------------");
         List<Account> accounts = wallet.list();
         assertNotNull(accounts);
-        assertEquals(accounts.size(), 3);
+        assertEquals(accounts.size(), 8);
         assertTrue(StringUtils.isNotBlank(accounts.get(0).getAddress()));
-        assertEquals(walletDAO.list().size(), 3);
+        assertEquals(walletDAO.list().size(), 8);
     }
 
-    @Test(priority=3)
+    @Test(priority = 3)
     public void testCreate() throws APIException {
+
         List<Account> accounts = wallet.list();
         assertNotNull(accounts);
-        assertEquals(accounts.size(), 3);
+        assertEquals(accounts.size(), 8);
 
         // create
         Account acc = wallet.create();
@@ -44,9 +46,9 @@ public class WalletServiceTest extends BaseGethRpcTest {
 
         accounts = wallet.list();
         assertNotNull(accounts);
-        assertEquals(accounts.size(), 4);
+        assertEquals(accounts.size(), 9);
 
-        assertEquals(walletDAO.list().size(), 4);
+        assertEquals(walletDAO.list().size(), 9);
     }
 
 }

@@ -14,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -55,7 +54,7 @@ public class LoginController {
 
         Map<String, Object> userInfo = new HashMap<>();
 
-        if (userInfo != null) {
+        if (userName != null) {
             userInfo.put("username", userName);
         } else {
             userInfo.put("loggedout", Boolean.TRUE);

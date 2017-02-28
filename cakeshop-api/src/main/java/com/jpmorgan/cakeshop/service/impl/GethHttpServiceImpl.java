@@ -246,7 +246,7 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     @CacheEvict(value = "contracts", allEntries = true)
     @Override
-    public Boolean reset() {
+    public Boolean reset(String... additionalParams) {
 
         boolean stopped = this.stop();
         if (!stopped) {
@@ -273,7 +273,7 @@ public class GethHttpServiceImpl implements GethHttpService {
             walletDAO.reset();
         }
 
-        return this.start();
+        return this.start(additionalParams);
     }
 
     @Override
