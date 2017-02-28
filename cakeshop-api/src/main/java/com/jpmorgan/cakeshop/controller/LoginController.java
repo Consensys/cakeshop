@@ -54,7 +54,7 @@ public class LoginController {
 
         Map<String, Object> userInfo = new HashMap<>();
 
-        if (userName != null) {
+        if (StringUtils.isNotBlank(userName)) {
             userInfo.put("username", userName);
         } else {
             userInfo.put("loggedout", Boolean.TRUE);
