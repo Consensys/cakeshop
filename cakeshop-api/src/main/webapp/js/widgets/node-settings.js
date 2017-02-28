@@ -59,7 +59,7 @@ module.exports = function() {
 
 		rendered: false,
 		onData:function(status) {
-			if (this.rendered) {
+			if ( (this.rendered) || _.isEmpty(status.config) ) {
 				return;
 			}
 

@@ -29,7 +29,74 @@ window.Tower = {
 	client: null,
 	ready: false,
 	current: null,
-	status: {},
+	status: {
+		status: 'init'
+	},
+	heartbeat: function(response) {
+		if (!Tower._set_ver && response.meta && response.meta['cakeshop-version']) {
+			Tower._set_ver = true;
+
+			$('aside nav').append('<div class="version-info">Cakeshop ' + response.meta["cakeshop-version"] + '</div>');
+
+			var build = response.meta['cakeshop-build-id'];
+			if (build && build.length > 0) {
+				$('aside nav').append('<div class="version-info" title="' + build + ' built on ' + response.meta['cakeshop-build-date'] + '">Build ' + build.substring(0, 8) + '</div>');
+			}
+		}
+
+		var status = response.data.attributes;
+
+		// Set the client once status is retrieved
+		if (Tower.client === null) {
+			if (status.quorumInfo === null) {
+				delete status.quorumInfo;
+
+				Tower.client = 'geth';
+			} else {
+				Tower.client = 'quorum';
+
+				// Show all quorum controls
+				$('.quorum-control').show();
+			}
+
+			// Redraw the current section
+			$('#' + Dashboard.section).click();
+		}
+
+		if (status.status === 'running') {
+			$('#default-node-status').html( $('<span>', { html: 'Running' }) );
+
+			$('#default-node-status').parent().find('.fa')
+			 .removeClass('fa-pause tower-txt-danger')
+			 .addClass('fa-play tower-txt-success');
+		} else {
+			$('#default-node-status').html( $('<span>', { html: utils.capitalize(status.status) }) );
+
+			$('#default-node-status').parent().find('.fa')
+			 .removeClass('fa-play tower-txt-success')
+			 .addClass('fa-pause tower-txt-danger');
+		}
+
+		utils.prettyUpdate(Tower.status.peerCount, status.peerCount, $('#default-peers'));
+		utils.prettyUpdate(Tower.status.latestBlock, status.latestBlock, $('#default-blocks'));
+		utils.prettyUpdate(Tower.status.pendingTxn, status.pendingTxn, $('#default-txn'));
+
+		if (status.status !== Tower.status.status) {
+			$(document).trigger('CakeshopEvent', ['node|status-flip|' + JSON.stringify({
+				from: Tower.status.status,
+				to: status.status
+			}) ]);
+		}
+
+		Tower.status = status;
+
+		// Tower Control becomes ready only after the first status is received from the server
+		if (!Tower.ready) {
+			Tower.isReady();
+		}
+
+		Dashboard.Utils.emit('node-status|announce');
+	},
 
 	// Tower Control becomes ready only after the first status is received from the server
 	isReady: function() {
@@ -99,9 +166,92 @@ window.Tower = {
 		Tower.stomp = Client.stomp;
 		Tower.stomp_subscriptions = Client._stomp_subscriptions;
 
-		Tower.section['default']();
+
+		// Manual status retrieve during init
+		$.when(
+			utils.load({ url: 'api/node/get' })
+		).done(function(response) {
+			Tower.heartbeat(response);
+		}).fail(function() {
+			// Handler for when its dead
+			Tower.heartbeat({
+				data: {
+					attributes: {
+						status: 'DOWN',
+						peerCount: 'n/a',
+						latestBlock: 'n/a',
+						pendingTxn: 'n/a'
+					}
+				}
+			});
+		});
+
+		// Socket subscription for status updates
+		Client.on('stomp:connect', function() {
+			Tower.subscription = utils.subscribe('/topic/node/status', Tower.heartbeat);
+		});
+
+		// Show disconnect notice when stomp looses connection
+		Client.on('stomp:disconnect', function() {
+			Tower.heartbeat({
+				data: {
+					attributes: {
+						status: 'DOWN',
+						peerCount: 'n/a',
+						latestBlock: 'n/a',
+						pendingTxn: 'n/a'
+					}
+				}
+			});
+
+			Tower.subscription.unsubscribe();
+		});
+
+
+		// Handle session info
+		Tower.session();
+
+		// Retry session when status changes
+		$(document).on('CakeshopEvent', function(ev, action) {
+			if (action.indexOf('node|status-flip') >= 0) {
+				Tower.session();
+			}
+		});
 	},
 
+	session: function() {
+		if (Tower.hasOwnProperty('securityEnabled') && Tower.securityEnabled === false) {
+			return;
+		}
+
+		// Fetch session info
+		$.ajax({
+			type: 'GET',
+			url: 'user',
+			contentType: 'application/json',
+			cache: false,
+			async: true
+		}).then(function(res) {
+			if (Tower.hasOwnProperty('session_interval')) {
+				window.clearInterval(Tower.session_interval);
+			}
+
+			// security is enabled
+			if (res.securityEnabled === true) {
+				Tower.securityEnabled = true;
+
+				// security is on and session expired, reload
+				if (res.hasOwnProperty('loggedout')) {
+					window.location.reload(true);
+				}
+
+				// defaulting to java's default session expiration
+				Tower.session_interval = window.setInterval(Tower.session, 1000 * 60 * 30);
+			} else {
+				Tower.securityEnabled = false;
+			}
+		});
+	},
 
 	processHash: function() {
 		// http://localhost:8080/cakeshop/index.html#section=explorer&widgetId=txn-detail&data=0xd6398cb5cb5bac9d191de62665c1e7e4ef8cd9fe1e9ff94eec181a7b4046345c
@@ -149,83 +299,6 @@ window.Tower = {
 	},
 
 	section: {
-		'default': function() {
-			var statusUpdate = function(response) {
-
-				if (!Tower._set_ver && response.meta && response.meta['cakeshop-version']) {
-					Tower._set_ver = true;
-
-					$('aside nav').append('<div class="version-info">Cakeshop ' + response.meta["cakeshop-version"] + '</div>');
-
-					var build = response.meta['cakeshop-build-id'];
-					if (build && build.length > 0) {
-						$('aside nav').append('<div class="version-info" title="' + build + ' built on ' + response.meta['cakeshop-build-date'] + '">Build ' + build.substring(0, 8) + '</div>');
-					}
-				}
-
-				var status = response.data.attributes;
-
-				// Set the client once status is retrieved
-				if (Tower.client === null) {
-					if (status.quorumInfo === null) {
-						delete status.quorumInfo;
-
-						Tower.client = 'geth';
-					} else {
-						Tower.client = 'quorum';
-
-						// Show all quorum controls
-						$('.quorum-control').show();
-					}
-
-					// Redraw the current section
-					$('#' + Dashboard.section).click();
-				}
-
-				if (status.status === 'running') {
-					$('#default-node-status').html( $('<span>', { html: 'Running' }) );
-
-					$('#default-node-status').parent().find('.fa')
-					 .removeClass('fa-pause tower-txt-danger')
-					 .addClass('fa-play tower-txt-success');
-				} else {
-					$('#default-node-status').html( $('<span>', { html: utils.capitalize(status.status) }) );
-
-					$('#default-node-status').parent().find('.fa')
-					 .removeClass('fa-play tower-txt-success')
-					 .addClass('fa-pause tower-txt-danger');
-				}
-
-				utils.prettyUpdate(Tower.status.peerCount, status.peerCount, $('#default-peers'));
-				utils.prettyUpdate(Tower.status.latestBlock, status.latestBlock, $('#default-blocks'));
-				utils.prettyUpdate(Tower.status.pendingTxn, status.pendingTxn, $('#default-txn'));
-
-				Tower.status = status;
-
-				// Tower Control becomes ready only after the first status is received from the server
-				if (!Tower.ready) {
-					Tower.isReady();
-				}
-
-				Dashboard.Utils.emit('node-status|announce');
-			};
-
-			$.when(
-				utils.load({ url: 'api/node/get' })
-			).done(function(response) {
-				statusUpdate(response);
-			}).fail(function() {
-				statusUpdate({
-					status: 'DOWN',
-					peerCount: 'n/a',
-					latestBlock: 'n/a',
-					pendingTxn: 'n/a'
-				});
-			});
-
-			utils.subscribe('/topic/node/status', statusUpdate);
-		},
-
 		'console': function() {
 			var widgets = [
 				{ widgetId: 'node-info' },
@@ -250,6 +323,10 @@ window.Tower = {
 				{ widgetId: 'peers-list' },
 				{ widgetId: 'peers-neighborhood', data: Tower.status.nodeIP }
 			];
+
+			if (Tower.client === 'quorum') {
+				widgets.push({ widgetId: 'constellation' });
+			}
 
 			Dashboard.showSection('peers', widgets);
 		},
