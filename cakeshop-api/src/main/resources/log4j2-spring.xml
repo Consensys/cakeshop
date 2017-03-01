@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration monitorInterval="60">
     <Properties>
-        <Property name="log-path">applogs</Property>
+        <Property name="log-path">logs</Property>
     </Properties>
     <Appenders>
         <Console name="Console-Appender" target="SYSTEM_OUT">
@@ -11,14 +11,14 @@
                 </pattern>>
             </PatternLayout>
         </Console>
-        <File name="App-File-Appender" fileName="${log-path}/app_log.log" >
+        <File name="Cakeshop-Appender" fileName="${log-path}/cakeshop.log" >
             <PatternLayout>
                 <pattern>
                     [%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n
                 </pattern>
             </PatternLayout>
         </File>
-        <File name="SpringBoot-File-Appender" fileName="${log-path}/springboot_log.log" >
+        <File name="Geth-Appender" fileName="${log-path}/geth.log" >
             <PatternLayout>
                 <pattern>
                     [%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n
@@ -27,14 +27,31 @@
         </File>
     </Appenders>
     <Loggers>
-        <Logger name="org.springframework.web" level="info" additivity="false">
-            <AppenderRef ref="SpringBoot-File-Appender"/>
+        <Logger name="geth" level="debug" additivity="false">
+            <AppenderRef ref="Geth-Appender"/>
             <AppenderRef ref="Console-Appender"/>
         </Logger>
-        <Logger name="guru.springframework.blog.controllers" level="info" additivity="false">
-            <AppenderRef ref="App-File-Appender"/>
+        <Logger name="com.jpmorgan.cakeshop" level="info" additivity="false">
+            <AppenderRef ref="Cakeshop-Appender"/>
             <AppenderRef ref="Console-Appender"/>
-         </Logger>
+        </Logger>
+        <Logger name="com.jpmorgan.cakeshop.db.BlockScanner" level="info" additivity="false">
+            <AppenderRef ref="Cakeshop-Appender"/>
+            <AppenderRef ref="Console-Appender"/>
+        </Logger>
+        <Logger name="com.jpmorgan.cakeshop.db.MetricsBlockListener" level="info" additivity="false">
+            <AppenderRef ref="Cakeshop-Appender"/>
+            <AppenderRef ref="Console-Appender"/>
+        </Logger>
+        <Logger name="com.jpmorgan.cakeshop.service.impl.WebSocketPushServiceImpl" level="info" additivity="false">
+            <AppenderRef ref="Cakeshop-Appender"/>
+            <AppenderRef ref="Console-Appender"/>
+        </Logger>
+        <Logger name="com.jpmorgan.cakeshop.util.ImmutableRestTemplate" level="warn" additivity="false">
+            <AppenderRef ref="Cakeshop-Appender"/>
+            <AppenderRef ref="Console-Appender"/>
+        </Logger>
+         
         <Root>
             <AppenderRef ref="Console-Appender"/>
         </Root>
