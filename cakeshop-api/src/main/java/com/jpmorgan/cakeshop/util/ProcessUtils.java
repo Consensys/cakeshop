@@ -11,6 +11,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.List;
@@ -157,6 +158,27 @@ public class ProcessUtils {
             }
         }
 
+        return null;
+    }
+
+    public static String getUnixPidByName(String processName) {
+        String[] command = new String[]{"/bin/sh", "-c",
+            " ps -ef | grep ".concat(processName)};
+        ProcessBuilder builder = new ProcessBuilder(command);
+        try {
+            Process psProc = builder.start();
+            InputStream i = psProc.getInputStream();
+            byte[] b = new byte[16];
+            i.read(b, 0, b.length);
+            String[] commandLineresult = new String(b).split("\\s+");
+            if (SystemUtils.IS_OS_MAC_OSX || SystemUtils.IS_OS_MAC) {
+                return commandLineresult[2];
+            } else if (SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_UNIX) {
+                return commandLineresult[1];
+            }
+        } catch (IOException ex) {
+            LOG.error(ex.getMessage());
+        }
         return null;
     }
 

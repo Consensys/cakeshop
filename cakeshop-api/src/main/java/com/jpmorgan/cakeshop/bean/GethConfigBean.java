@@ -230,8 +230,8 @@ public class GethConfigBean {
 
             String destination = StringUtils.isNotBlank(System.getProperty("spring.config.location"))
                     ? System.getProperty("spring.config.location").replaceAll("file:", "")
-                            .replaceAll("application.properties", "/").concat("constellation-node/")
-                    : getDataDirPath().concat("/constellation/");
+                            .replaceAll("application.properties", "").concat("constellation-node/")
+                    : getDataDirPath().concat("constellation/");
             quorumConfig.createKeys("node", destination);
             quorumConfig.createQuorumConfig("node", destination);
             setConstPidFileName(expandPath(CONFIG_ROOT, "constellation.pid"));

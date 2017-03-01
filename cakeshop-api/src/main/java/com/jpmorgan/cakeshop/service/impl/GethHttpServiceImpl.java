@@ -331,20 +331,20 @@ public class GethHttpServiceImpl implements GethHttpService {
                 }
             }
         }
-        String[] command = {quorumConfig.getConstellationPath(), quorumConfig.getConstellationConfigPath().concat("node.conf")};
-//        String[] command = new String[]{"/bin/sh", "-c",
-//            quorumConfig.getConstellationPath().concat(" ")
-//            .concat(quorumConfig.getConstellationConfigPath()).concat("node.conf")
-//            .concat(" 2>> ").concat(constellationLog.getAbsolutePath())
-//            .concat(" &")};
+        //TODO: When Windows verision for constellation is available - add the functionality to start it under Windows.
+        String[] command = new String[]{"/bin/sh", "-c",
+            quorumConfig.getConstellationPath().concat(" ")
+            .concat(quorumConfig.getConstellationConfigPath()).concat("node.conf")
+            .concat(" 2>> ").concat(constellationLog.getAbsolutePath())
+            .concat(" &")};
         ProcessBuilder builder = new ProcessBuilder(command);
         try {
             Process process = builder.start();
             Integer constProcessId = getUnixPID(process);
-            writePidToFile(constProcessId, gethConfig.getConstPidFileName());
+            writePidToFile(constProcessId + 1, gethConfig.getConstPidFileName());
             success = true;
             LOG.info("CONSTELLATION STARTED");
-            TimeUnit.SECONDS.sleep(10);
+            TimeUnit.SECONDS.sleep(5);
         } catch (IOException | InterruptedException ex) {
             LOG.error(ex.getMessage());
         }
@@ -355,10 +355,14 @@ public class GethHttpServiceImpl implements GethHttpService {
     public Boolean stopConstellation() {
         Boolean success = false;
         try {
-            String pid = readPidFromFile(gethConfig.getConstPidFileName());
-            success = killProcess(pid, null);
-            LOG.info("Stopping Constellation with pid " + pid);
-            new File(gethConfig.getConstPidFileName()).delete();
+            String pid = ProcessUtils.getUnixPidByName("constellation");
+            if (StringUtils.isNotBlank(pid)) {
+                success = killProcess(pid, null);
+                LOG.info("Stopping Constellation with pid " + pid);
+                new File(gethConfig.getConstPidFileName()).delete();
+            } else {
+                LOG.warn("Could niot get PID to stop Constellation");
+            }
         } catch (InterruptedException | IOException ex) {
             LOG.error(ex.getMessage());
         }
