@@ -166,15 +166,16 @@ public class ProcessUtils {
             " ps -ef | grep ".concat(processName)};
         ProcessBuilder builder = new ProcessBuilder(command);
         try {
-            Process psProc = builder.start();
-            InputStream i = psProc.getInputStream();
-            byte[] b = new byte[16];
-            i.read(b, 0, b.length);
-            String[] commandLineresult = new String(b).split("\\s+");
-            if (SystemUtils.IS_OS_MAC_OSX || SystemUtils.IS_OS_MAC) {
-                return commandLineresult[2];
-            } else if (SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_UNIX) {
-                return commandLineresult[1];
+            Process process = builder.start();
+            try (InputStream input = process.getInputStream()) {
+                byte[] b = new byte[16];
+                input.read(b, 0, b.length);
+                String[] commandLineresult = new String(b).split("\\s+");
+                if (SystemUtils.IS_OS_MAC_OSX || SystemUtils.IS_OS_MAC) {
+                    return commandLineresult[2];
+                } else if (SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_UNIX) {
+                    return commandLineresult[1];
+                }
             }
         } catch (IOException ex) {
             LOG.error(ex.getMessage());
