@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration monitorInterval="60">
-    <Properties>
-        <Property name="log-path">logs</Property>
-    </Properties>
     <Appenders>
         <Console name="Console-Appender" target="SYSTEM_OUT">
             <PatternLayout>
@@ -11,14 +8,14 @@
                 </pattern>>
             </PatternLayout>
         </Console>
-        <File name="Cakeshop-Appender" fileName="${sys:catalina.home}/logs/cakeshop.log" >
+        <File name="Cakeshop-Appender" fileName="../logs/cakeshop.log">
             <PatternLayout>
                 <pattern>
                     [%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n
                 </pattern>
             </PatternLayout>
         </File>
-        <File name="Geth-Appender" fileName="${sys:catalina.home}/logs/geth.log" >
+        <File name="Geth-Appender" fileName="../logs/geth.log">
             <PatternLayout>
                 <pattern>
                     [%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n
@@ -27,7 +24,7 @@
         </File>
     </Appenders>
     <Loggers>
-        <Logger name="geth" level="info" additivity="false">
+        <Logger name="geth" level="debug" additivity="false">
             <AppenderRef ref="Geth-Appender"/>
             <AppenderRef ref="Console-Appender"/>
         </Logger>

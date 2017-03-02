@@ -183,6 +183,23 @@ public class ProcessUtils {
         return null;
     }
 
+    //TODO: Test on Windows
+    public static String getWinPidByName(String processName) {
+        String[] command = new String[]{"TASKLIST /FI \"USERNAME ne NT AUTHORITY\\SYSTEM\" | findstr ".concat(processName)};
+        ProcessBuilder builder = new ProcessBuilder(command);
+        try {
+            Process process = builder.start();
+            try (InputStream input = process.getInputStream()) {
+                byte[] b = new byte[16];
+                input.read(b, 0, b.length);
+                return new String(b).split("\\s+")[1];
+            }
+        } catch (IOException ex) {
+            LOG.error(ex.getMessage());
+        }
+        return null;
+    }
+
     public static Integer getWinPID(Process proc) {
         if (proc.getClass().getName().equals("java.lang.Win32Process")
                 || proc.getClass().getName().equals("java.lang.ProcessImpl")) {
