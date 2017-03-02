@@ -14,4 +14,6 @@ public interface LogViewService {
      */
     public Deque<String> getLog(String logPath, Integer numberOfLines) throws APIException;
 
+    public String getLog(String logPath) throws APIException;
+
 }

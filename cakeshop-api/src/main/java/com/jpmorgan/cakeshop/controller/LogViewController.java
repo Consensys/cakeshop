@@ -1,14 +1,12 @@
 package com.jpmorgan.cakeshop.controller;
 
 import com.jpmorgan.cakeshop.bean.GethConfigBean;
-import com.jpmorgan.cakeshop.bean.QuorumConfigBean;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.json.LogViewJsonRequest;
 import com.jpmorgan.cakeshop.service.LogViewService;
 import java.util.Deque;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;

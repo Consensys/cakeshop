@@ -7,6 +7,7 @@ package com.jpmorgan.cakeshop.service.impl;
 
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.service.LogViewService;
+import com.jpmorgan.cakeshop.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,8 +21,27 @@ import org.springframework.stereotype.Component;
 @Component
 public class LogViewServiceImpl implements LogViewService {
 
+    private String previousLine = "";
+
     @Override
     public Deque<String> getLog(String logPath, Integer numberOfLines) throws APIException {
+        return getLines(logPath, numberOfLines);
+    }
+
+    @Override
+    public String getLog(String logPath) throws APIException {
+        //Method to get log one line at the time
+        Deque<String> lines = getLines(logPath, 1);
+
+        if (!lines.isEmpty() && !lines.getFirst().equals(previousLine)) {
+            previousLine = lines.getFirst();
+            return getLines(logPath, 1).getFirst();
+        } else {
+            return StringUtils.EMPTY;
+        }
+    }
+
+    private Deque<String> getLines(String logPath, Integer numberOfLines) throws APIException {
         try {
             File file = new File(logPath);
             int counter = 0;
