@@ -264,8 +264,14 @@ public class WebSocketPushServiceImpl implements WebSocketPushService {
 
         if (dest.startsWith(GETH_LOG_TOPIC)) {
             gethLogSessions++;
+            if (openedSessions > 0) {
+                openedSessions--;
+            }
         } else if (dest.startsWith(CONSTELLATION_LOG_TOPIC)) {
             constLogSessions++;
+            if (openedSessions > 0) {
+                openedSessions--;
+            }
         } else if (dest.startsWith(TRANSACTION_TOPIC)) {
             String transactionKey = dest.substring(dest.lastIndexOf("/") + 1);
             if (transactionKey.contentEquals("all")) {
