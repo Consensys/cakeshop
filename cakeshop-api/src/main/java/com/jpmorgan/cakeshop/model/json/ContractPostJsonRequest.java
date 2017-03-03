@@ -7,10 +7,6 @@ package com.jpmorgan.cakeshop.model.json;
 
 import java.util.List;
 
-/**
- *
- * @author I629630
- */
 public class ContractPostJsonRequest {
 
     public static final String DEFAULT_CODE_TYPE = "solidity";

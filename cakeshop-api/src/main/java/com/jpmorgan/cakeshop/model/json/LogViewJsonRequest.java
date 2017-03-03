@@ -5,10 +5,6 @@
  */
 package com.jpmorgan.cakeshop.model.json;
 
-/**
- *
- * @author I629630
- */
 public class LogViewJsonRequest {
 
     private String logType, logFileName;

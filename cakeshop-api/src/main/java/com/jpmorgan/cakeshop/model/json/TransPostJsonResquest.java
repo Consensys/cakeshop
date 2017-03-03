@@ -7,10 +7,6 @@ package com.jpmorgan.cakeshop.model.json;
 
 import java.util.List;
 
-/**
- *
- * @author I629630
- */
 public class TransPostJsonResquest {
 
     private String id, from, to, data, privateFrom;
