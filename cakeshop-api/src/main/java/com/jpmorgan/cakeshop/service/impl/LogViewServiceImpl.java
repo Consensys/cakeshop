@@ -31,7 +31,7 @@ public class LogViewServiceImpl implements LogViewService {
     @Override
     public String getLog(String logPath) throws APIException {
         //Method to get log one line at the time
-        Deque<String> lines = getLines(logPath, 1);
+        Deque<String> lines = getLines(logPath, 20);
 
         if (!lines.isEmpty() && !lines.getFirst().equals(previousLine)) {
             previousLine = lines.getFirst();
@@ -46,11 +46,12 @@ public class LogViewServiceImpl implements LogViewService {
             File file = new File(logPath);
             int counter = 0;
             Deque<String> lines = new ArrayDeque<>();
-            ReversedLinesFileReader fileReader = new ReversedLinesFileReader(file, 4000, Charset.forName("UTF-8"));
-            String line;
+            try (ReversedLinesFileReader fileReader = new ReversedLinesFileReader(file, 4000, Charset.forName("UTF-8"))) {
+                String line;
 
-            while ((line = fileReader.readLine()) != null && counter++ < numberOfLines) {
-                lines.addFirst(line);
+                while ((line = fileReader.readLine()) != null && counter++ < numberOfLines) {
+                    lines.addFirst(line);
+                }
             }
 
             return lines;
