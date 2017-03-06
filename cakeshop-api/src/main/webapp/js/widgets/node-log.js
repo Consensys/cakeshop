@@ -10,7 +10,6 @@ module.exports = function() {
 
 		hideLink: true,
 
-		// template: _.template('<textarea id="log-editor" rows="4" cols="50"> </textarea>'),
 		template: _.template('<div style="text-align: center;padding-top: 70px;"><button class="btn btn-lg btn-primary">Start Log Streaming</button></div>'),
 
 		subscribe: function() {
@@ -24,12 +23,11 @@ module.exports = function() {
 		},
 
 		onData: function(data) {
-			console.log(widget.$log.lineCount());
-
-			// var p = widget.$log ? '\n' + widget.$log.getDoc().getValue() : '';
-			// widget.$log.getDoc().setValue(data.data.attributes.result + p );
-
-			widget.$log.replaceRange('\n' + data.data.attributes.result, CodeMirror.Pos(0));
+			widget.$log.replaceRange(data.data.attributes.result + '\n', {
+				line: 0,
+				ch: 0,
+				sticky: null
+			});
 		},
 
 		renderCodeArea: function() {
