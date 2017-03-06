@@ -169,7 +169,7 @@ public class WebSocketPushServiceImpl implements WebSocketPushService {
     }
 
     @Override
-    @Scheduled(fixedDelay = 100)
+    @Scheduled(fixedDelay = 1)
     public void pushGethLogs() throws APIException {
 
         if (gethLogSessions <= 0) {
@@ -186,7 +186,7 @@ public class WebSocketPushServiceImpl implements WebSocketPushService {
     }
 
     @Override
-    @Scheduled(fixedDelay = 100)
+    @Scheduled(fixedDelay = 1)
     public void pushConstellationLogs() throws APIException {
 
         if (constLogSessions <= 0) {
