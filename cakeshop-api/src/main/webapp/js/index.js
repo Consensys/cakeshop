@@ -306,7 +306,8 @@ window.Tower = {
 				{ widgetId: 'node-settings' },
 				{ widgetId: 'metrix-txn-sec' },
 				{ widgetId: 'metrix-txn-min' },
-				{ widgetId: 'metrix-blocks-min' }
+				{ widgetId: 'metrix-blocks-min' },
+				{ widgetId: 'node-log' }
 			];
 
 			if (Tower.client === 'quorum') {
