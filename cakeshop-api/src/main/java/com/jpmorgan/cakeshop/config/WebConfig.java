@@ -1,9 +1,5 @@
 package com.jpmorgan.cakeshop.config;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +9,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
@@ -33,45 +28,18 @@ import org.thymeleaf.templateresolver.ServletContextTemplateResolver;
 @Configuration
 @EnableScheduling
 public class WebConfig extends WebMvcConfigurerAdapter {
-    
+
     @Autowired
     private Environment env;
-    
-    @Autowired
-    private RequestMappingHandlerAdapter adapter;
-    
+
     @Autowired
     private OkHttpClient okHttpClient;
-    
-    @PostConstruct
-    public void prioritizeCustomArgumentMethodHandlers() {
-        // existing resolvers
-        List<HandlerMethodArgumentResolver> argumentResolvers
-                = new ArrayList<>(adapter.getArgumentResolvers());
 
-        // add our resolvers at pos 0
-        List<HandlerMethodArgumentResolver> customResolvers
-                = adapter.getCustomArgumentResolvers();
-
-        // empty and re-add our custom list
-        argumentResolvers.removeAll(customResolvers);
-        argumentResolvers.addAll(0, customResolvers);
-        
-        adapter.setArgumentResolvers(argumentResolvers);
-    }
-    
     @Override
-    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
-        super.addArgumentResolvers(argumentResolvers);
-        argumentResolvers.add(new JsonMethodArgumentResolver());
-    }
-    
-    @Override
-    
     public void configureAsyncSupport(AsyncSupportConfigurer configurer) {
         configurer.setTaskExecutor(createMvcAsyncExecutor());
     }
-    
+
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         if (Boolean.valueOf(env.getProperty("geth.cors.enabled:true"))) {
@@ -80,13 +48,13 @@ public class WebConfig extends WebMvcConfigurerAdapter {
                     .allowedMethods("POST");
         }
     }
-    
+
     @Override
     public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
         // Enable DefaultServlet handler for static resources at /**
         configurer.enable();
     }
-    
+
     @Bean
     public ServletContextTemplateResolver templateResolver() {
         ServletContextTemplateResolver templateResolver = new ServletContextTemplateResolver();
@@ -95,17 +63,17 @@ public class WebConfig extends WebMvcConfigurerAdapter {
         templateResolver.setCharacterEncoding("UTF-8");
         templateResolver.setPrefix("/resources/");
         templateResolver.setSuffix(".html");
-        
+
         return templateResolver;
     }
-    
+
     @Bean
     public SpringTemplateEngine templateEngine() {
         SpringTemplateEngine templateEngine = new SpringTemplateEngine();
         templateEngine.setTemplateResolver(templateResolver());
         return templateEngine;
     }
-    
+
     @Bean
     public ViewResolver getViewResolver() {
         ThymeleafViewResolver resolver = new ThymeleafViewResolver();
@@ -114,7 +82,7 @@ public class WebConfig extends WebMvcConfigurerAdapter {
         resolver.setTemplateEngine(templateEngine());
         return resolver;
     }
-    
+
     @PreDestroy
     public void shutdown() {
         okHttpClient.connectionPool().evictAll();
@@ -137,5 +105,4 @@ public class WebConfig extends WebMvcConfigurerAdapter {
         exec.afterPropertiesSet();
         return exec;
     }
-    
 }

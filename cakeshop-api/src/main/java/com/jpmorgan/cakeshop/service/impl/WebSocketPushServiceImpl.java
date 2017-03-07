@@ -13,6 +13,8 @@ import com.jpmorgan.cakeshop.service.LogViewService;
 import com.jpmorgan.cakeshop.service.NodeService;
 import com.jpmorgan.cakeshop.service.WebSocketAsyncPushService;
 import com.jpmorgan.cakeshop.service.WebSocketPushService;
+import java.io.BufferedReader;
+import java.io.IOException;
 
 import java.util.List;
 import java.util.Map;
@@ -169,24 +171,19 @@ public class WebSocketPushServiceImpl implements WebSocketPushService {
     }
 
     @Override
-    @Scheduled(fixedDelay = 1)
-    public void pushGethLogs() throws APIException {
+    public void pushGethLogs(String line) throws APIException {
 
         if (gethLogSessions <= 0) {
             return;
         }
 
-        String log = logViewService.getLog(GETH_LOG_PATH);
-
-        if (StringUtils.isNotBlank(log)) {
+        if (StringUtils.isNotBlank(line)) {
             template.convertAndSend(
                     GETH_LOG_TOPIC,
-                    APIResponse.newSimpleResponse(log));
+                    APIResponse.newSimpleResponse(line));
         }
     }
 
-    @Override
-    @Scheduled(fixedDelay = 1)
     public void pushConstellationLogs() throws APIException {
 
         if (constLogSessions <= 0) {
@@ -264,12 +261,12 @@ public class WebSocketPushServiceImpl implements WebSocketPushService {
 
         if (dest.startsWith(GETH_LOG_TOPIC)) {
             gethLogSessions++;
-            if (openedSessions > 0) {
+            if (openedSessions > 1) {
                 openedSessions--;
             }
         } else if (dest.startsWith(CONSTELLATION_LOG_TOPIC)) {
             constLogSessions++;
-            if (openedSessions > 0) {
+            if (openedSessions > 1) {
                 openedSessions--;
             }
         } else if (dest.startsWith(TRANSACTION_TOPIC)) {

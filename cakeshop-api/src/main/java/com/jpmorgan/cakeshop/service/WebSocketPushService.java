@@ -1,6 +1,7 @@
 package com.jpmorgan.cakeshop.service;
 
 import com.jpmorgan.cakeshop.error.APIException;
+import java.io.BufferedReader;
 
 /**
  *
@@ -28,8 +29,6 @@ public interface WebSocketPushService {
 
     public void pushTransactions() throws APIException;
 
-    public void pushGethLogs() throws APIException;
-
-    public void pushConstellationLogs() throws APIException;
+    public void pushGethLogs(String line) throws APIException;
 
 }

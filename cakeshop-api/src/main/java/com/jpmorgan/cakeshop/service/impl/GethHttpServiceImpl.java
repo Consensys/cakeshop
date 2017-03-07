@@ -63,6 +63,7 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     private static final Logger LOG = LoggerFactory.getLogger(GethHttpServiceImpl.class);
     private static final Logger GETH_LOG = LoggerFactory.getLogger("geth");
+    private static final Logger CONSTELLATION_LOG = LoggerFactory.getLogger("constellation");
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Autowired
@@ -94,8 +95,17 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     private Boolean running;
 
+    @Autowired
     private StreamLogAdapter stdoutLogger;
+
+    @Autowired
     private StreamLogAdapter stderrLogger;
+
+    @Autowired
+    private StreamLogAdapter stdoutConstLogger;
+
+    @Autowired
+    private StreamLogAdapter stdErrConstLogger;
 
     private final List<ErrorLog> startupErrors;
     private final HttpHeaders jsonContentHeaders;
@@ -232,6 +242,10 @@ public class GethHttpServiceImpl implements GethHttpService {
                 stdoutLogger.stopAsync();
             }
 
+            if (null != stdoutConstLogger) {
+                stdoutConstLogger.stopAsync();
+            }
+
             if (stderrLogger != null) {
                 stdoutLogger.stopAsync();
             }
@@ -341,7 +355,7 @@ public class GethHttpServiceImpl implements GethHttpService {
         try {
             Process process = builder.start();
             Integer constProcessId = getUnixPID(process);
-            writePidToFile(constProcessId + 1, gethConfig.getConstPidFileName());
+            writePidToFile(constProcessId, gethConfig.getConstPidFileName());
             success = true;
             LOG.info("CONSTELLATION STARTED");
             TimeUnit.SECONDS.sleep(5);
@@ -416,9 +430,11 @@ public class GethHttpServiceImpl implements GethHttpService {
             }
 
             Process process = builder.start();
-
-            this.stdoutLogger = (StreamLogAdapter) new StreamLogAdapter(GETH_LOG, process.getInputStream()).startAsync();
-            this.stderrLogger = (StreamLogAdapter) new StreamLogAdapter(GETH_LOG, process.getErrorStream()).startAsync();
+            stdoutLogger.setLogger(GETH_LOG);
+            stdoutLogger.setReader(process.getInputStream());
+            stderrLogger.setLogger(GETH_LOG);
+            stderrLogger.setReader(process.getErrorStream());
+            stderrLogger.startAsync();
 
             Integer pid = getProcessPid(process);
             if (pid != null) {
