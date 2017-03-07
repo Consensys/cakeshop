@@ -36,8 +36,8 @@ public class TransactionDeserializer extends JsonDeserializer<TransPostJsonResqu
         }
 
         if (null != node.get("ids")) {
-            String privateFor = node.get("ids").textValue();
-            if (StringUtils.isEmpty(privateFor)) {
+            String ids = node.get("ids").textValue();
+            if (StringUtils.isEmpty(ids)) {
                 request.setIds(null);
             } else {
                 request.setIds(node.get("ids").findValuesAsText(node.get("ids").asText()));
