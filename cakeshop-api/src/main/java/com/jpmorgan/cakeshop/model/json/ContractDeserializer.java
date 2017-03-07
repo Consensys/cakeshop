@@ -14,18 +14,12 @@ import java.io.IOException;
 import java.util.List;
 import org.springframework.util.StringUtils;
 
-/**
- *
- * @author I629630
- */
-public class TransactionDeserializeer extends JsonDeserializer<TransPostJsonResquest> {
+public class ContractDeserializer extends JsonDeserializer<ContractPostJsonRequest> {
 
     @Override
-    public TransPostJsonResquest deserialize(JsonParser jp, DeserializationContext dc) throws IOException, JsonProcessingException {
-
-        TransPostJsonResquest request = new TransPostJsonResquest();
+    public ContractPostJsonRequest deserialize(JsonParser jp, DeserializationContext dc) throws IOException, JsonProcessingException {
+        ContractPostJsonRequest request = new ContractPostJsonRequest();
         JsonNode node = jp.getCodec().readTree(jp);
-
         if (null != node.get("privateFor")) {
             String privateFor = node.get("privateFor").textValue();
             if (StringUtils.isEmpty(privateFor)) {
@@ -35,36 +29,41 @@ public class TransactionDeserializeer extends JsonDeserializer<TransPostJsonResq
             }
         }
 
-        if (null != node.get("ids")) {
-            String privateFor = node.get("ids").textValue();
-            if (StringUtils.isEmpty(privateFor)) {
-                request.setIds(null);
-            } else {
-                request.setIds(node.get("ids").findValuesAsText(node.get("ids").asText()));
-            }
+        if (null != node.get("code")) {
+            request.setCode(node.get("code").textValue());
         }
 
-        if (null != node.get("id")) {
-            request.setTo(node.get("id").textValue());
+        if (null != node.get("code_type")) {
+            request.setCode_type(node.get("code_type").textValue());
         }
-
         if (null != node.get("from")) {
             request.setFrom(node.get("from").textValue());
         }
-
-        if (null != node.get("to")) {
-            request.setTo(node.get("to").textValue());
-        }
-
-        if (null != node.get("data")) {
-            request.setTo(node.get("data").textValue());
+        if (null != node.get("binary")) {
+            request.setBinary(node.get("binary").textValue());
         }
 
         if (null != node.get("privateFrom")) {
             request.setPrivateFrom(node.get("privateFrom").textValue());
         }
+        if (null != node.get("address")) {
+            request.setAddress(node.get("address").textValue());
+        }
+        if (null != node.get("method")) {
+            request.setMethod(node.get("method").textValue());
+        }
+        if (null != node.get("blockNumber")) {
+            request.setBlockNumber(node.get("blockNumber").textValue());
+        }
+        if (null != node.get("optimize")) {
+            request.setOptimize(node.get("optimize").booleanValue());
+        }
+
+        if (null != node.get("args")) {
+            List<String> args = node.findValuesAsText(node.get("args").asText());
+            request.setArgs(args.toArray());
+        }
 
         return request;
     }
-
 }

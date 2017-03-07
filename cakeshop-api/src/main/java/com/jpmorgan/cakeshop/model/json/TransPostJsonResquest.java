@@ -5,8 +5,10 @@
  */
 package com.jpmorgan.cakeshop.model.json;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.util.List;
 
+@JsonDeserialize(using = TransactionDeserializer.class)
 public class TransPostJsonResquest {
 
     private String id, from, to, data, privateFrom;

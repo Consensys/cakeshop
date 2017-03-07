@@ -5,12 +5,10 @@
  */
 package com.jpmorgan.cakeshop.model.json;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.util.List;
 
-@JsonDeserialize(using = ContractDeserializeer.class)
+@JsonDeserialize(using = ContractDeserializer.class)
 public class ContractPostJsonRequest {
 
     public static final String DEFAULT_CODE_TYPE = "solidity";
