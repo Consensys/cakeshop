@@ -19,25 +19,27 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @Controller
 @RequestMapping(value = "/api/log", method = RequestMethod.POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
 public class LogViewController {
-
+    
     private final Integer DEFAULT_NUMBER_LINES = 500;
-
+    
+    private final String LOG_PREFIX = System.getProperty("logging.path");
+    
     private final String CONSTELLATION_PATH = com.jpmorgan.cakeshop.util.StringUtils.isNotBlank(System.getProperty("spring.config.location"))
             ? System.getProperty("spring.config.location").replaceAll("file:", "")
                     .replaceAll("application.properties", "").concat("constellation-node/")
             : null;
-
+    
     @Autowired
     private GethConfigBean gethConfig;
-
+    
     @Autowired
     private LogViewService service;
-
+    
     @RequestMapping("/view")
     public ResponseEntity getLog(@RequestBody LogViewJsonRequest jsonRequest) throws APIException {
-
+        
         String logPath = getLogPath(jsonRequest.getLogType(), jsonRequest.getLogFileName());
-
+        
         if (StringUtils.isNotBlank(logPath)) {
             Deque<String> log = service.getLog(logPath, jsonRequest.getNumberLines() != null ? jsonRequest.getNumberLines() : DEFAULT_NUMBER_LINES);
             return new ResponseEntity(log, OK);
@@ -45,7 +47,7 @@ public class LogViewController {
             return new ResponseEntity(jsonRequest.getLogType(), BAD_REQUEST);
         }
     }
-
+    
     private String getLogPath(String logType, String logFileName) {
         String logPath;
         if (StringUtils.isNotBlank(logType)) {
@@ -58,13 +60,13 @@ public class LogViewController {
                                     .concat(StringUtils.isNotBlank(logFileName) ? logFileName : "constellation.log");
                     break;
                 case "geth":
-                    logPath = "../logs/".concat(StringUtils.isNotBlank(logFileName) ? logFileName : "geth.log");
+                    logPath = LOG_PREFIX.concat("/").concat(StringUtils.isNotBlank(logFileName) ? logFileName : "geth.log");
                     break;
                 default:
                     logPath = null;
                     break;
             }
-
+            
         } else {
             return null;
         }

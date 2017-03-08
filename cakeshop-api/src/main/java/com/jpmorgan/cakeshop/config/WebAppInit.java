@@ -27,24 +27,28 @@ public class WebAppInit extends SpringBootServletInitializer {
             return;
         }
         if (isSpringBoot) {
-            System.setProperty("logging.path", ".");
+            System.setProperty("logging.path", "logs");
             return;
         }
 
         // running in a container, find home path
-        if (StringUtils.isNotBlank(System.getProperty("catalina.base"))) {
+        if (StringUtils.isNotBlank(System.getProperty("catalina.base"))
+                && StringUtils.isBlank(System.getProperty("logging.path"))) {
             // tomcat
             System.setProperty("logging.path", System.getProperty("catalina.base") + "/logs");
 
-        } else if (StringUtils.isNotBlank(System.getProperty("catalina.home"))) {
+        } else if (StringUtils.isNotBlank(System.getProperty("catalina.home"))
+                && StringUtils.isBlank(System.getProperty("logging.path"))) {
             // tomcat
             System.setProperty("logging.path", System.getProperty("catalina.home") + "/logs");
 
-        } else if (StringUtils.isNotBlank(System.getProperty("jetty.logging.dir"))) {
+        } else if (StringUtils.isNotBlank(System.getProperty("jetty.logging.dir"))
+                && StringUtils.isBlank(System.getProperty("logging.path"))) {
             // jetty
             System.setProperty("logging.path", System.getProperty("jetty.logging.dir"));
 
-        } else if (StringUtils.isNotBlank(System.getProperty("jetty.home"))) {
+        } else if (StringUtils.isNotBlank(System.getProperty("jetty.home"))
+                && StringUtils.isBlank(System.getProperty("logging.path"))) {
             // jetty
             System.setProperty("logging.path", System.getProperty("jetty.home") + "/logs");
 
