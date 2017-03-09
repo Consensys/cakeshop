@@ -40,14 +40,14 @@ public class UserDAO extends BaseDAO {
     }
 
     @Transactional
-    public User authenticate(String userName, String password) {
+    public Boolean authenticate(String userName, String password) {
         if (null != getCurrentSession()) {
             User user = getCurrentSession().get(User.class, userName);
             if (ENCODER.matches(password, user.getPassword())) {
-                return user;
+                return true;
             }
         }
-        return null;
+        return false;
     }
 
     @Transactional

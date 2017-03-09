@@ -5,7 +5,6 @@
  */
 package com.jpmorgan.cakeshop.service.auth.impl;
 
-import com.jpmorgan.cakeshop.config.AppConfig;
 import com.jpmorgan.cakeshop.dao.UserDAO;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,20 +27,24 @@ public class AuthenticationService implements AuthenticationProvider {
     @Autowired
     private UserDAO userDao;
 
-    @Value("${geth.cred:\"\"}")
-    private String creds;
+    @Value("${geth.cred1:\"\"}")
+    private String cred1;
+
+    @Value("${geth.cred2:\"\"}")
+    private String cred2;
 
     @Override
     public Authentication authenticate(final Authentication authentication) throws AuthenticationException {
         final String userName = authentication.getName();
         final String password = authentication.getCredentials().toString();
-        if (ENCODER.matches(password, creds.replaceFirst(userName, ""))) {
+        if (userName.equals(cred1) && ENCODER.matches(password, cred2)) {
             return new UsernamePasswordAuthenticationToken(userName, password);
         } else {
             throw new AuthenticationException("Unable to authenticate user") {
             };
         }
-//        if (null != userDao.authenticate(userName, password)) {
+        //Use database for auth
+//        if (userDao.authenticate(userName, password)) {
 //            return new UsernamePasswordAuthenticationToken(userName, password);
 //        } else {
 //            throw new AuthenticationException("Unable to authenticate user") {
