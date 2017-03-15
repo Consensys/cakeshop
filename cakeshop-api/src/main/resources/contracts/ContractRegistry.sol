@@ -1,3 +1,4 @@
+pragma solidity ^0.4.9;
 contract ContractRegistry
 {
   address public owner;

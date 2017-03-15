@@ -1,3 +1,4 @@
+pragma solidity ^0.4.9;
 contract mortal {
     /* Define variable owner of the type address*/
     address owner;

@@ -5,6 +5,6 @@
   "author": "",
   "license": "Apache2",
   "dependencies": {
-    "solc-cli": "github:jpmorganchase/solc-cli"
+    "solc-cli": "github:mikkazan/solc-cli"
   }
 }

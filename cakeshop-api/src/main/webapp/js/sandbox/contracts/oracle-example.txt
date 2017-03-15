@@ -25,6 +25,7 @@ r.replace_oracle('EQUITY_JPM', 0x6565e77ecbf9c49d591f4c5682c2b9a4c12fd69d, "[ABI
 })
 */
 
+pragma solidity ^0.4.9;
 // ############## REGISTRY START ##############
 contract Registrat0r {
   // This is first SDK account

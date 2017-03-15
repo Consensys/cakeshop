@@ -78,8 +78,11 @@ public class ContractABI extends ArrayList<ContractABI.Entry> {
             @Override
             public boolean evaluate(Constructor obj) {
                 return true;
-            };
-        });
+            }
+        ;
+    }
+
+    );
     }
 
     public Function findFunction(Predicate<Function> searchPredicate) {
@@ -104,7 +107,6 @@ public class ContractABI extends ArrayList<ContractABI.Entry> {
         return toJson();
     }
 
-
     @JsonInclude(Include.NON_NULL)
     public static abstract class Entry {
 
@@ -116,6 +118,7 @@ public class ContractABI extends ArrayList<ContractABI.Entry> {
 
         @JsonInclude(Include.NON_NULL)
         public static class Param {
+
             public Boolean indexed;
             public String name;
             public SolidityType type;
@@ -203,18 +206,21 @@ public class ContractABI extends ArrayList<ContractABI.Entry> {
         public final List<Param> inputs;
         public final List<Param> outputs;
         public final Type type;
+        public final Boolean payable;
 
-        public Entry(Boolean anonymous, Boolean constant, String name, List<Param> inputs, List<Param> outputs, Type type) {
+        public Entry(Boolean anonymous, Boolean constant, String name, List<Param> inputs, List<Param> outputs, Type type, Boolean payable) {
             this.anonymous = anonymous;
             this.constant = constant;
             this.name = name;
             this.inputs = inputs;
             this.outputs = outputs;
             this.type = type;
+            this.payable = payable == null ? Boolean.FALSE : payable;
         }
 
         /**
          * Signature of this entry, before hashing, e.g., "myfunc(uint,bytes32)"
+         *
          * @return
          */
         public String formatSignature() {
@@ -246,11 +252,11 @@ public class ContractABI extends ArrayList<ContractABI.Entry> {
 
         @JsonCreator
         public static Entry create(@JsonProperty("anonymous") boolean anonymous,
-                                   @JsonProperty("constant") boolean constant,
-                                   @JsonProperty("name") String name,
-                                   @JsonProperty("inputs") List<Param> inputs,
-                                   @JsonProperty("outputs") List<Param> outputs,
-                                   @JsonProperty("type") Type type) {
+                @JsonProperty("constant") boolean constant,
+                @JsonProperty("name") String name,
+                @JsonProperty("inputs") List<Param> inputs,
+                @JsonProperty("outputs") List<Param> outputs,
+                @JsonProperty("type") Type type) {
             Entry result = null;
             switch (type) {
                 case constructor:
@@ -295,7 +301,7 @@ public class ContractABI extends ArrayList<ContractABI.Entry> {
     public static class Constructor extends Entry {
 
         public Constructor(List<Param> inputs, List<Param> outputs) {
-            super(null, null, "", inputs, outputs, Type.constructor);
+            super(null, null, "", inputs, outputs, Type.constructor, false);
         }
 
         public List<?> decode(byte[] encoded) {
@@ -316,7 +322,7 @@ public class ContractABI extends ArrayList<ContractABI.Entry> {
         private static final int ENCODED_SIGN_LENGTH = 4;
 
         public Function(boolean constant, String name, List<Param> inputs, List<Param> outputs) {
-            super(null, constant, name, inputs, outputs, Type.function);
+            super(null, constant, name, inputs, outputs, Type.function, false);
         }
 
         public String encodeAsHex(Object... args) {
@@ -373,7 +379,7 @@ public class ContractABI extends ArrayList<ContractABI.Entry> {
     public static class Event extends Entry {
 
         public Event(boolean anonymous, String name, List<Param> inputs, List<Param> outputs) {
-            super(anonymous, null, name, inputs, outputs, Type.event);
+            super(anonymous, null, name, inputs, outputs, Type.event, false);
         }
 
         public List<?> decode(byte[] data, byte[][] topics) {
