@@ -63,7 +63,6 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     private static final Logger LOG = LoggerFactory.getLogger(GethHttpServiceImpl.class);
     private static final Logger GETH_LOG = LoggerFactory.getLogger("geth");
-    private static final Logger CONSTELLATION_LOG = LoggerFactory.getLogger("constellation");
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Autowired
@@ -103,9 +102,6 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     @Autowired
     private StreamLogAdapter stdoutConstLogger;
-
-    @Autowired
-    private StreamLogAdapter stdErrConstLogger;
 
     private final List<ErrorLog> startupErrors;
     private final HttpHeaders jsonContentHeaders;
@@ -375,7 +371,7 @@ public class GethHttpServiceImpl implements GethHttpService {
                 LOG.info("Stopping Constellation with pid " + pid);
                 new File(gethConfig.getConstPidFileName()).delete();
             } else {
-                LOG.warn("Could niot get PID to stop Constellation");
+                LOG.warn("Could not get PID to stop Constellation");
             }
         } catch (InterruptedException | IOException ex) {
             LOG.error(ex.getMessage());
@@ -521,17 +517,19 @@ public class GethHttpServiceImpl implements GethHttpService {
             }
 
             //Set Block Maker account
-            if (com.jpmorgan.cakeshop.util.StringUtils.isNotBlank(gethConfig.getBlockMaker())) {
+            if (StringUtils.isNotBlank(gethConfig.getBlockMaker())) {
                 additionalParams.add("--blockmakeraccount");
                 additionalParams.add(gethConfig.getBlockMaker());
                 additionalParams.add("--blockmakerpassword");
-                additionalParams.add("");
+                additionalParams.add(null != gethConfig.getBlockMakerPass() ? gethConfig.getBlockMakerPass() : "");
             } else if (StringUtils.isNotBlank(System.getProperty("geth.block.maker"))) {
                 additionalParams.add("--blockmakeraccount");
                 additionalParams.add(System.getProperty("geth.block.maker"));
                 additionalParams.add("--blockmakerpassword");
-                additionalParams.add("");
-                gethConfig.setProperty("geth.block.maker", System.getProperty("geth.block.maker"));
+                String pass = StringUtils.isNotBlank(System.getProperty("geth.block.maker.pass")) ? System.getProperty("geth.block.maker.pass") : "";
+                additionalParams.add(pass);
+                gethConfig.setBlockMaker(System.getProperty("geth.block.maker"));
+                gethConfig.setBlockMakerPass(pass);
                 saveProps = true;
             }
             //Set min and max block time
@@ -566,15 +564,27 @@ public class GethHttpServiceImpl implements GethHttpService {
                 additionalParams.add("--voteaccount");
                 additionalParams.add(gethConfig.getVoteAccount());
                 additionalParams.add("--votepassword");
-                additionalParams.add("");
+                additionalParams.add(null != gethConfig.getVoteAccountPass() ? gethConfig.getVoteAccountPass() : "");
             } else if (StringUtils.isNotBlank(System.getProperty("geth.vote.account"))) {
                 additionalParams.add("--voteaccount");
                 additionalParams.add(System.getProperty("geth.vote.account"));
                 additionalParams.add("--votepassword");
-                additionalParams.add("");
-                gethConfig.setProperty("geth.vote.account", System.getProperty("geth.vote.account"));
+                String pass = StringUtils.isNotBlank(System.getProperty("geth.vote.account.pass")) ? System.getProperty("geth.vote.account.pass") : "";
+                additionalParams.add(pass);
+                gethConfig.setVoteAccount(System.getProperty("geth.vote.account"));
+                gethConfig.setVoteAccountPass(pass);
                 saveProps = true;
             }
+            //Set permissioned 
+            if (gethConfig.isPermissionedNode()) {
+                additionalParams.add("--permissioned");
+            } else if (StringUtils.isNotBlank(System.getProperty("geth.permissioned"))
+                    && Boolean.valueOf(System.getProperty("geth.permissioned"))) {
+                additionalParams.add("--permissioned");
+                gethConfig.setPermissionedNode(Boolean.valueOf(System.getProperty("geth.permissioned")));
+                saveProps = true;
+            }
+
         }
         if (saveProps) {
             try {

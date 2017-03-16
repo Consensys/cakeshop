@@ -99,10 +99,13 @@ public class GethConfigBean {
     // Quorum specific settings
     private final String GETH_BLOCK_MAKER = "geth.block.maker";
     private final String GETH_VOTE_ACCOUNT = "geth.vote.account";
+    private final String GETH_BLOCK_MAKER_PASS = "geth.block.maker.pass";
+    private final String GETH_VOTE_ACCOUNT_PASS = "geth.vote.account.pass";
     private final String GETH_MIN_BLOCKTIME = "geth.min.blocktime";
     private final String GETH_MAX_BLOCKTIME = "geth.max.blocktime";
     private final String GETH_VOTE_CONTARCT_ADDRESS = "geth.vote.contract.addr";
     private final String GETH_CONSTELLATION_ENABLED = "geth.constellation.enabled";
+    private final String GETH_PERMISSIONED = "geth.permissioned";
 
     public GethConfigBean() {
     }
@@ -415,12 +418,28 @@ public class GethConfigBean {
         props.setProperty(GETH_BLOCK_MAKER, blockMaker);
     }
 
+    public String getBlockMakerPass() {
+        return props.getProperty(GETH_BLOCK_MAKER_PASS);
+    }
+
+    public void setBlockMakerPass(String pass) {
+        props.setProperty(GETH_BLOCK_MAKER_PASS, pass);
+    }
+
     public String getVoteAccount() {
         return props.getProperty(GETH_VOTE_ACCOUNT);
     }
 
     public void setVoteAccount(String voteAccount) {
         props.setProperty(GETH_VOTE_ACCOUNT, voteAccount);
+    }
+
+    public String getVoteAccountPass() {
+        return props.getProperty(GETH_VOTE_ACCOUNT_PASS);
+    }
+
+    public void setVoteAccountPass(String pass) {
+        props.setProperty(GETH_VOTE_ACCOUNT_PASS, pass);
     }
 
     public Integer getMinBlockTime() {
@@ -455,6 +474,16 @@ public class GethConfigBean {
 
     public void setConstellationEnabled(Boolean isEnabled) {
         props.setProperty(GETH_CONSTELLATION_ENABLED, String.valueOf(isEnabled));
+    }
+
+    public Boolean isPermissionedNode() {
+        return StringUtils.isNotBlank(props.getProperty(GETH_PERMISSIONED))
+                ? Boolean.valueOf(props.getProperty(GETH_PERMISSIONED))
+                : Boolean.FALSE;
+    }
+
+    public void setPermissionedNode(Boolean isPermissionedNode) {
+        props.setProperty(GETH_PERMISSIONED, String.valueOf(isPermissionedNode));
     }
 
     public String getBinPath() {

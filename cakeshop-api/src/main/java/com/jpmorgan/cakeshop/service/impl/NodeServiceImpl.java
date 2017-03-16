@@ -1,5 +1,7 @@
 package com.jpmorgan.cakeshop.service.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import static com.jpmorgan.cakeshop.service.impl.GethHttpServiceImpl.*;
 
 import com.google.common.base.Joiner;
@@ -334,6 +336,29 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
             throw new APIException("Bad peer address URI: " + address, e);
         }
 
+        if (gethConfig.isPermissionedNode()) {
+            File permissionJson = new File(gethConfig.getDataDirPath().concat("/").concat("permissioned-nodes.json"));
+            List<String> permissionNodes;
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                if (!permissionJson.exists()) {
+                    permissionJson.createNewFile();
+                    permissionNodes = Lists.newArrayList(address);
+                    mapper.writeValue(permissionJson, permissionNodes);
+                } else {
+                    permissionNodes = mapper.readValue(permissionJson, new TypeReference<List<String>>() {
+                    });
+                    if (!permissionNodes.contains(address)) {
+                        permissionNodes.add(address);
+                        mapper.writeValue(permissionJson, permissionNodes);
+                    }
+                }
+            } catch (IOException ex) {
+                LOG.error("Could not operate with permission file", ex);
+                throw new APIException("Could not operate with permission file");
+            }
+        }
+
         Map<String, Object> res = gethService.executeGethCall(ADMIN_PEERS_ADD, address);
         if (res == null) {
             return false;
@@ -348,28 +373,6 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
             peer.setNodeUrl(address);
             peerDAO.save(peer);
             // TODO if db is not enabled, save peers somewhere else? props file?
-            //UNcomment lines below for permissioning
-//            if (gethConfig.isEmbeddedQuorum()) {
-//                //Generate json file if does not exist
-//                File permissionJson = new File(gethConfig.getDataDirPath().concat("/").concat("permissioned-nodes.json"));
-//                List<String> permissionNodes;
-//                ObjectMapper mapper = new ObjectMapper();
-//                try {
-//                    if (!permissionJson.exists()) {
-//                        permissionJson.createNewFile();
-//                        permissionNodes = Lists.newArrayList(address);
-//                        mapper.writeValue(permissionJson, permissionNodes);
-//                    } else {
-//                        permissionNodes = mapper.readValue(permissionJson, new TypeReference<List<String>>() {
-//                        });
-//                        permissionNodes.add(address);
-//                        mapper.writeValue(permissionJson, permissionNodes);
-//                    }
-//                } catch (IOException ex) {
-//                    LOG.error("Could not operate with permission file", ex);
-//                    throw new APIException("Could not operate with permission file");
-//                }
-//            }
 
         }
 
