@@ -632,7 +632,7 @@ public class GethHttpServiceImpl implements GethHttpService {
         );
     }
 
-    private List<String> createGethCommand(String... additionalParams) {
+    private List<String> createGethCommand(String... additionalParams) throws IOException {
 
         // Figure out how many accounts need unlocking
         String accountsToUnlock = "";
@@ -647,6 +647,18 @@ public class GethHttpServiceImpl implements GethHttpService {
                 }
                 accountsToUnlock += i;
             }
+        }
+
+        //Option to overwrite default port nide post and geth http usr through command line
+        Boolean saveGethConfig = false;
+        if (StringUtils.isNotBlank(System.getProperty("geth.url"))) {
+            gethConfig.setRpcUrl(System.getProperty("geth.url"));
+            saveGethConfig = true;
+        }
+
+        if (StringUtils.isNotBlank(System.getProperty("geth.node.port"))) {
+            gethConfig.setGethNodePort(System.getProperty("geth.node.port"));
+            saveGethConfig = true;
         }
 
         List<String> commands = Lists.newArrayList(gethConfig.getGethPath(),
@@ -692,6 +704,9 @@ public class GethHttpServiceImpl implements GethHttpService {
                     commands.add(param);
                 }
             }
+        }
+        if (saveGethConfig) {
+            gethConfig.save();
         }
 
         return commands;
