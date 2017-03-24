@@ -30,12 +30,12 @@ public class LogViewServiceImpl implements LogViewService {
 
     @Override
     public String getLog(String logPath) throws APIException {
-        //Method to get log one line at the time
-        Deque<String> lines = getLines(logPath, 20);
+
+        Deque<String> lines = getLines(logPath, 1);
 
         if (!lines.isEmpty() && !lines.getFirst().equals(previousLine)) {
             previousLine = lines.getFirst();
-            return getLines(logPath, 1).getFirst();
+            return previousLine;
         } else {
             return StringUtils.EMPTY;
         }

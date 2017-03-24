@@ -94,14 +94,8 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     private Boolean running;
 
-    @Autowired
     private StreamLogAdapter stdoutLogger;
-
-    @Autowired
     private StreamLogAdapter stderrLogger;
-
-    @Autowired
-    private StreamLogAdapter stdoutConstLogger;
 
     private final List<ErrorLog> startupErrors;
     private final HttpHeaders jsonContentHeaders;
@@ -236,10 +230,6 @@ public class GethHttpServiceImpl implements GethHttpService {
 
             if (stdoutLogger != null) {
                 stdoutLogger.stopAsync();
-            }
-
-            if (null != stdoutConstLogger) {
-                stdoutConstLogger.stopAsync();
             }
 
             if (stderrLogger != null) {
@@ -426,11 +416,8 @@ public class GethHttpServiceImpl implements GethHttpService {
             }
 
             Process process = builder.start();
-            stdoutLogger.setLogger(GETH_LOG);
-            stdoutLogger.setReader(process.getInputStream());
-            stderrLogger.setLogger(GETH_LOG);
-            stderrLogger.setReader(process.getErrorStream());
-            stderrLogger.startAsync();
+            this.stdoutLogger = (StreamLogAdapter) new StreamLogAdapter(GETH_LOG, process.getInputStream()).startAsync();
+            this.stderrLogger = (StreamLogAdapter) new StreamLogAdapter(GETH_LOG, process.getErrorStream()).startAsync();
 
             Integer pid = getProcessPid(process);
             if (pid != null) {

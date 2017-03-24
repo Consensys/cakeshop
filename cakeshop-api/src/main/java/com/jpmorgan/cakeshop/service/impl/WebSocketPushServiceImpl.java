@@ -13,11 +13,15 @@ import com.jpmorgan.cakeshop.service.LogViewService;
 import com.jpmorgan.cakeshop.service.NodeService;
 import com.jpmorgan.cakeshop.service.WebSocketAsyncPushService;
 import com.jpmorgan.cakeshop.service.WebSocketPushService;
+import java.io.File;
 
 import java.util.List;
 import java.util.Map;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 import org.apache.commons.collections4.map.LRUMap;
+import org.apache.commons.io.input.Tailer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,8 +43,9 @@ import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 public class WebSocketPushServiceImpl implements WebSocketPushService {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(WebSocketPushServiceImpl.class);
+    private final String GETH_LOG_PATH = System.getProperty("logging.path").concat("/").concat("geth.log");
 
-    private Integer openedSessions = 0, gethLogSessions = 0, constLogSessions = 0;
+    private Integer openedSessions = 0, gethLogSessions = 0;
 
     /**
      * Transaction ID -> # of subscribers
@@ -52,9 +57,6 @@ public class WebSocketPushServiceImpl implements WebSocketPushService {
 
     @Autowired
     private GethHttpService geth;
-
-    @Autowired
-    private LogViewService logViewService;
 
     @Autowired
     private NodeService nodeService;
@@ -69,7 +71,9 @@ public class WebSocketPushServiceImpl implements WebSocketPushService {
     private MetricsBlockListener metricsBlockListener;
 
     @Autowired
-    private GethConfigBean gethConfig;
+    private LogTailerListener logListener;
+
+    private Tailer tailer;
 
     // For tracking status changes
     private Node previousNodeStatus;
@@ -168,39 +172,6 @@ public class WebSocketPushServiceImpl implements WebSocketPushService {
         }
     }
 
-    @Override
-    public void pushGethLogs(String line) throws APIException {
-
-        if (gethLogSessions <= 0) {
-            return;
-        }
-
-        if (StringUtils.isNotBlank(line)) {
-            template.convertAndSend(
-                    GETH_LOG_TOPIC,
-                    APIResponse.newSimpleResponse(line));
-        }
-    }
-
-    public void pushConstellationLogs() throws APIException {
-
-        if (constLogSessions <= 0) {
-            return;
-        }
-
-        String logPath = StringUtils.isNotBlank(CONSTELLATION_PATH)
-                ? CONSTELLATION_PATH.concat("logs/constellation.log")
-                : gethConfig.getDataDirPath().concat("/constellation/logs/constellation.log");
-
-        String log = logViewService.getLog(logPath);
-
-        if (StringUtils.isNotBlank(log)) {
-            template.convertAndSend(
-                    CONSTELLATION_LOG_TOPIC,
-                    APIResponse.newSimpleResponse(log));
-        }
-    }
-
     @EventListener
     public void onSessionConnect(SessionConnectEvent event) {
         openedSessions++;
@@ -214,17 +185,18 @@ public class WebSocketPushServiceImpl implements WebSocketPushService {
                 transactionsMap.clear();
             }
         }
+        if (gethLogSessions > 0) {
+            gethLogSessions--;
+            if (gethLogSessions <= 0) {
+                LOG.info("Stopping  Tailer");
+                tailer.stop();
+            }
+        }
     }
 
     @EventListener
     public void onSessionUnsubscribe(SessionUnsubscribeEvent event) {
         String dest = StompHeaderAccessor.wrap(event.getMessage()).getSubscriptionId();
-
-        if (dest.startsWith(GETH_LOG_TOPIC)) {
-            gethLogSessions--;
-        } else if (dest.startsWith(CONSTELLATION_LOG_TOPIC)) {
-            constLogSessions--;
-        }
 
         if (StringUtils.isBlank(dest)) {
             return;
@@ -259,11 +231,11 @@ public class WebSocketPushServiceImpl implements WebSocketPushService {
 
         if (dest.startsWith(GETH_LOG_TOPIC)) {
             gethLogSessions++;
-            if (openedSessions > 1) {
-                openedSessions--;
+            if (gethLogSessions == 1) {
+                LOG.info("Starting  Tailier");
+                tailer = Tailer.create(new File(GETH_LOG_PATH), logListener, 1);
+                tailer.run();
             }
-        } else if (dest.startsWith(CONSTELLATION_LOG_TOPIC)) {
-            constLogSessions++;
             if (openedSessions > 1) {
                 openedSessions--;
             }
@@ -292,5 +264,12 @@ public class WebSocketPushServiceImpl implements WebSocketPushService {
             }
         }
 
+    }
+
+    @PreDestroy
+    protected void destroyTailer() {
+        if (null != tailer) {
+            tailer.stop();
+        }
     }
 }
