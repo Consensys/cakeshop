@@ -2,7 +2,7 @@ package com.jpmorgan.cakeshop.client.model.req;
 
 public class NodeUpdateCommand {
 
-    private String logLevel, genesisBlock, extraParams, networkId, blockMakerAccount, voterAccount, constellationNode;
+    private String logLevel, genesisBlock, extraParams, networkId, blockMakerAccount, voterAccount, constellationNode, address;
     private Boolean committingTransactions;
     private Integer minBlockTime, maxBlockTime;
 
@@ -47,6 +47,25 @@ public class NodeUpdateCommand {
     public NodeUpdateCommand constellationNode(String constellationNode) {
         this.constellationNode = constellationNode;
         return this;
+    }
+
+    public NodeUpdateCommand address(String address) {
+        this.address = address;
+        return this;
+    }
+
+    /**
+     * @return the address
+     */
+    public String getAddress() {
+        return address;
+    }
+
+    /**
+     * @param address the address to set
+     */
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public NodeUpdateCommand minBlockTime(Integer minBlockTime) {
