@@ -48,11 +48,11 @@ public interface NodeApi extends ApiClient.Api {
 
     @RequestLine("POST /node/constellation/add")
     @Headers({"Content-type: application/json", "Accepts: application/json",})
-    APIResponse<APIData<SimpleResult>, Boolean> addConstellation(NodeUpdateCommand command);
+    APIResponse<APIData<Node>, Node> addConstellation(NodeUpdateCommand command);
 
     @RequestLine("POST /node/constellation/remove")
     @Headers({"Content-type: application/json", "Accepts: application/json",})
-    APIResponse<APIData<SimpleResult>, Boolean> removeConstellationNode(NodeUpdateCommand command);
+    APIResponse<APIData<Node>, Node> removeConstellationNode(NodeUpdateCommand command);
 
     @RequestLine("POST /node/constellation/stop")
     @Headers({"Content-type: application/json", "Accepts: application/json",})
