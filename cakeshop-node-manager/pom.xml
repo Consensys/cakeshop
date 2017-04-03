@@ -111,10 +111,10 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <mainClass>com.jpmorgan.cakeshop.node.manager.CakeshopNodeManager</mainClass>
+<!--                <configuration>
+                    <mainClass>com.jpmorgan.cakeshop.manager.CakeshopNodeManager</mainClass>
                     <layout>ZIP</layout>
-                </configuration>
+                </configuration>-->
                 <executions>
                     <execution>
                         <goals>
