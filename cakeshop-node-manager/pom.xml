@@ -7,7 +7,7 @@
     <version>0.10.0</version>
   </parent>
 
-    <groupId>com.jpmorgan.node.manager</groupId>
+    <groupId>com.jpmorgan</groupId>
     <artifactId>cakeshop-node-manager</artifactId>
     <version>0.10.0</version>
     <packaging>war</packaging>
