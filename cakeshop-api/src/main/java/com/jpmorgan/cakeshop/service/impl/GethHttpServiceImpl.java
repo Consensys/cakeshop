@@ -717,30 +717,44 @@ public class GethHttpServiceImpl implements GethHttpService {
         LOG.info("Waiting up to " + timeout + "ms for " + accounts.size() + " accounts to unlock");
 
         int unlocked = 0;
+
+        //wait while geth unlocks accounts
+        try {
+            TimeUnit.MILLISECONDS.sleep(timeout);
+        } catch (InterruptedException e) {
+            logError("Interrupted while waiting for wallet to unlock");
+            return false;
+        }
+
+        //check if all accounts are unlocked
         for (Account account : accounts) {
-            while (true) {
-                try {
-                    if (wallet.isUnlocked(account.getAddress())) {
-                        LOG.debug("Account " + account.getAddress() + " unlocked");
-                        unlocked++;
-                        break;
-                    }
-                } catch (APIException e) {
-                    LOG.debug("Address " + account.getAddress() + " is not unlocked", e);
-                }
+            LOG.info("Checking wallet " + account.getAddress());
+            //           while (true) {
 
-                if (System.currentTimeMillis() - timeStart >= timeout) {
-                    logError("Wallet did not unlock in a timely manner ("
-                            + unlocked + " of " + accounts.size() + " accounts unlocked)");
-                    return false;
+            try {
+                if (wallet.isUnlocked(account.getAddress())) {
+                    LOG.debug("Account " + account.getAddress() + " unlocked");
+                    unlocked++;
+                    break;
+                } else {
+                    LOG.debug("Account " + account.getAddress() + " is NOT unlocked");
                 }
+            } catch (APIException e) {
+                LOG.warn("Could not unlock address " + account.getAddress(), e);
+            }
+//
+//                if (System.currentTimeMillis() - timeStart >= timeout) {
+//                    logError("Wallet did not unlock in a timely manner ("
+//                            + unlocked + " of " + accounts.size() + " accounts unlocked)");
+//                    return false;
+//                }
 
-                try {
-                    TimeUnit.MILLISECONDS.sleep(50);
-                } catch (InterruptedException e) {
-                    logError("Interrupted while waiting for wallet to unlock");
-                    return false;
-                }
+            try {
+                TimeUnit.MILLISECONDS.sleep(50);
+            } catch (InterruptedException e) {
+                logError("Interrupted while waiting for wallet to unlock");
+                return false;
+//                }
             }
         }
 

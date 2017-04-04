@@ -70,7 +70,7 @@ public class SpringBootApplication {
     }
 
     private static void extractGeth(String configDir) throws IOException {
-        URL url = SpringBootApplication.class.getClassLoader().getResource("");
+        URL url = GethConfigBean.class.getClassLoader().getResource("");
         String warUrl = null;
 
         if (url.getProtocol().equals("jar")) {
