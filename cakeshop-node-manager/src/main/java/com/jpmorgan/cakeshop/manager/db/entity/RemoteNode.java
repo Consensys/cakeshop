@@ -15,6 +15,7 @@ public class RemoteNode {
     private String url;
     private String constellationUrl;
     private String nodeAddress;
+    private String cred1, cred2;
     private Boolean clustered = false;
 
     /**
@@ -62,6 +63,34 @@ public class RemoteNode {
      */
     public void setNodeAddress(String nodeAddress) {
         this.nodeAddress = nodeAddress;
+    }
+
+    /**
+     * @return the cred1
+     */
+    public String getCred1() {
+        return cred1;
+    }
+
+    /**
+     * @param cred1 the cred1 to set
+     */
+    public void setCred1(String cred1) {
+        this.cred1 = cred1;
+    }
+
+    /**
+     * @return the cred2
+     */
+    public String getCred2() {
+        return cred2;
+    }
+
+    /**
+     * @param cred2 the cred2 to set
+     */
+    public void setCred2(String cred2) {
+        this.cred2 = cred2;
     }
 
     public Boolean isClustered() {

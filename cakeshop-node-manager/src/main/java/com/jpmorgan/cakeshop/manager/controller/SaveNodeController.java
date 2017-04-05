@@ -12,6 +12,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -34,12 +35,18 @@ public class SaveNodeController {
     protected Boolean saveRemoteNode(@RequestBody RemoteNode node) throws URISyntaxException {
         URI uri = new URI(node.getNodeAddress());
         node.setId(uri.getUserInfo());
+        if (StringUtils.isNotBlank(node.getCred2())) {
+            node.setCred2(Base64.encodeBase64String(node.getCred2().getBytes()));
+        }
         service.insert(node);
         return true;
     }
 
     @RequestMapping({"/db/update"})
     protected Boolean updateRemoteNode(@RequestBody RemoteNode node) {
+        if (StringUtils.isNotBlank(node.getCred2())) {
+            node.setCred2(Base64.encodeBase64String(node.getCred2().getBytes()));
+        }
         service.update(node);
         return true;
     }
@@ -67,12 +74,12 @@ public class SaveNodeController {
             for (RemoteNode otherNode : otherNodes) {
 
                 if (!node.isClustered()) {
-                    success = setupCluster(node.getUrl(), otherNode.getNodeAddress(), otherNode.getConstellationUrl());
+                    success = setupCluster(node.getUrl(), otherNode.getNodeAddress(), otherNode.getConstellationUrl(), otherNode.getCred1(), otherNode.getCred2());
                     //make node clustered
                     node.setIsClustered(Boolean.TRUE);
                     updateNode = true;
                 } else if (node.isClustered() && !otherNode.isClustered()) {
-                    success = setupCluster(node.getUrl(), otherNode.getNodeAddress(), otherNode.getConstellationUrl());
+                    success = setupCluster(node.getUrl(), otherNode.getNodeAddress(), otherNode.getConstellationUrl(), otherNode.getCred1(), otherNode.getCred2());
                 }
             }
 
@@ -91,7 +98,7 @@ public class SaveNodeController {
         return otherNodes;
     }
 
-    private Boolean setupCluster(String currentNodeUrl, String otherNodeAddress, String constellationUrl) {
+    private Boolean setupCluster(String currentNodeUrl, String otherNodeAddress, String constellationUrl, String cred1, String cred2) {
 
         //add remote node
         Boolean success = false;
@@ -99,7 +106,7 @@ public class SaveNodeController {
 
         if (StringUtils.isNotBlank(otherNodeAddress)) {
             command.address(otherNodeAddress);
-            APIResponse<APIData<SimpleResult>, Boolean> result = nodeService.addPeer(currentNodeUrl, null, null, command);
+            APIResponse<APIData<SimpleResult>, Boolean> result = nodeService.addPeer(currentNodeUrl, cred1, cred2, command);
             success = result.getErrors() == null || result.getErrors().isEmpty();
         }
 
@@ -107,7 +114,7 @@ public class SaveNodeController {
         if (StringUtils.isNotBlank(constellationUrl)) {
             command = new NodeUpdateCommand();
             command.constellationNode(constellationUrl);
-            APIResponse<APIData<Node>, Node> result = nodeService.addConstellation(currentNodeUrl, null, null, command);
+            APIResponse<APIData<Node>, Node> result = nodeService.addConstellation(currentNodeUrl, cred1, cred2, command);
             success = result.getErrors() == null || result.getErrors().isEmpty();
         }
 
