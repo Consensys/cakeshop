@@ -73,13 +73,14 @@ public class SaveNodeController {
 
             for (RemoteNode otherNode : otherNodes) {
 
+                String cred2 = new String(Base64.decodeBase64(otherNode.getCred2()));
                 if (!node.isClustered()) {
-                    success = setupCluster(node.getUrl(), otherNode.getNodeAddress(), otherNode.getConstellationUrl(), otherNode.getCred1(), otherNode.getCred2());
+                    success = setupCluster(node.getUrl(), otherNode.getNodeAddress(), otherNode.getConstellationUrl(), otherNode.getCred1(), cred2);
                     //make node clustered
                     node.setIsClustered(Boolean.TRUE);
                     updateNode = true;
                 } else if (node.isClustered() && !otherNode.isClustered()) {
-                    success = setupCluster(node.getUrl(), otherNode.getNodeAddress(), otherNode.getConstellationUrl(), otherNode.getCred1(), otherNode.getCred2());
+                    success = setupCluster(node.getUrl(), otherNode.getNodeAddress(), otherNode.getConstellationUrl(), otherNode.getCred1(), cred2);
                 }
             }
 
