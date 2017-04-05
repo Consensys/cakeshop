@@ -69,24 +69,19 @@ public class SaveNodeController {
 
         for (RemoteNode node : nodes) {
             List<RemoteNode> otherNodes = getOtherNodes(nodes, node.getUrl());
-            Boolean updateNode = false;
 
             for (RemoteNode otherNode : otherNodes) {
-
                 String cred2 = new String(Base64.decodeBase64(otherNode.getCred2()));
                 if (!node.isClustered()) {
                     success = setupCluster(node.getUrl(), otherNode.getNodeAddress(), otherNode.getConstellationUrl(), otherNode.getCred1(), cred2);
                     //make node clustered
                     node.setIsClustered(Boolean.TRUE);
-                    updateNode = true;
+                    service.update(node);
                 } else if (node.isClustered() && !otherNode.isClustered()) {
                     success = setupCluster(node.getUrl(), otherNode.getNodeAddress(), otherNode.getConstellationUrl(), otherNode.getCred1(), cred2);
                 }
             }
 
-            if (updateNode) {
-                service.update(node);
-            }
         }
         return success;
     }
