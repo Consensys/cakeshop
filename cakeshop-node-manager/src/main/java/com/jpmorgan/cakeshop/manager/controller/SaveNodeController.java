@@ -11,6 +11,7 @@ import com.jpmorgan.cakeshop.manager.service.SaveNodeService;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
@@ -64,26 +65,23 @@ public class SaveNodeController {
     @RequestMapping({"/cluster/setup"})
     protected Boolean setupCluster() {
 
-        List<RemoteNode> nodes = service.getRemoteNodesList();
-        Boolean success = false;
+        final List<RemoteNode> nodes = service.getRemoteNodesList();
 
         for (RemoteNode node : nodes) {
-            List<RemoteNode> otherNodes = getOtherNodes(nodes, node.getUrl());
-
-            for (RemoteNode otherNode : otherNodes) {
+            for (RemoteNode otherNode : getOtherNodes(nodes, node.getUrl())) {
                 String cred2 = new String(Base64.decodeBase64(otherNode.getCred2()));
                 if (!node.isClustered()) {
-                    success = setupCluster(node.getUrl(), otherNode.getNodeAddress(), otherNode.getConstellationUrl(), otherNode.getCred1(), cred2);
+                    Boolean success = setupCluster(node.getUrl(), otherNode.getNodeAddress(), otherNode.getConstellationUrl(), otherNode.getCred1(), cred2);
                     //make node clustered
                     node.setIsClustered(Boolean.TRUE);
                     service.update(node);
+                    return success;
                 } else if (node.isClustered() && !otherNode.isClustered()) {
-                    success = setupCluster(node.getUrl(), otherNode.getNodeAddress(), otherNode.getConstellationUrl(), otherNode.getCred1(), cred2);
+                    return setupCluster(node.getUrl(), otherNode.getNodeAddress(), otherNode.getConstellationUrl(), otherNode.getCred1(), cred2);
                 }
             }
-
         }
-        return success;
+        return false;
     }
 
     private List<RemoteNode> getOtherNodes(List<RemoteNode> nodes, String currentNodeUrl) {
