@@ -8,11 +8,13 @@ import com.jpmorgan.cakeshop.client.model.res.SimpleResult;
 import com.jpmorgan.cakeshop.manager.db.entity.RemoteNode;
 import com.jpmorgan.cakeshop.manager.service.NodeManagerService;
 import com.jpmorgan.cakeshop.manager.service.SaveNodeService;
+import com.jpmorgan.cakeshop.manager.utils.Utils;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,7 +71,10 @@ public class SaveNodeController {
 
         for (RemoteNode node : nodes) {
             for (RemoteNode otherNode : getOtherNodes(nodes, node.getUrl())) {
-                String cred2 = new String(Base64.decodeBase64(otherNode.getCred2()));
+                String cred2 = null;
+                if (StringUtils.isNotBlank(otherNode.getCred2())) {
+                    cred2 = new String(Base64.decodeBase64(otherNode.getCred2()));
+                }
                 if (!node.isClustered()) {
                     Boolean success = setupCluster(node.getUrl(), otherNode.getNodeAddress(), otherNode.getConstellationUrl(), otherNode.getCred1(), cred2);
                     //make node clustered
@@ -85,11 +90,8 @@ public class SaveNodeController {
     }
 
     private List<RemoteNode> getOtherNodes(List<RemoteNode> nodes, String currentNodeUrl) {
-        List<RemoteNode> otherNodes = new ArrayList<>();
-        nodes.stream().filter((node) -> (!node.getUrl().equals(currentNodeUrl))).forEachOrdered((node) -> {
-            otherNodes.add(node);
-        });
-        return otherNodes;
+        Function<String, Function<List<RemoteNode>, List<RemoteNode>>> otherNodesFunction = Utils::otherNodes;
+        return otherNodesFunction.apply(currentNodeUrl).apply(nodes);
     }
 
     private Boolean setupCluster(String currentNodeUrl, String otherNodeAddress, String constellationUrl, String cred1, String cred2) {

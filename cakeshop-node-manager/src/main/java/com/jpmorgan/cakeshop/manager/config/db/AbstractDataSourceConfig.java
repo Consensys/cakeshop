@@ -23,7 +23,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
 @EnableTransactionManagement
-@ComponentScan("com.jpmorgan.cakeshop.node.manager.db.entity")
 public abstract class AbstractDataSourceConfig implements ApplicationContextAware {
 
     protected static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AbstractDataSourceConfig.class);
@@ -51,7 +50,7 @@ public abstract class AbstractDataSourceConfig implements ApplicationContextAwar
     public LocalSessionFactoryBean sessionFactory() throws ClassNotFoundException, NamingException {
         LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
         sessionFactory.setDataSource(dataSource());
-        sessionFactory.setPackagesToScan(new String[]{"com.jpmorgan.cakeshop.node.manager.db.entity"});
+        sessionFactory.setPackagesToScan(new String[]{"com.jpmorgan.cakeshop.manager.db.entity"});
         sessionFactory.setHibernateProperties(hibernateProperties());
 
         return sessionFactory;
