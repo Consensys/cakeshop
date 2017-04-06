@@ -2,8 +2,22 @@ package com.jpmorgan.cakeshop.model.json;
 
 public class WalletPostJsonRequest {
 
-    private String account, accountPassword;
+    private String fromAccount, account, accountPassword;
     private Long newBalance;
+
+    /**
+     * @return the formAccount
+     */
+    public String getFromAccount() {
+        return fromAccount;
+    }
+
+    /**
+     * @param formAccount the formAccount to set
+     */
+    public void setFromAccount(String fromAccount) {
+        this.fromAccount = fromAccount;
+    }
 
     /**
      * @return the account

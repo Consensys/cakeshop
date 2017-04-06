@@ -3,7 +3,6 @@ package com.jpmorgan.cakeshop.service.impl;
 import com.jpmorgan.cakeshop.dao.WalletDAO;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Account;
-import com.jpmorgan.cakeshop.model.TransactionRequest;
 import com.jpmorgan.cakeshop.model.json.WalletPostJsonRequest;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.GethRpcConstants;
@@ -113,7 +112,8 @@ public class WalletServiceImpl implements WalletService, GethRpcConstants {
     @Override
     public Boolean fundAccount(WalletPostJsonRequest request) throws APIException {
         try {
-            String accountFrom = list().get(0).getAddress();
+            String accountFrom = StringUtils.isNotBlank(request.getFromAccount()) ? request.getFromAccount()
+                    : list().get(0).getAddress();
             if (accountFrom.equals(request.getAccount())) {
                 accountFrom = list().get(1).getAddress();
             }

@@ -60,6 +60,7 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     public static final String SIMPLE_RESULT = "_result";
     public static final Integer DEFAULT_NETWORK_ID = 1006;
+    public static final Integer DEFAULT_NUMBER_ACCOUNTS = 8;
 
     private static final Logger LOG = LoggerFactory.getLogger(GethHttpServiceImpl.class);
     private static final Logger GETH_LOG = LoggerFactory.getLogger("geth");
@@ -621,19 +622,13 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     private List<String> createGethCommand(String... additionalParams) throws IOException {
 
-        // Figure out how many accounts need unlocking
+        // Only unlock accounts from genesis file
         String accountsToUnlock = "";
-        int numAccounts = walletDAO.list().size();
-        if (numAccounts == 0) {
-            accountsToUnlock = "0,1,2,3,4,5,6,7"; // default to accounts we ship
-
-        } else {
-            for (int i = 0; i < numAccounts; i++) {
-                if (accountsToUnlock.length() > 0) {
-                    accountsToUnlock += ",";
-                }
-                accountsToUnlock += i;
+        for (int i = 0; i < DEFAULT_NUMBER_ACCOUNTS; i++) {
+            if (accountsToUnlock.length() > 0) {
+                accountsToUnlock += ",";
             }
+            accountsToUnlock += i;
         }
 
         //Option to overwrite default port nide post and geth http usr through command line
@@ -712,13 +707,12 @@ public class GethHttpServiceImpl implements GethHttpService {
         }
 
         long timeStart = System.currentTimeMillis();
-        long timeout = gethConfig.getGethUnlockTimeout() * accounts.size(); // default 2 sec per account
+        long timeout = gethConfig.getGethUnlockTimeout() * DEFAULT_NUMBER_ACCOUNTS; // default 2 sec per account
 
-        LOG.info("Waiting up to " + timeout + "ms for " + accounts.size() + " accounts to unlock");
+        LOG.info("Waiting up to " + timeout + "ms for " + DEFAULT_NUMBER_ACCOUNTS + " accounts to unlock");
 
         int unlocked = 0;
 
-        //wait while geth unlocks accounts
         try {
             TimeUnit.MILLISECONDS.sleep(timeout);
         } catch (InterruptedException e) {
@@ -726,35 +720,29 @@ public class GethHttpServiceImpl implements GethHttpService {
             return false;
         }
 
-        //check if all accounts are unlocked
+        //check if default accounts are unlocked
         for (Account account : accounts) {
-            LOG.info("Checking wallet " + account.getAddress());
-            //           while (true) {
 
-            try {
-                if (wallet.isUnlocked(account.getAddress())) {
-                    LOG.debug("Account " + account.getAddress() + " unlocked");
-                    unlocked++;
-                    break;
-                } else {
-                    LOG.debug("Account " + account.getAddress() + " is NOT unlocked");
+            while (true && unlocked < DEFAULT_NUMBER_ACCOUNTS) {
+
+                try {
+                    if (wallet.isUnlocked(account.getAddress())) {
+                        LOG.debug("Account " + account.getAddress() + " unlocked");
+                        unlocked++;
+                        break;
+                    } else {
+                        LOG.debug("Account " + account.getAddress() + " is NOT unlocked");
+                    }
+                } catch (APIException e) {
+                    LOG.warn("Could not unlock address " + account.getAddress(), e);
                 }
-            } catch (APIException e) {
-                LOG.warn("Could not unlock address " + account.getAddress(), e);
-            }
-//
-//                if (System.currentTimeMillis() - timeStart >= timeout) {
-//                    logError("Wallet did not unlock in a timely manner ("
-//                            + unlocked + " of " + accounts.size() + " accounts unlocked)");
-//                    return false;
-//                }
 
-            try {
-                TimeUnit.MILLISECONDS.sleep(50);
-            } catch (InterruptedException e) {
-                logError("Interrupted while waiting for wallet to unlock");
-                return false;
-//                }
+                if (System.currentTimeMillis() - timeStart >= timeout) {
+                    logError("Wallet did not unlock in a timely manner ("
+                            + unlocked + " of " + accounts.size() + " accounts unlocked)");
+                    return false;
+                }
+
             }
         }
 
