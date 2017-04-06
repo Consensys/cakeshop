@@ -11,8 +11,6 @@ import com.jpmorgan.cakeshop.manager.service.SaveNodeService;
 import com.jpmorgan.cakeshop.manager.utils.Utils;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
 import org.apache.commons.codec.binary.Base64;
@@ -67,6 +65,7 @@ public class SaveNodeController {
     @RequestMapping({"/cluster/setup"})
     protected Boolean setupCluster() {
 
+        Boolean success = false;
         final List<RemoteNode> nodes = service.getRemoteNodesList();
 
         for (RemoteNode node : nodes) {
@@ -76,17 +75,16 @@ public class SaveNodeController {
                     cred2 = new String(Base64.decodeBase64(otherNode.getCred2()));
                 }
                 if (!node.isClustered()) {
-                    Boolean success = setupCluster(node.getUrl(), otherNode.getNodeAddress(), otherNode.getConstellationUrl(), otherNode.getCred1(), cred2);
+                    success = setupCluster(node.getUrl(), otherNode.getNodeAddress(), otherNode.getConstellationUrl(), otherNode.getCred1(), cred2);
                     //make node clustered
                     node.setIsClustered(Boolean.TRUE);
                     service.update(node);
-                    return success;
                 } else if (node.isClustered() && !otherNode.isClustered()) {
-                    return setupCluster(node.getUrl(), otherNode.getNodeAddress(), otherNode.getConstellationUrl(), otherNode.getCred1(), cred2);
+                    success = setupCluster(node.getUrl(), otherNode.getNodeAddress(), otherNode.getConstellationUrl(), otherNode.getCred1(), cred2);
                 }
             }
         }
-        return false;
+        return success;
     }
 
     private List<RemoteNode> getOtherNodes(List<RemoteNode> nodes, String currentNodeUrl) {
