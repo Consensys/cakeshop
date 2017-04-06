@@ -7,6 +7,8 @@ import com.jpmorgan.cakeshop.model.APIResponse;
 import com.jpmorgan.cakeshop.model.Account;
 import com.jpmorgan.cakeshop.model.json.WalletPostJsonRequest;
 import com.jpmorgan.cakeshop.service.WalletService;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,6 +63,11 @@ public class WalletController extends BaseController {
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "account", required = true, value = "Account to unlock", dataType = "java.lang.String", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "accountPassword", required = true, value = "Password used to create account", dataType = "java.lang.String", paramType = "body")
+    })
     @RequestMapping("/unlock")
     public ResponseEntity<APIResponse> unlock(@RequestBody WalletPostJsonRequest request) throws APIException {
         Boolean unlocked = walletService.unlockAccount(request);
@@ -68,6 +75,9 @@ public class WalletController extends BaseController {
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "account", required = true, value = "Account to lock", dataType = "java.lang.String", paramType = "body")
+    })
     @RequestMapping("/lock")
     public ResponseEntity<APIResponse> lock(@RequestBody WalletPostJsonRequest request) throws APIException {
         Boolean locked = walletService.lockAccount(request);
@@ -75,6 +85,13 @@ public class WalletController extends BaseController {
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "fromAccount", required = true, value = "Account to fund from", dataType = "java.lang.String", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "account", required = true, value = "Account to fund", dataType = "java.lang.String", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "newBalance", required = true, value = "Fund amount", dataType = "java.lang.Long", paramType = "body")
+    })
     @RequestMapping("/fund")
     public ResponseEntity<APIResponse> fundAccount(@RequestBody WalletPostJsonRequest request) throws APIException {
         Boolean funded = walletService.fundAccount(request);
