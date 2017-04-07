@@ -9,6 +9,8 @@ import com.jpmorgan.cakeshop.model.Transaction;
 import com.jpmorgan.cakeshop.model.TransactionResult;
 import com.jpmorgan.cakeshop.model.json.TransPostJsonResquest;
 import com.jpmorgan.cakeshop.service.TransactionService;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +37,9 @@ public class TransactionController extends BaseController {
     @Autowired
     private TransactionService transactionService;
 
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "id", required = true, value = "Transaction Id", dataType = "java.lang.String", paramType = "body")
+    })
     @RequestMapping("/get")
     public ResponseEntity<APIResponse> getTransaction(
             @RequestBody TransPostJsonResquest jsonRequest) throws APIException {
@@ -61,6 +66,9 @@ public class TransactionController extends BaseController {
         return new ResponseEntity<>(res, HttpStatus.NOT_FOUND);
     }
 
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "ids", required = true, value = "Transaction Id", dataType = "java.util.List<String>", paramType = "body")
+    })
     @RequestMapping("/list")
     public ResponseEntity<APIResponse> getTransactionList(
             @RequestBody TransPostJsonResquest jsonRequest) throws APIException {
@@ -89,6 +97,17 @@ public class TransactionController extends BaseController {
         return new ResponseEntity<>(res, HttpStatus.NOT_FOUND);
     }
 
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "from", required = true, value = "Account from which transaction initiated", dataType = "java.ulang.String", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "to", required = true, value = "Account to which transaction is going to", dataType = "java.ulang.String", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "data", required = true, value = "Transaction data", dataType = "java.ulang.String", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "privateFrom", required = true, value = "Account transaction private from", dataType = "java.ulang.String", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "privateFor", required = true, value = "Account transsaction private for", dataType = "java.ulang.String", paramType = "body")
+    })
     @RequestMapping("/save")
     public WebAsyncTask<ResponseEntity<APIResponse>> transact(
             @RequestBody final TransPostJsonResquest jsonRequest) throws APIException {

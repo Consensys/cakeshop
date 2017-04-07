@@ -9,6 +9,7 @@ import com.jpmorgan.cakeshop.client.model.res.SimpleResult;
 
 import feign.Headers;
 import feign.RequestLine;
+import java.util.List;
 
 public interface NodeApi extends ApiClient.Api {
 
@@ -47,11 +48,11 @@ public interface NodeApi extends ApiClient.Api {
 
     @RequestLine("POST /node/constellation/add")
     @Headers({"Content-type: application/json", "Accepts: application/json",})
-    APIResponse<APIData<SimpleResult>, Boolean> addConstellation(NodeUpdateCommand command);
+    APIResponse<APIData<Node>, Node> addConstellation(NodeUpdateCommand command);
 
     @RequestLine("POST /node/constellation/remove")
     @Headers({"Content-type: application/json", "Accepts: application/json",})
-    APIResponse<APIData<SimpleResult>, Boolean> removeConstellationNode(NodeUpdateCommand command);
+    APIResponse<APIData<Node>, Node> removeConstellationNode(NodeUpdateCommand command);
 
     @RequestLine("POST /node/constellation/stop")
     @Headers({"Content-type: application/json", "Accepts: application/json",})
@@ -60,5 +61,17 @@ public interface NodeApi extends ApiClient.Api {
     @RequestLine("POST /node/constellation/start")
     @Headers({"Content-type: application/json", "Accepts: application/json",})
     APIResponse<APIData<SimpleResult>, Boolean> startConstellation();
+
+    @RequestLine("POST /node/peers/add")
+    @Headers({"Content-type: application/json", "Accepts: application/json",})
+    APIResponse<APIData<SimpleResult>, Boolean> addPeer(NodeUpdateCommand command);
+
+    @RequestLine("POST /node/peers")
+    @Headers({"Content-type: application/json", "Accepts: application/json",})
+    APIResponse<List, Boolean> peers();
+
+    @RequestLine("POST /node/settings/reset")
+    @Headers({"Content-type: application/json", "Accepts: application/json",})
+    APIResponse<APIData<SimpleResult>, Boolean> resetNode();
 
 }

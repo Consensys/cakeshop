@@ -5,12 +5,13 @@ import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 @Entity
-@Table(name="ACCOUNTS")
+@Table(name = "ACCOUNTS")
 public class Account implements Serializable {
 
     /**
@@ -22,9 +23,12 @@ public class Account implements Serializable {
      * Ethereum account address
      */
     @Id
-    String address;
+    private String address;
 
-    String balance;
+    private String balance;
+
+    @Transient
+    private Boolean unlocked;
 
     public String getAddress() {
         return address;
@@ -45,5 +49,13 @@ public class Account implements Serializable {
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+    }
+
+    public Boolean isUnlocked() {
+        return unlocked;
+    }
+
+    public void setUnlocked(Boolean unlocked) {
+        this.unlocked = unlocked;
     }
 }

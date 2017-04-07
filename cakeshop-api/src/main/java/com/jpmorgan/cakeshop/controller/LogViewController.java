@@ -4,6 +4,8 @@ import com.jpmorgan.cakeshop.bean.GethConfigBean;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.json.LogViewJsonRequest;
 import com.jpmorgan.cakeshop.service.LogViewService;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import java.util.Deque;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +37,13 @@ public class LogViewController {
     @Autowired
     private LogViewService service;
 
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "logFileName", required = true, value = "Name of the log to view", dataType = "java.lang.String", paramType = "body")
+        , 
+        @ApiImplicitParam(name = "logType", required = true, value = "What kind og log", dataType = "java.lang.String", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "numberLines", required = true, value = "Number of last lines to view", dataType = "java.lang.Integer", paramType = "body")
+    })
     @RequestMapping("/view")
     public ResponseEntity getLog(@RequestBody LogViewJsonRequest jsonRequest) throws APIException {
 

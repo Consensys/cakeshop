@@ -1,6 +1,5 @@
 package com.jpmorgan.cakeshop.service.impl;
 
-import com.jpmorgan.cakeshop.bean.GethConfigBean;
 import com.jpmorgan.cakeshop.db.MetricsBlockListener;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.APIData;
@@ -9,7 +8,6 @@ import com.jpmorgan.cakeshop.model.Block;
 import com.jpmorgan.cakeshop.model.Node;
 import com.jpmorgan.cakeshop.service.BlockService;
 import com.jpmorgan.cakeshop.service.GethHttpService;
-import com.jpmorgan.cakeshop.service.LogViewService;
 import com.jpmorgan.cakeshop.service.NodeService;
 import com.jpmorgan.cakeshop.service.WebSocketAsyncPushService;
 import com.jpmorgan.cakeshop.service.WebSocketPushService;
@@ -17,7 +15,6 @@ import java.io.File;
 
 import java.util.List;
 import java.util.Map;
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.apache.commons.collections4.map.LRUMap;

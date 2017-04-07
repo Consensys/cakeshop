@@ -15,6 +15,8 @@ import com.jpmorgan.cakeshop.service.ContractService;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.NodeService;
 import com.jpmorgan.cakeshop.util.FileUtils;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -72,6 +74,25 @@ public class NodeController extends BaseController {
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }
 
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "extraParams", required = false, value = "Extra params to start geth", dataType = "java.lang.String", paramType = "body")
+        , 
+        @ApiImplicitParam(name = "genesisBlock", required = false, value = "Genesis block", dataType = "java.lang.String", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "blockMakesAccount", required = false, value = "Block maker account (Quorum only)", dataType = "java.lang.Integer", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "voterAccount", required = false, value = "Voter account (Quorum only)", dataType = "java.lang.String", paramType = "body")
+        , 
+        @ApiImplicitParam(name = "minBlockTime", required = false, value = "Minimial time to generete new Block (Quorum only)", dataType = "java.lang.Integer", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "maxBlockTime", required = false, value = "Maximum time to generete new Block (Quorum only)", dataType = "java.lang.Integer", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "logLevel", required = false, value = "Log verbosity level", dataType = "java.lang.String", paramType = "body")
+        , 
+        @ApiImplicitParam(name = "networkId", required = false, value = "Network Id", dataType = "java.lang.String", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "committingTransactions", required = false, value = "Commit transactions true/false", dataType = "java.lang.Object", paramType = "body")
+    })
     @RequestMapping("/update")
     public ResponseEntity<APIResponse> update(@RequestBody NodePostJsonRequest jsonRequest) throws APIException {
 
@@ -134,6 +155,9 @@ public class NodeController extends BaseController {
         }
     }
 
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "address", required = true, value = "External node address to add", dataType = "java.lang.String", paramType = "body")
+    })
     @RequestMapping("/peers/add")
     public ResponseEntity<APIResponse> addPeer(@RequestBody NodePostJsonRequest jsonRequest) throws APIException {
         if (StringUtils.isBlank(jsonRequest.getAddress())) {
@@ -206,6 +230,9 @@ public class NodeController extends BaseController {
         return new ResponseEntity<>(APIResponse.newSimpleResponse(constellations), HttpStatus.OK);
     }
 
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "constellationNode", required = true, value = "External constellation address(Quorum only)", dataType = "java.lang.String", paramType = "body")
+    })
     @RequestMapping("/constellation/add")
     protected @ResponseBody
     ResponseEntity<APIResponse> addConstellation(@RequestBody NodePostJsonRequest jsonRequest)
@@ -214,6 +241,9 @@ public class NodeController extends BaseController {
         return doGet();
     }
 
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "constellationNode", required = true, value = "External constellation address(Quorum only)", dataType = "java.lang.String", paramType = "body")
+    })
     @RequestMapping("/constellation/remove")
     protected @ResponseBody
     ResponseEntity<APIResponse> removeConstellation(@RequestBody NodePostJsonRequest jsonRequest)

@@ -6,6 +6,7 @@ import com.jpmorgan.cakeshop.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -69,7 +70,17 @@ public class SpringBootApplication {
     }
 
     private static void extractGeth(String configDir) throws IOException {
-        File war = FileUtils.toFile(GethConfigBean.class.getClassLoader().getResource(""));
+        URL url = GethConfigBean.class.getClassLoader().getResource("");
+        String warUrl = null;
+
+        if (url.getProtocol().equals("jar")) {
+            warUrl = url.toString().replaceFirst("jar:", "");
+            warUrl = warUrl.substring(0, warUrl.indexOf("!"));
+        }
+
+        URL newUrl = StringUtils.isNotBlank(warUrl) ? new URL(warUrl) : url;
+        File war = FileUtils.toFile(newUrl);
+
         if (!war.toString().endsWith(".war")) {
             return; // no need to copy
         }
@@ -77,9 +88,7 @@ public class SpringBootApplication {
         String gethDir = FileUtils.expandPath(configDir, "geth");
         System.out.println("Extracting geth to " + gethDir);
 
-        ZipFile warZip = null;
-        try {
-            warZip = new ZipFile(war);
+        try (ZipFile warZip = new ZipFile(war)) {
             Enumeration<? extends ZipEntry> entries = warZip.entries();
             while (entries.hasMoreElements()) {
                 ZipEntry zipEntry = entries.nextElement();
@@ -94,10 +103,6 @@ public class SpringBootApplication {
                     targetDir.mkdirs();
                 }
                 FileUtils.copyInputStreamToFile(warZip.getInputStream(zipEntry), target);
-            }
-        } finally {
-            if (warZip != null) {
-                warZip.close();
             }
         }
 

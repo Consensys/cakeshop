@@ -7,6 +7,8 @@ import com.jpmorgan.cakeshop.model.Block;
 import com.jpmorgan.cakeshop.model.json.BlockPostJsonRequest;
 import com.jpmorgan.cakeshop.service.BlockService;
 import com.jpmorgan.cakeshop.util.StringUtils;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,6 +29,15 @@ public class BlockController extends BaseController {
     @Autowired
     BlockService blockService;
 
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "id", required = false, value = "get block by id", dataType = "java.lang.String", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "hash", required = false, value = "get block by hash if id is missing", dataType = "java.lang.String", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "number", required = false, value = "get block by number if id or hash is missing", dataType = "java.lang.Long", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "tag", required = false, value = "get block by tag if id, hash and number are missing", dataType = "java.lang.String", paramType = "body")
+    })
     @RequestMapping("/get")
     public ResponseEntity<APIResponse> getBlock(@RequestBody BlockPostJsonRequest jsonRequest) throws APIException {
 
