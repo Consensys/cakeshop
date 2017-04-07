@@ -13,9 +13,10 @@ import com.jpmorgan.cakeshop.model.Transaction;
 import com.jpmorgan.cakeshop.model.TransactionRequest;
 import com.jpmorgan.cakeshop.model.TransactionResult;
 import com.jpmorgan.cakeshop.model.json.ContractPostJsonRequest;
-import com.jpmorgan.cakeshop.service.ContractRegistryService;
 import com.jpmorgan.cakeshop.service.ContractService;
 import com.jpmorgan.cakeshop.service.ContractService.CodeType;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,9 +43,9 @@ public class ContractController extends BaseController {
     @Autowired
     private ContractService contractService;
 
-    @Autowired
-    private ContractRegistryService contractRegistry;
-
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "address", required = true, value = "Contract address", dataType = "java.lang.String", paramType = "body")
+    })
     @RequestMapping("/get")
     public ResponseEntity<APIResponse> getContract(@RequestBody ContractPostJsonRequest jsonRequest) throws APIException {
 
@@ -64,6 +65,13 @@ public class ContractController extends BaseController {
         return new ResponseEntity<>(res, HttpStatus.NOT_FOUND);
     }
 
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "code", required = true, value = "Contract code", dataType = "java.lang.String", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "code_type", required = true, value = "Only solidity is supported for now.", dataType = "java.lang.String", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "optimize", required = false, value = "Optimize code.", dataType = "java.lang.Boollean", paramType = "body")
+    })
     @RequestMapping("/compile")
     public ResponseEntity<APIResponse> compile(@RequestBody ContractPostJsonRequest jsonRequest) throws APIException {
 
@@ -83,6 +91,21 @@ public class ContractController extends BaseController {
         return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
     }
 
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "code", required = true, value = "Contract code", dataType = "java.lang.String", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "code_type", required = true, value = "Only solidity is supported for now.", dataType = "java.lang.String", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "from", required = true, value = "Account from address", dataType = "java.lang.String", paramType = "body")
+        , 
+        @ApiImplicitParam(name = "args", required = true, value = "Function arguments to pass", dataType = "java.util.Arrays", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "binary", required = false, value = "Bynary contract code.", dataType = "java.lang.String", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "privateFrom", required = false, value = "Private from Account", dataType = "java.lang.String", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "privateFor", required = false, value = "Private for Account", dataType = "java.lang.String", paramType = "body")
+    })
     @RequestMapping("/create")
     public ResponseEntity<APIResponse> create(@RequestBody ContractPostJsonRequest jsonRequest) throws APIException {
 
@@ -113,6 +136,15 @@ public class ContractController extends BaseController {
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "from", required = true, value = "Account from address", dataType = "java.lang.String", paramType = "body")
+        , 
+        @ApiImplicitParam(name = "address", required = true, value = "Account address", dataType = "java.lang.String", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "method", required = true, value = "Contract method to execute.", dataType = "java.lang.String", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "args", required = true, value = "Args for contratc method", dataType = "java.util.Arrays", paramType = "body")
+    })
     @RequestMapping("/read")
     public ResponseEntity<APIResponse> read(@RequestBody ContractPostJsonRequest jsonRequest) throws APIException {
 
@@ -166,6 +198,19 @@ public class ContractController extends BaseController {
         return args;
     }
 
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "from", required = true, value = "Account from address", dataType = "java.lang.String", paramType = "body")
+        , 
+        @ApiImplicitParam(name = "address", required = true, value = "Account address", dataType = "java.lang.String", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "method", required = true, value = "Contract method to execute.", dataType = "java.lang.String", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "args", required = true, value = "Args for contract method", dataType = "java.util.Arrays", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "privateFrom", required = false, value = "Account private from", dataType = "java.lang.String", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "privateFor", required = false, value = "Account private for", dataType = "java.lang.String", paramType = "body")
+    })
     @RequestMapping("/transact")
     public WebAsyncTask<ResponseEntity<APIResponse>> transact(@RequestBody final ContractPostJsonRequest jsonRequest) throws APIException {
 
@@ -188,6 +233,9 @@ public class ContractController extends BaseController {
         return asyncTask;
     }
 
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "address", required = true, value = "Contract Address", dataType = "java.lang.String", paramType = "body")
+    })
     @RequestMapping("/transactions/list")
     public ResponseEntity<APIResponse> listTransactions(@RequestBody final ContractPostJsonRequest jsonRequest) throws APIException {
 

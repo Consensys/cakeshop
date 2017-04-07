@@ -12,6 +12,7 @@ import io.swagger.annotations.ApiImplicitParams;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -66,13 +67,22 @@ public class WalletController extends BaseController {
     @ApiImplicitParams({
         @ApiImplicitParam(name = "account", required = true, value = "Account to unlock", dataType = "java.lang.String", paramType = "body")
         ,
-        @ApiImplicitParam(name = "accountPassword", required = true, value = "Password used to create account", dataType = "java.lang.String", paramType = "body")
+        @ApiImplicitParam(name = "accountPassword", required = false, value = "Password used to create account. Required only if account was created with one.", dataType = "java.lang.String", paramType = "body")
     })
     @RequestMapping("/unlock")
     public ResponseEntity<APIResponse> unlock(@RequestBody WalletPostJsonRequest request) throws APIException {
-        Boolean unlocked = walletService.unlockAccount(request);
-        APIResponse res = APIResponse.newSimpleResponse(unlocked);
-        return new ResponseEntity<>(res, HttpStatus.OK);
+        APIResponse res;
+        if (StringUtils.isBlank(request.getAccount())) {
+            res = new APIResponse();
+            APIError err = new APIError();
+            err.setStatus("400");
+            err.setTitle("Bad request");
+            res.addError(err);
+            return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
+        } else {
+            res = APIResponse.newSimpleResponse(walletService.unlockAccount(request));
+            return new ResponseEntity<>(res, HttpStatus.OK);
+        }
     }
 
     @ApiImplicitParams({
@@ -80,9 +90,19 @@ public class WalletController extends BaseController {
     })
     @RequestMapping("/lock")
     public ResponseEntity<APIResponse> lock(@RequestBody WalletPostJsonRequest request) throws APIException {
-        Boolean locked = walletService.lockAccount(request);
-        APIResponse res = APIResponse.newSimpleResponse(locked);
-        return new ResponseEntity<>(res, HttpStatus.OK);
+
+        APIResponse res;
+        if (StringUtils.isBlank(request.getAccount())) {
+            res = new APIResponse();
+            APIError err = new APIError();
+            err.setStatus("400");
+            err.setTitle("Bad request");
+            res.addError(err);
+            return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
+        } else {
+            res = APIResponse.newSimpleResponse(walletService.lockAccount(request));
+            return new ResponseEntity<>(res, HttpStatus.OK);
+        }
     }
 
     @ApiImplicitParams({
@@ -94,9 +114,20 @@ public class WalletController extends BaseController {
     })
     @RequestMapping("/fund")
     public ResponseEntity<APIResponse> fundAccount(@RequestBody WalletPostJsonRequest request) throws APIException {
-        Boolean funded = walletService.fundAccount(request);
-        APIResponse res = APIResponse.newSimpleResponse(funded);
-        return new ResponseEntity<>(res, HttpStatus.OK);
+
+        APIResponse res;
+        if (StringUtils.isBlank(request.getFromAccount()) || StringUtils.isBlank(request.getAccount())
+                || null == request.getNewBalance()) {
+            res = new APIResponse();
+            APIError err = new APIError();
+            err.setStatus("400");
+            err.setTitle("Bad request");
+            res.addError(err);
+            return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
+        } else {
+            res = APIResponse.newSimpleResponse(walletService.fundAccount(request));
+            return new ResponseEntity<>(res, HttpStatus.OK);
+        }
     }
 
 }
