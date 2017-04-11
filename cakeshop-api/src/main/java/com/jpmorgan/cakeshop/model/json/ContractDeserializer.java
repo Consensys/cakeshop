@@ -10,7 +10,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Lists;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import org.springframework.util.StringUtils;
 
@@ -60,8 +62,19 @@ public class ContractDeserializer extends JsonDeserializer<ContractPostJsonReque
         }
 
         if (null != node.get("args")) {
-            List<String> args = node.findValuesAsText(node.get("args").asText());
-            request.setArgs(args.toArray());
+            JsonNode argsNode = node.get("args");
+            List<String> args;
+            if (argsNode.isArray()) {
+                args = Lists.newArrayList();
+                for (Iterator<JsonNode> iter = argsNode.elements(); iter.hasNext();) {
+                    args.add(iter.next().asText());
+                }
+                request.setArgs(args.toArray());
+
+            } else {
+                args = Lists.newArrayList(node.get("args").textValue());
+                request.setArgs(args.toArray());
+            }
         }
 
         return request;

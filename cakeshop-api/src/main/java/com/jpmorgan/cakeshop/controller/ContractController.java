@@ -212,7 +212,7 @@ public class ContractController extends BaseController {
         @ApiImplicitParam(name = "privateFor", required = false, value = "Account private for", dataType = "java.lang.String", paramType = "body")
     })
     @RequestMapping("/transact")
-    public WebAsyncTask<ResponseEntity<APIResponse>> transact(@RequestBody final ContractPostJsonRequest jsonRequest) throws APIException {
+    public WebAsyncTask<ResponseEntity<APIResponse>> transact(@RequestBody ContractPostJsonRequest jsonRequest) throws APIException {
 
         Callable<ResponseEntity<APIResponse>> callable = new Callable<ResponseEntity<APIResponse>>() {
             @Override

@@ -13,10 +13,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.io.IOException;
 import org.springframework.util.StringUtils;
 
-/**
- *
- * @author I629630
- */
 public class TransactionDeserializer extends JsonDeserializer<TransPostJsonResquest> {
 
     @Override
@@ -44,7 +40,7 @@ public class TransactionDeserializer extends JsonDeserializer<TransPostJsonResqu
         }
 
         if (null != node.get("id")) {
-            request.setTo(node.get("id").textValue());
+            request.setId(node.get("id").textValue());
         }
 
         if (null != node.get("from")) {
@@ -56,7 +52,7 @@ public class TransactionDeserializer extends JsonDeserializer<TransPostJsonResqu
         }
 
         if (null != node.get("data")) {
-            request.setTo(node.get("data").textValue());
+            request.setData(node.get("data").textValue());
         }
 
         if (null != node.get("privateFrom")) {
