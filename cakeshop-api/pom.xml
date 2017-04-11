@@ -15,7 +15,7 @@
     <name>Cakeshop API</name>
 
     <properties>
-        <geth.url.base>https://s3.amazonaws.com/com.jpmchase.cakeshop/</geth.url.base>
+        <geth.url.base>https://github.com/fixanoid/cakeshop/releases/download/0.10.0/</geth.url.base>
     </properties>
 
     <profiles>
@@ -120,7 +120,7 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-context-support</artifactId>
         </dependency>
-    
+
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
