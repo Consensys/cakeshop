@@ -69,12 +69,10 @@ public class ContractDeserializer extends JsonDeserializer<ContractPostJsonReque
                 for (Iterator<JsonNode> iter = argsNode.elements(); iter.hasNext();) {
                     args.add(iter.next().asText());
                 }
-                request.setArgs(args.toArray());
-
             } else {
                 args = Lists.newArrayList(node.get("args").textValue());
-                request.setArgs(args.toArray());
             }
+            request.setArgs(args.toArray());
         }
 
         return request;
