@@ -67,7 +67,7 @@ public class TransactionController extends BaseController {
     }
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "ids", required = true, value = "Transaction Id", dataType = "java.util.List<String>", paramType = "body")
+        @ApiImplicitParam(name = "ids", required = true, value = "Hash or Transaction receipt", dataType = "java.util.List<String>", paramType = "body")
     })
     @RequestMapping("/list")
     public ResponseEntity<APIResponse> getTransactionList(
