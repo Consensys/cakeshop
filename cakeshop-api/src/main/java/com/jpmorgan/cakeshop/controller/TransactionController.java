@@ -82,9 +82,9 @@ public class TransactionController extends BaseController {
         APIResponse res = new APIResponse();
 
         if (txns != null && !txns.isEmpty()) {
-            for (Transaction txn : txns) {
+            txns.forEach((txn) -> {
                 data.add(txn.toAPIData());
-            }
+            });
             res.setData(data);
             return new ResponseEntity<>(res, HttpStatus.OK);
         }
@@ -112,20 +112,17 @@ public class TransactionController extends BaseController {
     public WebAsyncTask<ResponseEntity<APIResponse>> transact(
             @RequestBody final TransPostJsonResquest jsonRequest) throws APIException {
 
-        Callable<ResponseEntity<APIResponse>> callable = new Callable<ResponseEntity<APIResponse>>() {
-            @Override
-            public ResponseEntity<APIResponse> call() throws Exception {
-                DirectTransactionRequest req = new DirectTransactionRequest(jsonRequest.getFrom(),
-                        jsonRequest.getTo(), jsonRequest.getData(), false);
-                req.setPrivateFrom(jsonRequest.getPrivateFrom());
-                req.setPrivateFor(jsonRequest.getPrivateFor());
+        Callable<ResponseEntity<APIResponse>> callable = () -> {
+            DirectTransactionRequest req = new DirectTransactionRequest(jsonRequest.getFrom(),
+                    jsonRequest.getTo(), jsonRequest.getData(), false);
+            req.setPrivateFrom(jsonRequest.getPrivateFrom());
+            req.setPrivateFor(jsonRequest.getPrivateFor());
 
-                TransactionResult result = transactionService.directTransact(req);
-                APIResponse res = new APIResponse();
-                res.setData(result.toAPIData());
-                ResponseEntity<APIResponse> response = new ResponseEntity<>(res, HttpStatus.OK);
-                return response;
-            }
+            TransactionResult result = transactionService.directTransact(req);
+            APIResponse res = new APIResponse();
+            res.setData(result.toAPIData());
+            ResponseEntity<APIResponse> response = new ResponseEntity<>(res, HttpStatus.OK);
+            return response;
         };
         WebAsyncTask asyncTask = new WebAsyncTask(callable);
         return asyncTask;
