@@ -14,7 +14,6 @@ import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
-import org.springframework.util.StringUtils;
 
 public class ContractDeserializer extends JsonDeserializer<ContractPostJsonRequest> {
 
@@ -22,13 +21,19 @@ public class ContractDeserializer extends JsonDeserializer<ContractPostJsonReque
     public ContractPostJsonRequest deserialize(JsonParser jp, DeserializationContext dc) throws IOException, JsonProcessingException {
         ContractPostJsonRequest request = new ContractPostJsonRequest();
         JsonNode node = jp.getCodec().readTree(jp);
+
         if (null != node.get("privateFor")) {
-            String privateFor = node.get("privateFor").textValue();
-            if (StringUtils.isEmpty(privateFor)) {
-                request.setPrivateFor(null);
+            JsonNode privateForNode = node.get("privateFor");
+            List<String> privateFor;
+            if (privateForNode.isArray()) {
+                privateFor = Lists.newArrayList();
+                for (Iterator<JsonNode> iter = privateForNode.elements(); iter.hasNext();) {
+                    privateFor.add(iter.next().asText());
+                }
             } else {
-                request.setPrivateFor(node.get("privateFor").findValuesAsText(node.get("privateFor").asText()));
+                privateFor = Lists.newArrayList(node.get("args").textValue());
             }
+            request.setPrivateFor(privateFor);
         }
 
         if (null != node.get("code")) {
