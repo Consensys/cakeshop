@@ -9,7 +9,8 @@ module.exports = function() {
 
 		template: _.template(
 			'<div class="form-group">' +
-			'	<iframe src="api.html" style="width: 100%; height: 550px;" scrolling="yes" marginwidth="0" marginheight="0" frameborder="0" vspace="0" hspace="0"></iframe>' +
+			'	<iframe src="swagger-ui.html" style="width: 100%; height: 575px;" scrolling="yes" marginwidth="0" marginheight="0" frameborder="0" vspace="0" hspace="0"></iframe>' +
+			'	<iframe src="api.html" style="width: 100%; height: 460px;" scrolling="yes" marginwidth="0" marginheight="0" frameborder="0" vspace="0" hspace="0"></iframe>' +
 			'</div>'),
 
 		getVisible: function() {
