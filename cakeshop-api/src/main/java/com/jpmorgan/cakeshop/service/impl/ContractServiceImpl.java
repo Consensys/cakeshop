@@ -129,9 +129,6 @@ public class ContractServiceImpl implements ContractService {
                     if (proc.exitValue() == 0) {
                         break;
                     }
-                    if (proc.isAlive()) {
-                        proc.destroy();
-                    }
                 }
                 if (proc.exitValue() != 0) {
                     LOG.error("Failed Contract code " + code);

@@ -10,13 +10,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Lists;
 import java.io.IOException;
-import org.springframework.util.StringUtils;
+import java.util.Iterator;
+import java.util.List;
 
-/**
- *
- * @author I629630
- */
 public class TransactionDeserializer extends JsonDeserializer<TransPostJsonResquest> {
 
     @Override
@@ -26,25 +24,35 @@ public class TransactionDeserializer extends JsonDeserializer<TransPostJsonResqu
         JsonNode node = jp.getCodec().readTree(jp);
 
         if (null != node.get("privateFor")) {
-            String privateFor = node.get("privateFor").textValue();
-            if (StringUtils.isEmpty(privateFor)) {
-                request.setPrivateFor(null);
+            JsonNode privateForNode = node.get("privateFor");
+            List<String> privateFor;
+            if (privateForNode.isArray()) {
+                privateFor = Lists.newArrayList();
+                for (Iterator<JsonNode> iter = privateForNode.elements(); iter.hasNext();) {
+                    privateFor.add(iter.next().asText());
+                }
             } else {
-                request.setPrivateFor(node.get("privateFor").findValuesAsText(node.get("privateFor").asText()));
+                privateFor = Lists.newArrayList(node.get("args").textValue());
             }
+            request.setPrivateFor(privateFor);
         }
 
         if (null != node.get("ids")) {
-            String ids = node.get("ids").textValue();
-            if (StringUtils.isEmpty(ids)) {
-                request.setIds(null);
+            JsonNode idsNode = node.get("ids");
+            List<String> ids;
+            if (idsNode.isArray()) {
+                ids = Lists.newArrayList();
+                for (Iterator<JsonNode> iter = idsNode.elements(); iter.hasNext();) {
+                    ids.add(iter.next().asText());
+                }
             } else {
-                request.setIds(node.get("ids").findValuesAsText(node.get("ids").asText()));
+                ids = Lists.newArrayList(node.get("ids").textValue());
             }
+            request.setIds(ids);
         }
 
         if (null != node.get("id")) {
-            request.setTo(node.get("id").textValue());
+            request.setId(node.get("id").textValue());
         }
 
         if (null != node.get("from")) {
@@ -56,7 +64,7 @@ public class TransactionDeserializer extends JsonDeserializer<TransPostJsonResqu
         }
 
         if (null != node.get("data")) {
-            request.setTo(node.get("data").textValue());
+            request.setData(node.get("data").textValue());
         }
 
         if (null != node.get("privateFrom")) {

@@ -212,22 +212,19 @@ public class ContractController extends BaseController {
         @ApiImplicitParam(name = "privateFor", required = false, value = "Account private for", dataType = "java.lang.String", paramType = "body")
     })
     @RequestMapping("/transact")
-    public WebAsyncTask<ResponseEntity<APIResponse>> transact(@RequestBody final ContractPostJsonRequest jsonRequest) throws APIException {
+    public WebAsyncTask<ResponseEntity<APIResponse>> transact(@RequestBody ContractPostJsonRequest jsonRequest) throws APIException {
 
-        Callable<ResponseEntity<APIResponse>> callable = new Callable<ResponseEntity<APIResponse>>() {
-            @Override
-            public ResponseEntity<APIResponse> call() throws Exception {
-                TransactionRequest req = createTransactionRequest(jsonRequest.getFrom(), jsonRequest.getAddress(),
-                        jsonRequest.getMethod(), jsonRequest.getArgs(), false, null);
-                req.setPrivateFrom(jsonRequest.getPrivateFrom());
-                req.setPrivateFor(jsonRequest.getPrivateFor());
+        Callable<ResponseEntity<APIResponse>> callable = () -> {
+            TransactionRequest req = createTransactionRequest(jsonRequest.getFrom(), jsonRequest.getAddress(),
+                    jsonRequest.getMethod(), jsonRequest.getArgs(), false, null);
+            req.setPrivateFrom(jsonRequest.getPrivateFrom());
+            req.setPrivateFor(jsonRequest.getPrivateFor());
 
-                TransactionResult tr = contractService.transact(req);
-                APIResponse res = new APIResponse();
-                res.setData(tr.toAPIData());
-                ResponseEntity<APIResponse> response = new ResponseEntity<>(res, HttpStatus.OK);
-                return response;
-            }
+            TransactionResult tr = contractService.transact(req);
+            APIResponse res = new APIResponse();
+            res.setData(tr.toAPIData());
+            ResponseEntity<APIResponse> response = new ResponseEntity<>(res, HttpStatus.OK);
+            return response;
         };
         WebAsyncTask asyncTask = new WebAsyncTask(callable);
         return asyncTask;
@@ -242,9 +239,9 @@ public class ContractController extends BaseController {
         List<Transaction> txns = contractService.listTransactions(jsonRequest.getAddress());
 
         List<APIData> data = new ArrayList<>();
-        for (Transaction tx : txns) {
+        txns.forEach((tx) -> {
             data.add(tx.toAPIData());
-        }
+        });
 
         APIResponse res = new APIResponse();
         res.setData(data);
@@ -258,9 +255,9 @@ public class ContractController extends BaseController {
 
     private List<APIData> toAPIData(List<Contract> contracts) {
         List<APIData> data = new ArrayList<>();
-        for (Contract c : contracts) {
+        contracts.forEach((c) -> {
             data.add(toAPIData(c));
-        }
+        });
         return data;
     }
 
