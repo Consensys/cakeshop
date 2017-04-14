@@ -10,9 +10,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Lists;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
-import org.springframework.util.StringUtils;
 
 public class ContractDeserializer extends JsonDeserializer<ContractPostJsonRequest> {
 
@@ -20,13 +21,19 @@ public class ContractDeserializer extends JsonDeserializer<ContractPostJsonReque
     public ContractPostJsonRequest deserialize(JsonParser jp, DeserializationContext dc) throws IOException, JsonProcessingException {
         ContractPostJsonRequest request = new ContractPostJsonRequest();
         JsonNode node = jp.getCodec().readTree(jp);
+
         if (null != node.get("privateFor")) {
-            String privateFor = node.get("privateFor").textValue();
-            if (StringUtils.isEmpty(privateFor)) {
-                request.setPrivateFor(null);
+            JsonNode privateForNode = node.get("privateFor");
+            List<String> privateFor;
+            if (privateForNode.isArray()) {
+                privateFor = Lists.newArrayList();
+                for (Iterator<JsonNode> iter = privateForNode.elements(); iter.hasNext();) {
+                    privateFor.add(iter.next().asText());
+                }
             } else {
-                request.setPrivateFor(node.get("privateFor").findValuesAsText(node.get("privateFor").asText()));
+                privateFor = Lists.newArrayList(node.get("args").textValue());
             }
+            request.setPrivateFor(privateFor);
         }
 
         if (null != node.get("code")) {
@@ -60,7 +67,16 @@ public class ContractDeserializer extends JsonDeserializer<ContractPostJsonReque
         }
 
         if (null != node.get("args")) {
-            List<String> args = node.findValuesAsText(node.get("args").asText());
+            JsonNode argsNode = node.get("args");
+            List<String> args;
+            if (argsNode.isArray()) {
+                args = Lists.newArrayList();
+                for (Iterator<JsonNode> iter = argsNode.elements(); iter.hasNext();) {
+                    args.add(iter.next().asText());
+                }
+            } else {
+                args = Lists.newArrayList(node.get("args").textValue());
+            }
             request.setArgs(args.toArray());
         }
 

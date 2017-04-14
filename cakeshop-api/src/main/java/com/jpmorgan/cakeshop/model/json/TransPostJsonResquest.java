@@ -11,8 +11,13 @@ import java.util.List;
 @JsonDeserialize(using = TransactionDeserializer.class)
 public class TransPostJsonResquest {
 
-    private String id, from, to, data, privateFrom;
-    private List<String> privateFor, ids;
+    private String id;
+    private String from;
+    private String to;
+    private String data;
+    private String privateFrom;
+    private List<String> privateFor;
+    private List<String> ids;
 
     public String getId() {
         return id;
