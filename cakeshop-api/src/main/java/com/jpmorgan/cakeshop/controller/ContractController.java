@@ -66,9 +66,9 @@ public class ContractController extends BaseController {
     }
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "code", required = true, value = "Contract code", dataType = "java.lang.String", paramType = "body")
+        @ApiImplicitParam(name = "code", required = false, value = "Required. Contract code", dataType = "java.lang.String", paramType = "body")
         ,
-        @ApiImplicitParam(name = "code_type", required = true, value = "Only solidity is supported for now.", dataType = "java.lang.String", paramType = "body")
+        @ApiImplicitParam(name = "code_type", required = false, value = "Required. Only solidity is supported for now.", dataType = "java.lang.String", paramType = "body")
         ,
         @ApiImplicitParam(name = "optimize", required = false, value = "Optimize code.", dataType = "java.lang.Boollean", paramType = "body")
     })
@@ -92,13 +92,13 @@ public class ContractController extends BaseController {
     }
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "code", required = true, value = "Contract code", dataType = "java.lang.String", paramType = "body")
+        @ApiImplicitParam(name = "code", required = false, value = "Required. Contract code", dataType = "java.lang.String", paramType = "body")
         ,
-        @ApiImplicitParam(name = "code_type", required = true, value = "Only solidity is supported for now.", dataType = "java.lang.String", paramType = "body")
+        @ApiImplicitParam(name = "code_type", required = false, value = "Required. Only solidity is supported for now.", dataType = "java.lang.String", paramType = "body")
         ,
-        @ApiImplicitParam(name = "from", required = true, value = "Account from address", dataType = "java.lang.String", paramType = "body")
+        @ApiImplicitParam(name = "from", required = false, value = "Required. Account from address", dataType = "java.lang.String", paramType = "body")
         , 
-        @ApiImplicitParam(name = "args", required = true, value = "Function arguments to pass", dataType = "java.util.Arrays", paramType = "body")
+        @ApiImplicitParam(name = "args", required = false, value = "Required. Function arguments to pass", dataType = "java.util.Arrays", paramType = "body")
         ,
         @ApiImplicitParam(name = "binary", required = false, value = "Bynary contract code.", dataType = "java.lang.String", paramType = "body")
         ,
@@ -137,13 +137,13 @@ public class ContractController extends BaseController {
     }
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "from", required = true, value = "Account from address", dataType = "java.lang.String", paramType = "body")
+        @ApiImplicitParam(name = "from", required = false, value = "Required. Account from address", dataType = "java.lang.String", paramType = "body")
         , 
-        @ApiImplicitParam(name = "address", required = true, value = "Account address", dataType = "java.lang.String", paramType = "body")
+        @ApiImplicitParam(name = "address", required = false, value = "Required. Account address", dataType = "java.lang.String", paramType = "body")
         ,
-        @ApiImplicitParam(name = "method", required = true, value = "Contract method to execute.", dataType = "java.lang.String", paramType = "body")
+        @ApiImplicitParam(name = "method", required = false, value = "Required. Contract method to execute.", dataType = "java.lang.String", paramType = "body")
         ,
-        @ApiImplicitParam(name = "args", required = true, value = "Args for contratc method", dataType = "java.util.Arrays", paramType = "body")
+        @ApiImplicitParam(name = "args", required = false, value = "Required. Args for contratc method", dataType = "java.util.Arrays", paramType = "body")
     })
     @RequestMapping("/read")
     public ResponseEntity<APIResponse> read(@RequestBody ContractPostJsonRequest jsonRequest) throws APIException {
@@ -199,13 +199,13 @@ public class ContractController extends BaseController {
     }
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "from", required = true, value = "Account from address", dataType = "java.lang.String", paramType = "body")
+        @ApiImplicitParam(name = "from", required = false, value = "Required. Account from address", dataType = "java.lang.String", paramType = "body")
         , 
-        @ApiImplicitParam(name = "address", required = true, value = "Account address", dataType = "java.lang.String", paramType = "body")
+        @ApiImplicitParam(name = "address", required = false, value = "Required. Account address", dataType = "java.lang.String", paramType = "body")
         ,
-        @ApiImplicitParam(name = "method", required = true, value = "Contract method to execute.", dataType = "java.lang.String", paramType = "body")
+        @ApiImplicitParam(name = "method", required = false, value = "Required. Contract method to execute.", dataType = "java.lang.String", paramType = "body")
         ,
-        @ApiImplicitParam(name = "args", required = true, value = "Args for contract method", dataType = "java.util.Arrays", paramType = "body")
+        @ApiImplicitParam(name = "args", required = false, value = "Required. Args for contract method", dataType = "java.util.Arrays", paramType = "body")
         ,
         @ApiImplicitParam(name = "privateFrom", required = false, value = "Account private from", dataType = "java.lang.String", paramType = "body")
         ,
@@ -231,7 +231,7 @@ public class ContractController extends BaseController {
     }
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "address", required = true, value = "Contract Address", dataType = "java.lang.String", paramType = "body")
+        @ApiImplicitParam(name = "address", required = false, value = "Required. Contract Address", dataType = "java.lang.String", paramType = "body")
     })
     @RequestMapping("/transactions/list")
     public ResponseEntity<APIResponse> listTransactions(@RequestBody final ContractPostJsonRequest jsonRequest) throws APIException {

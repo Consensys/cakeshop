@@ -38,11 +38,11 @@ public class LogViewController {
     private LogViewService service;
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "logFileName", required = true, value = "Name of the log to view", dataType = "java.lang.String", paramType = "body")
+        @ApiImplicitParam(name = "logFileName", required = false, value = "Required. Name of the log to view", dataType = "java.lang.String", paramType = "body")
         , 
-        @ApiImplicitParam(name = "logType", required = true, value = "What kind og log", dataType = "java.lang.String", paramType = "body")
+        @ApiImplicitParam(name = "logType", required = false, value = "Required. What kind og log", dataType = "java.lang.String", paramType = "body")
         ,
-        @ApiImplicitParam(name = "numberLines", required = true, value = "Number of last lines to view", dataType = "java.lang.Integer", paramType = "body")
+        @ApiImplicitParam(name = "numberLines", required = false, value = "Required. Number of last lines to view", dataType = "java.lang.Integer", paramType = "body")
     })
     @RequestMapping("/view")
     public ResponseEntity getLog(@RequestBody LogViewJsonRequest jsonRequest) throws APIException {

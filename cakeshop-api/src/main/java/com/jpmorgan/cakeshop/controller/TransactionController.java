@@ -38,7 +38,7 @@ public class TransactionController extends BaseController {
     private TransactionService transactionService;
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "id", required = true, value = "Transaction Id", dataType = "java.lang.String", paramType = "body")
+        @ApiImplicitParam(name = "id", required = false, value = "Required.Transaction Id", dataType = "java.lang.String", paramType = "body")
     })
     @RequestMapping("/get")
     public ResponseEntity<APIResponse> getTransaction(
@@ -67,7 +67,7 @@ public class TransactionController extends BaseController {
     }
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "ids", required = true, value = "Hash or Transaction receipt", dataType = "java.util.List<String>", paramType = "body")
+        @ApiImplicitParam(name = "ids", required = false, value = "Required. Hash or Transaction receipt", dataType = "java.util.List<String>", paramType = "body")
     })
     @RequestMapping("/list")
     public ResponseEntity<APIResponse> getTransactionList(
@@ -98,15 +98,15 @@ public class TransactionController extends BaseController {
     }
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "from", required = true, value = "Account from which transaction initiated", dataType = "java.ulang.String", paramType = "body")
+        @ApiImplicitParam(name = "from", required = false, value = "Required. Account from which transaction initiated", dataType = "java.ulang.String", paramType = "body")
         ,
-        @ApiImplicitParam(name = "to", required = true, value = "Account to which transaction is going to", dataType = "java.ulang.String", paramType = "body")
+        @ApiImplicitParam(name = "to", required = false, value = "Required. Account to which transaction is going to", dataType = "java.ulang.String", paramType = "body")
         ,
-        @ApiImplicitParam(name = "data", required = true, value = "Transaction data", dataType = "java.ulang.String", paramType = "body")
+        @ApiImplicitParam(name = "data", required = false, value = "Required. Transaction data", dataType = "java.ulang.String", paramType = "body")
         ,
-        @ApiImplicitParam(name = "privateFrom", required = true, value = "Account transaction private from", dataType = "java.ulang.String", paramType = "body")
+        @ApiImplicitParam(name = "privateFrom", required = false, value = "Account transaction private from", dataType = "java.ulang.String", paramType = "body")
         ,
-        @ApiImplicitParam(name = "privateFor", required = true, value = "Account transsaction private for", dataType = "java.ulang.String", paramType = "body")
+        @ApiImplicitParam(name = "privateFor", required = false, value = "Account transsaction private for", dataType = "java.ulang.String", paramType = "body")
     })
     @RequestMapping("/save")
     public WebAsyncTask<ResponseEntity<APIResponse>> transact(
