@@ -268,7 +268,7 @@
    */
     function collectInputVals(method, container) {
         var params = {};
-        if (method !== null) {
+        if (method !== null && method !== undefined) {
             method.inputs.forEach(function (input) {
                 var val;
                 if (input.type.match(/\[(\d+)?\]/)) {
