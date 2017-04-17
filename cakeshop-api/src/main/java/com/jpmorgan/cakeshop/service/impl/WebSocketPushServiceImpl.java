@@ -40,7 +40,8 @@ import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 public class WebSocketPushServiceImpl implements WebSocketPushService {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(WebSocketPushServiceImpl.class);
-    private final String GETH_LOG_PATH = System.getProperty("logging.path").concat("/").concat("geth.log");
+    private final String GETH_LOG_PATH = StringUtils.isNotBlank(System.getProperty("logging.path")) ? System.getProperty("logging.path").concat("/").concat("geth.log")
+            : "/geth.log";
 
     private Integer openedSessions = 0, gethLogSessions = 0;
 

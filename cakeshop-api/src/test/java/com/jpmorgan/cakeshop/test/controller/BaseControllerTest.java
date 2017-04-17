@@ -32,8 +32,8 @@ public abstract class BaseControllerTest extends BaseGethRpcTest {
      */
     public abstract Object getController();
 
-//    @BeforeMethod
-//    public void setupMockMvc() throws Exception {
-//        mockMvc = standaloneSetup(getController()).setCustomArgumentResolvers(new JsonMethodArgumentResolver()).build();
-//    }
+    @BeforeMethod
+    public void setupMockMvc() throws Exception {
+        mockMvc = standaloneSetup(getController()).build();
+    }
 }
