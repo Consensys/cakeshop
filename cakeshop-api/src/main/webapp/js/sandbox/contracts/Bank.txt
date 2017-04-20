@@ -8,7 +8,7 @@ contract Owned {
   // be used in derived contracts.
   // The function body is inserted where the special symbol "_" in the
   // definition of a modifier appears.
-  modifier only_contract_owner { if (msg.sender == owner) _ }
+  modifier only_contract_owner { if (msg.sender == owner) _; }
 }
 
 contract Bank is Owned {
@@ -26,7 +26,7 @@ contract Bank is Owned {
   mapping (bytes32 => Record) vault;
 
   // only account owner or Bank owner is allowed
-  modifier only_account_owner(bytes32 _id) { if (vault[_id].owner != 0 && (vault[_id].owner == msg.sender || msg.sender == owner)) _ }
+  modifier only_account_owner(bytes32 _id) { if (vault[_id].owner != 0 && (vault[_id].owner == msg.sender || msg.sender == owner)) _; }
 
   // Log Events
   event Deposit(address indexed _from, bytes32 indexed _id, uint _value, string status);
