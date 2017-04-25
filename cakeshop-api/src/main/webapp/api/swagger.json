@@ -282,6 +282,12 @@
 				],
 				"parameters": [
 					{
+						"name": "from",
+						"type": "string",
+						"description": "Wallet that is sending the Contract, wallet has to be unlocked and has to have a positive balance.",
+						"in": "body"
+					},
+          {
 						"name": "code",
 						"type": "string",
 						"description": "Contract source code",
