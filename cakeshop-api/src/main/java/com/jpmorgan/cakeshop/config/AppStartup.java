@@ -38,7 +38,7 @@ import org.springframework.stereotype.Service;
 public class AppStartup implements ApplicationListener<ApplicationEvent> {
 
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AppStartup.class);
-    private final Long REQUIRED_MEMORY = 20000000L;
+    private final Long REQUIRED_MEMORY = 2000000L;
 
     @Value("${config.path}")
     private String CONFIG_ROOT;
