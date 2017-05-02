@@ -396,7 +396,7 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
 
         //Check if total memory or free memory is Less than 2 GB
         if (MemoryUtils.getMemoryData(false) < REQUIRED_MEMORY && MemoryUtils.getMemoryData(true) < REQUIRED_MEMORY) {
-            errors.add(new ErrorLog("System does not have enough total or free RAM to run cakeshop. Need at Least 2 GB of free RAM"));
+            errors.add(new ErrorLog("System does not have enough total or free RAM to run cakeshop. Need at least 2 GB of free RAM"));
             isHealthy = false;
         }
 
