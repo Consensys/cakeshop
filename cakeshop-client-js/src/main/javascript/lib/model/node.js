@@ -10,7 +10,7 @@
 
         initialize: function() {
             this.id = this.get("id");
-        },
+        }
 
     });
 
