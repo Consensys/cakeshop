@@ -14,6 +14,7 @@ import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 
 public class TransactionDeserializer extends JsonDeserializer<TransPostJsonResquest> {
 
@@ -25,28 +26,32 @@ public class TransactionDeserializer extends JsonDeserializer<TransPostJsonResqu
 
         if (null != node.get("privateFor")) {
             JsonNode privateForNode = node.get("privateFor");
-            List<String> privateFor;
+            List<String> privateFor = null;
             if (privateForNode.isArray()) {
                 privateFor = Lists.newArrayList();
                 for (Iterator<JsonNode> iter = privateForNode.elements(); iter.hasNext();) {
                     privateFor.add(iter.next().asText());
                 }
             } else {
-                privateFor = Lists.newArrayList(node.get("args").textValue());
+                if (StringUtils.isNotBlank(node.get("privateFor").textValue())) {
+                    privateFor = Lists.newArrayList(node.get("privateFor").textValue());
+                }
             }
             request.setPrivateFor(privateFor);
         }
 
         if (null != node.get("ids")) {
             JsonNode idsNode = node.get("ids");
-            List<String> ids;
+            List<String> ids = null;
             if (idsNode.isArray()) {
                 ids = Lists.newArrayList();
                 for (Iterator<JsonNode> iter = idsNode.elements(); iter.hasNext();) {
                     ids.add(iter.next().asText());
                 }
             } else {
-                ids = Lists.newArrayList(node.get("ids").textValue());
+                if (StringUtils.isNotBlank(node.get("ids").textValue())) {
+                    ids = Lists.newArrayList(node.get("ids").textValue());
+                }
             }
             request.setIds(ids);
         }

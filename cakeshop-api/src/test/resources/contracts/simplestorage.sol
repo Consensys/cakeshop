@@ -1,3 +1,4 @@
+pragma solidity ^0.4.9;
 contract SimpleStorage {
 	event Debug(string msg, uint val);
     uint storedData;

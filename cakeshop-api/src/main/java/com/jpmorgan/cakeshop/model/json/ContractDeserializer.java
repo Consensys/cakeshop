@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
+import com.jpmorgan.cakeshop.util.StringUtils;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -24,14 +25,16 @@ public class ContractDeserializer extends JsonDeserializer<ContractPostJsonReque
 
         if (null != node.get("privateFor")) {
             JsonNode privateForNode = node.get("privateFor");
-            List<String> privateFor;
+            List<String> privateFor = null;
             if (privateForNode.isArray()) {
                 privateFor = Lists.newArrayList();
                 for (Iterator<JsonNode> iter = privateForNode.elements(); iter.hasNext();) {
                     privateFor.add(iter.next().asText());
                 }
             } else {
-                privateFor = Lists.newArrayList(node.get("args").textValue());
+                if (StringUtils.isNotBlank(node.get("privateFor").textValue())) {
+                    privateFor = Lists.newArrayList(node.get("privateFor").textValue());
+                }
             }
             request.setPrivateFor(privateFor);
         }
@@ -68,14 +71,16 @@ public class ContractDeserializer extends JsonDeserializer<ContractPostJsonReque
 
         if (null != node.get("args")) {
             JsonNode argsNode = node.get("args");
-            List<String> args;
+            List<String> args = null;
             if (argsNode.isArray()) {
                 args = Lists.newArrayList();
                 for (Iterator<JsonNode> iter = argsNode.elements(); iter.hasNext();) {
                     args.add(iter.next().asText());
                 }
             } else {
-                args = Lists.newArrayList(node.get("args").textValue());
+                if (StringUtils.isNotBlank(node.get("args").textValue())) {
+                    args = Lists.newArrayList(node.get("args").textValue());
+                }
             }
             request.setArgs(args.toArray());
         }

@@ -65,7 +65,7 @@ public class WalletController extends BaseController {
     }
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "account", required = true, value = "Account to unlock", dataType = "java.lang.String", paramType = "body")
+        @ApiImplicitParam(name = "account", required = false, value = "Required. Account to unlock", dataType = "java.lang.String", paramType = "body")
         ,
         @ApiImplicitParam(name = "accountPassword", required = false, value = "Password used to create account. Required only if account was created with one.", dataType = "java.lang.String", paramType = "body")
     })
@@ -86,7 +86,7 @@ public class WalletController extends BaseController {
     }
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "account", required = true, value = "Account to lock", dataType = "java.lang.String", paramType = "body")
+        @ApiImplicitParam(name = "account", required = false, value = "Required. Account to lock", dataType = "java.lang.String", paramType = "body")
     })
     @RequestMapping("/lock")
     public ResponseEntity<APIResponse> lock(@RequestBody WalletPostJsonRequest request) throws APIException {
@@ -106,11 +106,11 @@ public class WalletController extends BaseController {
     }
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "fromAccount", required = true, value = "Account to fund from", dataType = "java.lang.String", paramType = "body")
+        @ApiImplicitParam(name = "fromAccount", required = false, value = "Required. Account to fund from", dataType = "java.lang.String", paramType = "body")
         ,
-        @ApiImplicitParam(name = "account", required = true, value = "Account to fund", dataType = "java.lang.String", paramType = "body")
+        @ApiImplicitParam(name = "account", required = false, value = "Required. Account to fund", dataType = "java.lang.String", paramType = "body")
         ,
-        @ApiImplicitParam(name = "newBalance", required = true, value = "Fund amount", dataType = "java.lang.Long", paramType = "body")
+        @ApiImplicitParam(name = "newBalance", required = false, value = "Required. Fund amount", dataType = "java.lang.Long", paramType = "body")
     })
     @RequestMapping("/fund")
     public ResponseEntity<APIResponse> fundAccount(@RequestBody WalletPostJsonRequest request) throws APIException {

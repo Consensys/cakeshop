@@ -45,58 +45,58 @@ import org.testng.annotations.BeforeClass;
 //@Listeners(CleanConsoleListener.class) // uncomment for extra debug help
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS)
 public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(BaseGethRpcTest.class);
-    
+
     static {
         System.setProperty("spring.profiles.active", "test");
         System.setProperty("cakeshop.database.vendor", "hsqldb");
     }
-    
+
     @Autowired
     private ContractService contractService;
-    
+
     @Autowired
     private TransactionService transactionService;
-    
+
     @Autowired
     private AppStartup appStartup;
-    
+
     @Autowired
     protected GethHttpService geth;
-    
+
     @Value("${geth.datadir}")
     private String ethDataDir;
-    
+
     @Value("${config.path}")
     private String CONFIG_ROOT;
-    
+
     @Autowired
     private GethConfigBean gethConfig;
-    
+
     @Autowired
     @Qualifier("hsql")
     private DataSource embeddedDb;
-    
+
     public BaseGethRpcTest() {
         super();
     }
-    
+
     public boolean runGeth() {
         return true;
     }
-    
+
     @AfterSuite(alwaysRun = true)
     public void stopSolc() throws IOException {
         List<String> args = Lists.newArrayList(
                 gethConfig.getNodePath(),
                 gethConfig.getSolcPath(),
                 "--stop-ipc");
-        
+
         ProcessBuilder builder = ProcessUtils.createProcessBuilder(gethConfig, args);
         builder.start();
     }
-    
+
     @AfterSuite(alwaysRun = true)
     public void cleanupTempPaths() {
         try {
@@ -107,18 +107,18 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
         } catch (IOException e) {
         }
     }
-    
+
     @BeforeClass
     public void startGeth() throws IOException {
         if (!runGeth()) {
             return;
         }
-        
+
         assertTrue(appStartup.isHealthy(), "Healthcheck should pass");
         LOG.info("Starting Ethereum at test startup");
         assertTrue(_startGeth());
     }
-    
+
     private boolean _startGeth() throws IOException {
         gethConfig.setGenesisBlockFilename(FileUtils.getClasspathPath("genesis_block.json").toAbsolutePath().toString());
         gethConfig.setKeystorePath(FileUtils.getClasspathPath("keystore").toAbsolutePath().toString());
@@ -150,7 +150,7 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
         LOG.info("Stopping Ethereum at test teardown");
         _stopGeth();
     }
-    
+
     private void _stopGeth() {
         gethConfig.setIsEmbeddedQuorum(false);
         geth.stop();
@@ -203,10 +203,12 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
         assertTrue(!result.getId().isEmpty());
 
         // make sure mining is enabled
-        Map<String, Object> res = geth.executeGethCall("miner_start", new Object[]{});
-        
+        if (!gethConfig.isQuorum()) {
+            Map<String, Object> res = geth.executeGethCall("miner_start", new Object[]{});
+        }
+
         Transaction tx = transactionService.waitForTx(result, 50, TimeUnit.MILLISECONDS);
         return tx.getContractAddress();
     }
-    
+
 }

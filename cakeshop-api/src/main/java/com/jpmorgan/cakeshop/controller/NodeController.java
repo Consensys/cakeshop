@@ -156,7 +156,7 @@ public class NodeController extends BaseController {
     }
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "address", required = true, value = "External node address to add", dataType = "java.lang.String", paramType = "body")
+        @ApiImplicitParam(name = "address", required = false, value = "Required. External node address to add", dataType = "java.lang.String", paramType = "body")
     })
     @RequestMapping("/peers/add")
     public ResponseEntity<APIResponse> addPeer(@RequestBody NodePostJsonRequest jsonRequest) throws APIException {
@@ -231,7 +231,7 @@ public class NodeController extends BaseController {
     }
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "constellationNode", required = true, value = "External constellation address(Quorum only)", dataType = "java.lang.String", paramType = "body")
+        @ApiImplicitParam(name = "constellationNode", required = false, value = "Required. External constellation address(Quorum only)", dataType = "java.lang.String", paramType = "body")
     })
     @RequestMapping("/constellation/add")
     protected @ResponseBody
@@ -242,7 +242,7 @@ public class NodeController extends BaseController {
     }
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "constellationNode", required = true, value = "External constellation address(Quorum only)", dataType = "java.lang.String", paramType = "body")
+        @ApiImplicitParam(name = "constellationNode", required = false, value = "Required. External constellation address(Quorum only)", dataType = "java.lang.String", paramType = "body")
     })
     @RequestMapping("/constellation/remove")
     protected @ResponseBody

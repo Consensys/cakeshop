@@ -7,16 +7,16 @@ import com.jpmorgan.cakeshop.error.ErrorLog;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.util.EEUtils;
 import com.jpmorgan.cakeshop.util.FileUtils;
+import com.jpmorgan.cakeshop.util.MemoryUtils;
 import com.jpmorgan.cakeshop.util.ProcessUtils;
 import com.jpmorgan.cakeshop.util.StreamGobbler;
 import com.jpmorgan.cakeshop.util.StringUtils;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,6 +38,7 @@ import org.springframework.stereotype.Service;
 public class AppStartup implements ApplicationListener<ApplicationEvent> {
 
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AppStartup.class);
+    private final Long REQUIRED_MEMORY = 2000000L;
 
     @Value("${config.path}")
     private String CONFIG_ROOT;
@@ -251,12 +252,7 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         List<File> files = new ArrayList<>();
 
         if (dir.exists()) {
-            files.addAll(Lists.newArrayList(dir.listFiles(new FilenameFilter() {
-                @Override
-                public boolean accept(File dir, String filename) {
-                    return filename.endsWith("release");
-                }
-            })));
+            files.addAll(Lists.newArrayList(dir.listFiles((File dir1, String filename) -> filename.endsWith("release"))));
         }
 
         // looks for the version file (not all linux distros)
@@ -275,15 +271,15 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         str.append("Linux release info:");
 
         // prints all the version-related files
-        for (File f : files) {
+        files.forEach((f) -> {
             try {
-                String ver = FileUtils.readFileToString(f);
+                String ver = FileUtils.readFileToString(f, Charset.defaultCharset());
                 if (!StringUtils.isBlank(ver)) {
                     str.append(ver);
                 }
             } catch (IOException e) {
             }
-        }
+        });
         str.append("\n\n");
         return str.toString();
     }
@@ -294,17 +290,14 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         allErrors.addAll(errors);
         allErrors.addAll(geth.getStartupErrors());
 
-        Collections.sort(allErrors, new Comparator<ErrorLog>() {
-            @Override
-            public int compare(ErrorLog o1, ErrorLog o2) {
-                long result = o1.nanos - o2.nanos;
-                if (result < 0) {
-                    return -1;
-                } else if (result > 0) {
-                    return 1;
-                } else {
-                    return 0;
-                }
+        Collections.sort(allErrors, (ErrorLog o1, ErrorLog o2) -> {
+            long result = o1.nanos - o2.nanos;
+            if (result < 0) {
+                return -1;
+            } else if (result > 0) {
+                return 1;
+            } else {
+                return 0;
             }
         });
         return allErrors;
@@ -317,9 +310,9 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         }
 
         StringBuilder out = new StringBuilder();
-        for (ErrorLog err : allErrors) {
+        allErrors.forEach((err) -> {
             out.append(err.toString()).append("\n\n");
-        }
+        });
         return out.toString();
     }
 
@@ -400,6 +393,12 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
 
         System.out.println(StringUtils.repeat("*", 80));
         System.out.println();
+
+        //Check if total memory or free memory is Less than 2 GB
+        if (MemoryUtils.getMemoryData(false) < REQUIRED_MEMORY && MemoryUtils.getMemoryData(true) < REQUIRED_MEMORY) {
+            errors.add(new ErrorLog("System does not have enough total or free RAM to run cakeshop. Need at least 2 GB of free RAM"));
+            isHealthy = false;
+        }
 
         return isHealthy;
     }
