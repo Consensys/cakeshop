@@ -403,9 +403,9 @@
 				],
 				"parameters": [
 					{
-						"name": "id",
+						"name": "address",
 						"type": "string",
-						"description": "ID (address) of Contract to retrieve",
+						"description": "Address (id) of Contract to retrieve",
 						"example": "0x01f999deef030a0f3c55cec46e6693c06c6b01f8",
 						"in": "body"
 					}
@@ -587,10 +587,10 @@
 				],
 				"parameters": [
 					{
-						"name": "id",
+						"name": "address",
 						"type": "string",
 						"required": true,
-						"description": "Contract ID (address hash) to read from",
+						"description": "Contract address (id hash) to read from",
 						"example": "",
 						"in": "body"
 					}, {
@@ -697,10 +697,10 @@
 				],
 				"parameters": [
 					{
-						"name": "id",
+						"name": "address",
 						"type": "string",
 						"required": true,
-						"description": "Contract ID (address hash) to transact with",
+						"description": "Contract address (id hash) to transact with",
 						"example": "",
 						"in": "body"
 					}, {
