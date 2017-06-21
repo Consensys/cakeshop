@@ -5,7 +5,7 @@ import 'd3';
 import 'bootstrap-tour';
 
 // importing here to be used by metrix widgets
-import 'epoch-charting';
+import 'epoch-charting-ie-patched';
 
 import moment from 'moment';
 
