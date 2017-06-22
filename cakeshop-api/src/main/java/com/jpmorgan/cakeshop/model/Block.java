@@ -43,7 +43,7 @@ public class Block implements Serializable {
     private String extraData;
     private BigInteger gasLimit;
     private BigInteger gasUsed;
-    @Column(name = "timestamp_val")
+    @Column(name = "timestamp_val", precision = 50)
     private BigInteger timestamp;
 
     @ElementCollection
