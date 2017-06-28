@@ -1,5 +1,8 @@
 package com.jpmorgan.cakeshop.config;
 
+import java.io.FileInputStream;
+import java.util.Properties;
+
 import javax.annotation.PreDestroy;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +24,9 @@ import org.thymeleaf.spring4.SpringTemplateEngine;
 import org.thymeleaf.spring4.view.ThymeleafViewResolver;
 import org.thymeleaf.templateresolver.ServletContextTemplateResolver;
 
+import org.springframework.beans.factory.annotation.Value;
+import com.jpmorgan.cakeshop.util.FileUtils;
+
 /**
  *
  * @author Michael Kazansky
@@ -28,6 +34,11 @@ import org.thymeleaf.templateresolver.ServletContextTemplateResolver;
 @Configuration
 @EnableScheduling
 public class WebConfig extends WebMvcConfigurerAdapter {
+
+	private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(WebConfig.class);
+
+    @Value("${config.path}")
+    private String CONFIG_ROOT;
 
     @Autowired
     private Environment env;
@@ -42,10 +53,18 @@ public class WebConfig extends WebMvcConfigurerAdapter {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        if (Boolean.valueOf(env.getProperty("geth.cors.enabled:true"))) {
+        String configFile = FileUtils.expandPath(CONFIG_ROOT, "application.properties");
+        Properties props = new Properties();
+        try {
+        	props.load(new FileInputStream(configFile));
+        } catch (Exception e) { }
+       
+        if (Boolean.valueOf(env.getProperty("geth.cors.enabled"))) {
             registry.addMapping("/**")
-                    .allowedOrigins(env.getProperty("geth.cors.url"))
-                    .allowedMethods("POST");
+                    .allowedOrigins(env.getProperty("geth.cors.url"));
+        } else if (Boolean.valueOf(props.getProperty("geth.cors.enabled"))) {
+            registry.addMapping("/**")
+            .allowedOrigins(props.getProperty("geth.cors.url"));
         }
     }
 
