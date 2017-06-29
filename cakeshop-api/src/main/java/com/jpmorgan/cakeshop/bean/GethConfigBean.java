@@ -192,7 +192,7 @@ public class GethConfigBean {
         if (SystemUtils.IS_OS_WINDOWS) {
             nodePath = nodePath + ".exe";
         }
-        solcPath = expandPath(baseResourcePath, "solc", "node_modules", "solc-cli", "bin", "solc");
+        solcPath = expandPath(baseResourcePath, "solc", "node_modules", "solc-cakeshop-cli", "bin", "solc");
         ensureNodeBins(solcPath);
         // Clean up data dir path for default config (not an absolute path)
         if (getDataDirPath() != null) {
