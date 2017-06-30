@@ -228,17 +228,19 @@ public class GethConfigBean {
         }
 
         if (StringUtils.isBlank(EMBEDDED_NODE)) {
-            //default to quorum
+            // default to quorum
             setGethPath(quorumConfig.getQuorumPath());
 
             String destination = StringUtils.isNotBlank(System.getProperty("spring.config.location"))
                     ? System.getProperty("spring.config.location").replaceAll("file:", "")
                             .replaceAll("application.properties", "").concat("constellation-node/")
                     : getDataDirPath().concat("/constellation/");
+
             quorumConfig.createKeys("node", destination);
             quorumConfig.createQuorumConfig("node", destination);
             setConstPidFileName(expandPath(CONFIG_ROOT, "constellation.pid"));
             setIsEmbeddedQuorum(true);
+
             File pubKey = new File(destination.concat("node.pub"));
             try (Scanner scanner = new Scanner(pubKey)) {
                 while (scanner.hasNext()) {

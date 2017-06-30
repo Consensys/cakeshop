@@ -37,6 +37,8 @@ public class QuorumConfigBean implements InitializingBean {
     private final String CONSTELLATION_URL = StringUtils.isNotBlank(System.getProperty("geth.constellaiton.url"))
             ? System.getProperty("geth.constellaiton.url") : "http://127.0.0.1:9000";
 
+    private final String EMBEDDED_NODE = null != System.getProperty("geth.node") ? System.getProperty("geth.node") : null;
+
     private String quorumPath;
     private String constellationPath;
     private String keyGen;
@@ -252,14 +254,23 @@ public class QuorumConfigBean implements InitializingBean {
             setQuorumPath(expandPath(baseResourcePath, QUORUM_LINUX_COMMAND));
             setConstellationPath(expandPath(baseResourcePath, CONSTELLATION_LINUX_COMMAND));
             setKeyGen(expandPath(baseResourcePath, CONSTELLATION_LINUX_KEYGEN));
+
         } else if (SystemUtils.IS_OS_MAC_OSX) {
             LOG.debug("Using quorum for mac");
             setQuorumPath(expandPath(baseResourcePath, QUORUM_MAC_COMMAND));
             setConstellationPath(expandPath(baseResourcePath, CONSTELLATION_MAC_COMMAND));
             setKeyGen(expandPath(baseResourcePath, CONSTELLATION_MAC_KEYGEN));
 
+        } else if ( (SystemUtils.IS_OS_WINDOWS) && (StringUtils.equalsIgnoreCase(EMBEDDED_NODE, "geth")) ) {
+            // run GETH
+            return;
+
+        } else if (SystemUtils.IS_OS_WINDOWS) {
+            LOG.error("Running on unsupported OS! Only Linux and Mac OS X are currently supported for Quorum, on Windoze, please run with -Dgeth.node=geth");
+            throw new IllegalArgumentException("Running on unsupported OS! Only Linux and Mac OS X are currently supported for Quorum, on Windoze, please run with -Dgeth.node=geth");
+
         } else {
-            LOG.error("Running on unsupported OS! Only  Linux and Mac OS X are currently supported");
+            LOG.error("Running on unsupported OS! Only Linux and Mac OS X are currently supported");
             throw new IllegalArgumentException("Running on unsupported OS! Only Linux and Mac OS X are currently supported");
         }
 
@@ -267,10 +278,12 @@ public class QuorumConfigBean implements InitializingBean {
         if (!quorumExec.canExecute()) {
             quorumExec.setExecutable(true);
         }
+
         File constExec = new File(getConstellationPath());
         if (!constExec.canExecute()) {
             constExec.setExecutable(true);
         }
+
         File keyGenExec = new File(getKeyGen());
         if (!keyGenExec.canExecute()) {
             keyGenExec.setExecutable(true);
