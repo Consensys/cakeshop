@@ -1,3 +1,5 @@
+# Documentation updates v0.9.x -> v0.10.x are in progress. Sections marked NEEDS UPDATE may not behave as exepcted.
+
 
 # Cakeshop
 
@@ -11,8 +13,7 @@ An integrated development environment and SDK for Ethereum-like ledgers
 
 _Cakeshop_ is a set of tools and APIs for working with [Ethereum](https://ethereum.org/)-like ledgers, packaged as a Java web application archive (WAR) that gets you up and running in under 60 seconds.
 
-Included in the package is the [geth](https://github.com/ethereum/go-ethereum)
-Ethereum server, a [Solidity](https://solidity.readthedocs.org/en/latest/)
+Included in the package is the [geth](https://github.com/ethereum/go-ethereum), [quorum](https://github.com/jpmorganchase/quorum), and [constellation](https://github.com/jpmorganchase/constellation) Ethereum servers, a [Solidity](https://solidity.readthedocs.org/en/latest/)
 compiler and all dependencies.
 
 It provides tools for managing a local blockchain node, setting up clusters,
@@ -35,6 +36,8 @@ Binary packages are available for macOS, Windows, and Linux platforms on the [re
 * Run `java -jar cakeshop.war`
 * Navigate to [http://localhost:8080/cakeshop/](http://localhost:8080/cakeshop/)
 
+*Note: when running in Windows, -Dgeth.node=geth must be specified as Quorum is not yet available on Windows OS*
+
 ### Running via App Server
 
 * Download WAR file
@@ -43,7 +46,9 @@ Binary packages are available for macOS, Windows, and Linux platforms on the [re
 * Start app server
 * Navigate to [http://localhost:8080/cakeshop/](http://localhost:8080/cakeshop/) (default port is usually 8080)
 
-### Running via Docker
+*Note: when running in Windows, -Dgeth.node=geth must be specified as Quorum is not yet available on Windows OS*
+
+### Running via Docker -- NEEDS UPDATE
 
 Run via docker and access UI on [http://localhost:8080/cakeshop/](http://localhost:8080/cakeshop/)
 
@@ -74,31 +79,6 @@ docker run -p 8080:8080 -v "$PWD/data":/opt/cakeshop/data \
     jpmc/cakeshop
 ```
 
-### Running with Quorum
-
-This will show you how to quickly setup and connect to the `7nodes` Quorum cluster example from the [quorum-examples](https://github.com/jpmorganchase/quorum-examples) repository. It can be used as a starting point for setting up other integrations.
-
-(requires [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Vagrant](https://www.vagrantup.com/downloads.html))
-
-```sh
-git clone https://github.com/jpmorganchase/quorum-examples.git
-cd quorum-examples
-vagrant up
-vagrant ssh
-
-# (in vagrant shell)
-vagrant$ cd quorum-examples/7nodes
-vagrant$ ./init.sh && ./start.sh
-
-# (in host shell)
-java -jar cakeshop.war example
-java -jar cakeshop.war
-```
-
-At this point you should have Cakeshop running and connected to node 1 in the Quorum cluster (dd1 on RPC port 22000).
-
-You can change the node you're connected to by running the last two commands again from another directory and modifying the properties file at `data/local/application.properties` to point to a different RPC port in the range `22000-22006` before starting Cakeshop.
-
 ## Further Reading
 
 Further documentation can be found on the [wiki](https://github.com/jpmorganchase/cakeshop/wiki/) and in the [docs](docs/) folder.
@@ -107,7 +87,7 @@ Further documentation can be found on the [wiki](https://github.com/jpmorganchas
 
 * [JIF Dashboard](https://github.com/jpmorganchase/jif-dashboard) - The Cakeshop UI was built using the JIF Dashboard framework.
 
-* [solc-cli](https://github.com/jpmorganchase/solc-cli) - The solidity compiler used behind the scenes is `solc-cli`, a thin wrapper atop the [solc](https://github.com/ethereum/solc-js) JS binding.
+* [solc-cakeshop-cli](https://github.com/jpmorganchase/solc-cakeshop-cli) - The solidity compiler used behind the scenes is `solc-cakeshop-cli`, a thin wrapper atop the [solc](https://github.com/ethereum/solc-js) JS binding.
 
 ## Contributing
 
@@ -117,7 +97,7 @@ Cakeshop is built on open source and we invite you to contribute enhancements. U
 
 ## License
 
-Copyright (c) 2016 JPMorgan Chase and/or applicable contributors
+Copyright (c) 2016-2017 JPMorgan Chase and/or applicable contributors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
