@@ -11,6 +11,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.List;
@@ -39,7 +40,6 @@ public class ProcessUtils {
         env.put("PATH", prefixPathStr(gethConfig.getBinPath() + File.pathSeparator + solcDir, env.get("PATH")));
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("PATH=" + env.get("PATH"));
             LOG.debug(Joiner.on(" ").join(builder.command()));
         }
 
@@ -63,7 +63,8 @@ public class ProcessUtils {
     }
 
     /**
-     * Check if the given PID is running (supports both Unix and Windows systems)
+     * Check if the given PID is running (supports both Unix and Windows
+     * systems)
      *
      * @param pid
      * @return
@@ -160,6 +161,45 @@ public class ProcessUtils {
         return null;
     }
 
+    public static String getUnixPidByName(String processName) {
+        String[] command = new String[]{"/bin/sh", "-c",
+            " ps -ef | grep ".concat(processName)};
+        ProcessBuilder builder = new ProcessBuilder(command);
+        try {
+            Process process = builder.start();
+            try (InputStream input = process.getInputStream()) {
+                byte[] b = new byte[16];
+                input.read(b, 0, b.length);
+                String[] commandLineresult = new String(b).split("\\s+");
+                if (SystemUtils.IS_OS_MAC_OSX || SystemUtils.IS_OS_MAC) {
+                    return commandLineresult[2];
+                } else if (SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_UNIX) {
+                    return commandLineresult[1];
+                }
+            }
+        } catch (IOException ex) {
+            LOG.error(ex.getMessage());
+        }
+        return null;
+    }
+
+    //TODO: Test on Windows
+    public static String getWinPidByName(String processName) {
+        String[] command = new String[]{"TASKLIST /FI \"USERNAME ne NT AUTHORITY\\SYSTEM\" | findstr ".concat(processName)};
+        ProcessBuilder builder = new ProcessBuilder(command);
+        try {
+            Process process = builder.start();
+            try (InputStream input = process.getInputStream()) {
+                byte[] b = new byte[16];
+                input.read(b, 0, b.length);
+                return new String(b).split("\\s+")[1];
+            }
+        } catch (IOException ex) {
+            LOG.error(ex.getMessage());
+        }
+        return null;
+    }
+
     public static Integer getWinPID(Process proc) {
         if (proc.getClass().getName().equals("java.lang.Win32Process")
                 || proc.getClass().getName().equals("java.lang.ProcessImpl")) {
@@ -222,6 +262,5 @@ public class ProcessUtils {
         }
         return false;
     }
-
 
 }

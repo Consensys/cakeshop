@@ -22,6 +22,8 @@ import com.jpmorgan.cakeshop.util.ProcessUtils;
 import com.jpmorgan.cakeshop.util.StreamGobbler;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -105,19 +107,42 @@ public class ContractServiceImpl implements ContractService {
             StreamGobbler stdout = StreamGobbler.create(proc.getInputStream());
             StreamGobbler stderr = StreamGobbler.create(proc.getErrorStream());
 
-            proc.getOutputStream().write(code.getBytes());;
+            proc.getOutputStream().write(code.getBytes());
             proc.getOutputStream().close();
 
             proc.waitFor();
 
             if (proc.exitValue() != 0) {
-                throw new APIException("Failed to compile contract (solc exited with code " + proc.exitValue() + ")\n" + stderr.getString());
+                //try with different iso encodings
+                List<String> isoEncodings = Lists.newArrayList("ISO8859_1", "ISO8859_2", "ISO8859_4", "ISO8859_5", "ISO8859_7",
+                        "ISO8859_9", "ISO8859_13", "ISO8859_15");
+                for (String encoding : isoEncodings) {
+                    proc = builder.start();
+
+                    stdout = StreamGobbler.create(proc.getInputStream());
+                    stderr = StreamGobbler.create(proc.getErrorStream());
+
+                    proc.getOutputStream().write(convertCodeToBytes(code, Charset.forName(encoding)));
+                    proc.getOutputStream().close();
+
+                    proc.waitFor();
+                    if (proc.exitValue() == 0) {
+                        break;
+                    }
+                }
+                if (proc.exitValue() != 0) {
+                    LOG.error("Failed Contract code " + code);
+                    throw new APIException("Failed to compile contract (solc exited with code " + proc.exitValue() + ")\n" + stderr.getString());
+                }
             }
 
             res = objectMapper.readValue(stdout.getString(), Map.class);
+            if (proc.isAlive()) {
+                proc.destroy();
+            }
 
         } catch (IOException | InterruptedException e) {
-            LOG.error("REASON FOR CONTRATC FAILURE " + e.getMessage());
+            LOG.error("REASON FOR CONTRACT FAILURE " + e.getMessage());
             throw new APIException("Failed to compile contract", e);
         }
 
@@ -195,7 +220,7 @@ public class ContractServiceImpl implements ContractService {
             contractArgs.put("privateFrom", privateFrom);
         }
         if (privateFor != null && privateFor.size() > 0) {
-            contractArgs.put("privateFor",  privateFor);
+            contractArgs.put("privateFor", privateFor);
         }
 
         Map<String, Object> contractRes = geth.executeGethCall("eth_sendTransaction", new Object[]{contractArgs});
@@ -334,6 +359,12 @@ public class ContractServiceImpl implements ContractService {
             return contract.getContractAbi();
         }
         return null;
+    }
+
+    private byte[] convertCodeToBytes(String input, Charset charset) {
+        ByteBuffer outputBuffer = charset.encode(input);
+        byte[] output = outputBuffer.array();
+        return output;
     }
 
 }

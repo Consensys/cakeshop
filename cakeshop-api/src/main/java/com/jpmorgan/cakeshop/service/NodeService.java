@@ -3,9 +3,11 @@ package com.jpmorgan.cakeshop.service;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Node;
 import com.jpmorgan.cakeshop.model.NodeConfig;
+import com.jpmorgan.cakeshop.model.NodeSettings;
 import com.jpmorgan.cakeshop.model.Peer;
 
 import java.util.List;
+import java.util.Map;
 
 public interface NodeService {
 
@@ -23,20 +25,12 @@ public interface NodeService {
     /**
      * Update node configuration (may trigger restart)
      *
-     * @param logLevel     Log level (0 = least verbose, 6 = most verbose)
-     * @param networkID
-     * @param identity
-     * @param mining
+     * @param settings Log level (0 = least verbose, 6 = most verbose)
      * @return
      * @throws APIException
      */
     public NodeConfig update(
-            Integer logLevel,
-            Integer networkID,
-            String identity,
-            Boolean mining,
-            String extraParams,
-            String genesisBlock) throws APIException;
+            NodeSettings settings) throws APIException;
 
     /**
      * Reset node back to default configuration (will restart)
@@ -61,5 +55,31 @@ public interface NodeService {
      * @throws APIException
      */
     public boolean addPeer(String address) throws APIException;
+
+    /**
+     * Get list of constellation nodes
+     *
+     * @return
+     * @throws APIException
+     */
+    public Map<String, Object> getConstellationNodes() throws APIException;
+
+    /**
+     * Add new constellation node
+     *
+     * @param constellationNode
+     * @return
+     * @throws APIException
+     */
+    public NodeConfig addConstellationNode(String constellationNode) throws APIException;
+
+    /**
+     * Remove constellation node from the list
+     *
+     * @param constellationNode
+     * @return
+     * @throws APIException
+     */
+    public NodeConfig removeConstellationNode(String constellationNode) throws APIException;
 
 }

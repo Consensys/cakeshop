@@ -18,6 +18,7 @@ import com.jpmorgan.cakeshop.util.ProcessUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -42,7 +43,7 @@ import org.testng.annotations.BeforeClass;
 @ActiveProfiles("test")
 @ContextConfiguration(classes = {TestAppConfig.class})
 //@Listeners(CleanConsoleListener.class) // uncomment for extra debug help
-@DirtiesContext(classMode=ClassMode.AFTER_CLASS)
+@DirtiesContext(classMode = ClassMode.AFTER_CLASS)
 public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(BaseGethRpcTest.class);
@@ -52,11 +53,11 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
         System.setProperty("cakeshop.database.vendor", "hsqldb");
     }
 
-	@Autowired
-	private ContractService contractService;
+    @Autowired
+    private ContractService contractService;
 
-	@Autowired
-	private TransactionService transactionService;
+    @Autowired
+    private TransactionService transactionService;
 
     @Autowired
     private AppStartup appStartup;
@@ -73,7 +74,6 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
     @Autowired
     private GethConfigBean gethConfig;
 
-
     @Autowired
     @Qualifier("hsql")
     private DataSource embeddedDb;
@@ -86,7 +86,7 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
         return true;
     }
 
-    @AfterSuite(alwaysRun=true)
+    @AfterSuite(alwaysRun = true)
     public void stopSolc() throws IOException {
         List<String> args = Lists.newArrayList(
                 gethConfig.getNodePath(),
@@ -97,7 +97,7 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
         builder.start();
     }
 
-    @AfterSuite(alwaysRun=true)
+    @AfterSuite(alwaysRun = true)
     public void cleanupTempPaths() {
         try {
             if (CONFIG_ROOT != null) {
@@ -115,7 +115,6 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
         }
 
         assertTrue(appStartup.isHealthy(), "Healthcheck should pass");
-
         LOG.info("Starting Ethereum at test startup");
         assertTrue(_startGeth());
     }
@@ -123,14 +122,27 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
     private boolean _startGeth() throws IOException {
         gethConfig.setGenesisBlockFilename(FileUtils.getClasspathPath("genesis_block.json").toAbsolutePath().toString());
         gethConfig.setKeystorePath(FileUtils.getClasspathPath("keystore").toAbsolutePath().toString());
-        return geth.start();
+        gethConfig.setIsEmbeddedQuorum(false);
+        List<String> additionalParams = new ArrayList<>();
+        additionalParams.add("--blockmakeraccount");
+        additionalParams.add("0xca843569e3427144cead5e4d5999a3d0ccf92b8e");
+        additionalParams.add("--blockmakerpassword");
+        additionalParams.add("");
+        additionalParams.add("--minblocktime");
+        additionalParams.add("2");
+        additionalParams.add("--maxblocktime");
+        additionalParams.add("5");
+        additionalParams.add("--voteaccount");
+        additionalParams.add("0x0fbdc686b912d7722dc86510934589e0aaf3b55a");
+        additionalParams.add("--votepassword");
+        additionalParams.add("");
+        return geth.start(additionalParams.toArray(additionalParams.toArray(new String[additionalParams.size()])));
     }
-
 
     /**
      * Stop geth & delete data dir
      */
-    @AfterClass(alwaysRun=true)
+    @AfterClass(alwaysRun = true)
     public void stopGeth() {
         if (!runGeth()) {
             return;
@@ -140,6 +152,7 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
     }
 
     private void _stopGeth() {
+        gethConfig.setIsEmbeddedQuorum(false);
         geth.stop();
         try {
             FileUtils.deleteDirectory(new File(ethDataDir));
@@ -160,7 +173,7 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
      * @throws IOException
      */
     protected String readTestFile(String path) throws IOException {
-    	return FileUtils.readClasspathFile(path);
+        return FileUtils.readClasspathFile(path);
     }
 
     /**
@@ -171,8 +184,8 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
      * @throws InterruptedException
      */
     protected String createContract() throws IOException, InterruptedException {
-    	String code = readTestFile("contracts/simplestorage.sol");
-    	return createContract(code, null);
+        String code = readTestFile("contracts/simplestorage.sol");
+        return createContract(code, null);
     }
 
     /**
@@ -185,15 +198,17 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
      */
     protected String createContract(String code, Object[] args) throws APIException, InterruptedException {
         TransactionResult result = contractService.create(null, code, ContractService.CodeType.solidity, args, null, null, null);
-    	assertNotNull(result);
-    	assertNotNull(result.getId());
-    	assertTrue(!result.getId().isEmpty());
+        assertNotNull(result);
+        assertNotNull(result.getId());
+        assertTrue(!result.getId().isEmpty());
 
-    	// make sure mining is enabled
-    	Map<String, Object> res = geth.executeGethCall("miner_start", new Object[]{ });
+        // make sure mining is enabled
+        if (!gethConfig.isQuorum()) {
+            Map<String, Object> res = geth.executeGethCall("miner_start", new Object[]{});
+        }
 
-    	Transaction tx = transactionService.waitForTx(result, 50, TimeUnit.MILLISECONDS);
-    	return tx.getContractAddress();
+        Transaction tx = transactionService.waitForTx(result, 50, TimeUnit.MILLISECONDS);
+        return tx.getContractAddress();
     }
 
 }

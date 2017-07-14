@@ -14,15 +14,13 @@ import java.util.Map;
 public interface GethHttpService {
 
     public static final String GETH_API_VERSION = "2.0";
-    public static final Long   GETH_REQUEST_ID = 42L; // We don't actually use this, so just use a constant
-
-
+    public static final Long GETH_REQUEST_ID = 42L; // We don't actually use this, so just use a constant
 
     /**
      * Call the given Geth RPC method
      *
-     * @param funcName             RPC function name
-     * @param args                 Optional args
+     * @param funcName RPC function name
+     * @param args Optional args
      *
      * @return
      * @throws APIException
@@ -48,6 +46,18 @@ public interface GethHttpService {
      */
     public Boolean start(String... additionalParams);
 
+    /*
+    * Start constellation node
+    * @return
+     */
+    public Boolean startConstellation();
+
+    /*
+    * Stop constellation node
+    * @return
+     */
+    public Boolean stopConstellation();
+
     public void runPostStartupTasks();
 
     /**
@@ -69,7 +79,7 @@ public interface GethHttpService {
      *
      * @return
      */
-    public Boolean reset();
+    public Boolean reset(String... additionalParams);
 
     /**
      * Delete the PID file
@@ -84,5 +94,7 @@ public interface GethHttpService {
      * @return
      */
     List<ErrorLog> getStartupErrors();
+
+    public List<String> setAdditionalParams(String[] additionalParamsArray);
 
 }

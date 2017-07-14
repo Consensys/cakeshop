@@ -27,21 +27,21 @@ import org.testng.annotations.Test;
 
 public class ContractServiceTest extends BaseGethRpcTest {
 
-	@Autowired
-	private ContractService contractService;
+    @Autowired
+    private ContractService contractService;
 
-	@Autowired
-	private TransactionService transactionService;
+    @Autowired
+    private TransactionService transactionService;
 
-	@Autowired
-	private GethHttpService geth;
+    @Autowired
+    private GethHttpService geth;
 
-	@Autowired
-	private BlockScanner blockScanner;
+    @Autowired
+    private BlockScanner blockScanner;
 
-	@Test
-	public void testCompile() throws IOException {
-	    long time = System.currentTimeMillis() / 1000;
+    @Test
+    public void testCompile() throws IOException {
+        long time = System.currentTimeMillis() / 1000;
         String code = readTestFile("contracts/simplestorage.sol");
 
         List<Contract> contracts = contractService.compile(code, CodeType.solidity, true);
@@ -68,11 +68,9 @@ public class ContractServiceTest extends BaseGethRpcTest {
         List<Long> creation = (List<Long>) gasEstimates.get("creation");
         assertNotNull(creation);
         assertEquals(creation.size(), 2);
+    }
 
-        assertNotEmptyString(c.getSolidityInterface());
-	}
-
-	@Test
+    @Test
     public void testCreate() throws IOException {
         String code = readTestFile("contracts/simplestorage.sol");
 
@@ -83,8 +81,8 @@ public class ContractServiceTest extends BaseGethRpcTest {
 
     }
 
-	@Test
-	public void testCreateWithBinary() throws IOException {
+    @Test
+    public void testCreateWithBinary() throws IOException {
         String code = readTestFile("contracts/simplestorage.sol");
         List<Contract> contracts = contractService.compile(code, CodeType.solidity, true);
         Contract c = contracts.get(0);
@@ -94,165 +92,158 @@ public class ContractServiceTest extends BaseGethRpcTest {
         assertNotNull(result);
         assertNotNull(result.getId());
         assertTrue(!result.getId().isEmpty());
-	}
+    }
 
-	@Test
-	public void testGet() throws IOException, InterruptedException {
-		String contractAddress = createContract();
+    @Test
+    public void testGet() throws IOException, InterruptedException {
+        String contractAddress = createContract();
 
-		Contract contract = contractService.get(contractAddress);
-		assertNotNull(contract);
-		assertNotNull(contract.getBinary(), "Binary code should be present");
-		assertNotEquals(contract.getBinary(), "0x", "binary should not be '0x'");
-		assertTrue(contract.getBinary().length() > 2);
-	}
+        Contract contract = contractService.get(contractAddress);
+        assertNotNull(contract);
+        assertNotNull(contract.getBinary(), "Binary code should be present");
+        assertNotEquals(contract.getBinary(), "0x", "binary should not be '0x'");
+        assertTrue(contract.getBinary().length() > 2);
+    }
 
-	@Test
-	public void testGetInvalidId() throws APIException {
-	    assertThrows(APIException.class, new ThrowingRunnable() {
+    @Test
+    public void testGetInvalidId() throws APIException {
+        assertThrows(APIException.class, new ThrowingRunnable() {
             @Override
             public void run() throws Throwable {
                 contractService.get("0xdeadbeef");
             }
         });
 
-	    assertThrows(APIException.class, new ThrowingRunnable() {
+        assertThrows(APIException.class, new ThrowingRunnable() {
             @Override
             public void run() throws Throwable {
                 contractService.get("0x81635fe3d9cecbcf44aa58e967af1ab7ceefb816");
             }
         });
-	}
+    }
 
-	@Test
-	public void testReadByABI() throws InterruptedException, IOException {
-	    String contractAddress = createContract();
-	    ContractABI abi = ContractABI.fromJson(readTestFile("contracts/simplestorage.abi.txt"));
+    @Test
+    public void testReadByABI() throws InterruptedException, IOException {
+        String contractAddress = createContract();
+        ContractABI abi = ContractABI.fromJson(readTestFile("contracts/simplestorage.abi.txt"));
 
-	    BigInteger val = (BigInteger) contractService.read(contractAddress, abi, null, "get", null, null)[0];
-	    assertEquals(val.intValue(), 100);
-	}
+        BigInteger val = (BigInteger) contractService.read(contractAddress, abi, null, "get", null, null)[0];
+        assertEquals(val.intValue(), 100);
+    }
 
-	@Test
-	public void testReadBytesArr() throws InterruptedException, IOException {
-	    String addr = createContract(readTestFile("contracts/testbytesarr.sol"), null);
-	    ContractABI abi = ContractABI.fromJson(readTestFile("contracts/testbytesarr.abi.txt"));
-	    Object[] res = (Object[]) contractService.read(addr, abi, null, "foo", null, null)[0];
-	    assertNotNull(res);
-	    assertEquals(res.length, 1);
-	    assertEquals(new String((byte[]) res[0]).trim(), "foobar");
-	}
+    @Test
+    public void testReadBytesArr() throws InterruptedException, IOException {
+        String addr = createContract(readTestFile("contracts/testbytesarr.sol"), null);
+        ContractABI abi = ContractABI.fromJson(readTestFile("contracts/testbytesarr.abi.txt"));
+        Object[] res = (Object[]) contractService.read(addr, abi, null, "foo", null, null)[0];
+        assertNotNull(res);
+        assertEquals(res.length, 1);
+        assertEquals(new String((byte[]) res[0]).trim(), "foobar");
+    }
 
-	@Test
-	public void testConstructorArg() throws InterruptedException, IOException {
-    	String code = readTestFile("contracts/simplestorage2.sol");
+    @Test
+    public void testConstructorArg() throws InterruptedException, IOException {
+        String code = readTestFile("contracts/simplestorage2.sol");
 
-    	// create with constructor val 500
-    	String contractAddress = createContract(code, new Object[] { 500 });
+        // create with constructor val 500
+        String contractAddress = createContract(code, new Object[]{500});
 
-	    ContractABI abi = ContractABI.fromJson(readTestFile("contracts/simplestorage2.abi.txt"));
+        ContractABI abi = ContractABI.fromJson(readTestFile("contracts/simplestorage2.abi.txt"));
 
-	    BigInteger val = (BigInteger) contractService.read(contractAddress, abi, null, "get", null, null)[0];
-	    assertEquals(val.intValue(), 500);
+        BigInteger val = (BigInteger) contractService.read(contractAddress, abi, null, "get", null, null)[0];
+        assertEquals(val.intValue(), 500);
 
+        String owner = (String) contractService.read(contractAddress, abi, null, "owner", null, null)[0];
+        assertEquals(owner, "0x2e219248f44546d966808cdd20cb6c36df6efa82");
+    }
 
-	    String owner = (String) contractService.read(contractAddress, abi, null, "owner", null, null)[0];
-	    assertEquals(owner, "0x2e219248f44546d966808cdd20cb6c36df6efa82");
-	}
+    @Test
+    public void testRead2ByABI() throws InterruptedException, IOException {
+        String contractAddress = createContract();
 
-	@Test
-	public void testRead2ByABI() throws InterruptedException, IOException {
-	    String contractAddress = createContract();
+        String code = readTestFile("contracts/simplestorage.sol");
+        String json = readTestFile("contracts/simplestorage.abi.txt");
+        ContractABI abi = ContractABI.fromJson(json);
 
-	    String code = readTestFile("contracts/simplestorage.sol");
-	    String json = readTestFile("contracts/simplestorage.abi.txt");
-	    ContractABI abi = ContractABI.fromJson(json);
+        String addr = "0x81635fe3d9cecbcf44aa58e967af1ab7ceefb817";
+        String str = "foobar47";
 
-	    String addr = "0x81635fe3d9cecbcf44aa58e967af1ab7ceefb817";
-	    String str = "foobar47";
+        Object[] res = contractService.read(
+                contractAddress, abi, null,
+                "echo_2",
+                new Object[]{addr, str},
+                null);
 
+        String hexAddr = (String) res[0];
+        assertEquals(hexAddr, addr);
+        assertEquals(res[1], str);
 
+        Object[] res2 = contractService.read(
+                contractAddress, abi, null,
+                "echo_contract",
+                new Object[]{contractAddress, "SimpleStorage", json, code, "solidity"},
+                null);
 
+        assertEquals(res2[0], contractAddress);
+        assertEquals(res2[1], "SimpleStorage");
+        assertEquals(res2[2], json);
+    }
 
-	    Object[] res = contractService.read(
-	            contractAddress, abi, null,
-	            "echo_2",
-	            new Object[] { addr, str },
-	            null);
+    @Test
+    public void testTransactByABI() throws InterruptedException, IOException {
 
-	    String hexAddr = (String) res[0];
-	    assertEquals(hexAddr, addr);
-	    assertEquals(res[1], str);
+        String contractAddress = createContract();
 
+        ContractABI abi = ContractABI.fromJson(readTestFile("contracts/simplestorage.abi.txt"));
 
+        // 100 to start
+        BigInteger val = (BigInteger) contractService.read(contractAddress, abi, null, "get", null, null)[0];
+        assertEquals(val.intValue(), 100);
 
+        // modify value
+        TransactionResult tr = contractService.transact(contractAddress, abi, null, "set", new Object[]{200});
+        Transaction tx = transactionService.waitForTx(tr, 50, TimeUnit.MILLISECONDS);
 
-	    Object[] res2 = contractService.read(
-	            contractAddress, abi, null,
-	            "echo_contract",
-	            new Object[] { contractAddress, "SimpleStorage", json, code, "solidity" },
-	            null);
+        // should now be 200
+        BigInteger val2 = (BigInteger) contractService.read(contractAddress, abi, null, "get", null, null)[0];
+        assertEquals(val2.intValue(), 200);
 
-	    assertEquals(res2[0], contractAddress);
-	    assertEquals(res2[1], "SimpleStorage");
-	    assertEquals(res2[2], json);
-	}
+        // read the previous value
+        BigInteger valPrev = (BigInteger) contractService.read(contractAddress, abi, null, "get", null, tx.getBlockNumber().longValue() - 1)[0];
+        assertEquals(valPrev.intValue(), 100);
+    }
 
-	@Test
-	public void testTransactByABI() throws InterruptedException, IOException {
+    @Test
+    public void testListTransactions() throws InterruptedException, IOException {
 
-	    String contractAddress = createContract();
+        String contractAddress = createContract();
 
-	    ContractABI abi = ContractABI.fromJson(readTestFile("contracts/simplestorage.abi.txt"));
+        ContractABI abi = ContractABI.fromJson(readTestFile("contracts/simplestorage.abi.txt"));
 
-	    // 100 to start
-	    BigInteger val = (BigInteger) contractService.read(contractAddress, abi, null, "get", null, null)[0];
-	    assertEquals(val.intValue(), 100);
+        // 100 to start
+        BigInteger val = (BigInteger) contractService.read(contractAddress, abi, null, "get", null, null)[0];
+        assertEquals(val.intValue(), 100);
 
-	    // modify value
-	    TransactionResult tr = contractService.transact(contractAddress, abi, null, "set", new Object[]{ 200 });
-	    Transaction tx = transactionService.waitForTx(tr, 50, TimeUnit.MILLISECONDS);
+        // modify value
+        TransactionResult tr = contractService.transact(contractAddress, abi, null, "set", new Object[]{200});
+        Transaction tx = transactionService.waitForTx(tr, 50, TimeUnit.MILLISECONDS);
 
-	    // should now be 200
-	    BigInteger val2 = (BigInteger) contractService.read(contractAddress, abi, null, "get", null, null)[0];
-	    assertEquals(val2.intValue(), 200);
+        ((TestBlockScanner) blockScanner).manualRun();
 
-	    // read the previous value
-	    BigInteger valPrev = (BigInteger) contractService.read(contractAddress, abi, null, "get", null, tx.getBlockNumber().longValue() -1 )[0];
-	    assertEquals(valPrev.intValue(), 100);
-	}
+        List<Transaction> txns = contractService.listTransactions(contractAddress);
 
-	@Test
-	public void testListTransactions() throws InterruptedException, IOException {
+        assertNotNull(txns);
+        assertTrue(!txns.isEmpty());
+        assertEquals(txns.size(), 2);
 
-	    String contractAddress = createContract();
+        Transaction txSet = txns.get(1);
+        Input decodedInput = txSet.getDecodedInput();
+        assertNotNull(decodedInput);
+        assertEquals(decodedInput.getMethod(), "set");
 
-	    ContractABI abi = ContractABI.fromJson(readTestFile("contracts/simplestorage.abi.txt"));
+        val = (BigInteger) decodedInput.getArgs()[0];
+        assertEquals(val.intValue(), 200);
 
-	    // 100 to start
-	    BigInteger val = (BigInteger) contractService.read(contractAddress, abi, null, "get", null, null)[0];
-	    assertEquals(val.intValue(), 100);
-
-	    // modify value
-	    TransactionResult tr = contractService.transact(contractAddress, abi, null, "set", new Object[]{ 200 });
-	    Transaction tx = transactionService.waitForTx(tr, 50, TimeUnit.MILLISECONDS);
-
-	    ((TestBlockScanner) blockScanner).manualRun();
-
-	    List<Transaction> txns = contractService.listTransactions(contractAddress);
-
-	    assertNotNull(txns);
-	    assertTrue(!txns.isEmpty());
-	    assertEquals(txns.size(), 2);
-
-	    Transaction txSet = txns.get(1);
-	    Input decodedInput = txSet.getDecodedInput();
-	    assertNotNull(decodedInput);
-	    assertEquals(decodedInput.getMethod(), "set");
-
-	    val = (BigInteger) decodedInput.getArgs()[0];
-	    assertEquals(val.intValue(), 200);
-
-	}
+    }
 
 }

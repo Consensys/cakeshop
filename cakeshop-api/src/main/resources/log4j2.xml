@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration monitorInterval="60">
+    <Appenders>
+        <Console name="Console-Appender" target="SYSTEM_OUT">
+            <PatternLayout>
+                <pattern>
+                    [%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n
+                </pattern>>
+            </PatternLayout>
+        </Console>
+        <File name="Cakeshop-Appender" fileName="${sys:logging.path}/cakeshop.log">
+            <PatternLayout>
+                <pattern>
+                    [%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n
+                </pattern>
+            </PatternLayout>
+        </File>
+        <File name="Geth-Appender" fileName="${sys:logging.path}/geth.log">
+            <PatternLayout>
+                <pattern>
+                    [%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n
+                </pattern>
+            </PatternLayout>
+        </File>
+    </Appenders>
+    <Loggers>
+        <Logger name="geth" level="debug" additivity="false">
+            <AppenderRef ref="Geth-Appender"/>
+            <AppenderRef ref="Console-Appender"/>
+        </Logger>
+        <Logger name="com.jpmorgan.cakeshop" level="info" additivity="false">
+            <AppenderRef ref="Cakeshop-Appender"/>
+            <AppenderRef ref="Console-Appender"/>
+        </Logger>
+        <Logger name="com.jpmorgan.cakeshop.db.BlockScanner" level="info" additivity="false">
+            <AppenderRef ref="Cakeshop-Appender"/>
+            <AppenderRef ref="Console-Appender"/>
+        </Logger>
+        <Logger name="com.jpmorgan.cakeshop.db.MetricsBlockListener" level="info" additivity="false">
+            <AppenderRef ref="Cakeshop-Appender"/>
+            <AppenderRef ref="Console-Appender"/>
+        </Logger>
+        <Logger name="com.jpmorgan.cakeshop.service.impl.WebSocketPushServiceImpl" level="info" additivity="false">
+            <AppenderRef ref="Cakeshop-Appender"/>
+            <AppenderRef ref="Console-Appender"/>
+        </Logger>
+        <Logger name="com.jpmorgan.cakeshop.util.ImmutableRestTemplate" level="warn" additivity="false">
+            <AppenderRef ref="Cakeshop-Appender"/>
+            <AppenderRef ref="Console-Appender"/>
+        </Logger>
+         
+        <Root>
+            <AppenderRef ref="Console-Appender"/>
+        </Root>
+    </Loggers>
+</Configuration>

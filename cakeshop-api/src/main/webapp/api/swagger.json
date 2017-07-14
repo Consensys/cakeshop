@@ -13,14 +13,11 @@
 	"tags": [
 		{
 			"name": "node"
-		},
-		{
+		}, {
 			"name": "block"
-		},
-		{
+		}, {
 			"name": "transaction"
-		},
-		{
+		}, {
 			"name": "contract"
 		}
 	],
@@ -45,15 +42,13 @@
 						"type": "string",
 						"required": false,
 						"in": "body"
-					},
-					{
+					}, {
 						"name": "number",
 						"description": "Block number to retrieve",
 						"type": "integer",
 						"required": false,
 						"in": "body"
-					},
-					{
+					}, {
 						"name": "tag",
 						"description": "One of \"earliest\", \"latest\" or \"pending\"",
 						"type": "string",
@@ -67,14 +62,12 @@
 						"parameters": {
 							"body": "{\n  \"number\": 0\n}\n"
 						}
-					},
-					{
+					}, {
 						"name": "Get block by ID",
 						"parameters": {
 							"body": "{\n  \"id \"0x8564f939768d96f6fc0ba1334ed083ab6538da76f17b6d264082cb69aadc7b4c\"\n}\n"
 						}
-					},
-					{
+					}, {
 						"name": "Get latest block",
 						"parameters": {
 							"body": "{\n  \"tag\": \"latest\"\n}\n"
@@ -169,8 +162,7 @@
 						"description": "Contract source code",
 						"required": true,
 						"in": "body"
-					},
-					{
+					}, {
 						"name": "code_type",
 						"type": "string",
 						"in": "body",
@@ -180,8 +172,7 @@
 						"enum": [
 							"solidity"
 						]
-					},
-					{
+					}, {
 						"name": "optimize",
 						"type": "boolean",
 						"required": false,
@@ -286,8 +277,7 @@
 						"type": "string",
 						"description": "Contract source code",
 						"in": "body"
-					},
-					{
+					}, {
 						"name": "code_type",
 						"type": "string",
 						"description": "Type of code being submitted",
@@ -297,8 +287,7 @@
 						"enum": [
 							"solidity"
 						]
-					},
-					{
+					}, {
 						"name": "args",
 						"type": "array",
 						"required": false,
@@ -307,15 +296,13 @@
 						"items": {
 							"type": "object"
 						}
-					},
-					{
+					}, {
 						"name": "binary",
 						"type": "string",
 						"required": false,
 						"in": "body",
 						"description": "If multiple contracts are specified in the source code, a specific binary to deploy can be passed here"
-					},
-					{
+					}, {
 						"name": "optimize",
 						"type": "boolean",
 						"required": false,
@@ -416,9 +403,9 @@
 				],
 				"parameters": [
 					{
-						"name": "id",
+						"name": "address",
 						"type": "string",
-						"description": "ID (address) of Contract to retrieve",
+						"description": "Address (id) of Contract to retrieve",
 						"example": "0x01f999deef030a0f3c55cec46e6693c06c6b01f8",
 						"in": "body"
 					}
@@ -600,21 +587,19 @@
 				],
 				"parameters": [
 					{
-						"name": "id",
+						"name": "address",
 						"type": "string",
 						"required": true,
-						"description": "Contract ID (address hash) to read from",
+						"description": "Contract address (id hash) to read from",
 						"example": "",
 						"in": "body"
-					},
-					{
+					}, {
 						"name": "method",
 						"type": "string",
 						"required": true,
 						"description": "Method name to call",
 						"in": "body"
-					},
-					{
+					}, {
 						"name": "args",
 						"type": "array",
 						"required": false,
@@ -623,8 +608,7 @@
 						"items": {
 							"type": "object"
 						}
-					},
-					{
+					}, {
 						"name": "blockNumber",
 						"type": "integer",
 						"required": false,
@@ -713,21 +697,19 @@
 				],
 				"parameters": [
 					{
-						"name": "id",
+						"name": "address",
 						"type": "string",
 						"required": true,
-						"description": "Contract ID (address hash) to transact with",
+						"description": "Contract address (id hash) to transact with",
 						"example": "",
 						"in": "body"
-					},
-					{
+					}, {
 						"name": "method",
 						"type": "string",
 						"required": true,
 						"in": "body",
 						"description": "Method name to call"
-					},
-					{
+					}, {
 						"name": "args",
 						"type": "array",
 						"required": false,
@@ -1294,40 +1276,59 @@
 						"required": false,
 						"description": "Set log level (0-6, 6 is most verbose)",
 						"in": "body"
-					},
-					{
+					}, {
 						"name": "networkId",
 						"type": "integer",
 						"required": false,
 						"description": "Network ID (any integer value; node will restart)",
 						"in": "body"
-					},
-					{
+					}, {
 						"name": "identity",
 						"type": "string",
 						"required": false,
 						"description": "Change node identity (node will restart)",
 						"in": "body"
-					},
-					{
+					}, {
 						"name": "committingTransactions",
 						"type": "boolean",
 						"required": false,
 						"description": "Whether or not the node should commit incoming transactions (i.e., toggle mining)",
 						"in": "body"
-					},
-					{
+					}, {
 						"name": "extraParams",
 						"type": "string",
 						"required": false,
 						"description": "Extra parameters to pass to the node (startup flags; node will restart)",
 						"in": "body"
-					},
-					{
+					}, {
 						"name": "genesisBlock",
 						"type": "string",
 						"required": false,
 						"description": "Genesis block to use for the chain (modifying this will reset the chain)",
+						"in": "body"
+					}, {
+						"name": "voterAccount",
+						"type": "string",
+						"required": false,
+						"description": "[Quorum only] Node account to set as a voter",
+						"in": "body"
+					}, {
+						"name": "blockMakerAccount",
+						"type": "string",
+						"required": false,
+						"description": "[Quorum only] Node account to set as a block maker",
+						"in": "body"
+					}, {
+						"name": "minBlockTime",
+						"type": "integer",
+						"required": false,
+						"description": "[Quorum only] Block creation strategy, minimum time until block generation (seconds) ",
+						"in": "body"
+					}, {
+						"name": "maxBlockTime",
+						"type": "integer",
+						"required": false,
+						"description": "[Quorum only] Block creation strategy, maximum time until block generation (seconds)",
 						"in": "body"
 					}
 				],
@@ -1392,6 +1393,243 @@
 				}
 			}
 		},
+
+
+		"/node/constellation/stop": {
+			"post": {
+				"tags": [
+					"node"
+				],
+				"description": "[Quorum only] Stops constellation node from running. May cause node to restart.",
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "Success"
+					},
+					"4xx": {
+						"description": "Error with the request",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"errors": {
+									"type": "array",
+									"items": {
+										"$ref": "#/definitions/APIError"
+									}
+								},
+								"meta": {
+									"type": "object",
+									"description": "Extra metadata, such as API version"
+								}
+							}
+						}
+					},
+					"5xx": {
+						"description": "Error processing the request",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"errors": {
+									"type": "array",
+									"items": {
+										"$ref": "#/definitions/APIError"
+									}
+								},
+								"meta": {
+									"type": "object",
+									"description": "Extra metadata, such as API version"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+
+		"/node/constellation/start": {
+			"post": {
+				"tags": [
+					"node"
+				],
+				"description": "[Quorum only] Starts constellation node if its currently not running. May cause node to restart.",
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "Success"
+					},
+					"4xx": {
+						"description": "Error with the request",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"errors": {
+									"type": "array",
+									"items": {
+										"$ref": "#/definitions/APIError"
+									}
+								},
+								"meta": {
+									"type": "object",
+									"description": "Extra metadata, such as API version"
+								}
+							}
+						}
+					},
+					"5xx": {
+						"description": "Error processing the request",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"errors": {
+									"type": "array",
+									"items": {
+										"$ref": "#/definitions/APIError"
+									}
+								},
+								"meta": {
+									"type": "object",
+									"description": "Extra metadata, such as API version"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+
+
+		"/node/constellation/list": {
+			"post": {
+				"tags": [
+					"node"
+				],
+				"description": "[Quorum only] Returns Constellation configuration",
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "Success"
+					},
+					"4xx": {
+						"description": "Error with the request",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"errors": {
+									"type": "array",
+									"items": {
+										"$ref": "#/definitions/APIError"
+									}
+								},
+								"meta": {
+									"type": "object",
+									"description": "Extra metadata, such as API version"
+								}
+							}
+						}
+					},
+					"5xx": {
+						"description": "Error processing the request",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"errors": {
+									"type": "array",
+									"items": {
+										"$ref": "#/definitions/APIError"
+									}
+								},
+								"meta": {
+									"type": "object",
+									"description": "Extra metadata, such as API version"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+
+		"/node/constellation/add": {
+			"post": {
+				"tags": [
+					"node"
+				],
+				"description": "[Quorum only] Adds a constellation node's url for local node to mesh with.",
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "constellationNode",
+						"description": "FQDN URL of the destination node",
+						"type": "string",
+						"required": true,
+						"in": "body"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Success"
+					},
+					"4xx": {
+						"description": "Error with the request",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"errors": {
+									"type": "array",
+									"items": {
+										"$ref": "#/definitions/APIError"
+									}
+								},
+								"meta": {
+									"type": "object",
+									"description": "Extra metadata, such as API version"
+								}
+							}
+						}
+					},
+					"5xx": {
+						"description": "Error processing the request",
+						"schema": {
+							"type": "object",
+							"properties": {
+								"errors": {
+									"type": "array",
+									"items": {
+										"$ref": "#/definitions/APIError"
+									}
+								},
+								"meta": {
+									"type": "object",
+									"description": "Extra metadata, such as API version"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+
+
 		"/wallet/create": {
 			"post": {
 				"tags": [

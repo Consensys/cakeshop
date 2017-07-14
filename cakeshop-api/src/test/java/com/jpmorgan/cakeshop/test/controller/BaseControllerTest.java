@@ -8,11 +8,12 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testng.annotations.BeforeMethod;
 
-import com.jpmorgan.cakeshop.config.JsonMethodArgumentResolver;
+//import com.jpmorgan.cakeshop.config.JsonMethodArgumentResolver;
 import com.jpmorgan.cakeshop.test.BaseGethRpcTest;
 
 /**
- * Base class for Controller testing. Simply subclass and implement getController() method
+ * Base class for Controller testing. Simply subclass and implement
+ * getController() method
  *
  * @author Chetan Sarva
  *
@@ -26,13 +27,13 @@ public abstract class BaseControllerTest extends BaseGethRpcTest {
 
     /**
      * Return the @Controller instance under test. Used in setUp()
+     *
      * @return
      */
     public abstract Object getController();
 
     @BeforeMethod
     public void setupMockMvc() throws Exception {
-        mockMvc = standaloneSetup(getController()).setCustomArgumentResolvers(new JsonMethodArgumentResolver()).build();
+        mockMvc = standaloneSetup(getController()).build();
     }
-
 }

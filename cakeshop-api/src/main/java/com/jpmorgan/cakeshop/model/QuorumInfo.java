@@ -15,24 +15,31 @@ public class QuorumInfo {
         public int getMinBlockTime() {
             return minBlockTime;
         }
+
         public void setMinBlockTime(int minBlockTime) {
             this.minBlockTime = minBlockTime;
         }
+
         public int getMaxBlockTime() {
             return maxBlockTime;
         }
+
         public void setMaxBlockTime(int maxBlockTime) {
             this.maxBlockTime = maxBlockTime;
         }
+
         public String getStatus() {
             return status;
         }
+
         public void setStatus(String status) {
             this.status = status;
         }
+
         public String getType() {
             return type;
         }
+
         public void setType(String type) {
             this.type = type;
         }
@@ -47,7 +54,11 @@ public class QuorumInfo {
 
     private String voteAccount;
 
+    private String nodeKey;
+
     private Boolean canVote;
+
+    private Boolean isConstellationEnabled;
 
     private BlockMakerStrategy blockMakerStrategy;
 
@@ -100,6 +111,22 @@ public class QuorumInfo {
 
     public void setQuorum(Boolean isQuorum) {
         this.isQuorum = isQuorum;
+    }
+
+    public String getNodeKey() {
+        return nodeKey;
+    }
+
+    public void setNodeKey(String nodeKey) {
+        this.nodeKey = nodeKey;
+    }
+
+    public Boolean getIsConstellationEnabled() {
+        return isConstellationEnabled;
+    }
+
+    public void setIsConstellationEnabled(Boolean isConstellationEnabled) {
+        this.isConstellationEnabled = isConstellationEnabled;
     }
 
 }

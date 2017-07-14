@@ -6,6 +6,7 @@ import com.jpmorgan.cakeshop.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -40,7 +41,7 @@ public class SpringBootApplication {
         }
 
         if (StringUtils.isNotBlank(System.getProperty("spring.profiles.active"))) {
-          System.setProperty("spring.config.location", "file:" + FileUtils.expandPath(AppConfig.getConfigPath(), "application.properties"));
+            System.setProperty("spring.config.location", "file:" + FileUtils.expandPath(AppConfig.getConfigPath(), "application.properties"));
         }
 
         // extract geth from WAR (if necessary)
@@ -64,27 +65,35 @@ public class SpringBootApplication {
 
         // boot app
         new SpringApplicationBuilder(SpringBootApplication.class)
-            .profiles("container", "spring-boot")
-            .run(args);
+                .profiles("container", "spring-boot")
+                .run(args);
     }
 
     private static void extractGeth(String configDir) throws IOException {
-	    File war = FileUtils.toFile(GethConfigBean.class.getClassLoader().getResource(""));
-	    if (!war.toString().endsWith(".war")) {
-	        return; // no need to copy
-	    }
+        URL url = GethConfigBean.class.getClassLoader().getResource("");
+        String warUrl = null;
 
-	    String gethDir = FileUtils.expandPath(configDir,  "geth");
-	    System.out.println("Extracting geth to " + gethDir);
+        if (url.getProtocol().equals("jar")) {
+            warUrl = url.toString().replaceFirst("jar:", "");
+            warUrl = warUrl.substring(0, warUrl.indexOf("!"));
+        }
 
-	    ZipFile warZip = null;
-	    try {
-            warZip = new ZipFile(war);
+        URL newUrl = StringUtils.isNotBlank(warUrl) ? new URL(warUrl) : url;
+        File war = FileUtils.toFile(newUrl);
+
+        if (!war.toString().endsWith(".war")) {
+            return; // no need to copy
+        }
+
+        String gethDir = FileUtils.expandPath(configDir, "geth");
+        System.out.println("Extracting geth to " + gethDir);
+
+        try (ZipFile warZip = new ZipFile(war)) {
             Enumeration<? extends ZipEntry> entries = warZip.entries();
             while (entries.hasMoreElements()) {
                 ZipEntry zipEntry = entries.nextElement();
                 String file = zipEntry.getName();
-                if (zipEntry.isDirectory() ||  !file.startsWith("WEB-INF/classes/geth")) {
+                if (zipEntry.isDirectory() || !file.startsWith("WEB-INF/classes/geth")) {
                     continue;
                 }
 
@@ -95,13 +104,9 @@ public class SpringBootApplication {
                 }
                 FileUtils.copyInputStreamToFile(warZip.getInputStream(zipEntry), target);
             }
-	    } finally {
-	        if (warZip != null) {
-                warZip.close();
-	        }
-	    }
+        }
 
-	    System.setProperty("eth.geth.dir", gethDir);
+        System.setProperty("eth.geth.dir", gethDir);
     }
 
     @Bean

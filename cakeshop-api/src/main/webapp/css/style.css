@@ -696,10 +696,56 @@ pre {
 }
 
 .version-info {
-    text-align: center;
-    font-size: smaller;
+	text-align: center;
+	font-size: smaller;
 }
 
 #newchainconfirm .modal-dialog {
 	width: 30%;
+}
+
+.quorum-control {
+	display: none;
+}
+
+.CodeMirror {
+	height: 100%;
+	font-size: 11px;
+}
+
+td.locking-col,
+ th.locking-col {
+	float: right;
+	width: 100%;
+}
+
+.locking-btn {
+	float: right;
+}
+
+.unlocked-col {
+	width: 30px;
+	font-size: 17px;
+}
+
+td.locked i.fa-lock,
+ td.locked i.fa-lock {
+	opacity: 1;
+}
+
+.fund-accounts-form input {
+	margin-bottom: 8px;
+}
+
+.error-msg {
+	color: #c51616;
+	padding-right: 5px;
+}
+
+.form-group.fund-accounts-form label {
+	padding-top: 8px;
+}
+
+.account-balance span {
+	float: right;
 }

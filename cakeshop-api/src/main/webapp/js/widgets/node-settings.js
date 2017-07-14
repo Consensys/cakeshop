@@ -8,7 +8,7 @@ module.exports = function() {
 
 		hideLink: true,
 
-		url:        'api/node/get',
+		url: 'api/node/get',
 		update_url: 'api/node/update',
 
 		template: _.template(
@@ -21,7 +21,7 @@ module.exports = function() {
 			'</div>' +
 			'<div class="form-group">' +
 			'	<label for="networkId">Network ID</label>' +
-			'	<input type="text" class="form-control" id="networkId">' +
+			'	<input type="number" class="form-control" id="networkId">' +
 			'</div>' +
 			'<div class="form-group">' +
 			'	<label for="identity">Identity</label>' +
@@ -48,7 +48,6 @@ module.exports = function() {
 			'</div>'),
 
 
-
 		subscribe: function() {
 			// adding listener to reload the widget if identity is updated
 			Dashboard.Utils.on(function(ev, action) {
@@ -60,17 +59,17 @@ module.exports = function() {
 
 		rendered: false,
 		onData:function(status) {
-			if (this.rendered) {
+			if ( (this.rendered) || _.isEmpty(status.config) ) {
 				return;
 			}
 
 			this.rendered = true;
-			$('#widget-' + this.shell.id + ' #networkId').val( status.config.networkId ? status.config.networkId : '' );
-			$('#widget-' + this.shell.id + ' #identity').val( status.config.identity ? status.config.identity : '' );
-			$('#widget-' + this.shell.id + ' #logLevel').val( status.config.logLevel ? status.config.logLevel : '4' );
-			$('#widget-' + this.shell.id + ' #committingTransactions').val( status.config.committingTransactions ? 'true' : 'false' );
-			$('#widget-' + this.shell.id + ' #extraParams').val( status.config.extraParams ? status.config.extraParams : '' );
-			$('#widget-' + this.shell.id + ' #genesisBlock').val( status.config.genesisBlock ? status.config.genesisBlock : '' );
+			this._$('#networkId').val( status.config.networkId ? status.config.networkId : '' );
+			this._$('#identity').val( status.config.identity ? status.config.identity : '' );
+			this._$('#logLevel').val( status.config.logLevel ? status.config.logLevel : '4' );
+			this._$('#committingTransactions').val( status.config.committingTransactions ? 'true' : 'false' );
+			this._$('#extraParams').val( status.config.extraParams ? status.config.extraParams : '' );
+			this._$('#genesisBlock').val( status.config.genesisBlock ? status.config.genesisBlock : '' );
 		},
 
 
@@ -83,12 +82,12 @@ module.exports = function() {
 		render: function() {
 			Dashboard.render.widget(this.name, this.shell.tpl);
 
-			$('#widget-' + this.shell.id)
+			this._$()
 				.css({ 'height': '240px', 'margin-bottom': '10px', 'overflow': 'auto' })
 				.html( this.template({}) );
 
-			$('#widget-' + this.shell.id + ' .form-control').change(this._handler);
-			$(document).trigger("WidgetInternalEvent", ["widget|rendered|" + this.name]);
+			this._$('.form-control').change(this._handler);
+			$(document).trigger('WidgetInternalEvent', ['widget|rendered|' + this.name]);
 		},
 
 

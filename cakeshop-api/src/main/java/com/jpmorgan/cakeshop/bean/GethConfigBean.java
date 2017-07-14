@@ -2,7 +2,6 @@ package com.jpmorgan.cakeshop.bean;
 
 import static com.jpmorgan.cakeshop.util.FileUtils.*;
 import static com.jpmorgan.cakeshop.util.ProcessUtils.*;
-import static org.apache.commons.io.FileUtils.*;
 
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.SortedProperties;
@@ -14,6 +13,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Properties;
+import java.util.Scanner;
 
 import javax.annotation.PostConstruct;
 
@@ -40,6 +40,9 @@ public class GethConfigBean {
     @Value("${config.path}")
     private String CONFIG_ROOT;
 
+    @Autowired
+    private QuorumConfigBean quorumConfig;
+
     private String configFile;
 
     private String binPath;
@@ -47,6 +50,8 @@ public class GethConfigBean {
     private String gethPath;
 
     private String gethPidFilename;
+
+    private String constPidFileName;
 
     private String gethPasswordFile;
 
@@ -58,10 +63,13 @@ public class GethConfigBean {
 
     private String solcPath;
 
+    private String publicKey;
+
     /**
      * Whether or not this is a quorum node
      */
     private Boolean isQuorum;
+    private boolean isEmbeddedQuorum;
 
     private Properties props;
 
@@ -76,6 +84,8 @@ public class GethConfigBean {
     private final String GETH_AUTO_STOP = "geth.auto.stop";
     private final String GETH_START_TIMEOUT = "geth.start.timeout";
     private final String GETH_UNLOCK_TIMEOUT = "geth.unlock.timeout";
+    private final String EMBEDDED_NODE = null != System.getProperty("geth.node") ? System.getProperty("geth.node") : null;
+    public final Boolean IS_BOOT_NODE = null != System.getProperty("geth.boot.node");
 
     //geth.db.enabled
     private final String GETH_DB_ENABLED = "cakeshop.database.vendor";
@@ -86,6 +96,16 @@ public class GethConfigBean {
     private final String GETH_MINING = "geth.mining";
     private final String GETH_IDENTITY = "geth.identity";
     private final String GETH_EXTRA_PARAMS = "geth.params.extra";
+    // Quorum specific settings
+    private final String GETH_BLOCK_MAKER = "geth.block.maker";
+    private final String GETH_VOTE_ACCOUNT = "geth.vote.account";
+    private final String GETH_BLOCK_MAKER_PASS = "geth.block.maker.pass";
+    private final String GETH_VOTE_ACCOUNT_PASS = "geth.vote.account.pass";
+    private final String GETH_MIN_BLOCKTIME = "geth.min.blocktime";
+    private final String GETH_MAX_BLOCKTIME = "geth.max.blocktime";
+    private final String GETH_VOTE_CONTARCT_ADDRESS = "geth.vote.contract.addr";
+    private final String GETH_CONSTELLATION_ENABLED = "geth.constellation.enabled";
+    private final String GETH_PERMISSIONED = "geth.permissioned";
 
     public GethConfigBean() {
     }
@@ -104,23 +124,23 @@ public class GethConfigBean {
     private void initBean() {
         try {
             initGethBean();
-        } catch (IOException ex) {
+        } catch (IOException | InterruptedException ex) {
             LOG.error(ex.getMessage());
         }
     }
 
-    private void initGethBean() throws IOException {
-
-        // load props
-        configFile = FileUtils.expandPath(CONFIG_ROOT, "application.properties");
-        props = new Properties();
-        props.load(new FileInputStream(configFile));
+    private void initGethBean() throws IOException, InterruptedException {
 
         // setup needed paths
         String baseResourcePath = System.getProperty("eth.geth.dir");
         if (StringUtils.isBlank(baseResourcePath)) {
             baseResourcePath = FileUtils.getClasspathName("geth");
         }
+
+        // load props
+        configFile = FileUtils.expandPath(CONFIG_ROOT, "application.properties");
+        props = new Properties();
+        props.load(new FileInputStream(configFile));
 
         // Choose correct geth binary
         if (SystemUtils.IS_OS_WINDOWS) {
@@ -141,9 +161,7 @@ public class GethConfigBean {
             throw new IOException("Path does not exist or is not executable: " + gethPath);
         }
         binPath = new File(gethPath).getParent();
-
         gethPidFilename = expandPath(CONFIG_ROOT, "geth.pid");
-
 
         // init genesis block file (using vendor copy if necessary)
         String vendorGenesisDir = expandPath(baseResourcePath, "genesis");
@@ -174,8 +192,8 @@ public class GethConfigBean {
         if (SystemUtils.IS_OS_WINDOWS) {
             nodePath = nodePath + ".exe";
         }
-        solcPath = expandPath(baseResourcePath, "solc", "node_modules", "solc-cli", "bin", "solc");
-
+        solcPath = expandPath(baseResourcePath, "solc", "node_modules", "solc-cakeshop-cli", "bin", "solc");
+        ensureNodeBins(solcPath);
         // Clean up data dir path for default config (not an absolute path)
         if (getDataDirPath() != null) {
             if (getDataDirPath().startsWith("/.ethereum")) {
@@ -208,10 +226,33 @@ public class GethConfigBean {
         if (LOG.isDebugEnabled()) {
             LOG.debug(StringUtils.toString(this));
         }
+
+        if (StringUtils.isBlank(EMBEDDED_NODE)) {
+            // default to quorum
+            setGethPath(quorumConfig.getQuorumPath());
+
+            String destination = StringUtils.isNotBlank(System.getProperty("spring.config.location"))
+                    ? System.getProperty("spring.config.location").replaceAll("file:", "")
+                            .replaceAll("application.properties", "").concat("constellation-node/")
+                    : getDataDirPath().concat("/constellation/");
+
+            quorumConfig.createKeys("node", destination);
+            quorumConfig.createQuorumConfig("node", destination);
+            setConstPidFileName(expandPath(CONFIG_ROOT, "constellation.pid"));
+            setIsEmbeddedQuorum(true);
+
+            File pubKey = new File(destination.concat("node.pub"));
+            try (Scanner scanner = new Scanner(pubKey)) {
+                while (scanner.hasNext()) {
+                    setPublicKey(scanner.nextLine());
+                }
+            }
+        }
     }
 
     /**
      * Make sure all node bins are executable, both for win & mac/linux
+     *
      * @param nodePath
      * @param solcPath
      */
@@ -234,6 +275,20 @@ public class GethConfigBean {
 
     public void setGethPidFilename(String gethPidFilename) {
         this.gethPidFilename = gethPidFilename;
+    }
+
+    /**
+     * @return the constPidFileName
+     */
+    public String getConstPidFileName() {
+        return constPidFileName;
+    }
+
+    /**
+     * @param constPidFileName the constPidFileName to set
+     */
+    public void setConstPidFileName(String constPidFileName) {
+        this.constPidFileName = constPidFileName;
     }
 
     public String getDataDirPath() {
@@ -269,20 +324,36 @@ public class GethConfigBean {
     }
 
     public String getRpcPort() {
-      String url = getRpcUrl();
-      if (StringUtils.isBlank(url)) {
-        return null;
-      }
-      URI uri = URI.create(url);
-      return Integer.toString(uri.getPort());
+        String url = getRpcUrl();
+        if (StringUtils.isBlank(url)) {
+            return null;
+        }
+        URI uri = URI.create(url);
+        return Integer.toString(uri.getPort());
     }
 
     public String getRpcApiList() {
-        return props.getProperty(GETH_RPCAPI_LIST);
+        if (StringUtils.isBlank(EMBEDDED_NODE)) {
+            if (props.getProperty(GETH_RPCAPI_LIST).contains("quorum")) {
+                return props.getProperty(GETH_RPCAPI_LIST);
+            } else {
+                return props.getProperty(GETH_RPCAPI_LIST).concat(",").concat("quorum");
+            }
+        } else {
+            return props.getProperty(GETH_RPCAPI_LIST);
+        }
     }
 
     public void setRpcApiList(String rpcApiList) {
-        props.setProperty(GETH_RPCAPI_LIST, rpcApiList);
+        if (StringUtils.isBlank(EMBEDDED_NODE)) {
+            if (rpcApiList.contains("quorum")) {
+                props.setProperty(GETH_RPCAPI_LIST, rpcApiList);
+            } else {
+                props.setProperty(GETH_RPCAPI_LIST, rpcApiList.concat(",").concat("quorum"));
+            }
+        } else {
+            props.setProperty(GETH_RPCAPI_LIST, rpcApiList);
+        }
     }
 
     public String getGethNodePort() {
@@ -339,6 +410,82 @@ public class GethConfigBean {
 
     public void setIdentity(String identity) {
         props.setProperty(GETH_IDENTITY, identity);
+    }
+
+    public String getBlockMaker() {
+        return props.getProperty(GETH_BLOCK_MAKER);
+    }
+
+    public void setBlockMaker(String blockMaker) {
+        props.setProperty(GETH_BLOCK_MAKER, blockMaker);
+    }
+
+    public String getBlockMakerPass() {
+        return props.getProperty(GETH_BLOCK_MAKER_PASS);
+    }
+
+    public void setBlockMakerPass(String pass) {
+        props.setProperty(GETH_BLOCK_MAKER_PASS, pass);
+    }
+
+    public String getVoteAccount() {
+        return props.getProperty(GETH_VOTE_ACCOUNT);
+    }
+
+    public void setVoteAccount(String voteAccount) {
+        props.setProperty(GETH_VOTE_ACCOUNT, voteAccount);
+    }
+
+    public String getVoteAccountPass() {
+        return props.getProperty(GETH_VOTE_ACCOUNT_PASS);
+    }
+
+    public void setVoteAccountPass(String pass) {
+        props.setProperty(GETH_VOTE_ACCOUNT_PASS, pass);
+    }
+
+    public Integer getMinBlockTime() {
+        return StringUtils.isNotBlank(props.getProperty(GETH_MIN_BLOCKTIME)) ? Integer.valueOf(props.getProperty(GETH_MIN_BLOCKTIME)) : 2;
+    }
+
+    public Integer getMaxBlockTime() {
+        return StringUtils.isNotBlank(props.getProperty(GETH_MAX_BLOCKTIME)) ? Integer.valueOf(props.getProperty(GETH_MAX_BLOCKTIME)) : 5;
+    }
+
+    public void setMinBlockTime(Integer minblockTime) {
+        props.setProperty(GETH_MIN_BLOCKTIME, String.valueOf(minblockTime));
+    }
+
+    public void setMaxBlockTime(Integer maxblockTime) {
+        props.setProperty(GETH_MAX_BLOCKTIME, String.valueOf(maxblockTime));
+    }
+
+    public String getVoteContractAddress() {
+        return props.getProperty(GETH_VOTE_CONTARCT_ADDRESS);
+    }
+
+    public void setVoteContractAddress(String address) {
+        props.setProperty(GETH_VOTE_CONTARCT_ADDRESS, address);
+    }
+
+    public Boolean isConstellationEnabled() {
+        return StringUtils.isNotBlank(props.getProperty(GETH_CONSTELLATION_ENABLED))
+                ? Boolean.valueOf(props.getProperty(GETH_CONSTELLATION_ENABLED))
+                : Boolean.TRUE;
+    }
+
+    public void setConstellationEnabled(Boolean isEnabled) {
+        props.setProperty(GETH_CONSTELLATION_ENABLED, String.valueOf(isEnabled));
+    }
+
+    public Boolean isPermissionedNode() {
+        return StringUtils.isNotBlank(props.getProperty(GETH_PERMISSIONED))
+                ? Boolean.valueOf(props.getProperty(GETH_PERMISSIONED))
+                : Boolean.FALSE;
+    }
+
+    public void setPermissionedNode(Boolean isPermissionedNode) {
+        props.setProperty(GETH_PERMISSIONED, String.valueOf(isPermissionedNode));
     }
 
     public String getBinPath() {
@@ -429,10 +576,9 @@ public class GethConfigBean {
         this.isQuorum = isQuorum;
     }
 
-
-
     /**
      * Write the underlying config file to disk (persist all properties)
+     *
      * @throws IOException
      */
     public void save() throws IOException {
@@ -450,8 +596,8 @@ public class GethConfigBean {
     }
 
     /**
-     * Simple wrapper around {@link Properties#getProperty(String)} which handles empty strings
-     * and nulls properly
+     * Simple wrapper around {@link Properties#getProperty(String)} which
+     * handles empty strings and nulls properly
      *
      * @param key
      * @param defaultStr
@@ -459,6 +605,34 @@ public class GethConfigBean {
      */
     private String get(String key, String defaultStr) {
         return StringUtils.defaultIfBlank(props.getProperty(key), defaultStr);
+    }
+
+    /**
+     * @return the isEmbeddedQuorum
+     */
+    public boolean isEmbeddedQuorum() {
+        return isEmbeddedQuorum;
+    }
+
+    /**
+     * @param isEmbeddedQuorum the isEmbeddedQuorum to set
+     */
+    public void setIsEmbeddedQuorum(boolean isEmbeddedQuorum) {
+        this.isEmbeddedQuorum = isEmbeddedQuorum;
+    }
+
+    /**
+     * @return the publicKey
+     */
+    public String getPublicKey() {
+        return publicKey;
+    }
+
+    /**
+     * @param publicKey the publicKey to set
+     */
+    public void setPublicKey(String publicKey) {
+        this.publicKey = publicKey;
     }
 
 }

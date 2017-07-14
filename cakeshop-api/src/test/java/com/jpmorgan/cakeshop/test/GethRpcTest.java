@@ -13,19 +13,19 @@ import org.testng.annotations.Test;
 
 public class GethRpcTest extends BaseGethRpcTest {
 
-    private final String expectedHash = "0xd93b8da4c2f48c98e2cb76bef403ec22cada28331946218487b0fd1335e52bdd";
+    private final String expectedHash = "0x05d9ccffee8da905df840cb5e7508a0305270eadf028c63b74687aa77f6c8c6e";
 
     @Test
     public void testExecWithParams() throws APIException {
         String method = "eth_getBlockByNumber";
 
-        Map<String, Object> data = geth.executeGethCall(method, new Object[]{ "latest", false });
+        Map<String, Object> data = geth.executeGethCall(method, new Object[]{"latest", false});
         assertNotNull(data.get("hash"));
 
-        data = geth.executeGethCall(method, new Object[]{ 0, false });
+        data = geth.executeGethCall(method, new Object[]{0, false});
         assertEquals(data.get("hash"), expectedHash);
 
-        data = geth.executeGethCall("eth_getBlockByHash", new Object[]{ expectedHash, false });
+        data = geth.executeGethCall("eth_getBlockByHash", new Object[]{expectedHash, false});
         assertEquals(data.get("hash"), expectedHash);
     }
 
@@ -33,8 +33,8 @@ public class GethRpcTest extends BaseGethRpcTest {
     public void testBatchExec() throws APIException {
 
         List<RequestModel> reqs = new ArrayList<>();
-        reqs.add(new RequestModel("eth_getBlockByNumber", new Object[]{ 0, false }, 1L));
-        reqs.add(new RequestModel("eth_getBlockByNumber", new Object[]{ 0, false }, 1L));
+        reqs.add(new RequestModel("eth_getBlockByNumber", new Object[]{0, false}, 1L));
+        reqs.add(new RequestModel("eth_getBlockByNumber", new Object[]{0, false}, 1L));
 
         List<Map<String, Object>> batchRes = geth.batchExecuteGethCall(reqs);
 

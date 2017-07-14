@@ -1,3 +1,4 @@
+pragma solidity ^0.4.9;
 contract ContractRegistry
 {
   address public owner;
@@ -39,16 +40,19 @@ contract ContractRegistry
     _created_date = c.created_date;
   }
 
+  /*
   function getByName(string name) returns (address _id, string _name, string _abi, string _code, string _code_type) {
     // TODO
   }
+  */
 
   function listAddrs() returns (address[] _addresses) {
     return addrs;
   }
-
+/*
   function listByOwner() {
     // TODO
   }
+*/
 
 }

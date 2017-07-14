@@ -7,16 +7,16 @@ import com.jpmorgan.cakeshop.error.ErrorLog;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.util.EEUtils;
 import com.jpmorgan.cakeshop.util.FileUtils;
+import com.jpmorgan.cakeshop.util.MemoryUtils;
 import com.jpmorgan.cakeshop.util.ProcessUtils;
 import com.jpmorgan.cakeshop.util.StreamGobbler;
 import com.jpmorgan.cakeshop.util.StringUtils;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,10 +34,11 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
 @Order(999999)
-@Service(value="appStartup")
+@Service(value = "appStartup")
 public class AppStartup implements ApplicationListener<ApplicationEvent> {
 
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AppStartup.class);
+    private final Long REQUIRED_MEMORY = 2000000L;
 
     @Value("${config.path}")
     private String CONFIG_ROOT;
@@ -66,15 +67,15 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
     public void onApplicationEvent(ApplicationEvent event) {
 
         if (event instanceof EmbeddedServletContainerInitializedEvent) {
-          // this event fires after context refresh and after geth has started
-          int port = ((EmbeddedServletContainerInitializedEvent) event).getEmbeddedServletContainer().getPort();
-          System.out.println("          url:         " + getSpringUrl(port));
-          System.out.println();
-          return;
+            // this event fires after context refresh and after geth has started
+            int port = ((EmbeddedServletContainerInitializedEvent) event).getEmbeddedServletContainer().getPort();
+            System.out.println("          url:         " + getSpringUrl(port));
+            System.out.println();
+            return;
         }
 
         if (!(event instanceof ContextRefreshedEvent)) {
-          return;
+            return;
         }
 
         if (autoStartFired) {
@@ -97,10 +98,10 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
                 gethConfig.setAutoStop(false);
                 gethConfig.setRpcUrl("http://localhost:22000");
                 try {
-                  gethConfig.save();
+                    gethConfig.save();
                 } catch (IOException e) {
-                  LOG.error("Error writing application.properties: " + e.getMessage());
-                  System.exit(1);
+                    LOG.error("Error writing application.properties: " + e.getMessage());
+                    System.exit(1);
                 }
                 System.out.println("initialization complete. wrote quorum-example config. exiting.");
                 System.exit(0);
@@ -108,7 +109,7 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
 
             if (gethConfig.isAutoStart()) {
                 LOG.info("Autostarting geth node");
-                healthy =  geth.start();
+                healthy = geth.start();
                 if (!healthy) {
                     addError("GETH FAILED TO START");
                 }
@@ -116,7 +117,6 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
             } else {
                 // run startup tasks only
                 geth.runPostStartupTasks();
-
             }
         }
 
@@ -139,7 +139,6 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         System.out.println();
         System.out.println(StringUtils.repeat("*", 80));
 
-
         System.out.println("PRINTING DEBUG INFO");
         System.out.println("-------------------");
         System.out.println();
@@ -151,7 +150,6 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         System.out.println("-----------------------");
         System.out.println();
         System.out.println(getErrorInfo());
-
 
         System.out.println();
         System.out.println(StringUtils.repeat("*", 80));
@@ -177,53 +175,53 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
 
     // Try to determine listening URL
     private String getSpringUrl(int port) {
-      String uri = "http://";
-      try {
-        uri = uri + EEUtils.getAllIPs().get(0).getAddr();
-      } catch (APIException e) {
-        uri = uri + "localhost";
-      }
-      return uri + ":" + Integer.toString(port) + "/cakeshop/";
+        String uri = "http://";
+        try {
+            uri = uri + EEUtils.getAllIPs().get(0).getAddr();
+        } catch (APIException e) {
+            uri = uri + "localhost";
+        }
+        return uri + ":" + Integer.toString(port) + "/cakeshop/";
     }
 
     public String getDebugInfo(ServletContext servletContext) {
         StringBuilder out = new StringBuilder();
 
-        out.append("java.vendor: " + SystemUtils.JAVA_VENDOR + "\n");
-        out.append("java.version: " + System.getProperty("java.version") + "\n");
-        out.append("java.home: " + SystemUtils.JAVA_HOME + "\n");
-        out.append("java.io.tmpdir: " + SystemUtils.JAVA_IO_TMPDIR + "\n");
+        out.append("java.vendor: ").append(SystemUtils.JAVA_VENDOR).append("\n");
+        out.append("java.version: ").append(System.getProperty("java.version")).append("\n");
+        out.append("java.home: ").append(SystemUtils.JAVA_HOME).append("\n");
+        out.append("java.io.tmpdir: ").append(SystemUtils.JAVA_IO_TMPDIR).append("\n");
         out.append("\n");
 
         out.append("servlet.container: ");
         if (servletContext != null) {
-           out.append(servletContext.getServerInfo());
+            out.append(servletContext.getServerInfo());
         }
         out.append("\n\n");
 
-        out.append("cakeshop.version: " + AppVersion.BUILD_VERSION + "\n");
-        out.append("cakeshop.build.id: " + AppVersion.BUILD_ID + "\n");
-        out.append("cakeshop.build.date: " + AppVersion.BUILD_DATE + "\n");
+        out.append("cakeshop.version: ").append(AppVersion.BUILD_VERSION).append("\n");
+        out.append("cakeshop.build.id: ").append(AppVersion.BUILD_ID).append("\n");
+        out.append("cakeshop.build.date: ").append(AppVersion.BUILD_DATE).append("\n");
         out.append("\n");
 
-        out.append("os.name: " + SystemUtils.OS_NAME + "\n");
-        out.append("os.version: " + SystemUtils.OS_VERSION + "\n");
-        out.append("os.arch: " + SystemUtils.OS_ARCH + "\n");
+        out.append("os.name: ").append(SystemUtils.OS_NAME).append("\n");
+        out.append("os.version: ").append(SystemUtils.OS_VERSION).append("\n");
+        out.append("os.arch: ").append(SystemUtils.OS_ARCH).append("\n");
         out.append("\n");
 
         out.append(getLinuxInfo());
 
-        out.append("user.dir: " + SystemUtils.getUserDir() + "\n");
-        out.append("user.home: " + SystemUtils.getUserHome() + "\n");
+        out.append("user.dir: ").append(SystemUtils.getUserDir()).append("\n");
+        out.append("user.home: ").append(SystemUtils.getUserHome()).append("\n");
         out.append("\n");
 
-        out.append("app.root: " + FileUtils.getClasspathPath("") + "\n");
-        out.append("eth.env: " + System.getProperty("eth.environment") + "\n");
-        out.append("eth.config.dir: " + CONFIG_ROOT + "\n");
+        out.append("app.root: ").append(FileUtils.getClasspathPath("")).append("\n");
+        out.append("eth.env: ").append(System.getProperty("eth.environment")).append("\n");
+        out.append("eth.config.dir: ").append(CONFIG_ROOT).append("\n");
         out.append("\n");
 
-        out.append("geth.path: " + gethConfig.getGethPath() + "\n");
-        out.append("geth.data.dir: " + gethConfig.getDataDirPath() + "\n");
+        out.append("geth.path: ").append(gethConfig.getGethPath()).append("\n");
+        out.append("geth.data.dir: ").append(gethConfig.getDataDirPath()).append("\n");
         out.append("geth.version: ");
         if (StringUtils.isNotBlank(gethVer)) {
             out.append(gethVer);
@@ -232,7 +230,7 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         }
         out.append("\n\n");
 
-        out.append("solc.path: " + gethConfig.getSolcPath() + "\n");
+        out.append("solc.path: ").append(gethConfig.getSolcPath()).append("\n");
         out.append("solc.version: ");
         if (StringUtils.isNotBlank(solcVer)) {
             out.append(solcVer);
@@ -254,12 +252,7 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         List<File> files = new ArrayList<>();
 
         if (dir.exists()) {
-            files.addAll(Lists.newArrayList(dir.listFiles(new FilenameFilter() {
-                @Override
-                public boolean accept(File dir, String filename) {
-                    return filename.endsWith("release");
-                }
-            })));
+            files.addAll(Lists.newArrayList(dir.listFiles((File dir1, String filename) -> filename.endsWith("release"))));
         }
 
         // looks for the version file (not all linux distros)
@@ -278,15 +271,15 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         str.append("Linux release info:");
 
         // prints all the version-related files
-        for (File f : files) {
+        files.forEach((f) -> {
             try {
-                String ver = FileUtils.readFileToString(f);
+                String ver = FileUtils.readFileToString(f, Charset.defaultCharset());
                 if (!StringUtils.isBlank(ver)) {
                     str.append(ver);
                 }
             } catch (IOException e) {
             }
-        }
+        });
         str.append("\n\n");
         return str.toString();
     }
@@ -297,17 +290,14 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         allErrors.addAll(errors);
         allErrors.addAll(geth.getStartupErrors());
 
-        Collections.sort(allErrors, new Comparator<ErrorLog>() {
-            @Override
-            public int compare(ErrorLog o1, ErrorLog o2) {
-                long result = o1.nanos - o2.nanos;
-                if (result < 0) {
-                    return -1;
-                } else if (result > 0) {
-                    return 1;
-                } else {
-                    return 0;
-                }
+        Collections.sort(allErrors, (ErrorLog o1, ErrorLog o2) -> {
+            long result = o1.nanos - o2.nanos;
+            if (result < 0) {
+                return -1;
+            } else if (result > 0) {
+                return 1;
+            } else {
+                return 0;
             }
         });
         return allErrors;
@@ -320,9 +310,9 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         }
 
         StringBuilder out = new StringBuilder();
-        for (ErrorLog err : allErrors) {
+        allErrors.forEach((err) -> {
             out.append(err.toString()).append("\n\n");
-        }
+        });
         return out.toString();
     }
 
@@ -332,7 +322,7 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
      * @return
      */
     private boolean testSystemHealth() {
-        boolean healthy = true;
+        boolean isHealthy = true;
 
         System.out.println();
         System.out.println();
@@ -348,7 +338,7 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
             System.out.println("OK");
         } else {
             System.out.println("FAILED");
-            healthy = false;
+            isHealthy = false;
         }
 
         // test config & db data dir
@@ -360,15 +350,15 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
             System.out.println("OK");
         } else {
             System.out.println("FAILED");
-            healthy = false;
+            isHealthy = false;
         }
 
         // test geth binary
         System.out.println();
         System.out.println("Testing geth server binary");
         String gethOutput = testBinary(gethConfig.getGethPath(), "version");
-        if (gethOutput == null || gethOutput.indexOf("Version:") < 0) {
-            healthy = false;
+        if (gethOutput == null || !gethOutput.contains("Version:")) {
+            isHealthy = false;
             System.out.println("FAILED");
         } else {
             Matcher matcher = Pattern.compile("^Version: (.*)", Pattern.MULTILINE).matcher(gethOutput);
@@ -382,8 +372,8 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         System.out.println();
         System.out.println("Testing solc compiler binary");
         String solcOutput = testBinary(gethConfig.getNodePath(), gethConfig.getSolcPath(), "--version");
-        if (solcOutput == null || solcOutput.indexOf("Version:") < 0) {
-            healthy = false;
+        if (solcOutput == null || !solcOutput.contains("Version:")) {
+            isHealthy = false;
             System.out.println("FAILED");
         } else {
             Matcher matcher = Pattern.compile("^Version: (.*)", Pattern.MULTILINE).matcher(solcOutput);
@@ -394,7 +384,7 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         }
 
         System.out.println();
-        if (healthy) {
+        if (isHealthy) {
             System.out.println("ALL TESTS PASSED!");
         } else {
             System.out.println("!!! SYSTEM FAILED SELF-TEST !!!");
@@ -404,7 +394,13 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         System.out.println(StringUtils.repeat("*", 80));
         System.out.println();
 
-        return healthy;
+        //Check if total memory or free memory is Less than 2 GB
+        if (MemoryUtils.getMemoryData(false) < REQUIRED_MEMORY && MemoryUtils.getMemoryData(true) < REQUIRED_MEMORY) {
+            errors.add(new ErrorLog("System does not have enough total or free RAM to run cakeshop. Need at least 2 GB of free RAM"));
+            isHealthy = false;
+        }
+
+        return isHealthy;
     }
 
     private String testBinary(String... args) {

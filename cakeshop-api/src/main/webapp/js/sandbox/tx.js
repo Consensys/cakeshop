@@ -266,21 +266,23 @@
    * @param [Object] method     ABI object
    * @param [Element] container   Container element which wraps all inputs
    */
-  function collectInputVals(method, container) {
-    var params = {};
-    method.inputs.forEach(function(input) {
-      var val;
-      if (input.type.match(/\[(\d+)?\]/)) {
-        val = container.find(".method-inputs[data-param=" + input.name + "] input").map(function(i, el) {
-          return $(el).val();
-        }).toArray();
-      } else {
-        val = container.find(".method-inputs[data-param=" + input.name + "] input").val();
-      }
-      params[input.name] = val;
-    });
-    return params;
-  }
+    function collectInputVals(method, container) {
+        var params = {};
+        if (method !== null && method !== undefined) {
+            method.inputs.forEach(function (input) {
+                var val;
+                if (input.type.match(/\[(\d+)?\]/)) {
+                    val = container.find(".method-inputs[data-param=" + input.name + "] input").map(function (i, el) {
+                        return $(el).val();
+                    }).toArray();
+                } else {
+                    val = container.find(".method-inputs[data-param=" + input.name + "] input").val();
+                }
+                params[input.name] = val;
+            });
+        }
+        return params;
+    }
 
   /**
    * Highlight the given method in the source code editor

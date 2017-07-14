@@ -10,7 +10,7 @@ public class StreamLogAdapter extends InterruptibleExecutionThreadService {
 
     private final Logger logger;
 
-    private BufferedReader reader;
+    private final BufferedReader reader;
 
     public StreamLogAdapter(Logger logger, InputStream stream) {
         super();

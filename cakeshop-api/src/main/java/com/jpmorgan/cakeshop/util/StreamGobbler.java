@@ -13,9 +13,9 @@ public class StreamGobbler extends Thread {
 
     private static final Logger LOG = LoggerFactory.getLogger(StreamGobbler.class);
 
-    private InputStream stream;
-    private StringBuilderWriter sw;
-    private Charset encoding;
+    private final InputStream stream;
+    private final StringBuilderWriter sw;
+    private final Charset encoding;
 
     public static StreamGobbler create(InputStream stream) {
         StreamGobbler sg = new StreamGobbler(stream);

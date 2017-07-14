@@ -1,9 +1,8 @@
 package com.jpmorgan.cakeshop.config;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.FileInputStream;
+import java.util.Properties;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,15 +12,20 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 
 import okhttp3.OkHttpClient;
+import org.springframework.web.servlet.ViewResolver;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.thymeleaf.spring4.SpringTemplateEngine;
+import org.thymeleaf.spring4.view.ThymeleafViewResolver;
+import org.thymeleaf.templateresolver.ServletContextTemplateResolver;
 
+import org.springframework.beans.factory.annotation.Value;
+import com.jpmorgan.cakeshop.util.FileUtils;
 
 /**
  *
@@ -31,50 +35,36 @@ import okhttp3.OkHttpClient;
 @EnableScheduling
 public class WebConfig extends WebMvcConfigurerAdapter {
 
+	private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(WebConfig.class);
+
+    @Value("${config.path}")
+    private String CONFIG_ROOT;
+
     @Autowired
     private Environment env;
 
     @Autowired
-    private RequestMappingHandlerAdapter adapter;
-
-    @Autowired
     private OkHttpClient okHttpClient;
 
-    @PostConstruct
-    public void prioritizeCustomArgumentMethodHandlers() {
-        // existing resolvers
-        List<HandlerMethodArgumentResolver> argumentResolvers
-                = new ArrayList<>(adapter.getArgumentResolvers());
-
-        // add our resolvers at pos 0
-        List<HandlerMethodArgumentResolver> customResolvers
-                = adapter.getCustomArgumentResolvers();
-
-        // empty and re-add our custom list
-        argumentResolvers.removeAll(customResolvers);
-        argumentResolvers.addAll(0, customResolvers);
-
-        adapter.setArgumentResolvers(argumentResolvers);
-    }
-
     @Override
-    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
-        super.addArgumentResolvers(argumentResolvers);
-        argumentResolvers.add(new JsonMethodArgumentResolver());
-    }
-
-    @Override
-
     public void configureAsyncSupport(AsyncSupportConfigurer configurer) {
         configurer.setTaskExecutor(createMvcAsyncExecutor());
     }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        if (Boolean.valueOf(env.getProperty("geth.cors.enabled:true"))) {
+        String configFile = FileUtils.expandPath(CONFIG_ROOT, "application.properties");
+        Properties props = new Properties();
+        try {
+        	props.load(new FileInputStream(configFile));
+        } catch (Exception e) { }
+       
+        if (Boolean.valueOf(env.getProperty("geth.cors.enabled"))) {
             registry.addMapping("/**")
-                    .allowedOrigins(env.getProperty("geth.cors.url"))
-                    .allowedMethods("POST");
+                    .allowedOrigins(env.getProperty("geth.cors.url"));
+        } else if (Boolean.valueOf(props.getProperty("geth.cors.enabled"))) {
+            registry.addMapping("/**")
+            .allowedOrigins(props.getProperty("geth.cors.url"));
         }
     }
 
@@ -82,6 +72,43 @@ public class WebConfig extends WebMvcConfigurerAdapter {
     public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
         // Enable DefaultServlet handler for static resources at /**
         configurer.enable();
+    }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("swagger-ui.html")
+                .addResourceLocations("classpath:/META-INF/resources/");
+
+        registry.addResourceHandler("/webjars/**")
+                .addResourceLocations("classpath:/META-INF/resources/webjars/");
+    }
+
+    @Bean
+    public ServletContextTemplateResolver templateResolver() {
+        ServletContextTemplateResolver templateResolver = new ServletContextTemplateResolver();
+        templateResolver.setCacheable(false);
+        templateResolver.setTemplateMode("HTML5");
+        templateResolver.setCharacterEncoding("UTF-8");
+        templateResolver.setPrefix("/resources/");
+        templateResolver.setSuffix(".html");
+
+        return templateResolver;
+    }
+
+    @Bean
+    public SpringTemplateEngine templateEngine() {
+        SpringTemplateEngine templateEngine = new SpringTemplateEngine();
+        templateEngine.setTemplateResolver(templateResolver());
+        return templateEngine;
+    }
+
+    @Bean
+    public ViewResolver getViewResolver() {
+        ThymeleafViewResolver resolver = new ThymeleafViewResolver();
+        resolver.setOrder(1);
+        resolver.setViewNames(new String[]{"*.html"});
+        resolver.setTemplateEngine(templateEngine());
+        return resolver;
     }
 
     @PreDestroy
@@ -95,7 +122,7 @@ public class WebConfig extends WebMvcConfigurerAdapter {
      *
      * @return
      */
-    @Bean(name="asyncTaskExecutor")
+    @Bean(name = "asyncTaskExecutor")
     public AsyncTaskExecutor createMvcAsyncExecutor() {
         ThreadPoolTaskExecutor exec = new ThreadPoolTaskExecutor();
         exec.setBeanName("asyncTaskExecutor");
@@ -106,7 +133,4 @@ public class WebConfig extends WebMvcConfigurerAdapter {
         exec.afterPropertiesSet();
         return exec;
     }
-
-
-
 }

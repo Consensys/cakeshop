@@ -8,8 +8,6 @@ import com.jpmorgan.cakeshop.model.RequestModel;
 import com.jpmorgan.cakeshop.service.BlockService;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 
-import java.math.BigInteger;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -44,8 +42,8 @@ public class BlockServiceImpl implements BlockService {
             throw new APIException("Bad request");
         }
 
-        Map<String, Object> blockData =
-                gethService.executeGethCall(method, new Object[]{ input, false });
+        Map<String, Object> blockData
+                = gethService.executeGethCall(method, new Object[]{input, false});
 
         return processBlockData(blockData);
     }
@@ -60,15 +58,15 @@ public class BlockServiceImpl implements BlockService {
         Block block = new Block();
 
         // add addresses directly
-        block.setId((String)blockData.get("hash"));
-        block.setParentId((String)blockData.get("parentHash"));
-        block.setNonce((String)blockData.get("nonce"));
-        block.setSha3Uncles((String)blockData.get("sha3Uncles"));
-        block.setLogsBloom((String)blockData.get("logsBloom"));
-        block.setTransactionsRoot((String)blockData.get("transactionsRoot"));
-        block.setStateRoot((String)blockData.get("stateRoot"));
-        block.setMiner((String)blockData.get("miner"));
-        block.setExtraData((String)blockData.get("extraData"));
+        block.setId((String) blockData.get("hash"));
+        block.setParentId((String) blockData.get("parentHash"));
+        block.setNonce((String) blockData.get("nonce"));
+        block.setSha3Uncles((String) blockData.get("sha3Uncles"));
+        block.setLogsBloom((String) blockData.get("logsBloom"));
+        block.setTransactionsRoot((String) blockData.get("transactionsRoot"));
+        block.setStateRoot((String) blockData.get("stateRoot"));
+        block.setMiner((String) blockData.get("miner"));
+        block.setExtraData((String) blockData.get("extraData"));
         block.setTransactions((List<String>) blockData.get("transactions"));
         block.setUncles((List<String>) blockData.get("uncles"));
 
@@ -87,7 +85,7 @@ public class BlockServiceImpl implements BlockService {
     public List<Block> get(long start, long end) throws APIException {
         List<RequestModel> reqs = new ArrayList<>();
         for (long i = start; i <= end; i++) {
-            reqs.add(new RequestModel("eth_getBlockByNumber", new Object[]{ i, false }, 42L));
+            reqs.add(new RequestModel("eth_getBlockByNumber", new Object[]{i, false}, 42L));
         }
         return batchGet(reqs);
     }
@@ -96,20 +94,20 @@ public class BlockServiceImpl implements BlockService {
     public List<Block> get(List<Long> numbers) throws APIException {
         List<RequestModel> reqs = new ArrayList<>();
         for (Long num : numbers) {
-            reqs.add(new RequestModel("eth_getBlockByNumber", new Object[]{ num, false }, 42L));
+            reqs.add(new RequestModel("eth_getBlockByNumber", new Object[]{num, false}, 42L));
         }
-	    return batchGet(reqs);
+        return batchGet(reqs);
     }
 
     private List<Block> batchGet(List<RequestModel> reqs) throws APIException {
         List<Map<String, Object>> batchRes = gethService.batchExecuteGethCall(reqs);
 
-	    // TODO ignore return order for now
-	    List<Block> blocks = new ArrayList<>();
-	    for (Map<String, Object> blockData : batchRes) {
-	        blocks.add(processBlockData(blockData));
-	    }
-	    return blocks;
+        // TODO ignore return order for now
+        List<Block> blocks = new ArrayList<>();
+        for (Map<String, Object> blockData : batchRes) {
+            blocks.add(processBlockData(blockData));
+        }
+        return blocks;
     }
 
 }

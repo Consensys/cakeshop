@@ -2,6 +2,7 @@ package com.jpmorgan.cakeshop.test.config;
 
 import com.jpmorgan.cakeshop.config.AppConfig;
 import com.jpmorgan.cakeshop.config.SpringBootApplication;
+import com.jpmorgan.cakeshop.config.SwaggerConfig;
 import com.jpmorgan.cakeshop.config.WebAppInit;
 import com.jpmorgan.cakeshop.config.WebConfig;
 import com.jpmorgan.cakeshop.db.BlockScanner;
@@ -29,13 +30,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.testng.annotations.BeforeClass;
 
 @Configuration
-@ComponentScan(basePackages="com.jpmorgan.cakeshop",
-    excludeFilters = {
-        @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
-            value = { SpringBootApplication.class, WebConfig.class, WebAppInit.class,
-                            BlockScanner.class }
-        )
-    }
+@ComponentScan(basePackages = "com.jpmorgan.cakeshop",
+        excludeFilters = {
+            @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
+                    value = {SpringBootApplication.class, WebConfig.class, WebAppInit.class,
+                        BlockScanner.class, SwaggerConfig.class}
+            )
+        }
 )
 @ActiveProfiles("test")
 @Order(1)
@@ -45,7 +46,6 @@ public class TestAppConfig implements EnvironmentAware {
     private static final Logger LOG = LoggerFactory.getLogger(TestAppConfig.class);
     private Environment env;
 
-
     @BeforeClass
     public static void setUp() {
         System.setProperty("spring.profiles.active", "test");
@@ -54,12 +54,12 @@ public class TestAppConfig implements EnvironmentAware {
 
     @Bean
     @Profile("test")
-    public  PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() throws IOException {
+    public PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() throws IOException {
         AppConfig appConfig = new AppConfig();
         return appConfig.createPropConfigurer(TempFileManager.getTempPath());
     }
 
-    @Bean(name="asyncExecutor")
+    @Bean(name = "asyncExecutor")
     public Executor getAsyncExecutor() {
         return new SyncTaskExecutor();
     }
