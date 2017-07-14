@@ -1,4 +1,4 @@
-# Documentation updates v0.9.x -> v0.10.x are in progress. Sections marked NEEDS UPDATE may not behave as exepcted.
+# Documentation updates v0.9.x -> v0.10.x are in progress. Sections marked NEEDS UPDATE may not behave as expected.
 
 
 # Cakeshop
