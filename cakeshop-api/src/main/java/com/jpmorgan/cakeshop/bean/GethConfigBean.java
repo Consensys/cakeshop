@@ -160,6 +160,7 @@ public class GethConfigBean {
         if (!ensureFileIsExecutable(gethPath)) {
             throw new IOException("Path does not exist or is not executable: " + gethPath);
         }
+
         binPath = new File(gethPath).getParent();
         gethPidFilename = expandPath(CONFIG_ROOT, "geth.pid");
 
@@ -167,6 +168,7 @@ public class GethConfigBean {
         String vendorGenesisDir = expandPath(baseResourcePath, "genesis");
 
         genesisBlockFilename = expandPath(CONFIG_ROOT, "genesis_block.json");
+
         if (!new File(genesisBlockFilename).exists()) {
             String vendorGenesisBlockFile = FileUtils.join(vendorGenesisDir, "genesis_block.json");
             copyFile(new File(vendorGenesisBlockFile), new File(genesisBlockFilename));
@@ -189,11 +191,14 @@ public class GethConfigBean {
         // configure node, solc
         ensureNodeBins(binPath);
         nodePath = FileUtils.expandPath(binPath, "node");
+
         if (SystemUtils.IS_OS_WINDOWS) {
             nodePath = nodePath + ".exe";
         }
+
         solcPath = expandPath(baseResourcePath, "solc", "node_modules", "solc-cakeshop-cli", "bin", "solc");
         ensureNodeBins(solcPath);
+
         // Clean up data dir path for default config (not an absolute path)
         if (getDataDirPath() != null) {
             if (getDataDirPath().startsWith("/.ethereum")) {
@@ -214,13 +219,23 @@ public class GethConfigBean {
             setDataDirPath(expandPath(CONFIG_ROOT, "ethereum"));
         }
 
+        // Initialize node identity
         String identity = getIdentity();
+
         if (StringUtils.isBlank(identity)) {
             identity = System.getenv("USER");
+
             if (StringUtils.isBlank(identity)) {
                 identity = System.getenv("USERNAME");
             }
+
+            // No idenity set, and user info missing in the env prefs
+            if (StringUtils.isBlank(identity)) {
+                LOG.error("Node indentity preference is missing, please ensure geth.identity is set in application properties");
+                throw new IllegalArgumentException("Node indentity preference is missing, please ensure geth.identity is set in application properties");
+            }
         }
+
         setIdentity(identity);
 
         if (LOG.isDebugEnabled()) {
@@ -328,6 +343,7 @@ public class GethConfigBean {
         if (StringUtils.isBlank(url)) {
             return null;
         }
+
         URI uri = URI.create(url);
         return Integer.toString(uri.getPort());
     }
