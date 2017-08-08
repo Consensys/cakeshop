@@ -34,8 +34,8 @@ public class QuorumConfigBean implements InitializingBean {
     private static final String CONSTELLATION_MAC_COMMAND = "quorum/constellation/mac/constellation-node";
     private static final String CONSTELLATION_LINUX_KEYGEN = "quorum/constellation/linux/constellation-enclave-keygen";
     private static final String CONSTELLATION_MAC_KEYGEN = "quorum/constellation/mac/constellation-enclave-keygen";
-    private final String CONSTELLATION_URL = StringUtils.isNotBlank(System.getProperty("geth.constellaiton.url"))
-            ? System.getProperty("geth.constellaiton.url") : "http://127.0.0.1:9000";
+    private final String CONSTELLATION_URL = StringUtils.isNotBlank(System.getProperty("geth.constellation.url"))
+            ? System.getProperty("geth.constellation.url") : "http://127.0.0.1:9000";
 
     private final String EMBEDDED_NODE = null != System.getProperty("geth.node") ? System.getProperty("geth.node") : null;
 
@@ -46,10 +46,13 @@ public class QuorumConfigBean implements InitializingBean {
 
     @Value("${geth.bootnodes.list:\"\"}")
     private String bootNodes;
+    
     @Value("${geth.bootnode.key:\"\"}")
     private String bootNodeKey;
+    
     @Value("${geth.bootnode.address:\"\"}")
     private String bootNodeAddress;
+    
     @Value("${geth.boot.node:false}")
     private Boolean isBootNode;
 
@@ -129,13 +132,16 @@ public class QuorumConfigBean implements InitializingBean {
 
     public void createKeys(final String keyName, final String destination) throws IOException, InterruptedException {
         constellationConfig = destination;
+
         File dir = new File(destination);
         Boolean createKeys = true;
 
         if (!dir.exists()) {
             dir.mkdirs();
+
         } else {
             String[] fileNames = dir.list();
+
             if (fileNames.length >= 4) {
                 for (String fileName : fileNames) {
                     if (fileName.endsWith(".key") || fileName.endsWith(".pub")) {
@@ -152,12 +158,15 @@ public class QuorumConfigBean implements InitializingBean {
             Process process = pb.start();
             try (Scanner scanner = new Scanner(process.getInputStream())) {
                 boolean flag = scanner.hasNext();
+
                 try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()))) {
                     while (flag) {
                         String line = scanner.next();
+
                         if (line.isEmpty()) {
                             continue;
                         }
+
                         if (line.contains("[none]:")) {
                             writer.newLine();
                             writer.flush();
@@ -176,6 +185,7 @@ public class QuorumConfigBean implements InitializingBean {
                 //create archive keys
                 pb = new ProcessBuilder(getKeyGen(), destination.concat(keyName.concat("a")));
                 process = pb.start();
+
                 try (Scanner scanner = new Scanner(process.getInputStream())) {
                     boolean flag = scanner.hasNext();
                     try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()))) {
@@ -184,6 +194,7 @@ public class QuorumConfigBean implements InitializingBean {
                             if (line.isEmpty()) {
                                 continue;
                             }
+
                             if (line.contains("[none]:")) {
                                 writer.write(" ");
                                 writer.flush();
@@ -209,8 +220,10 @@ public class QuorumConfigBean implements InitializingBean {
 
     public void createQuorumConfig(String keyName, final String destination) throws IOException {
         File confFile = new File(destination.concat(keyName.concat(".conf")));
+
         if (!confFile.exists()) {
             keyName = destination.concat(keyName);
+
             try (FileWriter writer = new FileWriter(confFile)) {
                 String url = CONSTELLATION_URL.endsWith("/") ? CONSTELLATION_URL.replaceFirst("(.*)" + "/" + "$", "$1" + "") : CONSTELLATION_URL;
                 String port = url.substring(url.lastIndexOf(":") + 1, url.length());
