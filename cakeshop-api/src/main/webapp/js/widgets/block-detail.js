@@ -29,6 +29,7 @@ module.exports = function() {
 		onData: function(status) {
 			if(status.latestBlock !== undefined) {
 				var blockNumber = status.latestBlock;
+				this.title = 'Block #' + blockNumber;
 				var _this = this;
 
 				$.when(
