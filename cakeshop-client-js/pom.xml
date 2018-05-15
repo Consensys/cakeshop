@@ -50,9 +50,6 @@
             <goals>
               <goal>bower</goal>
             </goals>
-            <configuration>
-              <arguments>install --allow-root</arguments>
-            </configuration>
           </execution>
 
           <execution>
