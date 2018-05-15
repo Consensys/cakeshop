@@ -36,6 +36,12 @@ module.exports = {
 			multiStep: true
 		})
 	],
+	externals: [
+		{
+		 xmlhttprequest: 'XMLHttpRequest'
+		}
+	],
+
 	module: {
 		loaders: [
 			{
