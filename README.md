@@ -93,6 +93,15 @@ Further documentation can be found on the [wiki](https://github.com/jpmorganchas
 
 Thank you for your interest in contributing to Cakeshop!
 
+### How to generate war file
+	mvn clean install 
+
+### Where is the generated war file
+	cakeshop/cakeshop-api/target
+
+### Troubleshoot
+	Sometimes you need sudo permissions to allow bower to install packages. You have to make few changes in pom.xml. I have done those changes in dev branch so you can check that out.
+
 Cakeshop is built on open source and we invite you to contribute enhancements. Upon review you will be required to complete a Contributor License Agreement (CLA) before we are able to merge. If you have any questions about the contribution process, please feel free to send an email to [quorum_info@jpmorgan.com](mailto:quorum_info@jpmorgan.com).
 
 ## License
