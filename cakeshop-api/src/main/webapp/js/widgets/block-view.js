@@ -33,6 +33,11 @@ module.exports = function() {
 		render: function() {
 			Dashboard.render.widget(this.name, this.shell.tpl);
 
+			var searchParams = window.location.search;
+			if(searchParams) {
+                    var txnId = searchParams.substring(7);
+                    Dashboard.show({ widgetId: 'txn-detail', section: 'explorer', data: txnId, refetch: true });
+            }         
 			$('#widget-' + this.shell.id)
 				.css({
 					'height': '240px',
