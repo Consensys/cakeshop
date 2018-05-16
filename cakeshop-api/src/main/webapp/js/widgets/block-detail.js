@@ -20,10 +20,11 @@ module.exports = function() {
 
 		subscribe: function() {
             // adding listener to reload the widget if identity is updated
+            var _this = this;
             Dashboard.Utils.on(function(ev, action) {
                 if (action === 'node-status|announce') {
                 	if(Tower.status.latestBlock !== undefined && parseInt(Tower.status.latestBlock) >-1 ) {
-                		this.blockNumber = Tower.status.latestBlock;
+                		_this.blockNumber = Tower.status.latestBlock;
                 		widget.onData();	
                 	}
                     
