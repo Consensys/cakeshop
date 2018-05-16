@@ -351,8 +351,8 @@ window.Tower = {
 
 		'explorer': function() {
 			var widgets = [
-				{ widgetId: 'block-detail', data: Tower.status.latestBlock },
-				{ widgetId: 'block-list', data: Tower.status.latestBlock },
+				{ widgetId: 'block-detail' },
+				{ widgetId: 'block-list' },
 				{ widgetId: 'block-view' }
 			];
 
