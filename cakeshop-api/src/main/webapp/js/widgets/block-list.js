@@ -17,7 +17,7 @@ module.exports = function() {
 		 '<thead style="font-weight: bold;"><tr><td style="width:60px;">Block</td><td>Age</td><td style="width:45px;">TXNs</td></tr></thead>' +
 		 '<tbody><%= rows %></tbody></table>'),
 
-		templateRow: _.template('<tr><td>#<a href="#"><%= block.num %></a></td><td><%= moment.unix(block.age).fromNow() %></td><td <% if (block.txnCount == 0) { %>style="opacity: 0.2;"<% } %>><%= block.txnCount %></td></tr>'),
+		templateRow: _.template('<tr><td>#<a href="#"><%= block.num %></a></td><td><%= moment.unix(parseInt(block.age)/1000000000).fromNow() %></td><td <% if (block.txnCount == 0) { %>style="opacity: 0.2;"<% } %>><%= block.txnCount %></td></tr>'),
 
 		setData: function(data) {
 			this.data = data;
@@ -27,7 +27,13 @@ module.exports = function() {
 
 		subscribe: function(data) {
 			// subscribe to get new blocks
+			Dashboard.Utils.on(function(ev, action) {
+                if (action === 'node-status|announce') {
+                    widget.onData(Tower.status);
+                }
+            });
 			utils.subscribe(this.topic, this.onNewBlock);
+			
 		},
 
 		onNewBlock: function(data) {
@@ -43,10 +49,10 @@ module.exports = function() {
 		},
 
 		BLOCKS_TO_SHOW: 100,
-		fetch: function() {
+		onData: function(status) {
 			try {
-				if (this.lastBlockNum != Tower.status.latestBlock) {
-					this.lastBlockNum = Tower.status.latestBlock;
+				if (this.lastBlockNum != status.latestBlock) {
+					this.lastBlockNum = status.latestBlock;
 				}
 			} catch (e) {}
 
@@ -88,6 +94,7 @@ module.exports = function() {
 				_this.postFetch();
 			});
 		},
+
 
 		postRender: function() {
 			$('#widget-' + this.shell.id).on('click', 'a', this.showBlock);
