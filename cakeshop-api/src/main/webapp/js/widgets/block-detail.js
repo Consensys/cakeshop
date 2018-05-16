@@ -22,13 +22,17 @@ module.exports = function() {
             // adding listener to reload the widget if identity is updated
             Dashboard.Utils.on(function(ev, action) {
                 if (action === 'node-status|announce') {
-                    widget.onData(Tower.status);
+                	if(Tower.status.latestBlock !== undefined && parseInt(Tower.status.latestBlock) >-1 ) {
+                		this.blockNumber = Tower.status.latestBlock;
+                		widget.onData();	
+                	}
+                    
                 }
             });
         },
 		onData: function(status) {
-			if(status.latestBlock !== undefined) {
-				var blockNumber = status.latestBlock;
+			if(this.blockNumber !== undefined &&  this.blockNumber>-1) {
+				var blockNumber = this.blockNumber;
 				this.title = 'Block #' + blockNumber;
 				var _this = this;
 
@@ -98,7 +102,7 @@ module.exports = function() {
 		},
 
 		fetch: function() {
-			widget.onData(Tower.status)
+			widget.onData();
 		}
 	};
 
