@@ -23,10 +23,13 @@ module.exports = function() {
             var _this = this;
             Dashboard.Utils.on(function(ev, action) {
                 if (action === 'node-status|announce') {
-                	if(Tower.status.latestBlock !== undefined && parseInt(Tower.status.latestBlock) >-1 ) {
-                		_this.blockNumber = Tower.status.latestBlock;
-                		widget.onData();	
-                	}
+  					if(_this.blockNumber === undefined) {
+  						if(Tower.status.latestBlock !== undefined && parseInt(Tower.status.latestBlock) >-1 ) {
+		            		_this.blockNumber = Tower.status.latestBlock;
+		            		widget.onData();	
+		            	}	
+  					}    
+                	
                     
                 }
             });
