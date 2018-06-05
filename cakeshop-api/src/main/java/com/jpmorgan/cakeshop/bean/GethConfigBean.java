@@ -3,15 +3,24 @@ package com.jpmorgan.cakeshop.bean;
 import static com.jpmorgan.cakeshop.util.FileUtils.*;
 import static com.jpmorgan.cakeshop.util.ProcessUtils.*;
 
+import com.google.common.collect.Lists;
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.SortedProperties;
 import com.jpmorgan.cakeshop.util.StringUtils;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 
@@ -106,6 +115,7 @@ public class GethConfigBean {
     private final String GETH_VOTE_CONTARCT_ADDRESS = "geth.vote.contract.addr";
     private final String GETH_CONSTELLATION_ENABLED = "geth.constellation.enabled";
     private final String GETH_PERMISSIONED = "geth.permissioned";
+    private final String GETH_RAFT_PORT = "geth.raft.port";
 
     public GethConfigBean() {
     }
@@ -238,6 +248,7 @@ public class GethConfigBean {
 
             quorumConfig.createKeys("node", destination);
             quorumConfig.createQuorumConfig("node", destination);
+
             setConstPidFileName(expandPath(CONFIG_ROOT, "constellation.pid"));
             setIsEmbeddedQuorum(true);
 
@@ -248,6 +259,8 @@ public class GethConfigBean {
                 }
             }
         }
+
+        initRaftConfig();
     }
 
     /**
@@ -330,6 +343,14 @@ public class GethConfigBean {
         }
         URI uri = URI.create(url);
         return Integer.toString(uri.getPort());
+    }
+
+    public String getRaftPort() {
+        return props.getProperty(GETH_RAFT_PORT);
+    }
+
+    public void setRaftPort(String port) {
+        props.setProperty(GETH_RAFT_PORT, port);
     }
 
     public String getRpcApiList() {
@@ -633,6 +654,34 @@ public class GethConfigBean {
      */
     public void setPublicKey(String publicKey) {
         this.publicKey = publicKey;
+    }
+
+    private void initRaftConfig() throws IOException {
+        Path nodekeypath = Paths.get(getDataDirPath(), "geth", "nodekey");
+        String localnodeaddress = "";
+
+        Path bootnodelocation = Paths.get(Paths.get(quorumConfig.getQuorumPath()).getParent().toString(), "bootnode");
+        List<String> bootnodeparams = Lists.newArrayList(bootnodelocation.toString(), "-nodekey", nodekeypath.toString(), "-writeaddress");
+        ProcessBuilder builder = new ProcessBuilder(bootnodeparams);
+        Process process = builder.start();
+
+        try (Scanner scanner = new Scanner(process.getInputStream())) {
+            localnodeaddress = scanner.next();
+        }
+
+        if (process.isAlive()) { process.destroy(); }
+
+        Path staticnodespath = Paths.get(getDataDirPath(), "static-nodes.json");
+
+        try (FileWriter writer = new FileWriter(staticnodespath.toFile())) {
+            writer.write("[\n");
+            writer.write("\"enode://" + localnodeaddress + "@127.0.0.1:21000?discport=0&raftport=" + getRaftPort() + "\"\n");
+            writer.write("]\n");
+        } catch (IOException e) {
+            LOG.error("unable to generate static-nodes.json at " + staticnodespath.getParent());
+        }
+
+        LOG.error("created static-nodes.json at " + staticnodespath.getParent());
     }
 
 }
