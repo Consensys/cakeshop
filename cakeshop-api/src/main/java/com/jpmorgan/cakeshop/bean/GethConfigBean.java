@@ -4,6 +4,7 @@ import static com.jpmorgan.cakeshop.util.FileUtils.*;
 import static com.jpmorgan.cakeshop.util.ProcessUtils.*;
 
 import com.google.common.collect.Lists;
+import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.SortedProperties;
 import com.jpmorgan.cakeshop.util.StringUtils;
@@ -663,6 +664,7 @@ public class GethConfigBean {
         Path bootnodelocation = Paths.get(Paths.get(quorumConfig.getQuorumPath()).getParent().toString(), "bootnode");
         List<String> bootnodeparams = Lists.newArrayList(bootnodelocation.toString(), "-nodekey", nodekeypath.toString(), "-writeaddress");
         ProcessBuilder builder = new ProcessBuilder(bootnodeparams);
+        LOG.info("generating static-nodes.json as " +  String.join(" ", builder.command()));
         Process process = builder.start();
 
         try (Scanner scanner = new Scanner(process.getInputStream())) {
@@ -678,10 +680,12 @@ public class GethConfigBean {
             writer.write("\"enode://" + localnodeaddress + "@127.0.0.1:21000?discport=0&raftport=" + getRaftPort() + "\"\n");
             writer.write("]\n");
         } catch (IOException e) {
-            LOG.error("unable to generate static-nodes.json at " + staticnodespath.getParent());
+            String message = "unable to generate static-nodes.json at " + staticnodespath.getParent();
+            LOG.error(message);
+            throw new APIException(message);
         }
 
-        LOG.error("created static-nodes.json at " + staticnodespath.getParent());
+        LOG.info("created static-nodes.json at " + staticnodespath.getParent());
     }
 
 }

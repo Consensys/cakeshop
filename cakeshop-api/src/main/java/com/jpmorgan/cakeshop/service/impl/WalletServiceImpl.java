@@ -141,7 +141,7 @@ public class WalletServiceImpl implements WalletService, GethRpcConstants {
                 return true;
             }
         } catch (APIException e) {
-            if (!e.getMessage().contains("account is locked")) {
+            if (!e.getMessage().contains("authentication needed: password or unlock")) {
                 throw e;
             }
         }

@@ -156,14 +156,14 @@ public class GethHttpServiceImpl implements GethHttpService {
             throw new APIException("Received empty reply from server");
         }
 
-        Map<String, Object> data;
         try {
-            data = OBJECT_MAPPER.readValue(response, Map.class);
+            return processResponse(OBJECT_MAPPER.readValue(response, Map.class));
+        } catch (APIException e) {
+            LOG.error("RPC request for " + requestToJson(request) + " failed with " + e.getMessage());
+            throw e;
         } catch (IOException e) {
             throw new APIException("RPC call failed", e);
         }
-
-        return processResponse(data);
     }
 
     @SuppressWarnings("unchecked")
