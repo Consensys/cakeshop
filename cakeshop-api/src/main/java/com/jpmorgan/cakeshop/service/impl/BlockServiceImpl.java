@@ -32,7 +32,7 @@ public class BlockServiceImpl implements BlockService {
             input = id;
         } else if (number != null && number >= 0) {
             method = "eth_getBlockByNumber";
-            input = number;
+            input = "0x" + number;
         } else if (tag != null && !tag.isEmpty()) {
             method = "eth_getBlockByNumber";
             input = tag;
