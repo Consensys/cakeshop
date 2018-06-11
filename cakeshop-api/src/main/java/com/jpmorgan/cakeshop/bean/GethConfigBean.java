@@ -117,6 +117,7 @@ public class GethConfigBean {
     private final String GETH_CONSTELLATION_ENABLED = "geth.constellation.enabled";
     private final String GETH_PERMISSIONED = "geth.permissioned";
     private final String GETH_RAFT_PORT = "geth.raft.port";
+    private final String GETH_CONSENSUS_MODE = "geth.consensus.mode";
 
     public GethConfigBean() {
     }
@@ -352,6 +353,23 @@ public class GethConfigBean {
 
     public void setRaftPort(String port) {
         props.setProperty(GETH_RAFT_PORT, port);
+    }
+
+    public String getConsensusMode() {
+        return props.getProperty(GETH_CONSENSUS_MODE);
+    }
+
+    /**
+     * Set Consensus Mode, default to raft, valid options are raft, istanbul
+    */
+    public void setConsensusMode(String mode) {
+        if (null == mode || mode.trim().isEmpty()) {
+            props.setProperty(GETH_CONSENSUS_MODE, "raft");
+        } else if (mode.equalsIgnoreCase("istanbul")) { // TODO: Mode should be an enum
+            props.setProperty(GETH_CONSENSUS_MODE, "istanbul");
+        } else {
+            props.setProperty(GETH_CONSENSUS_MODE, "raft");
+        }
     }
 
     public String getRpcApiList() {
