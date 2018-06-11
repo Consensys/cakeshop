@@ -169,7 +169,8 @@ public class GethHttpServiceImpl implements GethHttpService {
     @SuppressWarnings("unchecked")
     @Override
     public List<Map<String, Object>> batchExecuteGethCall(List<RequestModel> requests) throws APIException {
-        String response = executeGethCallInternal(requestToJson(requests));
+        String json = requestToJson(requests);
+        String response = executeGethCallInternal(json);
 
         List<Map<String, Object>> responses;
         try {
@@ -182,7 +183,7 @@ public class GethHttpServiceImpl implements GethHttpService {
             return results;
 
         } catch (IOException e) {
-            throw new APIException("RPC call failed", e);
+            throw new APIException("RPC call failed for " + json, e);
         }
     }
 
