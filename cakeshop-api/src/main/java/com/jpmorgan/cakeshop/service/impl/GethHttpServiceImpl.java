@@ -587,17 +587,11 @@ public class GethHttpServiceImpl implements GethHttpService {
             saveGethConfig = true;
         }
 
-        List<String> commands = Lists.newArrayList(gethConfig.getGethPath(),
-                "--port", gethConfig.getGethNodePort(),
-                "--datadir", gethConfig.getDataDirPath(),
-                "--nat", "none",
-                "--nodiscover",
-                "--raft",
-                "--raftport", gethConfig.getRaftPort(),
-                "--unlock", accountsToUnlock, "--password", gethConfig.getGethPasswordFile(),
-                "--rpc", "--rpcaddr", "127.0.0.1", "--rpcport", gethConfig.getRpcPort(),
-                "--rpcapi", gethConfig.getRpcApiList()
-        );
+        List<String> commands = gethConfig.GethCommandLine();
+        commands.add("--unlock");
+        commands.add(accountsToUnlock);
+        commands.add("--password");
+        commands.add(gethConfig.getGethPasswordFile());
 
         if (null != additionalParams && additionalParams.length > 0) {
             commands.addAll(Lists.newArrayList(additionalParams));

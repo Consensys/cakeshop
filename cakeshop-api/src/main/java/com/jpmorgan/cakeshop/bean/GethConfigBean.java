@@ -21,6 +21,9 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
@@ -179,10 +182,8 @@ public class GethConfigBean {
         String vendorGenesisDir = expandPath(baseResourcePath, "genesis");
 
         genesisBlockFilename = expandPath(CONFIG_ROOT, "genesis_block.json");
-        if (!new File(genesisBlockFilename).exists()) {
-            String vendorGenesisBlockFile = FileUtils.join(vendorGenesisDir, "genesis_block.json");
-            copyFile(new File(vendorGenesisBlockFile), new File(genesisBlockFilename));
-        }
+        String vendorGenesisBlockFile = FileUtils.join(vendorGenesisDir, getConsensusMode() + "_genesis_block.json");
+        copyFile(new File(vendorGenesisBlockFile), new File(genesisBlockFilename));
 
         if (SystemUtils.IS_OS_WINDOWS) {
             genesisBlockFilename = genesisBlockFilename.replaceAll(File.separator + File.separator, "/");
@@ -262,7 +263,7 @@ public class GethConfigBean {
             }
         }
 
-        initRaftConfig();
+        createStaticNodesConfig();
     }
 
     /**
@@ -373,27 +374,29 @@ public class GethConfigBean {
     }
 
     public String getRpcApiList() {
-        if (StringUtils.isBlank(EMBEDDED_NODE)) {
-            if (props.getProperty(GETH_RPCAPI_LIST).contains("quorum")) {
-                return props.getProperty(GETH_RPCAPI_LIST);
-            } else {
-                return props.getProperty(GETH_RPCAPI_LIST).concat(",").concat("quorum");
-            }
+        return getRpcApiList("raft");
+    }
+
+    public String getRpcApiList(String mode) {
+        HashSet<String> apiset = new HashSet<String>(Arrays.asList(props.getProperty(GETH_RPCAPI_LIST).split(",")));
+
+        if (null == mode || mode.trim().isEmpty() || mode.equalsIgnoreCase("raft")) {
+            apiset.remove("istanbul");
+            return String.join(",", apiset.toArray(new String[0]));
+        } else if (mode.equalsIgnoreCase("istanbul")) {
+            apiset.add("istanbul");
+            return String.join(",", apiset.toArray(new String[0]));
         } else {
-            return props.getProperty(GETH_RPCAPI_LIST);
+            return getRpcApiList("raft");
         }
     }
 
-    public void setRpcApiList(String rpcApiList) {
-        if (StringUtils.isBlank(EMBEDDED_NODE)) {
-            if (rpcApiList.contains("quorum")) {
-                props.setProperty(GETH_RPCAPI_LIST, rpcApiList);
-            } else {
-                props.setProperty(GETH_RPCAPI_LIST, rpcApiList.concat(",").concat("quorum"));
-            }
-        } else {
-            props.setProperty(GETH_RPCAPI_LIST, rpcApiList);
-        }
+    public void setRpcApiList(String list) {
+        HashSet<String> apiset = new HashSet<String>(Arrays.asList(list.split(",")));
+
+        if (StringUtils.isBlank(EMBEDDED_NODE)) { apiset.add("quorum"); }
+
+        props.setProperty(GETH_RPCAPI_LIST, String.join(",", apiset.toArray(new String[0])));
     }
 
     public String getGethNodePort() {
@@ -675,7 +678,10 @@ public class GethConfigBean {
         this.publicKey = publicKey;
     }
 
-    private void initRaftConfig() throws IOException {
+    /**
+     * 
+     */
+    private void createStaticNodesConfig() throws IOException {
         Path nodekeypath = Paths.get(getDataDirPath(), "geth", "nodekey");
         String localnodeaddress = "";
 
@@ -704,6 +710,70 @@ public class GethConfigBean {
         }
 
         LOG.info("created static-nodes.json at " + staticnodespath.getParent());
+    }
+
+
+    public ArrayList<String> GethCommandLine() { return GethCommandLine(getConsensusMode()); }
+
+    /**
+     * @param mode - raft, instanbul
+     */
+    public ArrayList<String> GethCommandLine(String mode) {
+        if (null == mode || mode.trim().isEmpty()) {
+            return GethRaftCommandLine();
+        } else if (mode.equalsIgnoreCase("istanbul")) { // TODO: Mode should be an enum
+            return GethIstanbulCommandLine();
+        } else {
+            return GethRaftCommandLine();
+        }
+    }
+
+    public ArrayList<String> GethRaftCommandLine() {
+        ArrayList<String> command = new ArrayList<String>();
+
+        command.add(getGethPath());
+        command.add("--datadir");
+        command.add(getDataDirPath());
+        command.add("--nodiscover");
+        command.add("--rpc");
+        command.add("--rpcaddr");
+        command.add("127.0.0.1");
+        command.add("--rpcapi");
+        command.add(getRpcApiList("raft"));
+        command.add("--rpcport");
+        command.add(getRpcPort());
+        command.add("--port");
+        command.add(getGethNodePort());
+        command.add("--nat");
+        command.add("none");
+        command.add("--raft");
+        command.add("--raftport");
+        command.add(getRaftPort());
+
+        return command;
+    }
+
+    public ArrayList<String> GethIstanbulCommandLine() {
+        ArrayList<String> command = new ArrayList<String>();
+
+        command.add(getGethPath());
+        command.add("--datadir");
+        command.add(getDataDirPath());
+        command.add("--nodiscover");
+        command.add("--syncmode");
+        command.add("full");
+        command.add("--mine");
+        command.add("--rpc");
+        command.add("--rpcaddr");
+        command.add("127.0.0.1");
+        command.add("--rpcapi");
+        command.add(getRpcApiList("istanbul"));
+        command.add("--rpcport");
+        command.add(getRpcPort());
+        command.add("--port");
+        command.add(getGethNodePort());
+
+        return command;
     }
 
 }
