@@ -382,9 +382,11 @@ public class GethConfigBean {
 
         if (null == mode || mode.trim().isEmpty() || mode.equalsIgnoreCase("raft")) {
             apiset.remove("istanbul");
+            apiset.add("raft");
             return String.join(",", apiset.toArray(new String[0]));
         } else if (mode.equalsIgnoreCase("istanbul")) {
             apiset.add("istanbul");
+            apiset.remove("raft");
             return String.join(",", apiset.toArray(new String[0]));
         } else {
             return getRpcApiList("raft");
