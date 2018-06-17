@@ -148,7 +148,7 @@ public class GethConfigBean {
         try {
             initGethBean();
         } catch (IOException | InterruptedException ex) {
-            LOG.error(ex.getMessage());
+            LOG.error(ex.getMessage(), ex);
         }
     }
 
@@ -187,8 +187,7 @@ public class GethConfigBean {
         gethPidFilename = expandPath(CONFIG_ROOT, "geth.pid");
 
         // init genesis block file (using vendor copy if necessary)
-        String vendorGenesisDir = expandPath(baseResourcePath, "genesis");
-
+        String vendorGenesisDir = expandPath(baseResourcePath, "genesis"); // TODO: this block is redundant now
         genesisBlockFilename = expandPath(CONFIG_ROOT, "genesis_block.json");
         String vendorGenesisBlockFile = FileUtils.join(vendorGenesisDir, getConsensusMode() + "_genesis_block.json");
         copyFile(new File(vendorGenesisBlockFile), new File(genesisBlockFilename));
@@ -381,7 +380,7 @@ public class GethConfigBean {
     }
 
     public String getConsensusMode() {
-        return get(GETH_STARTUP_MODE, "raft");
+        return get(GETH_CONSENSUS_MODE, "raft");
     }
 
     /**
@@ -761,7 +760,7 @@ public class GethConfigBean {
         } catch (IOException e) {
             String message = "unable to generate static-nodes.json at " + staticnodespath.getParent();
             LOG.error(message);
-            throw new APIException(message);
+            throw new APIException(message, e);
         }
 
         LOG.info("created static-nodes.json at " + staticnodespath.getParent());
@@ -861,7 +860,7 @@ public class GethConfigBean {
         if (process.isAlive()) { process.destroy(); }
         //TODO ISTANBUL WRAPPER
 
-        File instabulgenesisfile = Paths.get(Paths.get(getDataDirPath()).getParent().toString(), "istanbul_genesis_block.json").toFile();
+        File instabulgenesisfile = Paths.get(Paths.get(expandPath(baseResourcePath, "genesis")).toString(), "istanbul_genesis_block.json").toFile();
         JSONObject instabulgenesis = new JSONObject(IOUtils.toString(new FileInputStream(instabulgenesisfile)));
         instabulgenesis.put("extraData", extradata);
         FileWriter fw = new FileWriter(instabulgenesisfile);
@@ -873,7 +872,12 @@ public class GethConfigBean {
     }
 
     private void updateRaftGenesis() throws IOException {
-        File raftgenesisfile = Paths.get(Paths.get(getDataDirPath()).getParent().toString(), "raft_genesis_block.json").toFile();
+        String baseResourcePath = System.getProperty("eth.geth.dir");
+        if (StringUtils.isBlank(baseResourcePath)) {
+            baseResourcePath = FileUtils.getClasspathName("geth");
+        }
+
+        File raftgenesisfile = Paths.get(Paths.get(expandPath(baseResourcePath, "genesis")).toString(), "raft_genesis_block.json").toFile();
         Files.copy(raftgenesisfile.toPath(), Paths.get(Paths.get(getDataDirPath()).getParent().toString(), "genesis_block.json"), StandardCopyOption.REPLACE_EXISTING);
     }
 
