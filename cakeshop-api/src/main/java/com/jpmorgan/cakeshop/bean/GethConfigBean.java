@@ -694,8 +694,6 @@ public class GethConfigBean {
         return defaultStr;
     }
 
-    //return 
-
     /**
      * @return the isEmbeddedQuorum
      */
