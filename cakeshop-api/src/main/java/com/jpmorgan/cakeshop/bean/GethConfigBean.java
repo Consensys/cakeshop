@@ -721,8 +721,32 @@ public class GethConfigBean {
         this.publicKey = publicKey;
     }
 
-    private String getLocalEthereumAddress() throws IOException {
+    private Path verifyNodeKey() throws IOException {
         Path nodekeypath = Paths.get(getDataDirPath(), "geth", "nodekey");
+
+        if (Files.exists(nodekeypath)) { return nodekeypath; }
+
+        if (!Files.exists(nodekeypath.getParent())) { nodekeypath.getParent().toFile().mkdirs(); }
+
+        Path bootnodelocation = Paths.get(Paths.get(quorumConfig.getQuorumPath()).getParent().toString(), "bootnode");
+
+        File bootnodebinary = bootnodelocation.toFile();
+        if (!bootnodebinary.canExecute()) {
+            bootnodebinary.setExecutable(true);
+        }
+
+        List<String> bootnodeparams = Lists.newArrayList(bootnodelocation.toString(), "-genkey", nodekeypath.toString());
+        ProcessBuilder builder = new ProcessBuilder(bootnodeparams);
+        LOG.info("generating nodekey as " +  String.join(" ", builder.command()));
+        Process process = builder.start();
+
+        if (process.isAlive()) { process.destroy(); }
+    
+        return nodekeypath;
+    }
+
+    private String getLocalEthereumAddress() throws IOException {
+        Path nodekeypath = verifyNodeKey();
         String localnodeaddress = "";
 
         Path bootnodelocation = Paths.get(Paths.get(quorumConfig.getQuorumPath()).getParent().toString(), "bootnode");
@@ -739,9 +763,16 @@ public class GethConfigBean {
 
         try (Scanner scanner = new Scanner(process.getInputStream())) {
             localnodeaddress = scanner.next();
+            if (localnodeaddress.contains("Fatal")) {
+                while (scanner.hasNext()) {
+                    LOG.error(scanner.next());
+                }
+                localnodeaddress = null;
+            }
         }
 
         if (process.isAlive()) { process.destroy(); }
+
         return localnodeaddress;
     }
 
@@ -752,6 +783,7 @@ public class GethConfigBean {
         String localnodeaddress = getLocalEthereumAddress();
 
         Path staticnodespath = Paths.get(getDataDirPath(), "static-nodes.json");
+        if(!Files.exists(staticnodespath.getParent())) { staticnodespath.getParent().toFile().mkdirs(); }
 
         try (FileWriter writer = new FileWriter(staticnodespath.toFile())) {
             writer.write("[\n");
