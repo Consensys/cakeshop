@@ -781,11 +781,11 @@ public class GethConfigBean {
      * 
      */
     private void createStaticNodesConfig() throws IOException {
-        String localnodeaddress = getLocalEthereumAddress();
-
         Path staticnodespath = Paths.get(getDataDirPath(), "static-nodes.json");
-        if(!Files.exists(staticnodespath.getParent())) { staticnodespath.getParent().toFile().mkdirs(); }
+        if (Files.exists(staticnodespath)) { return; }
+        if (!Files.exists(staticnodespath.getParent())) { staticnodespath.getParent().toFile().mkdirs(); }
 
+        String localnodeaddress = getLocalEthereumAddress();
         try (FileWriter writer = new FileWriter(staticnodespath.toFile())) {
             writer.write("[\n");
             writer.write("\"enode://" + localnodeaddress + "@127.0.0.1:" + getGethNodePort() + "?raftport=" + getRaftPort() + "\"\n");
