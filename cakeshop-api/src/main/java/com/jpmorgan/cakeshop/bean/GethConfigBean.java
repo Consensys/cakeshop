@@ -9,14 +9,11 @@ import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.SortedProperties;
 import com.jpmorgan.cakeshop.util.StringUtils;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
@@ -128,7 +126,7 @@ public class GethConfigBean {
     private final String GETH_RAFT_BLOCKTIME = "geth.raft.blocktime";
     private final String GETH_CONSENSUS_MODE = "geth.consensus.mode";
     private final String GETH_STARTUP_MODE = "geth.startup.mode";
-    private final String GETH_STARTUP_ID = "geth.startup.id";
+    private final String GETH_RAFT_NETWORK_ID = "geth.raft.network.id";
 
     public GethConfigBean() {
     }
@@ -414,11 +412,12 @@ public class GethConfigBean {
         }
     }
 
-    /**
-     * This value is used as an offset for port number configuration and peer selection within static-nodes.json
-     */
-    public int getStartupId() {
-        return Integer.parseInt(get(GETH_STARTUP_ID, "0"));
+    public void setRaftNetworkId(String id) {
+        props.setProperty(GETH_RAFT_NETWORK_ID, id);
+    }
+    
+    public String getRaftNetworkId() {
+        return get(GETH_RAFT_NETWORK_ID, "");
     }
 
     public String getRpcApiList() {
@@ -740,6 +739,8 @@ public class GethConfigBean {
         LOG.info("generating nodekey as " +  String.join(" ", builder.command()));
         Process process = builder.start();
 
+        try { process.waitFor(5, TimeUnit.SECONDS); } catch (Exception e) { }
+
         if (process.isAlive()) { process.destroy(); }
     
         return nodekeypath;
@@ -787,7 +788,7 @@ public class GethConfigBean {
 
         try (FileWriter writer = new FileWriter(staticnodespath.toFile())) {
             writer.write("[\n");
-            writer.write("\"enode://" + localnodeaddress + "@127.0.0.1:21000?discport=0&raftport=" + getRaftPort() + "\"\n");
+            writer.write("\"enode://" + localnodeaddress + "@127.0.0.1:" + getGethNodePort() + "?raftport=" + getRaftPort() + "\"\n");
             writer.write("]\n");
         } catch (IOException e) {
             String message = "unable to generate static-nodes.json at " + staticnodespath.getParent();
@@ -836,6 +837,11 @@ public class GethConfigBean {
         command.add(getRaftPort());
         command.add("--raftblocktime");
         command.add(getRaftBlockFrequency() + "");
+        if (getStartupMode().contentEquals("join") && getRaftNetworkId().length() > 0) {
+            command.add("--raftjoinexisting");
+            command.add(getRaftNetworkId());
+        }
+        
 
         return command;
     }
