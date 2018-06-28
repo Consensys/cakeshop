@@ -3,6 +3,17 @@ package com.jpmorgan.cakeshop.config;
 import com.jpmorgan.cakeshop.bean.GethConfigBean;
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.embedded.jetty.JettyServletWebServerFactory;
+import org.springframework.boot.web.server.ErrorPage;
+import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpStatus;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,16 +21,6 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-
-import org.apache.commons.lang3.SystemUtils;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
-import org.springframework.boot.context.embedded.jetty.JettyEmbeddedServletContainerFactory;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 
 @Configuration
 @EnableAutoConfiguration
@@ -111,10 +112,11 @@ public class SpringBootApplication {
 
     @Bean
     @Profile("spring-boot")
-    public EmbeddedServletContainerFactory embeddedServletContainerFactory() {
-        JettyEmbeddedServletContainerFactory jetty = new JettyEmbeddedServletContainerFactory();
-        jetty.setContextPath("/cakeshop");
-        return jetty;
+    public ConfigurableServletWebServerFactory webServerFactory() {
+      JettyServletWebServerFactory factory = new JettyServletWebServerFactory();
+      factory.setContextPath("/cakeshop");
+      factory.addErrorPages(new ErrorPage(HttpStatus.NOT_FOUND, "/notfound.html"));
+      return factory;
     }
 
 }

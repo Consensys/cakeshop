@@ -16,14 +16,13 @@
 
 package org.springframework.http.client;
 
-import java.io.IOException;
-import java.net.URI;
-
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+
+import java.io.IOException;
+import java.net.URI;
 
 /**
  * {@link ClientHttpRequest} implementation that uses OkHttp 3.x to execute requests.
@@ -56,7 +55,12 @@ class OkHttp3ClientHttpRequest extends AbstractBufferingClientHttpRequest {
 		return this.method;
 	}
 
-	@Override
+  @Override
+  public String getMethodValue() {
+    return this.method.name();
+  }
+
+  @Override
 	public URI getURI() {
 		return this.uri;
 	}
