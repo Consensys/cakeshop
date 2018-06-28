@@ -2,18 +2,16 @@ package com.jpmorgan.cakeshop.config;
 
 import com.jcabi.manifests.Manifests;
 import com.jcabi.manifests.ServletMfs;
-
-import java.io.IOException;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.context.web.SpringBootServletInitializer;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import java.io.IOException;
 
 @Configuration
 @EnableAutoConfiguration

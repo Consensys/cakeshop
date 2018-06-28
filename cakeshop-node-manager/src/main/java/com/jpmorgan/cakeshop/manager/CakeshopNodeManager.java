@@ -1,16 +1,18 @@
 package com.jpmorgan.cakeshop.manager;
 
-import java.util.concurrent.TimeUnit;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
-import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
-import org.springframework.boot.web.support.SpringBootServletInitializer;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
+import org.springframework.boot.web.servlet.server.Session;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+
+import java.time.Duration;
 
 @Configuration
 @ComponentScan
@@ -30,10 +32,11 @@ public class CakeshopNodeManager extends SpringBootServletInitializer {
 
     @Bean
     @Profile("spring-boot")
-    public EmbeddedServletContainerFactory servletContainer() {
-        TomcatEmbeddedServletContainerFactory factory
-                = new TomcatEmbeddedServletContainerFactory();
-        factory.setSessionTimeout(15, TimeUnit.MINUTES);
+      public ConfigurableServletWebServerFactory servletContainer(Session session) {
+        TomcatServletWebServerFactory factory = new TomcatServletWebServerFactory();
+        session.setTimeout(Duration.ofMinutes(15));
+        factory.setSession(session);
         return factory;
     }
+
 }
