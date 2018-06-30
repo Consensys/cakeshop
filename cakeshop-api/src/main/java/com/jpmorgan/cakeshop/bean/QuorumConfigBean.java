@@ -29,7 +29,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class QuorumConfigBean implements InitializingBean {
+public class QuorumConfigBean implements InitializingBean { // TODO: rename to ConstellationConfigBean
 
     private static final Logger LOG = LoggerFactory.getLogger(QuorumConfigBean.class);
 
@@ -37,7 +37,8 @@ public class QuorumConfigBean implements InitializingBean {
     private static final String QUORUM_MAC_COMMAND = "quorum/mac/geth";
     private static final String CONSTELLATION_LINUX_COMMAND = "quorum/constellation/linux/constellation-node";
     private static final String CONSTELLATION_MAC_COMMAND = "quorum/constellation/mac/constellation-node";
-    private static final String CONSTELLATION_LINUX_KEYGEN = "quorum/constellation/linux/constellation-enclave-keygen";
+    private static final String CONSTELLATION_LINUX_KEYGEN = "quorum/constellation/linux/constellation-node";
+    private static final String CONSTELLATION_LINUX_KEYGEN_PARAMS = "--generatekeys=node";
     private static final String CONSTELLATION_MAC_KEYGEN = "quorum/constellation/mac/constellation-node";
     private static final String CONSTELLATION_MAC_KEYGEN_PARAMS = "--generatekeys=node";
     private final String CONSTELLATION_URL = StringUtils.isNotBlank(System.getProperty("geth.constellation.url"))
@@ -152,7 +153,7 @@ public class QuorumConfigBean implements InitializingBean {
         return isBootNode;
     }
 
-    public void createKeys(final String keyName, final String destination) throws IOException, InterruptedException {
+    public void createConstellationKeys(final String keyName, final String destination) throws IOException, InterruptedException {
         constellationConfig = destination;
         File dir = new File(destination);
         Boolean createKeys = true;
@@ -188,7 +189,7 @@ public class QuorumConfigBean implements InitializingBean {
         }
     }
 
-    private void SendReturnToProcess(Process process) throws IOException {
+    static void SendReturnToProcess(Process process) throws IOException {
         try (Scanner scanner = new Scanner(process.getInputStream())) {
             boolean flag = scanner.hasNext();
             while (flag) {
@@ -222,33 +223,41 @@ public class QuorumConfigBean implements InitializingBean {
     }
 
     //TODO: convert to commandline
-    public void createQuorumConfig(final String keyName, final String destination) throws IOException {
+    public void createConstellationConfig(final String keyName, final String destination) throws IOException {
         File confFile = Paths.get(destination, keyName.concat(".conf")).toFile();
         if (!confFile.exists()) {
             String prefix = confFile.getParent() + File.separator + keyName;
             try (FileWriter writer = new FileWriter(confFile)) {
                 String urlstring = CONSTELLATION_URL.endsWith("/") ? CONSTELLATION_URL.replaceFirst("(.*)" + "/" + "$", "$1" + "") : CONSTELLATION_URL;
                 URL url = new URL(urlstring);
-
-                writer.write("url = \"" + url + "\"");
-                writer.write("\n");
-                writer.write("port = " + url.getPort());
-                writer.write("\n");
-                writer.write("socket = \"" + prefix + ".ipc\"");
-                writer.write("\n");
-                writer.write("othernodes = []");
-                writer.write("\n");
-                writer.write("publickeys = [\"" + prefix + ".pub\"]");
-                writer.write("\n");
-                writer.write("privatekeys = [\"" + prefix + ".key\"]");
-                writer.write("\n");
-                writer.write("storage = \"dir:" + confFile.getParent() + File.separator + "constellation\"");
+                writer.write(createQuorumConfig(keyName, url, Paths.get(destination)));
                 writer.flush();
                 LOG.info("created constellation config at " + confFile.getPath());
             }
         } else {
             LOG.info("reusing constellation config at " + confFile.getPath());
         }
+    }
+
+    public static String createQuorumConfig(final String name, final URL url, final Path storage) {
+        String prefix = Paths.get(storage.toString(), name).toString();
+        StringBuffer buffer = new StringBuffer();
+
+        buffer.append("url = \"" + url + "\"");
+        buffer.append("\n");
+        buffer.append("port = " + url.getPort());
+        buffer.append("\n");
+        buffer.append("socket = \"" + prefix + ".ipc\"");
+        buffer.append("\n");
+        buffer.append("othernodes = []");
+        buffer.append("\n");
+        buffer.append("publickeys = [\"" + prefix + ".pub\"]");
+        buffer.append("\n");
+        buffer.append("privatekeys = [\"" + prefix + ".key\"]");
+        buffer.append("\n");
+        buffer.append("storage = \"dir:" + storage.toString() + File.separator + "constellation\"");
+
+        return buffer.toString();
     }
 
     @Override
@@ -269,6 +278,7 @@ public class QuorumConfigBean implements InitializingBean {
             setQuorumPath(expandPath(baseResourcePath, QUORUM_LINUX_COMMAND));
             setConstellationPath(expandPath(baseResourcePath, CONSTELLATION_LINUX_COMMAND));
             setKeyGen(expandPath(baseResourcePath, CONSTELLATION_LINUX_KEYGEN));
+            setKeyGenParams(CONSTELLATION_LINUX_KEYGEN_PARAMS);
 
         } else if (SystemUtils.IS_OS_MAC_OSX) {
             LOG.debug("Using quorum for mac");
