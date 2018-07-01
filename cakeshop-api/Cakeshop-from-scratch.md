@@ -1,6 +1,6 @@
 # Cakeshop from scratch
 
-This worked as described on a VM image of Ubuntu 16.04. Note that Haskell is memory-hungry and needs 2GB at a minimum, possibly more just to complete the `install` process. It also works with `brew` on macOS with somewhat less effort.
+This worked as described on a VM image of Ubuntu 16.04. Note that Haskell is memory-hungry and needs 2GB at a minimum, possibly more just to complete the `install` process. It also works with `brew` on macOS with somewhat less effort. These steps work as of 2018, Jul 1.
 
 ## Base environment
 
@@ -53,6 +53,8 @@ git clone -b master --single-branch https://github.com/jpmorganchase/quorum.git
 
 ## Related builds
 
+These steps aren't strictly necessary. The repo was updated with the below binaries as listed on 2018, Jun 30.
+
 ```shell
 cd ~/Projects/quorum.git/quorum
 make all
@@ -65,6 +67,16 @@ cd ~/Projects/constellation.git/constellation
 stack setup
 stack install
 mv ~/.local/bin/constellation-node ~/Projects/cakeshop.git/cakeshop/cakeshop-api/src/main/resources/geth/quorum/constellation/linux/constellation-node
+```
+
+Note that the istanbul build will report a failure with `urfave/cli`, ignore it and continue.
+
+```shell
+cd ~/Projects/istanbul-tools.git/istanbul-tools
+go get github.com/getamis/istanbul-tools/cmd/istanbul
+make
+mkdir ~/Projects/cakeshop.git/cakeshop/cakeshop-api/src/main/resources/geth/quorum/istanbul-tools/linux
+mv ~/go/bin/istanbul ~/Projects/cakeshop.git/cakeshop/cakeshop-api/src/main/resources/geth/quorum/istanbul-tools/linux/istanbul
 ```
 
 ## Cakeshop build
