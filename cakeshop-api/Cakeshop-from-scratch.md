@@ -4,7 +4,7 @@ This worked as described on a VM image of Ubuntu 16.04. Note that Haskell is mem
 
 ## Base environment
 
-Some of these may already exist on the system you're using. Go lang needs to be 1.7+, Java 7+, there is some minimum requirement for Haskell as well, so just take latest. Minimum requirements or Berkeley DB (libdb) are also there.
+Some of these may already exist on the system you're using. Go lang needs to be 1.7+, Java 7+, there is some minimum requirement for Haskell as well, so just take latest. Minimum requirements for Berkeley DB (libdb) are also there.
 
 ```shell
 sudo apt-get install openjdk-8-jdk
