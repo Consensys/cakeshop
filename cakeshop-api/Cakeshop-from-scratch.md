@@ -4,7 +4,7 @@ This worked as described on a VM image of Ubuntu 16.04. Note that Haskell is mem
 
 ## Base environment
 
-Some of these may already exist on the system you're using. Go lang needs to be 1.7+, Java 7+, there is some minimum requirement for Haskell as well, so just take latest. Minimum requirements for Berkeley DB (libdb) are also there.
+Some of these may already exist on the system you're using. Go lang needs to be 1.7+, Java 7+, there is some minimum requirement for Haskell as well, so just take latest. Minimum requirements for Berkeley DB (libdb) are also there. Extra steps around go-lang are only needed for the default Ubuntu 16.04 image. 
 
 ```shell
 sudo apt-get install openjdk-8-jdk
@@ -25,13 +25,23 @@ sudo apt-get install zlib1g-dev
 sudo apt-get install libtinfo-dev
 ```
 
-## Related projects
+## Cakeshop build
 
 ```shell
 mkdir ~/Projects/cakeshop.git
 cd ~/Projects/cakeshop.git
 git clone -b quorum-ui --single-branch https://github.com/yourcodesucks/cakeshop.git
 ```
+
+```shell
+cd ~/Projects/cakeshop.git/cakeshop
+mvn clean install -DskipTests
+cd cakeshop-api
+mvn install -DskipTests
+java -jar target/cakeshop-0.10.0.war
+```
+
+## Related projects
 
 ```shell
 mkdir ~/Projects/istanbul-tools.git
@@ -77,14 +87,4 @@ go get github.com/getamis/istanbul-tools/cmd/istanbul
 make
 mkdir ~/Projects/cakeshop.git/cakeshop/cakeshop-api/src/main/resources/geth/quorum/istanbul-tools/linux
 mv ~/go/bin/istanbul ~/Projects/cakeshop.git/cakeshop/cakeshop-api/src/main/resources/geth/quorum/istanbul-tools/linux/istanbul
-```
-
-## Cakeshop build
-
-```shell
-cd ~/Projects/cakeshop.git/cakeshop
-mvn clean install -DskipTests
-cd cakeshop-api
-mvn install -DskipTests
-java -jar target/cakeshop-0.10.0.war
 ```
