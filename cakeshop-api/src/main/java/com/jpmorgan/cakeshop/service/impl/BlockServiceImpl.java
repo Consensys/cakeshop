@@ -32,7 +32,7 @@ public class BlockServiceImpl implements BlockService {
             input = id;
         } else if (number != null && number >= 0) {
             method = "eth_getBlockByNumber";
-            input = number;
+            input = "0x" + Long.toHexString(number);
         } else if (tag != null && !tag.isEmpty()) {
             method = "eth_getBlockByNumber";
             input = tag;
@@ -85,7 +85,7 @@ public class BlockServiceImpl implements BlockService {
     public List<Block> get(long start, long end) throws APIException {
         List<RequestModel> reqs = new ArrayList<>();
         for (long i = start; i <= end; i++) {
-            reqs.add(new RequestModel("eth_getBlockByNumber", new Object[]{i, false}, 42L));
+            reqs.add(new RequestModel("eth_getBlockByNumber", new Object[]{"0x" + Long.toHexString(i), false}, 42L));
         }
         return batchGet(reqs);
     }
@@ -94,7 +94,7 @@ public class BlockServiceImpl implements BlockService {
     public List<Block> get(List<Long> numbers) throws APIException {
         List<RequestModel> reqs = new ArrayList<>();
         for (Long num : numbers) {
-            reqs.add(new RequestModel("eth_getBlockByNumber", new Object[]{num, false}, 42L));
+            reqs.add(new RequestModel("eth_getBlockByNumber", new Object[]{"0x" + Long.toHexString(num), false}, 42L));
         }
         return batchGet(reqs);
     }

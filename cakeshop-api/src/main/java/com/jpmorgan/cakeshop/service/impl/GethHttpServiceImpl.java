@@ -143,6 +143,7 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     @Override
     public Map<String, Object> executeGethCall(String funcName, Object... args) throws APIException {
+        LOG.info("Geth call: " + funcName);
         return executeGethCall(new RequestModel(funcName, args, GETH_API_VERSION, GETH_REQUEST_ID));
     }
 
@@ -155,20 +156,21 @@ public class GethHttpServiceImpl implements GethHttpService {
             throw new APIException("Received empty reply from server");
         }
 
-        Map<String, Object> data;
         try {
-            data = OBJECT_MAPPER.readValue(response, Map.class);
+            return processResponse(OBJECT_MAPPER.readValue(response, Map.class));
+        } catch (APIException e) {
+            LOG.error("RPC request for " + requestToJson(request) + " failed with " + e.getMessage());
+            throw e;
         } catch (IOException e) {
             throw new APIException("RPC call failed", e);
         }
-
-        return processResponse(data);
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public List<Map<String, Object>> batchExecuteGethCall(List<RequestModel> requests) throws APIException {
-        String response = executeGethCallInternal(requestToJson(requests));
+        String json = requestToJson(requests);
+        String response = executeGethCallInternal(json);
 
         List<Map<String, Object>> responses;
         try {
@@ -181,7 +183,7 @@ public class GethHttpServiceImpl implements GethHttpService {
             return results;
 
         } catch (IOException e) {
-            throw new APIException("RPC call failed", e);
+            throw new APIException("RPC call failed for " + json, e);
         }
     }
 
@@ -320,7 +322,7 @@ public class GethHttpServiceImpl implements GethHttpService {
     public Boolean startConstellation() {
         Boolean success = false;
         File constellationLogDir = new File(quorumConfig.getConstellationConfigPath().concat("logs"));
-        File constellationLog = new File(quorumConfig.getConstellationConfigPath().concat("logs/").concat("constellation.log"));
+        File constellationLog = new File(quorumConfig.getConstellationConfigPath().concat("logs/").concat("constellation.log")); // TODO: path separator
         if (!constellationLogDir.exists()) {
             constellationLogDir.mkdirs();
             if (!constellationLog.exists()) {
@@ -344,7 +346,7 @@ public class GethHttpServiceImpl implements GethHttpService {
             Integer constProcessId = getUnixPID(process);
             writePidToFile(constProcessId, gethConfig.getConstPidFileName());
             success = true;
-            LOG.info("CONSTELLATION STARTED");
+            LOG.info("Constellation started as " + String.join(" ", builder.command()));
             TimeUnit.SECONDS.sleep(5);
         } catch (IOException | InterruptedException ex) {
             LOG.error(ex.getMessage());
@@ -416,6 +418,7 @@ public class GethHttpServiceImpl implements GethHttpService {
                 env.put("PRIVATE_CONFIG", quorumConfig.getConstellationConfigPath().concat("node.conf"));
             }
 
+            LOG.info("geth command: " +  String.join(" ", builder.command()));
             Process process = builder.start();
             this.stdoutLogger = (StreamLogAdapter) new StreamLogAdapter(GETH_LOG, process.getInputStream()).startAsync();
             this.stderrLogger = (StreamLogAdapter) new StreamLogAdapter(GETH_LOG, process.getErrorStream()).startAsync();
@@ -504,65 +507,6 @@ public class GethHttpServiceImpl implements GethHttpService {
                 saveProps = true;
             }
 
-            //Set Block Maker account
-            if (StringUtils.isNotBlank(gethConfig.getBlockMaker())) {
-                additionalParams.add("--blockmakeraccount");
-                additionalParams.add(gethConfig.getBlockMaker());
-                additionalParams.add("--blockmakerpassword");
-                additionalParams.add(null != gethConfig.getBlockMakerPass() ? gethConfig.getBlockMakerPass() : "");
-            } else if (StringUtils.isNotBlank(System.getProperty("geth.block.maker"))) {
-                additionalParams.add("--blockmakeraccount");
-                additionalParams.add(System.getProperty("geth.block.maker"));
-                additionalParams.add("--blockmakerpassword");
-                String pass = StringUtils.isNotBlank(System.getProperty("geth.block.maker.pass")) ? System.getProperty("geth.block.maker.pass") : "";
-                additionalParams.add(pass);
-                gethConfig.setBlockMaker(System.getProperty("geth.block.maker"));
-                gethConfig.setBlockMakerPass(pass);
-                saveProps = true;
-            }
-            //Set min and max block time
-            if (null != gethConfig.getMinBlockTime()) {
-                additionalParams.add("--minblocktime");
-                additionalParams.add(String.valueOf(gethConfig.getMinBlockTime()));
-            } else if (StringUtils.isNotBlank(System.getProperty("geth.min.blocktime"))) {
-                additionalParams.add("--minblocktime");
-                additionalParams.add(System.getProperty("geth.min.blocktime"));
-                gethConfig.setProperty("geth.min.blocktime", System.getProperty("geth.min.blocktime"));
-                saveProps = true;
-            } else {
-                additionalParams.add("--minblocktime");
-                additionalParams.add("2");
-            }
-
-            if (null != gethConfig.getMaxBlockTime()) {
-                additionalParams.add("--maxblocktime");
-                additionalParams.add(String.valueOf(gethConfig.getMaxBlockTime()));
-            } else if (StringUtils.isNotBlank(System.getProperty("geth.max.blocktime"))) {
-                additionalParams.add("--maxblocktime");
-                additionalParams.add(System.getProperty("geth.max.blocktime"));
-                gethConfig.setProperty("geth.max.blocktime", System.getProperty("geth.max.blocktime"));
-                saveProps = true;
-            } else {
-                additionalParams.add("--maxblocktime");
-                additionalParams.add("5");
-            }
-
-            //Set Vote Account
-            if (StringUtils.isNotBlank(gethConfig.getVoteAccount())) {
-                additionalParams.add("--voteaccount");
-                additionalParams.add(gethConfig.getVoteAccount());
-                additionalParams.add("--votepassword");
-                additionalParams.add(null != gethConfig.getVoteAccountPass() ? gethConfig.getVoteAccountPass() : "");
-            } else if (StringUtils.isNotBlank(System.getProperty("geth.vote.account"))) {
-                additionalParams.add("--voteaccount");
-                additionalParams.add(System.getProperty("geth.vote.account"));
-                additionalParams.add("--votepassword");
-                String pass = StringUtils.isNotBlank(System.getProperty("geth.vote.account.pass")) ? System.getProperty("geth.vote.account.pass") : "";
-                additionalParams.add(pass);
-                gethConfig.setVoteAccount(System.getProperty("geth.vote.account"));
-                gethConfig.setVoteAccountPass(pass);
-                saveProps = true;
-            }
             //Set permissioned 
             if (gethConfig.isPermissionedNode()) {
                 additionalParams.add("--permissioned");
@@ -643,16 +587,11 @@ public class GethHttpServiceImpl implements GethHttpService {
             saveGethConfig = true;
         }
 
-        List<String> commands = Lists.newArrayList(gethConfig.getGethPath(),
-                "--port", gethConfig.getGethNodePort(),
-                "--datadir", gethConfig.getDataDirPath(),
-                "--solc", gethConfig.getSolcPath(),
-                "--nat", "none",
-                "--nodiscover",
-                "--unlock", accountsToUnlock, "--password", gethConfig.getGethPasswordFile(),
-                "--rpc", "--rpcaddr", "127.0.0.1", "--rpcport", gethConfig.getRpcPort(),
-                "--rpcapi", gethConfig.getRpcApiList()
-        );
+        List<String> commands = gethConfig.GethCommandLine();
+        commands.add("--unlock");
+        commands.add(accountsToUnlock);
+        commands.add("--password");
+        commands.add(gethConfig.getGethPasswordFile());
 
         if (null != additionalParams && additionalParams.length > 0) {
             commands.addAll(Lists.newArrayList(additionalParams));

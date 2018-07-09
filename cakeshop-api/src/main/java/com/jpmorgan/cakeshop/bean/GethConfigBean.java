@@ -3,6 +3,8 @@ package com.jpmorgan.cakeshop.bean;
 import static com.jpmorgan.cakeshop.util.FileUtils.*;
 import static com.jpmorgan.cakeshop.util.ProcessUtils.*;
 
+import com.google.common.collect.Lists;
+import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.SortedProperties;
 import com.jpmorgan.cakeshop.util.StringUtils;
@@ -10,13 +12,25 @@ import com.jpmorgan.cakeshop.util.StringUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +38,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
+
+import static com.jpmorgan.cakeshop.util.FileUtils.expandPath; // TODO: remove
+import org.json.*;
 
 @Component
 public class GethConfigBean {
@@ -106,6 +123,11 @@ public class GethConfigBean {
     private final String GETH_VOTE_CONTARCT_ADDRESS = "geth.vote.contract.addr";
     private final String GETH_CONSTELLATION_ENABLED = "geth.constellation.enabled";
     private final String GETH_PERMISSIONED = "geth.permissioned";
+    private final String GETH_RAFT_PORT = "geth.raft.port";
+    private final String GETH_RAFT_BLOCKTIME = "geth.raft.blocktime";
+    private final String GETH_CONSENSUS_MODE = "geth.consensus.mode";
+    private final String GETH_STARTUP_MODE = "geth.startup.mode";
+    private final String GETH_RAFT_NETWORK_ID = "geth.raft.network.id";
 
     public GethConfigBean() {
     }
@@ -125,7 +147,7 @@ public class GethConfigBean {
         try {
             initGethBean();
         } catch (IOException | InterruptedException ex) {
-            LOG.error(ex.getMessage());
+            LOG.error(ex.getMessage(), ex);
         }
     }
 
@@ -164,13 +186,10 @@ public class GethConfigBean {
         gethPidFilename = expandPath(CONFIG_ROOT, "geth.pid");
 
         // init genesis block file (using vendor copy if necessary)
-        String vendorGenesisDir = expandPath(baseResourcePath, "genesis");
-
+        String vendorGenesisDir = expandPath(baseResourcePath, "genesis"); // TODO: this block is redundant now
         genesisBlockFilename = expandPath(CONFIG_ROOT, "genesis_block.json");
-        if (!new File(genesisBlockFilename).exists()) {
-            String vendorGenesisBlockFile = FileUtils.join(vendorGenesisDir, "genesis_block.json");
-            copyFile(new File(vendorGenesisBlockFile), new File(genesisBlockFilename));
-        }
+        String vendorGenesisBlockFile = FileUtils.join(vendorGenesisDir, getConsensusMode() + "_genesis_block.json");
+        copyFile(new File(vendorGenesisBlockFile), new File(genesisBlockFilename));
 
         if (SystemUtils.IS_OS_WINDOWS) {
             genesisBlockFilename = genesisBlockFilename.replaceAll(File.separator + File.separator, "/");
@@ -236,8 +255,9 @@ public class GethConfigBean {
                             .replaceAll("application.properties", "").concat("constellation-node/")
                     : getDataDirPath().concat("/constellation/");
 
-            quorumConfig.createKeys("node", destination);
-            quorumConfig.createQuorumConfig("node", destination);
+            quorumConfig.createConstellationKeys("node", destination);
+            quorumConfig.createConstellationConfig("node", destination);
+
             setConstPidFileName(expandPath(CONFIG_ROOT, "constellation.pid"));
             setIsEmbeddedQuorum(true);
 
@@ -247,6 +267,13 @@ public class GethConfigBean {
                     setPublicKey(scanner.nextLine());
                 }
             }
+        }
+
+        createStaticNodesConfig();
+        if (getConsensusMode().equalsIgnoreCase("istanbul")) {
+            updateIstanbulGenesis();
+        } else if (getConsensusMode().equalsIgnoreCase("raft")) {
+            updateRaftGenesis();
         }
     }
 
@@ -332,28 +359,94 @@ public class GethConfigBean {
         return Integer.toString(uri.getPort());
     }
 
-    public String getRpcApiList() {
-        if (StringUtils.isBlank(EMBEDDED_NODE)) {
-            if (props.getProperty(GETH_RPCAPI_LIST).contains("quorum")) {
-                return props.getProperty(GETH_RPCAPI_LIST);
-            } else {
-                return props.getProperty(GETH_RPCAPI_LIST).concat(",").concat("quorum");
-            }
+    public String getRaftPort() {
+        return props.getProperty(GETH_RAFT_PORT);
+    }
+
+    public void setRaftPort(String port) {
+        props.setProperty(GETH_RAFT_PORT, port);
+    }
+
+    public int getRaftBlockFrequency() {
+        return Integer.parseInt(props.getProperty(GETH_RAFT_BLOCKTIME));
+    }
+
+    /**
+     * Minting frequency expressed in ms
+    */
+    public void setRaftBlockFrequency(int frequency) {
+        props.setProperty(GETH_RAFT_BLOCKTIME, frequency + "");
+    }
+
+    public String getConsensusMode() {
+        return get(GETH_CONSENSUS_MODE, "raft");
+    }
+
+    /**
+     * Set Consensus Mode, default to raft, valid options are raft, istanbul
+    */
+    public void setConsensusMode(String mode) {
+        if (null == mode || mode.trim().isEmpty()) {
+            props.setProperty(GETH_CONSENSUS_MODE, "raft");
+        } else if (mode.equalsIgnoreCase("istanbul")) { // TODO: Mode should be an enum
+            props.setProperty(GETH_CONSENSUS_MODE, "istanbul");
         } else {
-            return props.getProperty(GETH_RPCAPI_LIST);
+            props.setProperty(GETH_CONSENSUS_MODE, "raft");
         }
     }
 
-    public void setRpcApiList(String rpcApiList) {
-        if (StringUtils.isBlank(EMBEDDED_NODE)) {
-            if (rpcApiList.contains("quorum")) {
-                props.setProperty(GETH_RPCAPI_LIST, rpcApiList);
-            } else {
-                props.setProperty(GETH_RPCAPI_LIST, rpcApiList.concat(",").concat("quorum"));
-            }
+    public String getStartupMode() {
+        return get(GETH_STARTUP_MODE, "standalone");
+    }
+
+    /**
+     * Set Startup Mode, default to standalone, valid options are stanalone, join.
+     * Joining an existing network requires additional parameters
+    */
+    public void setStartupMode(String mode) {
+        if (null == mode || mode.trim().isEmpty()) {
+            props.setProperty(GETH_STARTUP_MODE, "standalone");
+        } else if (mode.equalsIgnoreCase("join")) { // TODO: Mode should be an enum
+            props.setProperty(GETH_STARTUP_MODE, "join");
         } else {
-            props.setProperty(GETH_RPCAPI_LIST, rpcApiList);
+            props.setProperty(GETH_STARTUP_MODE, "standalone");
         }
+    }
+
+    public void setRaftNetworkId(String id) {
+        props.setProperty(GETH_RAFT_NETWORK_ID, id);
+    }
+    
+    public String getRaftNetworkId() {
+        return get(GETH_RAFT_NETWORK_ID, "");
+    }
+
+    public String getRpcApiList() {
+        return getRpcApiList("raft");
+    }
+
+    public String getRpcApiList(String mode) {
+        HashSet<String> apiset = new HashSet<String>(Arrays.asList(props.getProperty(GETH_RPCAPI_LIST).split(",")));
+
+        if (null == mode || mode.trim().isEmpty() || mode.equalsIgnoreCase("raft")) {
+            apiset.remove("istanbul");
+            apiset.add("raft");
+            return String.join(",", apiset.toArray(new String[0]));
+        } else if (mode.equalsIgnoreCase("istanbul")) {
+            apiset.add("istanbul");
+            apiset.remove("raft");
+            return String.join(",", apiset.toArray(new String[0]));
+        } else {
+            return getRpcApiList("raft");
+        }
+    }
+
+    public void setRpcApiList(String list) {
+        HashSet<String> apiset = new HashSet<String>(Arrays.asList(list.split(",")));
+
+        if (StringUtils.isBlank(EMBEDDED_NODE)) { apiset.add("quorum"); }
+
+        props.setProperty(GETH_RPCAPI_LIST, String.join(",", apiset.toArray(new String[0])));
     }
 
     public String getGethNodePort() {
@@ -469,9 +562,7 @@ public class GethConfigBean {
     }
 
     public Boolean isConstellationEnabled() {
-        return StringUtils.isNotBlank(props.getProperty(GETH_CONSTELLATION_ENABLED))
-                ? Boolean.valueOf(props.getProperty(GETH_CONSTELLATION_ENABLED))
-                : Boolean.TRUE;
+        return Boolean.valueOf(get(GETH_CONSTELLATION_ENABLED, "true"));
     }
 
     public void setConstellationEnabled(Boolean isEnabled) {
@@ -479,9 +570,7 @@ public class GethConfigBean {
     }
 
     public Boolean isPermissionedNode() {
-        return StringUtils.isNotBlank(props.getProperty(GETH_PERMISSIONED))
-                ? Boolean.valueOf(props.getProperty(GETH_PERMISSIONED))
-                : Boolean.FALSE;
+        return Boolean.valueOf(get(GETH_PERMISSIONED, "false"));
     }
 
     public void setPermissionedNode(Boolean isPermissionedNode) {
@@ -596,15 +685,12 @@ public class GethConfigBean {
     }
 
     /**
-     * Simple wrapper around {@link Properties#getProperty(String)} which
-     * handles empty strings and nulls properly
-     *
-     * @param key
-     * @param defaultStr
-     * @return
+     * Allows overrides of application properies with system properties, returning the default value if property is not defined.
      */
     private String get(String key, String defaultStr) {
-        return StringUtils.defaultIfBlank(props.getProperty(key), defaultStr);
+        if (StringUtils.isNotBlank(System.getProperty(key))) { return System.getProperty(key); }
+        if (StringUtils.isNotBlank(props.getProperty(key))) { return props.getProperty(key); }
+        return defaultStr;
     }
 
     /**
@@ -622,17 +708,229 @@ public class GethConfigBean {
     }
 
     /**
-     * @return the publicKey
+     * @return Constellation public key
      */
     public String getPublicKey() {
         return publicKey;
     }
 
     /**
-     * @param publicKey the publicKey to set
+     * @param Constellation public key
      */
     public void setPublicKey(String publicKey) {
         this.publicKey = publicKey;
+    }
+
+    /**
+     * Returns the location of the Geth nodekey as generated by `bootnode`
+     */
+    private Path verifyNodeKey() throws IOException {
+        Path nodekeypath = Paths.get(getDataDirPath(), "geth", "nodekey");
+
+        if (Files.exists(nodekeypath)) { return nodekeypath; }
+
+        if (!Files.exists(nodekeypath.getParent())) { nodekeypath.getParent().toFile().mkdirs(); }
+
+        Path bootnodelocation = Paths.get(Paths.get(quorumConfig.getQuorumPath()).getParent().toString(), "bootnode");
+
+        File bootnodebinary = bootnodelocation.toFile();
+        if (!bootnodebinary.canExecute()) {
+            bootnodebinary.setExecutable(true);
+        }
+
+        List<String> bootnodeparams = Lists.newArrayList(bootnodelocation.toString(), "-genkey", nodekeypath.toString());
+        ProcessBuilder builder = new ProcessBuilder(bootnodeparams);
+        LOG.info("generating nodekey as " +  String.join(" ", builder.command()));
+        Process process = builder.start();
+
+        try { process.waitFor(5, TimeUnit.SECONDS); } catch (Exception e) { }
+
+        if (process.isAlive()) { process.destroy(); }
+    
+        return nodekeypath;
+    }
+
+    private String getLocalEthereumAddress() throws IOException {
+        Path nodekeypath = verifyNodeKey();
+        String localnodeaddress = "";
+
+        Path bootnodelocation = Paths.get(Paths.get(quorumConfig.getQuorumPath()).getParent().toString(), "bootnode");
+
+        File bootnodebinary = bootnodelocation.toFile();
+        if (!bootnodebinary.canExecute()) {
+            bootnodebinary.setExecutable(true);
+        }
+
+        List<String> bootnodeparams = Lists.newArrayList(bootnodelocation.toString(), "-nodekey", nodekeypath.toString(), "-writeaddress");
+        ProcessBuilder builder = new ProcessBuilder(bootnodeparams);
+        LOG.info("generating local address as " +  String.join(" ", builder.command()));
+        Process process = builder.start();
+
+        try (Scanner scanner = new Scanner(process.getInputStream())) {
+            localnodeaddress = scanner.next();
+            if (localnodeaddress.contains("Fatal")) {
+                while (scanner.hasNext()) {
+                    LOG.error(scanner.next());
+                }
+                localnodeaddress = null;
+            }
+        }
+
+        if (process.isAlive()) { process.destroy(); }
+
+        return localnodeaddress;
+    }
+
+    /**
+     * 
+     */
+    private void createStaticNodesConfig() throws IOException {
+        Path staticnodespath = Paths.get(getDataDirPath(), "static-nodes.json");
+        if (Files.exists(staticnodespath)) { return; }
+        if (!Files.exists(staticnodespath.getParent())) { staticnodespath.getParent().toFile().mkdirs(); }
+
+        String localnodeaddress = getLocalEthereumAddress();
+        try (FileWriter writer = new FileWriter(staticnodespath.toFile())) {
+            writer.write("[\n");
+            writer.write("\"" + createEnodeURL(localnodeaddress, getGethNodePort(), getRaftPort()) + "\"\n");
+            writer.write("]\n");
+        } catch (IOException e) {
+            String message = "unable to generate static-nodes.json at " + staticnodespath.getParent();
+            LOG.error(message);
+            throw new APIException(message, e);
+        }
+
+        LOG.info("created static-nodes.json at " + staticnodespath.getParent());
+    }
+
+    public static String createEnodeURL(String localaddress, String gethport, String raftport) {
+        String enodeurl = "enode://" + localaddress + "@127.0.0.1:" + gethport;
+        
+        if (raftport != null && raftport.trim().length() > 0 && Integer.parseInt(raftport) > 0) {
+            enodeurl += "//?raftport=" + raftport;
+        }
+
+        return enodeurl; 
+    }
+
+    public ArrayList<String> GethCommandLine() { return GethCommandLine(getConsensusMode()); }
+
+    /**
+     * @param mode - raft, instanbul
+     */
+    public ArrayList<String> GethCommandLine(String mode) {
+        if (null == mode || mode.trim().isEmpty()) {
+            return GethRaftCommandLine();
+        } else if (mode.equalsIgnoreCase("istanbul")) { // TODO: Mode should be an enum
+            return GethIstanbulCommandLine();
+        } else {
+            return GethRaftCommandLine();
+        }
+    }
+
+    public ArrayList<String> GethRaftCommandLine() {
+        ArrayList<String> command = new ArrayList<String>();
+
+        command.add(getGethPath());
+        command.add("--datadir");
+        command.add(getDataDirPath());
+        command.add("--nodiscover");
+        command.add("--rpc");
+        command.add("--rpcaddr");
+        command.add("127.0.0.1");
+        command.add("--rpcapi");
+        command.add(getRpcApiList("raft"));
+        command.add("--rpcport");
+        command.add(getRpcPort());
+        command.add("--port");
+        command.add(getGethNodePort());
+        command.add("--nat");
+        command.add("none");
+        command.add("--raft");
+        command.add("--raftport");
+        command.add(getRaftPort());
+        command.add("--raftblocktime");
+        command.add(getRaftBlockFrequency() + "");
+        if (getStartupMode().contentEquals("join") && getRaftNetworkId().length() > 0) {
+            command.add("--raftjoinexisting");
+            command.add(getRaftNetworkId());
+        }
+        
+
+        return command;
+    }
+
+    public ArrayList<String> GethIstanbulCommandLine() {
+        ArrayList<String> command = new ArrayList<String>();
+
+        command.add(getGethPath());
+        command.add("--datadir");
+        command.add(getDataDirPath());
+        command.add("--nodiscover");
+        command.add("--syncmode");
+        command.add("full");
+        command.add("--mine");
+        command.add("--rpc");
+        command.add("--rpcaddr");
+        command.add("127.0.0.1");
+        command.add("--rpcapi");
+        command.add(getRpcApiList("istanbul"));
+        command.add("--rpcport");
+        command.add(getRpcPort());
+        command.add("--port");
+        command.add(getGethNodePort());
+
+        return command;
+    }
+
+    private void updateIstanbulGenesis() throws IOException {
+        String localnodeaddress = getLocalEthereumAddress();
+
+        //TODO remove << ISTANBUL WRAPPER
+        String baseResourcePath = System.getProperty("eth.geth.dir");
+        if (StringUtils.isBlank(baseResourcePath)) {
+            baseResourcePath = FileUtils.getClasspathName("geth");
+        }
+
+        Path istanbullocation = Paths.get(expandPath(baseResourcePath, "quorum/istanbul-tools/mac/istanbul"));
+
+        File istanbulbinary = istanbullocation.toFile();
+        if (!istanbulbinary.canExecute()) {
+            istanbulbinary.setExecutable(true);
+        }
+
+        List<String> istanbulcommand = Lists.newArrayList(istanbullocation.toString(), "extra", "encode", "--validators", "0x" + localnodeaddress);
+        ProcessBuilder builder = new ProcessBuilder(istanbulcommand);
+        LOG.info("generating instanbul extradata as " +  String.join(" ", builder.command()));
+        Process process = builder.start();
+
+        String extradata = ""; // TODO: make a library call
+        try (Scanner scanner = new Scanner(process.getInputStream())) {
+            extradata = scanner.next();
+        }
+
+        if (process.isAlive()) { process.destroy(); }
+        //TODO ISTANBUL WRAPPER
+
+        File instabulgenesisfile = Paths.get(Paths.get(expandPath(baseResourcePath, "genesis")).toString(), "istanbul_genesis_block.json").toFile();
+        JSONObject instabulgenesis = new JSONObject(IOUtils.toString(new FileInputStream(instabulgenesisfile)));
+        instabulgenesis.put("extraData", extradata);
+        FileWriter fw = new FileWriter(instabulgenesisfile);
+        fw.write(instabulgenesis.toString());
+        fw.flush();
+        fw.close();
+
+        Files.copy(instabulgenesisfile.toPath(), Paths.get(Paths.get(getDataDirPath()).getParent().toString(), "genesis_block.json"), StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    private void updateRaftGenesis() throws IOException {
+        String baseResourcePath = System.getProperty("eth.geth.dir");
+        if (StringUtils.isBlank(baseResourcePath)) {
+            baseResourcePath = FileUtils.getClasspathName("geth");
+        }
+
+        File raftgenesisfile = Paths.get(Paths.get(expandPath(baseResourcePath, "genesis")).toString(), "raft_genesis_block.json").toFile();
+        Files.copy(raftgenesisfile.toPath(), Paths.get(Paths.get(getDataDirPath()).getParent().toString(), "genesis_block.json"), StandardCopyOption.REPLACE_EXISTING);
     }
 
 }

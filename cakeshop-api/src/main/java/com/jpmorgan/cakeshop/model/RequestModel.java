@@ -73,8 +73,8 @@ public class RequestModel {
     /**
      * @return the id
      */
-    public Long getId() {
-        return id;
+    public String getId() {
+        return "0x" + id;
     }
 
     /**
