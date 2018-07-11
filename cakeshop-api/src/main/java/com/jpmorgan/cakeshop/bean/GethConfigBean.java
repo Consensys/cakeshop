@@ -943,33 +943,4 @@ public class GethConfigBean {
         File raftgenesisfile = Paths.get(Paths.get(expandPath(baseResourcePath, "genesis")).toString(), "raft_genesis_block.json").toFile();
         Files.copy(raftgenesisfile.toPath(), Paths.get(Paths.get(getDataDirPath()).getParent().toString(), "genesis_block.json"), StandardCopyOption.REPLACE_EXISTING);
     }
-
-    /**
-     * @return the isEmbeddedQuorum
-     */
-    public boolean isEmbeddedQuorum() {
-        return isEmbeddedQuorum;
-    }
-
-    /**
-     * @param isEmbeddedQuorum the isEmbeddedQuorum to set
-     */
-    public void setIsEmbeddedQuorum(boolean isEmbeddedQuorum) {
-        this.isEmbeddedQuorum = isEmbeddedQuorum;
-    }
-
-    /**
-     * @return the publicKey
-     */
-    public String getPublicKey() {
-        return publicKey;
-    }
-
-    /**
-     * @param publicKey the publicKey to set
-     */
-    public void setPublicKey(String publicKey) {
-        this.publicKey = publicKey;
-    }
-
 }
