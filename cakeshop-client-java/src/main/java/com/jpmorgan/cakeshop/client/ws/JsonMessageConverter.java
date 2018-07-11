@@ -1,14 +1,13 @@
 package com.jpmorgan.cakeshop.client.ws;
 
 import com.google.common.collect.Lists;
-
-import java.nio.charset.Charset;
-
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.converter.AbstractMessageConverter;
 import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
+
+import java.nio.charset.Charset;
 
 public class JsonMessageConverter extends AbstractMessageConverter {
 
@@ -46,8 +45,8 @@ public class JsonMessageConverter extends AbstractMessageConverter {
     }
 
     private Charset getContentTypeCharset(MimeType mimeType) {
-        if (mimeType != null && mimeType.getCharSet() != null) {
-            return mimeType.getCharSet();
+        if (mimeType != null && mimeType.getCharset() != null) {
+            return mimeType.getCharset();
         }
         else {
             return this.defaultCharset;

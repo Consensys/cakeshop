@@ -11,7 +11,8 @@
 
     var _src = editor.getValue();
     if (!_.isString(_src) || _src.length === 0) {
-        Sandbox.showTxView(); // load default view now since no compilation happening
+        Sandbox.showTxView(); // load default view now since no compilation
+								// happening
     }
 
 
@@ -60,7 +61,8 @@
                 } else if (!Client.connected) {
                     renderError("server disconnected");
                 }
-                $(".sidenav li.compilerView a").click(); // make sure output tab is visible
+                $(".sidenav li.compilerView a").click(); // make sure output
+															// tab is visible
             }
         );
     };
@@ -105,12 +107,14 @@
                 if ('content' in result)
                   content = Base64.decode(result.content);
                 else
-                  content = "\"" + m + "\" NOT FOUND"; //@TODO handle this better
+                  content = "\"" + m + "\" NOT FOUND"; // @TODO handle this
+														// better
                 cachedRemoteFiles[m] = content;
                 files[m] = content;
                 gatherImports(files, asyncCallback, true);
               }).fail(function(){
-                var content = "\"" + m + "\" NOT FOUND"; //@TODO handle this better
+                var content = "\"" + m + "\" NOT FOUND"; // @TODO handle this
+															// better
                 cachedRemoteFiles[m] = content;
                 files[m] = content;
                 gatherImports(files, asyncCallback, true);
@@ -160,7 +164,7 @@
             // Switch to file
             Sandbox.SOL_CACHE_FILE = fileKey(errFile);
             updateFiles();
-            //@TODO could show some error icon in files with errors
+            // @TODO could show some error icon in files with errors
           }
           editor.focus();
           editor.gotoLine(errLine + 1, errCol - 1, true);
@@ -173,16 +177,16 @@
       }
     };
 
-    var gethDeploy = function(contractName, interface, bytecode){
-        var abi = _.isString(interface) ? JSON.parse(interface) : interface;
-      var funABI = getConstructorInterface(interface);
+    var gethDeploy = function(contractName, contractInterface, bytecode) {
+      var abi = _.isString(contractInterface) ? JSON.parse(contractInterface) : contractInterface;
+      var funABI = getConstructorInterface(contractInterface);
 
       var code = "";
       $.each(funABI.inputs, function(i, inp) {
         code += "var " + inp.name + " = /* var of type " + inp.type + " here */ ;\n";
       });
 
-      code += "var " + contractName + "Contract = web3.eth.contract(" + interface.replace("\n","") + ");" +
+      code += "var " + contractName + "Contract = web3.eth.contract(" + contractInterface.replace("\n","") + ");" +
             "\nvar " + contractName + " = " + contractName + "Contract.new(";
 
       $.each(funABI.inputs, function(i, inp) {
@@ -204,8 +208,8 @@
       return code;
     };
 
-    var combined = function(contractName, interface, bytecode){
-      return JSON.stringify([{name: contractName, interface: interface, bytecode: bytecode}]);
+    var combined = function(contractName, contractInterface, bytecode) {
+      return JSON.stringify([{name: contractName, interface: contractInterface, bytecode: bytecode}]);
     };
 
     var renderContracts = function(contracts, source) {
@@ -216,13 +220,15 @@
             if (contract.get("binary")) {
                 $title.append($('<div class="size"/>').text((contract.get("binary").length / 2) + ' bytes'));
             }
-            $contractEl.append($title); // .append( this.getCreateInterface( $contractEl, this.contracts[c]) );
+            $contractEl.append($title); // .append( this.getCreateInterface(
+										// $contractEl, this.contracts[c]) );
 
         var $detail = $('<div class="info"/>')
         .append(textRow('Bytecode', contract.get("binary")))
         .append(textRow('ABI', contract.get("abi")))
         .append(textRow('Web3 deploy', gethDeploy(contract.get("name").toLowerCase(), contract.get("abi"), contract.get("binary")), 'deploy'))
-        // .append(textRow('uDApp', combined(contractName, contract.get("abi"), contract.get("binary")), 'deploy'))
+        // .append(textRow('uDApp', combined(contractName, contract.get("abi"),
+		// contract.get("binary")), 'deploy'))
         .append(getDetails(contract, source, contract.get("name")));
 
             $contractEl.append($detail);

@@ -26,6 +26,7 @@ public class Block implements Serializable {
     private String id;
 
     private String parentId;
+
     @Column(name = "block_number")
     private BigInteger number;
 
@@ -33,7 +34,7 @@ public class Block implements Serializable {
     private String sha3Uncles;
 
     @Lob
-    @Column(length=4096)
+    @Column(length = 4096)
     private String logsBloom;
     private String transactionsRoot;
     private String stateRoot;

@@ -208,6 +208,7 @@ public class GethConfigBean {
         // configure node, solc
         ensureNodeBins(binPath);
         nodePath = FileUtils.expandPath(binPath, "node");
+
         if (SystemUtils.IS_OS_WINDOWS) {
             nodePath = nodePath + ".exe";
         }
@@ -233,13 +234,23 @@ public class GethConfigBean {
             setDataDirPath(expandPath(CONFIG_ROOT, "ethereum"));
         }
 
+        // Initialize node identity
         String identity = getIdentity();
+
         if (StringUtils.isBlank(identity)) {
             identity = System.getenv("USER");
+
             if (StringUtils.isBlank(identity)) {
                 identity = System.getenv("USERNAME");
             }
+
+            // No idenity set, and user info missing in the env prefs
+            if (StringUtils.isBlank(identity)) {
+                LOG.error("Node indentity preference is missing, please ensure geth.identity is set in application properties");
+                throw new IllegalArgumentException("Node indentity preference is missing, please ensure geth.identity is set in application properties");
+            }
         }
+
         setIdentity(identity);
 
         if (LOG.isDebugEnabled()) {
@@ -931,6 +942,34 @@ public class GethConfigBean {
 
         File raftgenesisfile = Paths.get(Paths.get(expandPath(baseResourcePath, "genesis")).toString(), "raft_genesis_block.json").toFile();
         Files.copy(raftgenesisfile.toPath(), Paths.get(Paths.get(getDataDirPath()).getParent().toString(), "genesis_block.json"), StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    /**
+     * @return the isEmbeddedQuorum
+     */
+    public boolean isEmbeddedQuorum() {
+        return isEmbeddedQuorum;
+    }
+
+    /**
+     * @param isEmbeddedQuorum the isEmbeddedQuorum to set
+     */
+    public void setIsEmbeddedQuorum(boolean isEmbeddedQuorum) {
+        this.isEmbeddedQuorum = isEmbeddedQuorum;
+    }
+
+    /**
+     * @return the publicKey
+     */
+    public String getPublicKey() {
+        return publicKey;
+    }
+
+    /**
+     * @param publicKey the publicKey to set
+     */
+    public void setPublicKey(String publicKey) {
+        this.publicKey = publicKey;
     }
 
 }
