@@ -3,6 +3,8 @@
 
 # Cakeshop
 
+[![Build Status](https://travis-ci.org/yourcodesucks/cakeshop.svg?branch=quorum-ui)](https://travis-ci.org/yourcodesucks/cakeshop)
+
 An integrated development environment and SDK for Ethereum-like ledgers
 
 ![screenshot](docs/images/screenshot.png "screenshot")
