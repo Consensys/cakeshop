@@ -1,3 +1,6 @@
 language: java
 sudo: false
 script: mvn clean verify
+
+after_failure:
+  - cat target/surefire-reports/*.txt
