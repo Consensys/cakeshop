@@ -125,7 +125,7 @@ public class WebConfig extends WebMvcConfigurerAdapter {
     public AsyncTaskExecutor createMvcAsyncExecutor() {
         ThreadPoolTaskExecutor exec = new ThreadPoolTaskExecutor();
         exec.setBeanName("asyncTaskExecutor");
-        log.info("async task pool thread core {0}",env.getProperty("cakeshop.mvc.async.pool.threads.core"));
+        LOG.info("async task pool thread core {0}",env.getProperty("cakeshop.mvc.async.pool.threads.core"));
         exec.setCorePoolSize(Integer.valueOf(env.getProperty("cakeshop.mvc.async.pool.threads.core")));
         exec.setMaxPoolSize(Integer.valueOf(env.getProperty("cakeshop.mvc.async.pool.threads.max")));
         exec.setQueueCapacity(Integer.valueOf(env.getProperty("cakeshop.mvc.async.pool.queue.max")));
