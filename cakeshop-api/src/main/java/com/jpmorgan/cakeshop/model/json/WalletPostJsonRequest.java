@@ -1,9 +1,11 @@
 package com.jpmorgan.cakeshop.model.json;
 
+import java.math.BigInteger;
+
 public class WalletPostJsonRequest {
 
     private String fromAccount, account, accountPassword;
-    private Long newBalance;
+    private BigInteger newBalance;
 
     /**
      * @return the formAccount
@@ -50,14 +52,14 @@ public class WalletPostJsonRequest {
     /**
      * @return the newBalance
      */
-    public Long getNewBalance() {
+    public BigInteger getNewBalance() {
         return newBalance;
     }
 
     /**
      * @param newBalance the newBalance to set
      */
-    public void setNewBalance(Long newBalance) {
+    public void setNewBalance(BigInteger newBalance) {
         this.newBalance = newBalance;
     }
 
