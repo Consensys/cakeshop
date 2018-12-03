@@ -108,7 +108,7 @@ public class NodeController extends BaseController {
             }
 
             if (!StringUtils.isEmpty(jsonRequest.getNetworkId())) {
-                nodeSettings.networkId(Integer.parseInt(jsonRequest.getNetworkId()));
+                nodeSettings.networkId(Long.parseLong(jsonRequest.getNetworkId()));
             }
 
             if (jsonRequest.getCommittingTransactions() != null) {
