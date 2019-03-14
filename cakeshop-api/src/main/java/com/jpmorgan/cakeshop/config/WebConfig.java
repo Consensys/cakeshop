@@ -29,7 +29,7 @@ import java.util.Properties;
 @Configuration
 @EnableScheduling
 @Slf4j
-public class WebConfig extends WebMvcConfigurerAdapter {
+public class WebConfig implements WebMvcConfigurer {
 
 	private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(WebConfig.class);
 

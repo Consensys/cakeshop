@@ -1,7 +1,5 @@
 package com.jpmorgan.cakeshop.test;
 
-import static org.testng.Assert.*;
-
 import com.google.common.collect.Lists;
 import com.jpmorgan.cakeshop.bean.GethConfigBean;
 import com.jpmorgan.cakeshop.config.AppStartup;
@@ -15,16 +13,6 @@ import com.jpmorgan.cakeshop.test.config.TempFileManager;
 import com.jpmorgan.cakeshop.test.config.TestAppConfig;
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.ProcessUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import javax.sql.DataSource;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +27,17 @@ import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeClass;
+
+import javax.sql.DataSource;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 @ActiveProfiles("test")
 @ContextConfiguration(classes = {TestAppConfig.class})
@@ -124,18 +123,18 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
         gethConfig.setKeystorePath(FileUtils.getClasspathPath("keystore").toAbsolutePath().toString());
         gethConfig.setIsEmbeddedQuorum(false);
         List<String> additionalParams = new ArrayList<>();
-        additionalParams.add("--blockmakeraccount");
-        additionalParams.add("0xca843569e3427144cead5e4d5999a3d0ccf92b8e");
-        additionalParams.add("--blockmakerpassword");
-        additionalParams.add("");
-        additionalParams.add("--minblocktime");
-        additionalParams.add("2");
-        additionalParams.add("--maxblocktime");
-        additionalParams.add("5");
-        additionalParams.add("--voteaccount");
-        additionalParams.add("0x0fbdc686b912d7722dc86510934589e0aaf3b55a");
-        additionalParams.add("--votepassword");
-        additionalParams.add("");
+//        additionalParams.add("--blockmakeraccount");
+//        additionalParams.add("0xca843569e3427144cead5e4d5999a3d0ccf92b8e");
+//        additionalParams.add("--blockmakerpassword");
+//        additionalParams.add("");
+//        additionalParams.add("--minblocktime");
+//        additionalParams.add("2");
+//        additionalParams.add("--maxblocktime");
+//        additionalParams.add("5");
+//        additionalParams.add("--voteaccount");
+//        additionalParams.add("0x0fbdc686b912d7722dc86510934589e0aaf3b55a");
+//        additionalParams.add("--votepassword");
+//        additionalParams.add("");
         return geth.start(additionalParams.toArray(additionalParams.toArray(new String[additionalParams.size()])));
     }
 
