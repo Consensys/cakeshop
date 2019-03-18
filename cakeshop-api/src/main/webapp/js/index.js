@@ -142,7 +142,8 @@ window.Tower = {
 			'peers-add'              : require('./widgets/peers-add'),
 			'peers-list'             : require('./widgets/peers-list'),
 			'peers-neighborhood'     : require('./widgets/peers-neighborhood'),
-			'txn-detail'             : require('./widgets/txn-detail')
+			'txn-detail'             : require('./widgets/txn-detail'),
+			'tessera'                : require('./widgets/tessera')
 		});
 
 
@@ -367,6 +368,14 @@ window.Tower = {
 
 			Dashboard.showSection('wallet', widgets);
 		},
+
+		'tessera': function() {
+    			var widgets = [
+    				{ widgetId: 'tessera' }
+    			];
+
+    			Dashboard.showSection('tessera', widgets);
+    },
 	},
 
 
@@ -420,7 +429,7 @@ $(function() {
 			return;
 		}
 
-		e.preventDefault();
+		e.preventDefault();id
 
 		Tower.current = id;
 

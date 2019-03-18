@@ -1789,8 +1789,108 @@
 						}
 					}
 				}
-			}
-		}
+			},
+      "/tessera/upcheck": {
+        "post": {
+          "tags": [
+            "tessera"
+          ],
+          "description": "Get tessera node status",
+          "operationId": "postBlock",
+          "consumes": [
+            "text/plain"
+          ],
+          "produces": [
+            "text/plain"
+          ],
+          "examples": [
+            {
+              "name": "Get block by number",
+              "parameters": {
+                "body": "{\n  \"number\": 0\n}\n"
+              }
+            }, {
+              "name": "Get block by ID",
+              "parameters": {
+                "body": "{\n  \"id \"0x8564f939768d96f6fc0ba1334ed083ab6538da76f17b6d264082cb69aadc7b4c\"\n}\n"
+              }
+            }, {
+              "name": "Get latest block",
+              "parameters": {
+                "body": "{\n  \"tag\": \"latest\"\n}\n"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object",
+                    "description": "response data",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "Block hash identifier"
+                      },
+                      "type": {
+                        "type": "string",
+                        "description": "resource type identifier, 'block'"
+                      },
+                      "attributes": {
+                        "$ref": "#/definitions/Block"
+                      }
+                    }
+                  },
+                  "meta": {
+                    "type": "object",
+                    "description": "Extra metadata, such as API version"
+                  }
+                }
+              }
+            },
+            "4xx": {
+              "description": "Error with the request",
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "errors": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/APIError"
+                    }
+                  },
+                  "meta": {
+                    "type": "object",
+                    "description": "Extra metadata, such as API version"
+                  }
+                }
+              }
+            },
+            "5xx": {
+              "description": "Error processing the request",
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "errors": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/APIError"
+                    }
+                  },
+                  "meta": {
+                    "type": "object",
+                    "description": "Extra metadata, such as API version"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
 	},
 	"definitions": {
 		"Account": {
