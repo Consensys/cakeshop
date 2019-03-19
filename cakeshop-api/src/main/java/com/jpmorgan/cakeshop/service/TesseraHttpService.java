@@ -1,5 +1,7 @@
 package com.jpmorgan.cakeshop.service;
 
+import com.jpmorgan.cakeshop.model.Tessera;
+
 import java.util.Map;
 
 /**
@@ -12,5 +14,6 @@ public interface TesseraHttpService {
 
   public String getVersion(String nodeUrl);
 
-  public Map<String, Object> getPartyInfo(String nodeUrl);
+  public Tessera getPartyInfo(String nodeUrl);
+
 }

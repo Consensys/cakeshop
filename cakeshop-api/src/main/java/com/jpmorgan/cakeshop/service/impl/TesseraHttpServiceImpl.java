@@ -1,5 +1,6 @@
 package com.jpmorgan.cakeshop.service.impl;
 
+import com.jpmorgan.cakeshop.model.Tessera;
 import com.jpmorgan.cakeshop.service.TesseraHttpService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +32,11 @@ public class TesseraHttpServiceImpl implements TesseraHttpService {
   }
 
   @Override
-  public Map<String, Object> getPartyInfo(String nodeUrl) {
-    return null;
+  public Tessera getPartyInfo(String nodeUrl) {
+
+    ResponseEntity<Tessera> response =  restTemplate.exchange(nodeUrl, GET,null,Tessera.class);
+
+    return response.getBody();
+
   }
 }

@@ -4,6 +4,7 @@ import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.APIData;
 import com.jpmorgan.cakeshop.model.APIResponse;
 import com.jpmorgan.cakeshop.model.Node;
+import com.jpmorgan.cakeshop.model.Tessera;
 import com.jpmorgan.cakeshop.service.TesseraHttpService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,5 +29,15 @@ public class TesseraController extends BaseController{
     APIResponse apiResponse = new APIResponse();
 
     return new ResponseEntity<>(APIResponse.newSimpleResponse(response), HttpStatus.OK);
+  }
+
+  @RequestMapping({"/getpeers"})
+  protected  ResponseEntity<APIResponse> getPeers() throws APIException {
+    Tessera tessera =  tesseraHttpService.getPartyInfo("http://localhost:9006/partyinfo");
+
+    APIResponse apiResponse = new APIResponse();
+    apiResponse.setData(new APIData(tessera.getUrl(), "node", tessera));
+
+    return new ResponseEntity<>(apiResponse, HttpStatus.OK);
   }
 }
