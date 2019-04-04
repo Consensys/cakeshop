@@ -532,27 +532,6 @@
             </plugin>
 
             <plugin>
-                <groupId>com.googlecode.maven-download-plugin</groupId>
-                <artifactId>download-maven-plugin</artifactId>
-                <version>1.3.0</version>
-                <executions>
-                    <execution>
-                        <id>install-geth</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>wget</goal>
-                        </goals>
-                        <configuration>
-                            <url>${geth.url.base}/${geth.file}</url>
-                            <unpack>true</unpack>
-                            <outputDirectory>${project.build.directory}/classes/geth/bin/${geth.dir}/</outputDirectory>
-                            <sha512>${geth.sha512}</sha512>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>3.0.1</version>
                 <executions>
