@@ -27,8 +27,6 @@
                 </os>
             </activation>
             <properties>
-                <geth.file>geth-1.5.4-b70acf3c-windows.zip</geth.file>
-                <geth.sha512>4d5bb0b451aa9b59babba6007d56aa1538f5c7fe141ca9071c8e2fcb37e11c136ba3b9d98a810d41a5d39c5e8ad1b0a7bfd1a2aa3fcd2553d6e84b0033c4b652</geth.sha512>
                 <geth.dir>win</geth.dir>
             </properties>
         </profile>
@@ -40,8 +38,6 @@
                 </os>
             </activation>
             <properties>
-                <geth.file>geth-1.5.4-b70acf3c-mac.zip</geth.file>
-                <geth.sha512>0b7ee396d03c557764ea777e55282049bd308809067eea0e2b5e9f35b557f696c1662f400934e72f5cb183d0321545fd28057f7c62df76c7ae19dd6e21007e9d</geth.sha512>
                 <geth.dir>mac</geth.dir>
             </properties>
         </profile>
@@ -53,8 +49,6 @@
                 </os>
             </activation>
             <properties>
-                <geth.file>geth-1.5.4-b70acf3c-linux.zip</geth.file>
-                <geth.sha512>966bb9b476c13f557d33c474ca63ab46146775cc7ed6dfef7b3bae64281a39cccfd2f6647d30d1dbdde39f460771daf11a90d0c1f1cae7f8f5d8fac15232807a</geth.sha512>
                 <geth.dir>linux</geth.dir>
             </properties>
         </profile>
