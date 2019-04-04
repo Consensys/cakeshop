@@ -125,10 +125,15 @@ public class WebConfig implements WebMvcConfigurer {
     public AsyncTaskExecutor createMvcAsyncExecutor() {
         ThreadPoolTaskExecutor exec = new ThreadPoolTaskExecutor();
         exec.setBeanName("asyncTaskExecutor");
-        LOG.info("async task pool thread core {0}",env.getProperty("cakeshop.mvc.async.pool.threads.core"));
-        exec.setCorePoolSize(Integer.valueOf(env.getProperty("cakeshop.mvc.async.pool.threads.core")));
-        exec.setMaxPoolSize(Integer.valueOf(env.getProperty("cakeshop.mvc.async.pool.threads.max")));
-        exec.setQueueCapacity(Integer.valueOf(env.getProperty("cakeshop.mvc.async.pool.queue.max")));
+        // TODO figure out why this is null if you delete the data directory and run it the first time
+        LOG.info("async task pool thread core {}",
+            env.getProperty("cakeshop.mvc.async.pool.threads.core", "250"));
+        exec.setCorePoolSize(
+            Integer.valueOf(env.getProperty("cakeshop.mvc.async.pool.threads.core", "250")));
+        exec.setMaxPoolSize(
+            Integer.valueOf(env.getProperty("cakeshop.mvc.async.pool.threads.max", "1000")));
+        exec.setQueueCapacity(
+            Integer.valueOf(env.getProperty("cakeshop.mvc.async.pool.queue.max", "2000")));
         exec.setThreadNamePrefix("WebMvc-");
         exec.afterPropertiesSet();
         return exec;
