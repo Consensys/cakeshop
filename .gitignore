@@ -26,6 +26,7 @@ node.conf
 WebContent/
 pom.xml.versionsBackup
 dependency-reduced-pom.xml
+tls-*
 
 # node stuff
 npm-debug.log*
