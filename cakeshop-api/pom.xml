@@ -244,12 +244,6 @@
             <groupId>com.jcabi</groupId>
             <artifactId>jcabi-manifests</artifactId>
             <version>1.1</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.jcabi</groupId>
-                    <artifactId>jcabi-log</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!-- CRYPTO -->
