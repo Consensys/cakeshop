@@ -2,14 +2,7 @@ package com.jpmorgan.cakeshop.controller;
 
 import com.jpmorgan.cakeshop.bean.GethConfigBean;
 import com.jpmorgan.cakeshop.error.APIException;
-import com.jpmorgan.cakeshop.model.APIData;
-import com.jpmorgan.cakeshop.model.APIError;
-import com.jpmorgan.cakeshop.model.APIResponse;
-import com.jpmorgan.cakeshop.model.ContractABI;
-import com.jpmorgan.cakeshop.model.Node;
-import com.jpmorgan.cakeshop.model.NodeSettings;
-import com.jpmorgan.cakeshop.model.Peer;
-import com.jpmorgan.cakeshop.model.TransactionRequest;
+import com.jpmorgan.cakeshop.model.*;
 import com.jpmorgan.cakeshop.model.json.NodePostJsonRequest;
 import com.jpmorgan.cakeshop.service.ContractService;
 import com.jpmorgan.cakeshop.service.GethHttpService;
@@ -276,6 +269,27 @@ public class NodeController extends BaseController {
             throw new APIException(ex);
         }
         return new ResponseEntity<>(APIResponse.newSimpleResponse(started), HttpStatus.OK);
+    }
+
+
+
+    @RequestMapping({"/tessera/status"})
+    protected ResponseEntity<APIResponse> tesseraStatus() throws APIException {
+
+      String response =  nodeService.getTesseraStatus(gethConfig.getTessaraUrl()+"/upcheck");
+      APIResponse apiResponse = new APIResponse();
+
+      return new ResponseEntity<>(APIResponse.newSimpleResponse(response), HttpStatus.OK);
+    }
+
+    @RequestMapping({"/tessera/getpeers"})
+    protected  ResponseEntity<APIResponse> tesseraPeers() throws APIException {
+      Tessera tessera =  nodeService.getTesseraPeers(gethConfig.getTessaraUrl()+"/partyinfo");
+
+      APIResponse apiResponse = new APIResponse();
+      apiResponse.setData(new APIData(tessera.getUrl(), "node", tessera));
+
+      return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }
 
     private void updateVoteContract(String from, String method, Object[] args) throws APIException {

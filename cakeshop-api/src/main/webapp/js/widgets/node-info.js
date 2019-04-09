@@ -40,7 +40,8 @@ module.exports = function() {
 				'status',
 				'mining',
 				'quorum',
-				'quorumInfo'
+				'quorumInfo',
+                'privacyManager'
 			], function(memo, v, i) {
 				memo[v] = i;
 

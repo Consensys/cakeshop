@@ -142,8 +142,7 @@ window.Tower = {
 			'peers-add'              : require('./widgets/peers-add'),
 			'peers-list'             : require('./widgets/peers-list'),
 			'peers-neighborhood'     : require('./widgets/peers-neighborhood'),
-			'txn-detail'             : require('./widgets/txn-detail'),
-			'tessera'                : require('./widgets/tessera')
+			'txn-detail'             : require('./widgets/txn-detail')
 		});
 
 

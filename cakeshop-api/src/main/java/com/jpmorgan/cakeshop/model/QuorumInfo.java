@@ -60,6 +60,8 @@ public class QuorumInfo {
 
     private Boolean isConstellationEnabled;
 
+    private Boolean isTesseraEnabled;
+
     private BlockMakerStrategy blockMakerStrategy;
 
     public QuorumInfo() {
@@ -127,6 +129,14 @@ public class QuorumInfo {
 
     public void setIsConstellationEnabled(Boolean isConstellationEnabled) {
         this.isConstellationEnabled = isConstellationEnabled;
+    }
+
+    public Boolean getTesseraEnabled() {
+      return isTesseraEnabled;
+    }
+
+    public void setTesseraEnabled(Boolean tesseraEnabled) {
+      isTesseraEnabled = tesseraEnabled;
     }
 
 }

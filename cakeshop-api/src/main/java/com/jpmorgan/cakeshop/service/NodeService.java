@@ -1,10 +1,7 @@
 package com.jpmorgan.cakeshop.service;
 
 import com.jpmorgan.cakeshop.error.APIException;
-import com.jpmorgan.cakeshop.model.Node;
-import com.jpmorgan.cakeshop.model.NodeConfig;
-import com.jpmorgan.cakeshop.model.NodeSettings;
-import com.jpmorgan.cakeshop.model.Peer;
+import com.jpmorgan.cakeshop.model.*;
 
 import java.util.List;
 import java.util.Map;
@@ -81,5 +78,10 @@ public interface NodeService {
      * @throws APIException
      */
     public NodeConfig removeConstellationNode(String constellationNode) throws APIException;
+
+
+    public String getTesseraStatus(String url) throws APIException;
+
+    public Tessera getTesseraPeers(String url) throws APIException;
 
 }

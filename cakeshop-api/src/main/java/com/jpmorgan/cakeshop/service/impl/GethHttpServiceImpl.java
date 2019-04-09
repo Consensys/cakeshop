@@ -28,10 +28,7 @@ import com.jpmorgan.cakeshop.util.StreamLogAdapter;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.PreDestroy;
 
@@ -220,10 +217,15 @@ public class GethHttpServiceImpl implements GethHttpService {
     public Boolean stop() {
         LOG.info("Stopping geth");
 
-        if (gethConfig.isEmbeddedQuorum()) {
+        if (gethConfig.isEmbeddedQuorum() && gethConfig.isConstellationEnabled()) {
             if (!stopConstellation()) {
                 LOG.error("Could not stop constellation");
             }
+        }else if(gethConfig.isEmbeddedQuorum() && gethConfig.isTesseraEnabled()){
+          if (!stopTessera()) {
+            LOG.error("Could not stop tessera");
+          }
+
         }
 
         try {
@@ -354,6 +356,44 @@ public class GethHttpServiceImpl implements GethHttpService {
         return success;
     }
 
+  @Override
+  public Boolean startTessera() {
+    Boolean success = false;
+    File tesseraLogDir = new File(quorumConfig.getTesseraConfigPath().concat("logs"));
+    File tesseraLog = new File(quorumConfig.getTesseraConfigPath().concat("logs/").concat("tessera.log")); // TODO: path separator
+    if (!tesseraLogDir.exists()) {
+      tesseraLogDir.mkdirs();
+      if (!tesseraLogDir.exists()) {
+        try {
+          tesseraLogDir.createNewFile();
+        } catch (IOException ex) {
+          LOG.error("Could not create log for Tessera", ex.getMessage());
+          return false;
+        }
+      }
+    }
+    //TODO: When Windows verision for constellation is available - add the functionality to start it under Windows.
+    String[] command = new String[]{"/bin/sh", "-c",
+      quorumConfig.getTesseraPath().concat("/tessera").concat(" ").concat(" -configfile ").concat(quorumConfig.getTesseraPath()+"/tessera-config.json")
+        .concat(" 2>> ").concat(tesseraLog.getAbsolutePath())
+        .concat(" &")};
+
+   LOG.info("************TESSSERRRAAAA *********************");
+   LOG.info(Arrays.toString(command));
+    ProcessBuilder builder = new ProcessBuilder(command);
+    try {
+      Process process = builder.start();
+      Integer constProcessId = getUnixPID(process);
+      writePidToFile(constProcessId, gethConfig.getTesseraPidFileName());
+      success = true;
+      LOG.info("Tessera started as " + String.join(" ", builder.command()));
+      TimeUnit.SECONDS.sleep(200);
+    } catch (IOException | InterruptedException ex) {
+      LOG.error(ex.getMessage());
+    }
+    return success;
+  }
+
     @Override
     public Boolean stopConstellation() {
         Boolean success = false;
@@ -371,6 +411,24 @@ public class GethHttpServiceImpl implements GethHttpService {
         }
         return success;
     }
+
+
+  public Boolean stopTessera() {
+    Boolean success = false;
+    try {
+      String pid = ProcessUtils.getUnixPidByName("tessera");
+      if (StringUtils.isNotBlank(pid)) {
+        success = killProcess(pid, null);
+        LOG.info("Stopping tessera with pid " + pid);
+        new File(gethConfig.getTesseraPidFileName()).delete();
+      } else {
+        LOG.warn("Could not get PID to stop Tessera");
+      }
+    } catch (InterruptedException | IOException ex) {
+      LOG.error(ex.getMessage());
+    }
+    return success;
+  }
 
     @Override
     public Boolean start(String... additionalParams) {
@@ -408,14 +466,20 @@ public class GethHttpServiceImpl implements GethHttpService {
                 additionalParams = setAdditionalParams(additionalParams).toArray(new String[setAdditionalParams(additionalParams).size()]);
                 if (gethConfig.isConstellationEnabled() && !isProcessRunning(readPidFromFile(gethConfig.getConstPidFileName())) && !gethConfig.IS_BOOT_NODE) {
                     startConstellation();
+                }//TODO: check for tessera process id running
+                else if (gethConfig.isTesseraEnabled() ){
+                  startTessera();
+
                 }
             }
 
             ProcessBuilder builder = createProcessBuilder(gethConfig, createGethCommand(additionalParams));
             final Map<String, String> env = builder.environment();
 
-            if (gethConfig.isEmbeddedQuorum() && !gethConfig.IS_BOOT_NODE) {
+            if (gethConfig.isEmbeddedQuorum() && !gethConfig.IS_BOOT_NODE && gethConfig.isConstellationEnabled()) {
                 env.put("PRIVATE_CONFIG", quorumConfig.getConstellationConfigPath().concat("node.conf"));
+            }else if(gethConfig.isEmbeddedQuorum() && !gethConfig.IS_BOOT_NODE && gethConfig.isTesseraEnabled()){
+              env.put("PRIVATE_CONFIG", quorumConfig.getTesseraConfigPath()+"tm.ipc");
             }
 
             LOG.info("geth command: " +  String.join(" ", builder.command()));
@@ -530,7 +594,7 @@ public class GethHttpServiceImpl implements GethHttpService {
         return additionalParams;
     }
 
-    /**
+  /**
      * Initialize geth datadir via "geth init" command, using the configured
      * genesis block
      *

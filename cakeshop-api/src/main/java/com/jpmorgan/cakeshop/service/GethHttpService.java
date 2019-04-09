@@ -52,6 +52,12 @@ public interface GethHttpService {
      */
     public Boolean startConstellation();
 
+  /*
+   * Start Tessera node
+   * @return
+   */
+  public Boolean startTessera();
+
     /*
     * Stop constellation node
     * @return

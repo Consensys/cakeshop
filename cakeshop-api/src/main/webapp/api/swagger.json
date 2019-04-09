@@ -1790,7 +1790,7 @@
 					}
 				}
 			},
-      "/tessera/upcheck": {
+      "/node/tessera/status": {
         "post": {
           "tags": [
             "tessera"

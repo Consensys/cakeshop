@@ -43,14 +43,20 @@ public class QuorumConfigBean implements InitializingBean { // TODO: rename to C
     private static final String CONSTELLATION_MAC_KEYGEN_PARAMS = "--generatekeys=node";
     private final String CONSTELLATION_URL = StringUtils.isNotBlank(System.getProperty("geth.constellation.url"))
             ? System.getProperty("geth.constellation.url") : "http://127.0.0.1:9000";
+    private final String TESSERA_URL = StringUtils.isNotBlank(System.getProperty("geth.tessera.url"))
+    ? System.getProperty("geth.tessera.url") : "http://127.0.0.1:9000";
 
     private final String EMBEDDED_NODE = null != System.getProperty("geth.node") ? System.getProperty("geth.node") : null;
+    private static final String TESSERA_LINUX_COMMAND_PATH = "quorum/tessera/linux/";
 
     private String quorumPath;
     private String constellationPath;
     private String keyGen;
     private String keyGenParams;
     private String constellationConfig;
+    private String tesseraPath;
+    private String tesseraConfig;
+
 
     @Value("${geth.bootnodes.list:\"\"}")
     private String bootNodes;
@@ -89,6 +95,14 @@ public class QuorumConfigBean implements InitializingBean { // TODO: rename to C
         this.constellationPath = constallationPath;
     }
 
+    public String getTesseraPath() {
+      return tesseraPath;
+    }
+
+    public void setTesseraPath(String tesseraPath) {
+      this.tesseraPath = tesseraPath;
+    }
+
     /**
      * @return the keyGen
      */
@@ -124,6 +138,11 @@ public class QuorumConfigBean implements InitializingBean { // TODO: rename to C
     public String getConstellationConfigPath() {
         return constellationConfig;
     }
+
+    public String getTesseraConfigPath() {
+      return tesseraConfig;
+    }
+
 
     /**
      * @return the bootNode
@@ -277,6 +296,7 @@ public class QuorumConfigBean implements InitializingBean { // TODO: rename to C
             LOG.debug("Using quorum for linux");
             setQuorumPath(expandPath(baseResourcePath, QUORUM_LINUX_COMMAND));
             setConstellationPath(expandPath(baseResourcePath, CONSTELLATION_LINUX_COMMAND));
+            setTesseraPath(expandPath(baseResourcePath, TESSERA_LINUX_COMMAND_PATH));
             setKeyGen(expandPath(baseResourcePath, CONSTELLATION_LINUX_KEYGEN));
             setKeyGenParams(CONSTELLATION_LINUX_KEYGEN_PARAMS);
 
@@ -315,6 +335,10 @@ public class QuorumConfigBean implements InitializingBean { // TODO: rename to C
             keyGenExec.setExecutable(true);
         }
 
+    }
+
+    public void setTesseraConfigPath(String destination){
+      this.tesseraConfig =  destination;
     }
 
 }

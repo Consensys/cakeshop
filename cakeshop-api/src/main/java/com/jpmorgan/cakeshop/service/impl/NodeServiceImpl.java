@@ -3,6 +3,9 @@ package com.jpmorgan.cakeshop.service.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import static com.jpmorgan.cakeshop.service.impl.GethHttpServiceImpl.*;
+import static com.jpmorgan.cakeshop.util.ProcessUtils.isProcessRunning;
+import static com.jpmorgan.cakeshop.util.ProcessUtils.readPidFromFile;
+import static org.springframework.http.HttpMethod.GET;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
@@ -39,8 +42,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 public class NodeServiceImpl implements NodeService, GethRpcConstants {
@@ -61,6 +66,9 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
 
     @Autowired
     private QuorumService quorumService;
+
+    @Autowired
+    private RestTemplate restTemplate;
 
     @Override
     public Node get() throws APIException {
@@ -144,6 +152,8 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
 
             node.setPeers(peers());
 
+            node.setPrivacyManager(getPrivacyManager());
+
             if (quorumService.isQuorum()) {
                 // add quorum info
                 node.setQuorumInfo(quorumService.getQuorumInfo());
@@ -167,7 +177,20 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
         return node;
     }
 
-    private NodeConfig createNodeConfig() throws IOException {
+  private String getPrivacyManager() {
+
+      if(gethConfig.isConstellationEnabled() && !isProcessRunning(readPidFromFile(gethConfig.getConstPidFileName()))){
+        return "Constellation";
+      }else if(gethConfig.isTesseraEnabled() && !isProcessRunning(readPidFromFile(gethConfig.getTesseraPidFileName()))){
+
+        return "Tessera";
+       }else{
+        return null;
+      }
+
+  }
+
+  private NodeConfig createNodeConfig() throws IOException {
         return new NodeConfig(gethConfig.getIdentity(), gethConfig.isMining(), gethConfig.getNetworkId(),
                 gethConfig.getVerbosity(), gethConfig.getGenesisBlock(), gethConfig.getExtraParams());
     }
@@ -431,7 +454,21 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @Override
+    public String getTesseraStatus(String url) throws APIException {
+      ResponseEntity<String> response = restTemplate.exchange(url, GET,null,String.class);
+
+      return response.getBody();
+    }
+
+    @Override
+    public Tessera getTesseraPeers(String url) throws APIException {
+      ResponseEntity<Tessera> response =  restTemplate.exchange(url, GET,null,Tessera.class);
+
+      return response.getBody();
+    }
+
+  @SuppressWarnings("unchecked")
     private Peer createPeer(Map<String, Object> data
     ) {
         if (data == null || data.isEmpty()) {

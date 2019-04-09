@@ -80,6 +80,13 @@ public class Node  {
     private List<Peer> peers;
 
 
+  /**
+   * privacy Manager
+   */
+
+    private String privacyManager;
+
+
     public String getStatus() {
          return status;
     }
@@ -200,6 +207,14 @@ public class Node  {
     @Override
     public boolean equals(Object obj) {
         return EqualsBuilder.reflectionEquals(this, obj, false);
+    }
+
+    public String getPrivacyManager() {
+      return privacyManager;
+    }
+
+    public void setPrivacyManager(String privacyManager) {
+      this.privacyManager = privacyManager;
     }
 
 }
