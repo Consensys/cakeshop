@@ -141,7 +141,8 @@ window.Tower = {
 			'node-settings'          : require('./widgets/node-settings'),
 			'peers-add'              : require('./widgets/peers-add'),
 			'peers-list'             : require('./widgets/peers-list'),
-			'peers-neighborhood'     : require('./widgets/peers-neighborhood'),
+            // TODO turn this back on after fixing nodeIP issue
+			// 'peers-neighborhood'     : require('./widgets/peers-neighborhood'),
 			'txn-detail'             : require('./widgets/txn-detail')
 		});
 
