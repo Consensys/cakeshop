@@ -20,7 +20,6 @@ public class Node {
     private String nodeIP = null;
     private String rpcUrl = null;
     private String dataDirectory = null;
-    private QuorumInfo quorumInfo;
 
     private Integer peerCount = null;
     private Integer pendingTxn = null;
@@ -160,20 +159,6 @@ public class Node {
 
     public void setDataDirectory(String dataDirectory) {
         this.dataDirectory = dataDirectory;
-    }
-
-    /**
-     * @return the quorumInfo
-     */
-    public QuorumInfo getQuorumInfo() {
-        return quorumInfo;
-    }
-
-    /**
-     * @param quorumInfo the quorumInfo to set
-     */
-    public void setQuorumInfo(QuorumInfo quorumInfo) {
-        this.quorumInfo = quorumInfo;
     }
 
     /**

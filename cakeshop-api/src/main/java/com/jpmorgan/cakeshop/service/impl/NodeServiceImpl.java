@@ -16,7 +16,6 @@ import com.jpmorgan.cakeshop.model.Peer;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.GethRpcConstants;
 import com.jpmorgan.cakeshop.service.NodeService;
-import com.jpmorgan.cakeshop.service.QuorumService;
 import com.jpmorgan.cakeshop.util.AbiUtils;
 import com.jpmorgan.cakeshop.util.EEUtils;
 import com.jpmorgan.cakeshop.util.EEUtils.IP;
@@ -58,9 +57,6 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
 
     @Autowired
     private PeerDAO peerDAO;
-
-    @Autowired
-    private QuorumService quorumService;
 
     @Override
     public Node get() throws APIException {
@@ -110,16 +106,9 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
                 }
             }
 
-            // check if mining
-            if (!quorumService.isQuorum()) {
-                data = gethService.executeGethCall(ADMIN_MINER_MINING);
-                Boolean mining = (Boolean) data.get(SIMPLE_RESULT);
-                node.setMining(mining == null ? false : mining);
-
-            } else {
-                // TODO assuming the equivalent of mining = true (temp workaround for quorum)
-                node.setMining(true);
-            }
+            data = gethService.executeGethCall(ADMIN_MINER_MINING);
+            Boolean mining = (Boolean) data.get(SIMPLE_RESULT);
+            node.setMining(mining == null ? false : mining);
 
             // peer count
             data = gethService.executeGethCall(ADMIN_NET_PEER_COUNT);
@@ -143,11 +132,6 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
             }
 
             node.setPeers(peers());
-
-            if (quorumService.isQuorum()) {
-                // add quorum info
-                node.setQuorumInfo(quorumService.getQuorumInfo());
-            }
 
         } catch (APIException ex) {
             Throwable cause = ex.getCause();
@@ -212,7 +196,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
                 throw new APIException("Failed to update genesis block", e);
             }
 
-            if (!quorumService.isQuorum() && settings.isMining() != null && !settings.isMining().equals(gethConfig.isMining())) {
+            if (settings.isMining() != null && !settings.isMining().equals(gethConfig.isMining())) {
                 gethConfig.setMining(settings.isMining());
 
                 if (!restart) {
@@ -225,46 +209,6 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
                 }
             }
 
-            //Quorum specific settings
-            if (quorumService.isQuorum()) {
-                if (StringUtils.isNotBlank(settings.getBlockMakerAccount())
-                        && ((StringUtils.isNotBlank(gethConfig.getBlockMaker()) && !settings.getBlockMakerAccount().contentEquals(gethConfig.getBlockMaker()))
-                        || StringUtils.isBlank(gethConfig.getVoteAccount()))) {
-                    gethConfig.setBlockMaker(settings.getBlockMakerAccount());
-                    restart = true;
-                }
-
-                if (StringUtils.isNotBlank(settings.getVoterAccount()) && ((StringUtils.isNotBlank(gethConfig.getVoteAccount())
-                        && !settings.getVoterAccount().contentEquals(gethConfig.getVoteAccount()))
-                        || StringUtils.isBlank(gethConfig.getVoteAccount()))) {
-                    gethConfig.setVoteAccount(settings.getVoterAccount());
-                    restart = true;
-                }
-
-                if (null != settings.getMinBlockTime()
-                        && (null != gethConfig.getMinBlockTime() && !settings.getMinBlockTime().equals(gethConfig.getMinBlockTime()))) {
-                    gethConfig.setMinBlockTime(settings.getMinBlockTime());
-                    restart = true;
-                } else if (null != settings.getMinBlockTime() && null == gethConfig.getMinBlockTime()) {
-                    gethConfig.setMinBlockTime(settings.getMinBlockTime());
-                    restart = true;
-                }
-
-                if (null != settings.getMaxBlockTime()
-                        && (null != gethConfig.getMaxBlockTime() && !settings.getMaxBlockTime().equals(gethConfig.getMaxBlockTime()))) {
-                    gethConfig.setMinBlockTime(settings.getMaxBlockTime());
-                    restart = true;
-                } else if (null != settings.getMaxBlockTime() && null == gethConfig.getMaxBlockTime()) {
-                    gethConfig.setMinBlockTime(settings.getMaxBlockTime());
-                    restart = true;
-                }
-
-                if (settings.isMining() != null && !settings.isMining() && StringUtils.isNotBlank(gethConfig.getBlockMaker())) {
-                    gethService.executeGethCall("quorum.pauseBlockMaker");
-                } else if (settings.isMining() != null && settings.isMining() && StringUtils.isNotBlank(gethConfig.getBlockMaker())) {
-                    gethService.executeGethCall("quorum.resumeBlockMaker");
-                }
-            }
         }
 
         NodeConfig nodeInfo;

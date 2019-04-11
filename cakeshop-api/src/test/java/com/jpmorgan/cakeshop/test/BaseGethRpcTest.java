@@ -31,7 +31,6 @@ import org.testng.annotations.BeforeClass;
 import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -122,20 +121,7 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
         gethConfig.setGenesisBlockFilename(FileUtils.getClasspathPath("genesis_block.json").toAbsolutePath().toString());
         gethConfig.setKeystorePath(FileUtils.getClasspathPath("keystore").toAbsolutePath().toString());
         gethConfig.setIsEmbeddedQuorum(false);
-        List<String> additionalParams = new ArrayList<>();
-//        additionalParams.add("--blockmakeraccount");
-//        additionalParams.add("0xca843569e3427144cead5e4d5999a3d0ccf92b8e");
-//        additionalParams.add("--blockmakerpassword");
-//        additionalParams.add("");
-//        additionalParams.add("--minblocktime");
-//        additionalParams.add("2");
-//        additionalParams.add("--maxblocktime");
-//        additionalParams.add("5");
-//        additionalParams.add("--voteaccount");
-//        additionalParams.add("0x0fbdc686b912d7722dc86510934589e0aaf3b55a");
-//        additionalParams.add("--votepassword");
-//        additionalParams.add("");
-        return geth.start(additionalParams.toArray(additionalParams.toArray(new String[additionalParams.size()])));
+        return geth.start();
     }
 
     /**

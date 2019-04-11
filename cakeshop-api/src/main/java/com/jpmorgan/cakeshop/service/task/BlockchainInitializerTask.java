@@ -10,7 +10,6 @@ import com.jpmorgan.cakeshop.service.ContractService;
 import com.jpmorgan.cakeshop.service.ContractService.CodeType;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.NodeService;
-import com.jpmorgan.cakeshop.service.QuorumService;
 import com.jpmorgan.cakeshop.service.TransactionService;
 import com.jpmorgan.cakeshop.service.WalletService;
 import com.jpmorgan.cakeshop.util.CakeshopUtils;
@@ -65,13 +64,8 @@ public class BlockchainInitializerTask implements Runnable {
     @Autowired
     private GethConfigBean gethConfig;
 
-    @Autowired
-    private QuorumService quorumService;
-
     @Override
     public void run() {
-
-        quorumService.isQuorum(); // discover quorum state
 
         deployContractRegistry();
 
