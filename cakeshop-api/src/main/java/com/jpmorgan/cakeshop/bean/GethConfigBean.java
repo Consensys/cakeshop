@@ -76,7 +76,7 @@ public class GethConfigBean {
 
     private String keystorePath;
 
-    private String nodePath;
+    private String nodeJsPath;
 
     private String solcPath;
 
@@ -206,14 +206,14 @@ public class GethConfigBean {
         keystorePath = expandPath(vendorGenesisDir, "keystore");
 
         // configure node, solc
-        ensureNodeBins(binPath);
-        nodePath = FileUtils.expandPath(binPath, "node");
+        ensureNodeJsBins(binPath);
+        nodeJsPath = FileUtils.expandPath(binPath, "node");
 
         if (SystemUtils.IS_OS_WINDOWS) {
-            nodePath = nodePath + ".exe";
+            nodeJsPath = nodeJsPath + ".exe";
         }
         solcPath = expandPath(baseResourcePath, "solc", "node_modules", "solc-cakeshop-cli", "bin", "solc");
-        ensureNodeBins(solcPath);
+        ensureNodeJsBins(solcPath);
         // Clean up data dir path for default config (not an absolute path)
         if (getDataDirPath() != null) {
             if (getDataDirPath().startsWith("/.ethereum")) {
@@ -289,14 +289,13 @@ public class GethConfigBean {
     }
 
     /**
-     * Make sure all node bins are executable, both for win & mac/linux
+     * Make sure all nodejs bins are executable, both for win & mac/linux
      *
-     * @param nodePath
-     * @param solcPath
+     * @param nodeJsPath
      */
-    private void ensureNodeBins(String nodePath) {
-        ensureFileIsExecutable(nodePath + File.separator + "node");
-        ensureFileIsExecutable(nodePath + File.separator + "node.exe");
+    private void ensureNodeJsBins(String nodeJsPath) {
+        ensureFileIsExecutable(nodeJsPath + File.separator + "node");
+        ensureFileIsExecutable(nodeJsPath + File.separator + "node.exe");
     }
 
     public String getGethPath() {
@@ -427,7 +426,7 @@ public class GethConfigBean {
     public void setRaftNetworkId(String id) {
         props.setProperty(GETH_RAFT_NETWORK_ID, id);
     }
-    
+
     public String getRaftNetworkId() {
         return get(GETH_RAFT_NETWORK_ID, "");
     }
@@ -636,12 +635,12 @@ public class GethConfigBean {
         FileUtils.writeStringToFile(new File(genesisBlockFilename), genesisBlock);
     }
 
-    public String getNodePath() {
-        return nodePath;
+    public String getNodeJsPath() {
+        return nodeJsPath;
     }
 
-    public void setNodePath(String nodePath) {
-        this.nodePath = nodePath;
+    public void setNodeJsPath(String nodeJsPath) {
+        this.nodeJsPath = nodeJsPath;
     }
 
     public boolean isDbEnabled() {
@@ -726,7 +725,7 @@ public class GethConfigBean {
     }
 
     /**
-     * @param Constellation public key
+     * @param publicKey public key
      */
     public void setPublicKey(String publicKey) {
         this.publicKey = publicKey;
@@ -757,7 +756,7 @@ public class GethConfigBean {
         try { process.waitFor(5, TimeUnit.SECONDS); } catch (Exception e) { }
 
         if (process.isAlive()) { process.destroy(); }
-    
+
         return nodekeypath;
     }
 
@@ -793,7 +792,7 @@ public class GethConfigBean {
     }
 
     /**
-     * 
+     *
      */
     private void createStaticNodesConfig() throws IOException {
         Path staticnodespath = Paths.get(getDataDirPath(), "static-nodes.json");
@@ -816,12 +815,12 @@ public class GethConfigBean {
 
     public static String createEnodeURL(String localaddress, String gethport, String raftport) {
         String enodeurl = "enode://" + localaddress + "@127.0.0.1:" + gethport;
-        
+
         if (raftport != null && raftport.trim().length() > 0 && Integer.parseInt(raftport) > 0) {
             enodeurl += "//?raftport=" + raftport;
         }
 
-        return enodeurl; 
+        return enodeurl;
     }
 
     public ArrayList<String> GethCommandLine() { return GethCommandLine(getConsensusMode()); }
@@ -866,7 +865,7 @@ public class GethConfigBean {
             command.add("--raftjoinexisting");
             command.add(getRaftNetworkId());
         }
-        
+
 
         return command;
     }

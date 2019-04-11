@@ -355,7 +355,7 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         // test solc binary
         System.out.println();
         System.out.println("Testing solc compiler binary");
-        String solcOutput = testBinary(gethConfig.getNodePath(), gethConfig.getSolcPath(), "--version");
+        String solcOutput = testBinary(gethConfig.getNodeJsPath(), gethConfig.getSolcPath(), "--version");
         if (solcOutput == null || !solcOutput.contains("Version:")) {
             isHealthy = false;
             System.out.println("FAILED");

@@ -97,7 +97,7 @@ public class ContractServiceImpl implements ContractService {
         Map<String, Object> res = null;
         try {
             List<String> args = Lists.newArrayList(
-                    gethConfig.getNodePath(),
+                    gethConfig.getNodeJsPath(),
                     gethConfig.getSolcPath(),
                     "--ipc");
 

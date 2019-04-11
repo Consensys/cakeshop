@@ -88,7 +88,7 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
     @AfterSuite(alwaysRun = true)
     public void stopSolc() throws IOException {
         List<String> args = Lists.newArrayList(
-                gethConfig.getNodePath(),
+                gethConfig.getNodeJsPath(),
                 gethConfig.getSolcPath(),
                 "--stop-ipc");
 
