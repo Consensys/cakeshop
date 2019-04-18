@@ -13,8 +13,6 @@ nbactions.xml
 # temp build files
 data
 target
-*.war
-*.jar
 test-output
 /test.json
 logs/
