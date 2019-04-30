@@ -1,7 +1,7 @@
 package com.jpmorgan.cakeshop.db;
 
 import com.google.common.collect.Lists;
-import com.jpmorgan.cakeshop.bean.GethConfigBean;
+import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.dao.BlockDAO;
 import com.jpmorgan.cakeshop.dao.TransactionDAO;
 import com.jpmorgan.cakeshop.error.APIException;
@@ -11,14 +11,6 @@ import com.jpmorgan.cakeshop.model.Block;
 import com.jpmorgan.cakeshop.model.Transaction;
 import com.jpmorgan.cakeshop.service.TransactionService;
 import com.jpmorgan.cakeshop.service.WebSocketPushService;
-
-import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +18,12 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Scope;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @Scope("prototype")
@@ -68,7 +66,7 @@ public class SavingBlockListener implements BlockListener {
     private TransactionService txService;
 
     @Autowired
-    private GethConfigBean gethConfig;
+    private GethConfig gethConfig;
 
     private final ArrayBlockingQueue<Block> blockQueue;
 

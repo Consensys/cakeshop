@@ -7,8 +7,8 @@ package com.jpmorgan.cakeshop.model;
 
 public class NodeSettings {
 
-    private String identity, extraParams, genesisBlock, blockMakerAccount, voterAccount;
-    private Integer minBlockTime, maxBlockTime, logLevel, networkId;
+    private String identity, extraParams, genesisBlock;
+    private Integer logLevel, networkId;
     private Boolean isMining;
 
     public NodeSettings() {
@@ -107,82 +107,6 @@ public class NodeSettings {
 
     public NodeSettings genesisBlock(String genesisBlock) {
         this.genesisBlock = genesisBlock;
-        return this;
-    }
-
-    /**
-     * @return the blockMakerAccount
-     */
-    public String getBlockMakerAccount() {
-        return blockMakerAccount;
-    }
-
-    /**
-     * @param blockMakerAccount the blockMakerAccount to set
-     */
-    public void setBlockMakerAccount(String blockMakerAccount) {
-        this.blockMakerAccount = blockMakerAccount;
-    }
-
-    public NodeSettings blockMakerAccount(String blockMakerAccount) {
-        this.blockMakerAccount = blockMakerAccount;
-        return this;
-    }
-
-    /**
-     * @return the voterAccount
-     */
-    public String getVoterAccount() {
-        return voterAccount;
-    }
-
-    /**
-     * @param voterAccount the voterAccount to set
-     */
-    public void setVoterAccount(String voterAccount) {
-        this.voterAccount = voterAccount;
-    }
-
-    public NodeSettings voterAccount(String voterAccount) {
-        this.voterAccount = voterAccount;
-        return this;
-    }
-
-    /**
-     * @return the minBlockTime
-     */
-    public Integer getMinBlockTime() {
-        return minBlockTime;
-    }
-
-    /**
-     * @param minBlockTime the minBlockTime to set
-     */
-    public void setMinBlockTime(Integer minBlockTime) {
-        this.minBlockTime = minBlockTime;
-    }
-
-    public NodeSettings minBlockTime(Integer minBlockTime) {
-        this.minBlockTime = minBlockTime;
-        return this;
-    }
-
-    /**
-     * @return the maxBlockTime
-     */
-    public Integer getMaxBlockTime() {
-        return maxBlockTime;
-    }
-
-    /**
-     * @param maxBlockTime the maxBlockTime to set
-     */
-    public void setMaxBlockTime(Integer maxBlockTime) {
-        this.maxBlockTime = maxBlockTime;
-    }
-
-    public NodeSettings maxBlockTime(Integer maxBlockTime) {
-        this.maxBlockTime = maxBlockTime;
         return this;
     }
 

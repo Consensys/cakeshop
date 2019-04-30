@@ -18,8 +18,8 @@ module.exports = function() {
 				'<li><button type="button" class="btn btn-default ctrls" id="stop">Stop Node</button></li>'+
 				'<li><button type="button" class="btn btn-default ctrls" id="start">Start Node</button></li>'+
 				'<li><button type="button" class="btn btn-default" id="confirm" data-toggle="modal" data-target="#newchainconfirm">Create New Chain</button></li>'+
-				'<li><button type="button" class="btn btn-default ctrls quorum-control" id="constellation/stop">Stop Constellation</button></li>'+
-				'<li><button type="button" class="btn btn-default ctrls quorum-control" id="constellation/start">Start Constellation</button></li>'+
+				'<li><button type="button" class="btn btn-default ctrls quorum-control" id="tm/stop">Stop Constellation</button></li>'+
+				'<li><button type="button" class="btn btn-default ctrls quorum-control" id="tm/start">Start Constellation</button></li>'+
 			'</ul>' +
 
 			'<div class="modal fade" id="newchainconfirm" tabindex="-1" role="dialog">'+

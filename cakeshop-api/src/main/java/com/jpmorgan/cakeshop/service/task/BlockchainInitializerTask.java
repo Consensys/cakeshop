@@ -1,20 +1,21 @@
 package com.jpmorgan.cakeshop.service.task;
 
-import com.jpmorgan.cakeshop.bean.GethConfigBean;
+import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.dao.WalletDAO;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Account;
 import com.jpmorgan.cakeshop.model.TransactionResult;
-import com.jpmorgan.cakeshop.service.ContractRegistryService;
-import com.jpmorgan.cakeshop.service.ContractService;
+import com.jpmorgan.cakeshop.service.*;
 import com.jpmorgan.cakeshop.service.ContractService.CodeType;
-import com.jpmorgan.cakeshop.service.GethHttpService;
-import com.jpmorgan.cakeshop.service.NodeService;
-import com.jpmorgan.cakeshop.service.TransactionService;
-import com.jpmorgan.cakeshop.service.WalletService;
 import com.jpmorgan.cakeshop.util.CakeshopUtils;
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,13 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 @Component
 @Scope("prototype")
@@ -62,7 +56,7 @@ public class BlockchainInitializerTask implements Runnable {
     private String contractRegistryAddress;
 
     @Autowired
-    private GethConfigBean gethConfig;
+    private GethConfig gethConfig;
 
     @Override
     public void run() {

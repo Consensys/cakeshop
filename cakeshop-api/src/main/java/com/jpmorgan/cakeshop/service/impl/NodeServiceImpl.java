@@ -2,11 +2,11 @@ package com.jpmorgan.cakeshop.service.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import static com.jpmorgan.cakeshop.service.impl.GethHttpServiceImpl.*;
-
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-import com.jpmorgan.cakeshop.bean.GethConfigBean;
+import com.jpmorgan.cakeshop.bean.GethConfig;
+import com.jpmorgan.cakeshop.bean.GethRunner;
+import com.jpmorgan.cakeshop.bean.TransactionManagerRunner;
 import com.jpmorgan.cakeshop.dao.PeerDAO;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Node;
@@ -19,41 +19,39 @@ import com.jpmorgan.cakeshop.service.NodeService;
 import com.jpmorgan.cakeshop.util.AbiUtils;
 import com.jpmorgan.cakeshop.util.EEUtils;
 import com.jpmorgan.cakeshop.util.EEUtils.IP;
-import java.io.BufferedWriter;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.ResourceAccessException;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.ResourceAccessException;
+import static com.jpmorgan.cakeshop.service.impl.GethHttpServiceImpl.SIMPLE_RESULT;
 
 @Service
 public class NodeServiceImpl implements NodeService, GethRpcConstants {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(NodeServiceImpl.class);
 
-    @Value("${config.path}")
-    private String CONFIG_ROOT;
-
     @Autowired
     private GethHttpService gethService;
 
     @Autowired
-    private GethConfigBean gethConfig;
+    private GethConfig gethConfig;
+
+    @Autowired
+    private GethRunner gethRunner;
+
+    @Autowired
+    private TransactionManagerRunner transactionManagerRunner;
 
     @Autowired
     private PeerDAO peerDAO;
@@ -70,7 +68,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
             data = gethService.executeGethCall(ADMIN_NODE_INFO);
 
             node.setRpcUrl(gethConfig.getRpcUrl());
-            node.setDataDirectory(gethConfig.getDataDirPath());
+            node.setDataDirectory(gethConfig.getGethDataDirPath());
 
             node.setId((String) data.get("id"));
             node.setStatus(StringUtils.isEmpty((String) data.get("id")) ? NODE_NOT_RUNNING_STATUS : NODE_RUNNING_STATUS);
@@ -153,7 +151,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
 
     private NodeConfig createNodeConfig() throws IOException {
         return new NodeConfig(gethConfig.getIdentity(), gethConfig.isMining(), gethConfig.getNetworkId(),
-                gethConfig.getVerbosity(), gethConfig.getGenesisBlock(), gethConfig.getExtraParams());
+                gethConfig.getVerbosity(), gethRunner.getGenesisBlock(), gethConfig.getExtraParams());
     }
 
     @Override
@@ -177,19 +175,21 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
                 gethConfig.setVerbosity(settings.getLogLevel());
                 if (!restart) {
                     // make it live immediately
-                    gethService.executeGethCall(ADMIN_VERBOSITY, new Object[]{settings.getLogLevel()});
+                    gethService.executeGethCall(ADMIN_VERBOSITY, settings.getLogLevel());
                 }
             }
 
             String currExtraParams = gethConfig.getExtraParams();
+            // TODO currently no way to erase all the extra params because an empty string is
+            // TODO assumed to be no update to the setting
             if (StringUtils.isNotBlank(settings.getExtraParams()) && (currExtraParams == null || !settings.getExtraParams().contentEquals(currExtraParams))) {
                 gethConfig.setExtraParams(settings.getExtraParams());
                 restart = true;
             }
 
             try {
-                if (StringUtils.isNotBlank(settings.getGenesisBlock()) && !settings.getGenesisBlock().contentEquals(gethConfig.getGenesisBlock())) {
-                    gethConfig.setGenesisBlock(settings.getGenesisBlock());
+                if (StringUtils.isNotBlank(settings.getGenesisBlock()) && !settings.getGenesisBlock().contentEquals(gethRunner.getGenesisBlock())) {
+                    gethRunner.setGenesisBlock(settings.getGenesisBlock());
                     reset = true;
                 }
             } catch (IOException e) {
@@ -202,7 +202,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
                 if (!restart) {
                     // make it live immediately
                     if (settings.isMining()) {
-                        gethService.executeGethCall(ADMIN_MINER_START, "1");
+                        gethService.executeGethCall(ADMIN_MINER_START, 1);
                     } else {
                         gethService.executeGethCall(ADMIN_MINER_STOP);
                     }
@@ -233,7 +233,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
     @Override
     public Boolean reset() {
         try {
-            gethConfig.initFromVendorConfig();
+            gethRunner.initFromVendorConfig();
         } catch (IOException e) {
             LOG.warn("Failed to reset config file", e);
             return false;
@@ -245,7 +245,6 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
 
     private void restart() {
         gethService.stop();
-        gethService.deletePid();
         gethService.start();
     }
 
@@ -281,7 +280,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
         }
 
         if (gethConfig.isPermissionedNode()) {
-            File permissionJson = new File(gethConfig.getDataDirPath().concat("/").concat("permissioned-nodes.json"));
+            File permissionJson = new File(gethConfig.getGethDataDirPath().concat("/").concat("permissioned-nodes.json"));
             List<String> permissionNodes;
             ObjectMapper mapper = new ObjectMapper();
             try {
@@ -324,54 +323,50 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
     }
 
     @Override
-    public Map<String, Object> getConstellationNodes() throws APIException {
-        try {
-            Properties constellationConfig = getConstellationConfig();
-            Map<String, Object> constellationNodes = getConstellationNodesMap(constellationConfig);
-            return constellationNodes;
-        } catch (IOException ex) {
-            LOG.error("Error saving constellation config", ex);
-            throw new APIException("Error saving constellation config", ex);
-        }
+    public Map<String, Object> getTransactionManagerNodes() {
+        Map<String, Object> nodeMap = new LinkedHashMap<>();
+        nodeMap.put("local", gethConfig.getGethTransactionManagerUrl());
+        nodeMap.put("remote", gethConfig.getGethTransactionManagerPeers());
+        return nodeMap;
     }
 
     @Override
-    public NodeConfig addConstellationNode(String constellationNode) throws APIException {
+    public NodeConfig addTransactionManagerNode(String node) throws APIException {
         NodeConfig nodeInfo;
         try {
-            Properties constellationConfig = getConstellationConfig();
-            List<String> constellationNodes = (List<String>) getConstellationNodesMap(constellationConfig).get("remote");
-            if (null == constellationNodes) {
-                constellationNodes = new ArrayList<>();
-            }
-            constellationNodes.add(constellationNode);
-            updateConstellationConfig(constellationConfig, constellationNodes);
+            List<String> nodes = gethConfig.getGethTransactionManagerPeers();
+            nodes.add(node);
+            gethConfig.setGethTransactionManagerPeers(nodes);
+            gethConfig.save();
+            transactionManagerRunner.writeTransactionManagerConfig();
             nodeInfo = createNodeConfig();
             restart();
             return nodeInfo;
         } catch (IOException e) {
-            LOG.error("Error saving constellation config", e);
-            throw new APIException("Error saving constellation config", e);
+            LOG.error("Error saving transaction manager config", e);
+            throw new APIException("Error saving transaction manager config", e);
         }
     }
 
     @Override
-    public NodeConfig removeConstellationNode(String constellationNode) throws APIException {
+    public NodeConfig removeTransactionManagerNode(String transactionManagerNode)
+        throws APIException {
         NodeConfig nodeInfo;
         try {
-            Properties constellationConfig = getConstellationConfig();
-            List<String> constellationNodes = (List<String>) getConstellationNodesMap(constellationConfig).get("remote");
-            if (null != constellationNodes) {
-                constellationNodes = new ArrayList<>();
-                constellationNodes.remove(constellationNode);
-                updateConstellationConfig(constellationConfig, constellationNodes);
-                restart();
+            List<String> nodes = gethConfig.getGethTransactionManagerPeers();
+            boolean wasInList = nodes.remove(transactionManagerNode);
+            if (!wasInList) {
+                throw new IOException("Peer node was not in list");
             }
+            gethConfig.setGethTransactionManagerPeers(nodes);
+            gethConfig.save();
+            transactionManagerRunner.writeTransactionManagerConfig();
+            restart();
             nodeInfo = createNodeConfig();
             return nodeInfo;
         } catch (IOException e) {
-            LOG.error("Error saving constellation config", e);
-            throw new APIException("Error saving constellation config", e);
+            LOG.error("Error saving transaction manager config", e);
+            throw new APIException("Error saving transaction manager config", e);
         }
     }
 
@@ -400,65 +395,4 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
 
         return peer;
     }
-
-    private Map<String, Object> getConstellationNodesMap(Properties props) throws IOException {
-        String constellations = props.getProperty("otherNodeUrls").replaceAll("\\[", "").replaceAll("\\]", "").replaceAll("\"", "");
-        String localConstellation = props.getProperty("url").replaceAll("\"", "");
-        Map<String, Object> constellationMap = new LinkedHashMap<>();
-        constellationMap.put("local", localConstellation);
-        List<String> constellaltionNodes;
-        if (StringUtils.isNotBlank(constellations)) {
-            constellaltionNodes = Lists.newArrayList(constellations.split(","));
-            constellationMap.put("remote", constellaltionNodes);
-            return constellationMap;
-        }
-        return constellationMap;
-    }
-
-    private Properties getConstellationConfig() throws IOException {
-        String destination = com.jpmorgan.cakeshop.util.StringUtils.isNotBlank(System.getProperty("spring.config.location"))
-                ? System.getProperty("spring.config.location").replaceAll("file:", "")
-                        .replaceAll("application.properties", "/").concat("constellation-node/")
-                : gethConfig.getDataDirPath().concat("/constellation/");
-        destination = destination.concat("node.conf");
-        Properties props = new Properties();
-        props.load(new FileReader(new File(destination)));
-        return props;
-    }
-
-    private void updateConstellationConfig(Properties props, List<String> constellaltionNodes) throws IOException {
-        String destination = com.jpmorgan.cakeshop.util.StringUtils.isNotBlank(System.getProperty("spring.config.location"))
-                ? System.getProperty("spring.config.location").replaceAll("file:", "")
-                        .replaceAll("application.properties", "/").concat("constellation-node/")
-                : gethConfig.getDataDirPath().concat("/constellation/");
-        destination = destination.concat("node.conf");
-
-        String updatedConstellations = "[";
-        Integer index = 0;
-
-        for (String node : constellaltionNodes) {
-            updatedConstellations = updatedConstellations.concat("\"").concat(node).concat("\"").replaceAll(":", "\\:");
-            index++;
-            if (index < constellaltionNodes.size()) {
-                updatedConstellations = updatedConstellations.concat(",");
-            }
-        }
-
-        updatedConstellations = updatedConstellations.concat("]");
-        props.setProperty("otherNodeUrls", updatedConstellations);
-
-        Enumeration keys = props.keys();
-        try (BufferedWriter out = new BufferedWriter(new FileWriter(destination))) {
-            while (keys.hasMoreElements()) {
-                String key = keys.nextElement().toString();
-                String value = props.getProperty(key).replaceAll("\\\\", "");
-                out.write(key);
-                out.write(" = ");
-                out.write(value);
-                out.newLine();
-            }
-            out.flush();
-        }
-    }
-
 }

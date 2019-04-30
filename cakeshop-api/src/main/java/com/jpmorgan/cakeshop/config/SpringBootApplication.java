@@ -1,6 +1,6 @@
 package com.jpmorgan.cakeshop.config;
 
-import com.jpmorgan.cakeshop.bean.GethConfigBean;
+import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -45,11 +45,11 @@ public class SpringBootApplication {
             System.setProperty("spring.config.location", "file:" + FileUtils.expandPath(AppConfig.getConfigPath(), "application.properties"));
         }
 
-        // extract geth from WAR (if necessary)
+        // extract binaries from WAR (if necessary)
         try {
             extractGeth(configDir);
         } catch (IOException e) {
-            System.err.println("!!! ERROR: Failed to extract geth from WAR package");
+            System.err.println("!!! ERROR: Failed to extract binaries from WAR package");
             System.err.println(e.getMessage());
             e.printStackTrace();
             System.exit(1);
@@ -71,7 +71,7 @@ public class SpringBootApplication {
     }
 
     private static void extractGeth(String configDir) throws IOException {
-        URL url = GethConfigBean.class.getClassLoader().getResource("");
+        URL url = SpringBootApplication.class.getClassLoader().getResource("");
         String warUrl = null;
 
         if (url.getProtocol().equals("jar")) {
@@ -86,15 +86,15 @@ public class SpringBootApplication {
             return; // no need to copy
         }
 
-        String gethDir = FileUtils.expandPath(configDir, "geth");
-        System.out.println("Extracting geth to " + gethDir);
+        String binRootDir = FileUtils.expandPath(configDir, "bin");
+        System.out.println("Extracting binaries to " + binRootDir);
 
         try (ZipFile warZip = new ZipFile(war)) {
             Enumeration<? extends ZipEntry> entries = warZip.entries();
             while (entries.hasMoreElements()) {
                 ZipEntry zipEntry = entries.nextElement();
                 String file = zipEntry.getName();
-                if (zipEntry.isDirectory() || !file.startsWith("WEB-INF/classes/geth")) {
+                if (zipEntry.isDirectory() || !file.startsWith("WEB-INF/classes/bin")) {
                     continue;
                 }
 
@@ -107,7 +107,7 @@ public class SpringBootApplication {
             }
         }
 
-        System.setProperty("eth.geth.dir", gethDir);
+        System.setProperty("eth.bin.dir", binRootDir);
     }
 
     @Bean

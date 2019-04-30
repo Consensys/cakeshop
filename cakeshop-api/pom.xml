@@ -15,7 +15,6 @@
     <name>Cakeshop API</name>
 
     <properties>
-        <geth.url.base>https://github.com/fixanoid/cakeshop/releases/download/0.10.0/</geth.url.base>
     </properties>
 
     <profiles>
@@ -27,7 +26,7 @@
                 </os>
             </activation>
             <properties>
-                <geth.dir>win</geth.dir>
+                <platform.dir>win</platform.dir>
             </properties>
         </profile>
         <profile>
@@ -38,7 +37,7 @@
                 </os>
             </activation>
             <properties>
-                <geth.dir>mac</geth.dir>
+                <platform.dir>mac</platform.dir>
             </properties>
         </profile>
         <profile>
@@ -49,7 +48,7 @@
                 </os>
             </activation>
             <properties>
-                <geth.dir>linux</geth.dir>
+                <platform.dir>linux</platform.dir>
             </properties>
         </profile>
     </profiles>
@@ -286,6 +285,35 @@
             <version>2.6.1</version>
         </dependency>
 
+        <!-- TESSERA -->
+        <dependency>
+            <groupId>com.jpmorgan.quorum</groupId>
+            <version>0.9</version>
+            <artifactId>config</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.jpmorgan.quorum</groupId>
+            <version>0.9</version>
+            <artifactId>config-migration</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.moandjiezana.toml</groupId>
+            <artifactId>toml4j</artifactId>
+            <version>0.7.2</version>
+        </dependency>
+
         <!-- ############################################# -->
         <!-- # TEST # -->
         <!-- ############################################# -->
@@ -323,7 +351,6 @@
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <scope>test</scope>
         </dependency>
 
         <!-- bean validator api impl -->
@@ -488,7 +515,7 @@
                             <goal>npm</goal>
                         </goals>
                         <configuration>
-                            <workingDirectory>src/main/resources/geth/solc</workingDirectory>
+                            <workingDirectory>src/main/resources/bin/solc</workingDirectory>
                         </configuration>
                     </execution>
 
@@ -504,7 +531,7 @@
                             <followSymlinks>false</followSymlinks>
                         </fileset>
                         <fileset>
-                            <directory>src/main/resources/geth/solc/node_modules</directory>
+                            <directory>src/main/resources/bin/solc/node_modules</directory>
                             <followSymlinks>false</followSymlinks>
                         </fileset>
                         <fileset>
@@ -531,7 +558,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/classes/geth/bin/${geth.dir}/</outputDirectory>
+                            <outputDirectory>${project.build.directory}/classes/bin/nodejs/${platform.dir}/</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${project.build.directory}/node/</directory>

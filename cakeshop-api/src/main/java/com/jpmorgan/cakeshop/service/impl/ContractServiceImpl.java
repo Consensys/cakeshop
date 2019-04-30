@@ -53,7 +53,7 @@ public class ContractServiceImpl implements ContractService {
     Long pollDelayMillis;
 
     @Autowired
-    private GethConfigBean gethConfig;
+    private GethRunner gethRunner;
 
     @Autowired
     private GethHttpService geth;
@@ -100,15 +100,15 @@ public class ContractServiceImpl implements ContractService {
         SolcResponse res = null;
         try {
             List<String> args = Lists.newArrayList(
-                    gethConfig.getNodeJsPath(),
-                    gethConfig.getSolcPath(),
+                    gethRunner.getNodeJsPath(),
+                    gethRunner.getSolcPath(),
                     "--ipc",
                     "--evm-version",
                     "byzantium",
                     "--filename",
                     filename);
 
-            ProcessBuilder builder = ProcessUtils.createProcessBuilder(gethConfig, args);
+            ProcessBuilder builder = ProcessUtils.createProcessBuilder(gethRunner, args);
             File tempFile = new File("temp-contract.json");
             tempFile.createNewFile();
             builder.redirectOutput(tempFile);

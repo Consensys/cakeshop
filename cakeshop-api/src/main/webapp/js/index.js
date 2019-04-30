@@ -48,17 +48,7 @@ window.Tower = {
 
 		// Set the client once status is retrieved
 		if (Tower.client === null) {
-			if (status.quorumInfo === null) {
-				delete status.quorumInfo;
-
-				Tower.client = 'geth';
-			} else {
-				Tower.client = 'quorum';
-
-				// Show all quorum controls
-				$('.quorum-control').show();
-			}
-
+			Tower.client = 'geth';
 			// Redraw the current section
 			$('#' + Dashboard.section).click();
 		}
@@ -149,8 +139,7 @@ window.Tower = {
 
 		// Quorum widgets
 		Dashboard.preregisterWidgets({
-			'quorum-settings': require('./widgets/quorum-settings'),
-			'constellation': require('./widgets/constellation')
+			'transaction-manager': require('./widgets/transaction-manager')
 		});
 
 		Dashboard.init();
@@ -313,8 +302,7 @@ window.Tower = {
 			];
 
 			if (Tower.client === 'quorum') {
-				widgets.push({ widgetId: 'quorum-settings' });
-				widgets.push({ widgetId: 'constellation' });
+				widgets.push({ widgetId: 'transaction-manager' });
 			}
 
 			Dashboard.showSection('console', widgets);
@@ -328,7 +316,7 @@ window.Tower = {
 			];
 
 			if (Tower.client === 'quorum') {
-				widgets.push({ widgetId: 'constellation' });
+				widgets.push({ widgetId: 'transaction-manager' });
 			}
 
 			Dashboard.showSection('peers', widgets);

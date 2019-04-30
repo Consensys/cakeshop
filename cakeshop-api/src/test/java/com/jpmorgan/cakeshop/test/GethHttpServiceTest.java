@@ -20,27 +20,14 @@ public class GethHttpServiceTest extends BaseGethRpcTest {
     @Autowired
     private BlockService blockService;
 
-    @Test(enabled = false)
+    @Test
     public void testReset() throws APIException {
         System.out.println("Running  GethHttpServiceTest.testReset-------------------------------------");
         assertTrue(geth.isRunning());
 
         String blockId = blockService.get(null, 1L, null).getId();
-        List<String> additionalParams = new ArrayList<>();
-//        additionalParams.add("--blockmakeraccount");
-//        additionalParams.add("0xca843569e3427144cead5e4d5999a3d0ccf92b8e");
-//        additionalParams.add("--blockmakerpassword");
-//        additionalParams.add("");
-//        additionalParams.add("--minblocktime");
-//        additionalParams.add("2");
-//        additionalParams.add("--maxblocktime");
-//        additionalParams.add("5");
-//        additionalParams.add("--voteaccount");
-//        additionalParams.add("0x0fbdc686b912d7722dc86510934589e0aaf3b55a");
-//        additionalParams.add("--votepassword");
-//        additionalParams.add("");
 
-        assertTrue(geth.reset(additionalParams.toArray(additionalParams.toArray(new String[additionalParams.size()]))));
+        assertTrue(geth.reset());
         assertTrue(geth.isRunning());
 
         assertNotEquals(blockService.get(null, 1L, null).getId(), blockId);

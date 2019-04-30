@@ -2,42 +2,38 @@ package com.jpmorgan.cakeshop.util;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-import com.jpmorgan.cakeshop.bean.GethConfigBean;
+import com.jpmorgan.cakeshop.bean.GethRunner;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinNT;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.lang.reflect.Field;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.*;
+import java.lang.reflect.Field;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
 public class ProcessUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProcessUtils.class);
 
-    public static ProcessBuilder createProcessBuilder(GethConfigBean gethConfig, String... commands) {
-        return createProcessBuilder(gethConfig, Lists.newArrayList(commands));
+    public static ProcessBuilder createProcessBuilder(GethRunner gethRunner, String... commands) {
+        return createProcessBuilder(gethRunner, Lists.newArrayList(commands));
     }
 
-    public static ProcessBuilder createProcessBuilder(GethConfigBean gethConfig, List<String> commands) {
+    public static ProcessBuilder createProcessBuilder(GethRunner gethRunner, List<String> commands) {
         ProcessBuilder builder = new ProcessBuilder(commands);
 
         // need to modify PATH so it can locate compilers correctly
-        String solcDir = new File(gethConfig.getSolcPath()).getParent();
+        String solcDir = new File(gethRunner.getSolcPath()).getParent();
+        String nodeJsDir = new File(gethRunner.getNodeJsPath()).getParent();
+        String gethDir = new File(gethRunner.getGethPath()).getParent();
         final Map<String, String> env = builder.environment();
-        env.put("PATH", prefixPathStr(gethConfig.getBinPath() + File.pathSeparator + solcDir, env.get("PATH")));
+        env.put("PATH", prefixPathStr(nodeJsDir + File.pathSeparator + gethDir + File.pathSeparator + solcDir, env.get("PATH")));
 
         if (LOG.isDebugEnabled()) {
             LOG.debug(Joiner.on(" ").join(builder.command()));
@@ -47,9 +43,9 @@ public class ProcessUtils {
         // we need to add some other dynamic libs later
         if (SystemUtils.IS_OS_MAC_OSX) {
             // we ship the gmp lib at this location, make sure its accessible
-            env.put("DYLD_LIBRARY_PATH", prefixPathStr(gethConfig.getBinPath(), env.get("DYLD_LIBRARY_PATH")));
+            env.put("DYLD_LIBRARY_PATH", prefixPathStr(gethDir, env.get("DYLD_LIBRARY_PATH")));
         } else if (SystemUtils.IS_OS_LINUX) {
-            env.put("LD_LIBRARY_PATH", prefixPathStr(gethConfig.getBinPath(), env.get("LD_LIBRARY_PATH")));
+            env.put("LD_LIBRARY_PATH", prefixPathStr(gethDir, env.get("LD_LIBRARY_PATH")));
         }
 
         return builder;
@@ -112,10 +108,18 @@ public class ProcessUtils {
         return false;
     }
 
-    public static boolean killProcess(String pid, String exeName) throws InterruptedException, IOException {
+    public static boolean killProcess(String pidFileName, String name)
+        throws InterruptedException, IOException {
+        String pid = readPidFromFile(pidFileName);
+        LOG.info("Stopping {} process with pid {}", name, pid);
         boolean killed = SystemUtils.IS_OS_WINDOWS ? killProcessWin(pid) : killProcessNix(pid);
         if (!killed) {
+            LOG.warn("Failed to kill process with pid {}", pid);
             return false;
+        }
+
+        if (!new File(pidFileName).delete()) {
+            LOG.warn("Could not delete pid file {}", pidFileName);
         }
 
         // wait for process to actually stop
@@ -123,6 +127,7 @@ public class ProcessUtils {
             if (!isProcessRunning(pid)) {
                 return true;
             }
+            LOG.info("Process with pid {} hasn't stopped yet, waiting", pid);
             TimeUnit.MILLISECONDS.sleep(5);
         }
     }
@@ -254,6 +259,7 @@ public class ProcessUtils {
      */
     public static boolean ensureFileIsExecutable(String filename) {
         File file = new File(filename);
+        LOG.info("testing {} exists: {}", filename, file.exists());
         if (file.exists()) {
             if (file.canExecute()) {
                 return true;
@@ -263,4 +269,18 @@ public class ProcessUtils {
         return false;
     }
 
+    public static String getPlatformDirectory() {
+        if (SystemUtils.IS_OS_WINDOWS) {
+            return "win";
+        } else if (SystemUtils.IS_OS_LINUX) {
+            return "linux";
+        } else if (SystemUtils.IS_OS_MAC_OSX) {
+            return "mac";
+        } else {
+            LOG.error(
+                "Running on unsupported OS! Only Windows, Linux and Mac OS X are currently supported");
+            throw new IllegalArgumentException(
+                "Running on unsupported OS! Only Windows, Linux and Mac OS X are currently supported");
+        }
+    }
 }
