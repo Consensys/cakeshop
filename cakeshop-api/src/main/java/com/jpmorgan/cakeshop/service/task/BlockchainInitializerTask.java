@@ -156,7 +156,7 @@ public class BlockchainInitializerTask implements Runnable {
         LOG.info("Deploying sample contract (SimpleStorage) to chain");
         try {
             String code = FileUtils.readClasspathFile("contracts/SimpleStorage.sol");
-            TransactionResult txr = contractService.create(null, code, CodeType.solidity, null, null, null, null);
+            TransactionResult txr = contractService.create(null, code, CodeType.solidity, null, null, null, null, "SimpleStorage.sol");
             transactionService.waitForTx(txr, 200, TimeUnit.MILLISECONDS);
 
         } catch (IOException | InterruptedException e) {

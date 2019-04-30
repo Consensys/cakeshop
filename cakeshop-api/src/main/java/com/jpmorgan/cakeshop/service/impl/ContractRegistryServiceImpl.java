@@ -63,7 +63,8 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
 
         try {
             String code = FileUtils.readClasspathFile("contracts/ContractRegistry.sol");
-            TransactionResult txr = contractService.create(null, code, CodeType.solidity, null, null, null, null);
+            TransactionResult txr = contractService.create(null, code, CodeType.solidity, null, null, null, null,
+                "ContractRegistry.sol");
             Transaction tx = transactionService.waitForTx(txr, 200, TimeUnit.MILLISECONDS);
             this.contractRegistryAddress = tx.getContractAddress();
             saveContractRegistryAddress(this.contractRegistryAddress);
@@ -131,8 +132,12 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
             return null; // FIXME return silently because registry hasn't yet been registered
         }
 
-        if (name.equalsIgnoreCase("ContractRegistry")) {
-            LOG.debug("Skipping registration for ContractRegistry");
+        LOG.info("Registering contract {} with address {}", name, id);
+
+        if (name.equalsIgnoreCase("ContractRegistry") || contractRegistryAddress.equals(id)) {
+            // Solidity compiler now prefixes contract names with ':'
+            // In the future it will be "{filename}:{Contractname}"
+            LOG.info("Skipping registration for ContractRegistry");
             return null;
         }
 

@@ -29,10 +29,12 @@ public interface ContractService {
 	 * @param code
 	 * @param codeType
 	 * @param optimize
-	 * @return
+	 * @param filename
+     * @return
 	 * @throws APIException
 	 */
-	public List<Contract> compile(String code, CodeType codeType, Boolean optimize) throws APIException;
+	public List<Contract> compile(String code, CodeType codeType, Boolean optimize,
+        String filename) throws APIException;
 
 	/**
 	 * Deploy the given contract onto the chain and add it to the Contract Registry
@@ -45,10 +47,12 @@ public interface ContractService {
 	 * @param privateFrom  Base64-encoded public key of the sender (optional)
 	 * @param privateFor   List of Base64-encoded public keys of recipients (optional)
 	 *
-	 * @return
+	 * @param filename
+     * @return
 	 * @throws APIException
 	 */
-	public TransactionResult create(String from, String code, CodeType codeType, Object[] args, String binary, String privateFrom, List<String> privateFor) throws APIException;
+	public TransactionResult create(String from, String code, CodeType codeType, Object[] args,
+        String binary, String privateFrom, List<String> privateFor, String filename) throws APIException;
 
 	/**
 	 * Delete the given contract. Not yet implemented.

@@ -9,6 +9,7 @@ import com.jpmorgan.cakeshop.model.APIResponse;
 import java.io.IOException;
 import java.util.List;
 
+import java.util.Map;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,10 +41,10 @@ public class BaseController {
         String rootCause = ExceptionUtils.getRootCauseMessage(ex);
 
         if (ex instanceof CompilerException) {
-            List<String> errors = ((CompilerException) ex).getErrors();
-            for (String e : errors) {
+            List<Map<String, Object>> errors = ((CompilerException) ex).getErrors();
+            for (Map<String, Object> e : errors) {
                 APIError err = new APIError(null, HttpStatus.BAD_REQUEST.toString(), "compilation failed");
-                err.setDetail(e);
+                err.setDetail((String) e.get("formattedMessage"));
                 res.addError(err);
             }
             return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);

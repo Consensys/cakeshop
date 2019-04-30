@@ -1,6 +1,7 @@
 package com.jpmorgan.cakeshop.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.jpmorgan.cakeshop.error.ABIException;
 import com.jpmorgan.cakeshop.util.AbiUtils;
 
@@ -44,6 +45,11 @@ public abstract class SolidityType {
         if ("bytes".equals(typeName)) return new BytesType();
         if (typeName.startsWith("bytes")) return new Bytes32Type(typeName);
         throw new ABIException("Unknown type: " + typeName);
+    }
+
+    @JsonValue
+    public String getTypeAsString() {
+        return name;
     }
 
     /**

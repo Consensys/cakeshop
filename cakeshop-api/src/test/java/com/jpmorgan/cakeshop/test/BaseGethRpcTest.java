@@ -170,19 +170,21 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
      */
     protected String createContract() throws IOException, InterruptedException {
         String code = readTestFile("contracts/simplestorage.sol");
-        return createContract(code, null);
+        return createContract(code, null, "simplestorage.sol");
     }
 
     /**
      * Deploy the given contract code to the chain
      *
      * @param code
+     * @param filename
      * @return
      * @throws APIException
      * @throws InterruptedException
      */
-    protected String createContract(String code, Object[] args) throws APIException, InterruptedException {
-        TransactionResult result = contractService.create(null, code, ContractService.CodeType.solidity, args, null, null, null);
+    protected String createContract(String code, Object[] args, String filename) throws APIException, InterruptedException {
+        TransactionResult result = contractService.create(null, code, ContractService.CodeType.solidity, args, null, null, null,
+            filename);
         assertNotNull(result);
         assertNotNull(result.getId());
         assertTrue(!result.getId().isEmpty());

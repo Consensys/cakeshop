@@ -5,6 +5,6 @@
   "author": "",
   "license": "Apache2",
   "dependencies": {
-    "solc-cakeshop-cli": "0.3.5"
+    "solc-cakeshop-cli": "0.4.0"
   }
 }
