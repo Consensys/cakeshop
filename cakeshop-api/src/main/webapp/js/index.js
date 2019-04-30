@@ -105,7 +105,7 @@ window.Tower = {
 		// let everyone listening in know
 		Dashboard.Utils.emit('tower-control|ready|true');
 
-		if (window.localStorage.getItem('tourEnded') === null) {
+		if (window.localStorage.getItem('tour_end') === null) {
 			//first time, activate tour automatically
 			$(document).trigger('StartTour');
 			Tower.tour.start(true);
@@ -324,7 +324,7 @@ window.Tower = {
 			var widgets = [
 				{ widgetId: 'peers-add' },
 				{ widgetId: 'peers-list' },
-				{ widgetId: 'peers-neighborhood', data: Tower.status.nodeIP }
+				// { widgetId: 'peers-neighborhood', data: Tower.status.nodeIP }
 			];
 
 			if (Tower.client === 'quorum') {
