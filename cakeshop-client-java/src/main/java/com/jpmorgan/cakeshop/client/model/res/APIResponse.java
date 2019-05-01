@@ -1,15 +1,15 @@
 package com.jpmorgan.cakeshop.client.model.res;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 
 @JsonInclude(Include.NON_NULL)
 public class APIResponse<T, S> {
@@ -32,6 +32,7 @@ public class APIResponse<T, S> {
         getErrors().add(error);
     }
 
+    @JsonIgnore
     public T getApiData() {
         return apiData;
     }

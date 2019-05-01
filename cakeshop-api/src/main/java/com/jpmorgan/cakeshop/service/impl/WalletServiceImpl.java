@@ -120,7 +120,8 @@ public class WalletServiceImpl implements WalletService, GethRpcConstants {
             Map<String, Object> fundArgs = new HashMap<>();
             fundArgs.put("from", accountFrom);
             fundArgs.put("to", request.getAccount());
-            fundArgs.put("value", request.getNewBalance());
+            fundArgs.put("value", AbiUtils.toHexWithNoLeadingZeros(request.getNewBalance()));
+            
             Map<String, Object> result = gethService.executeGethCall("eth_sendTransaction", new Object[]{fundArgs});
             String response = result.get("_result").toString();
             if (StringUtils.isNotBlank(response)) {

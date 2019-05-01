@@ -50,13 +50,13 @@ public interface GethHttpService {
     * Start constellation node
     * @return
      */
-    public Boolean startConstellation();
+    public boolean startTransactionManager();
 
     /*
     * Stop constellation node
     * @return
      */
-    public Boolean stopConstellation();
+    public Boolean stopTransactionManager();
 
     public void runPostStartupTasks();
 
@@ -80,13 +80,6 @@ public interface GethHttpService {
      * @return
      */
     public Boolean reset(String... additionalParams);
-
-    /**
-     * Delete the PID file
-     *
-     * @return
-     */
-    public Boolean deletePid();
 
     /**
      * Get startup errors, if any

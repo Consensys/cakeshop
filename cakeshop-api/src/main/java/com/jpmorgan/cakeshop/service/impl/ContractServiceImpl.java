@@ -1,14 +1,17 @@
 package com.jpmorgan.cakeshop.service.impl;
 
+import static org.apache.commons.io.FileUtils.forceDelete;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import com.jpmorgan.cakeshop.bean.GethConfigBean;
+import com.jpmorgan.cakeshop.bean.GethRunner;
 import com.jpmorgan.cakeshop.dao.TransactionDAO;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.error.CompilerException;
 import com.jpmorgan.cakeshop.model.Contract;
 import com.jpmorgan.cakeshop.model.ContractABI;
 import com.jpmorgan.cakeshop.model.ContractABI.Constructor;
+import com.jpmorgan.cakeshop.model.SolcResponse;
 import com.jpmorgan.cakeshop.model.Transaction;
 import com.jpmorgan.cakeshop.model.TransactionRequest;
 import com.jpmorgan.cakeshop.model.TransactionResult;
@@ -20,7 +23,7 @@ import com.jpmorgan.cakeshop.service.WalletService;
 import com.jpmorgan.cakeshop.service.task.ContractRegistrationTask;
 import com.jpmorgan.cakeshop.util.ProcessUtils;
 import com.jpmorgan.cakeshop.util.StreamGobbler;
-
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -28,8 +31,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.util.encoders.Hex;
 import org.slf4j.Logger;
@@ -51,7 +53,7 @@ public class ContractServiceImpl implements ContractService {
     Long pollDelayMillis;
 
     @Autowired
-    private GethConfigBean gethConfig;
+    private GethRunner gethRunner;
 
     @Autowired
     private GethHttpService geth;
@@ -81,7 +83,8 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<Contract> compile(String code, CodeType codeType, Boolean optimize) throws APIException {
+    public List<Contract> compile(String code, CodeType codeType, Boolean optimize,
+        String filename) throws APIException {
 
         if (codeType != CodeType.solidity) {
             throw new APIException("Only 'solidity' source is currently supported");
@@ -94,17 +97,23 @@ public class ContractServiceImpl implements ContractService {
         List<Contract> contracts = new ArrayList<>();
         long createdDate = System.currentTimeMillis() / 1000;
 
-        Map<String, Object> res = null;
+        SolcResponse res = null;
         try {
             List<String> args = Lists.newArrayList(
-                    gethConfig.getNodePath(),
-                    gethConfig.getSolcPath(),
-                    "--ipc");
+                    gethRunner.getNodeJsPath(),
+                    gethRunner.getSolcPath(),
+                    "--ipc",
+                    "--evm-version",
+                    "byzantium",
+                    "--filename",
+                    filename);
 
-            ProcessBuilder builder = ProcessUtils.createProcessBuilder(gethConfig, args);
+            ProcessBuilder builder = ProcessUtils.createProcessBuilder(gethRunner, args);
+            File tempFile = new File("temp-contract.json");
+            tempFile.createNewFile();
+            builder.redirectOutput(tempFile);
             Process proc = builder.start();
 
-            StreamGobbler stdout = StreamGobbler.create(proc.getInputStream());
             StreamGobbler stderr = StreamGobbler.create(proc.getErrorStream());
 
             proc.getOutputStream().write(code.getBytes());
@@ -119,7 +128,6 @@ public class ContractServiceImpl implements ContractService {
                 for (String encoding : isoEncodings) {
                     proc = builder.start();
 
-                    stdout = StreamGobbler.create(proc.getInputStream());
                     stderr = StreamGobbler.create(proc.getErrorStream());
 
                     proc.getOutputStream().write(convertCodeToBytes(code, Charset.forName(encoding)));
@@ -136,47 +144,50 @@ public class ContractServiceImpl implements ContractService {
                 }
             }
 
-            res = objectMapper.readValue(stdout.getString(), Map.class);
+            res = objectMapper.readValue(tempFile, SolcResponse.class);
             if (proc.isAlive()) {
                 proc.destroy();
             }
+            forceDelete(tempFile);
 
         } catch (IOException | InterruptedException e) {
             LOG.error("REASON FOR CONTRACT FAILURE " + e.getMessage());
             throw new APIException("Failed to compile contract", e);
         }
 
-        if (res.containsKey("errors") && res.get("errors") instanceof List) {
-            throw new CompilerException((List<String>) res.get("errors"));
+        if (CollectionUtils.isNotEmpty(res.errors) && res.errors.stream().anyMatch(error -> !error.get("type").equals("Warning"))) {
+            // TODO don't just ignore warnings when there are no real errors
+            throw new CompilerException(res.errors);
         }
 
         // res is a hash of contract name -> compiled result map
-        for (Entry<String, Object> contractRes : res.entrySet()) {
-            Contract contract = new Contract();
-            contract.setName(contractRes.getKey());
-            contract.setCreatedDate(createdDate);
-            contract.setCode(code);
-            contract.setCodeType(codeType);
+        res.contracts.forEach(((file, classContractBundleMap) -> {
+            classContractBundleMap.forEach((classname, contractBundle) -> {
+                Contract contract = new Contract();
+                contract.setName(classname);
+                contract.setCreatedDate(createdDate);
+                contract.setCode(code);
+                contract.setCodeType(codeType);
+                contract.setBinary(contractBundle.evm.bytecode.object);
+                contract.setABI(contractBundle.abi);
+                contract.setGasEstimates(contractBundle.evm.gasEstimates);
+                contract.setFunctionHashes(contractBundle.evm.methodIdentifiers);
 
-            Map<String, Object> compiled = (Map<String, Object>) contractRes.getValue();
+                contracts.add(contract);
 
-            contract.setBinary((String) compiled.get("bin"));
-            contract.setABI((String) compiled.get("abi"));
-            contract.setGasEstimates((Map<String, Object>) compiled.get("gas"));
-            contract.setFunctionHashes((Map<String, String>) compiled.get("hashes"));
-            contract.setSolidityInterface((String) compiled.get("interface"));
-
-            contracts.add(contract);
-        }
+            });
+        }));
 
         return contracts;
     }
 
-    @Override
-    public TransactionResult create(String from, String code, CodeType codeType, Object[] args, String binary,
-            String privateFrom, List<String> privateFor) throws APIException {
 
-        List<Contract> contracts = compile(code, codeType, true); // always deploy optimized contracts
+    @Override
+    public TransactionResult create(String from, String code, CodeType codeType, Object[] args,
+        String binary,
+        String privateFrom, List<String> privateFor, String filename) throws APIException {
+
+        List<Contract> contracts = compile(code, codeType, true, filename); // always deploy optimized contracts
 
         Contract contract = null;
         if (binary != null && binary.length() > 0) {

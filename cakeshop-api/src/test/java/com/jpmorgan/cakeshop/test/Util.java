@@ -38,7 +38,7 @@ public class Util extends BaseGethRpcTest {
 
 	    String code = readTestFile("contracts/ContractRegistry.sol");
 
-		String contractAddress = createContract(code, null);
+		String contractAddress = createContract(code, null, "ContractRegistry.sol");
 
 		Contract contract = contractService.get(contractAddress);
 		assertNotNull(contract);

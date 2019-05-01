@@ -1,17 +1,22 @@
 package com.jpmorgan.cakeshop.config;
 
 import com.google.common.collect.Lists;
-import com.jpmorgan.cakeshop.bean.GethConfigBean;
+import com.jpmorgan.cakeshop.bean.GethConfig;
+import com.jpmorgan.cakeshop.bean.GethRunner;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.error.ErrorLog;
 import com.jpmorgan.cakeshop.service.GethHttpService;
-import com.jpmorgan.cakeshop.util.EEUtils;
-import com.jpmorgan.cakeshop.util.FileUtils;
-import com.jpmorgan.cakeshop.util.MemoryUtils;
-import com.jpmorgan.cakeshop.util.ProcessUtils;
-import com.jpmorgan.cakeshop.util.StreamGobbler;
-import com.jpmorgan.cakeshop.util.StringUtils;
+import com.jpmorgan.cakeshop.util.*;
+import org.apache.commons.lang3.SystemUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Service;
 
+import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -20,18 +25,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.servlet.ServletContext;
-
-import org.apache.commons.lang3.SystemUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.embedded.EmbeddedServletContainerInitializedEvent;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Service;
 
 @Order(999999)
 @Service(value = "appStartup")
@@ -47,7 +40,10 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
     private GethHttpService geth;
 
     @Autowired
-    private GethConfigBean gethConfig;
+    private GethConfig gethConfig;
+
+    @Autowired
+    private GethRunner gethRunner;
 
     private boolean autoStartFired;
 
@@ -65,14 +61,6 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
 
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
-
-        if (event instanceof EmbeddedServletContainerInitializedEvent) {
-            // this event fires after context refresh and after geth has started
-            int port = ((EmbeddedServletContainerInitializedEvent) event).getEmbeddedServletContainer().getPort();
-            System.out.println("          url:         " + getSpringUrl(port));
-            System.out.println();
-            return;
-        }
 
         if (!(event instanceof ContextRefreshedEvent)) {
             return;
@@ -220,8 +208,8 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         out.append("eth.config.dir: ").append(CONFIG_ROOT).append("\n");
         out.append("\n");
 
-        out.append("geth.path: ").append(gethConfig.getGethPath()).append("\n");
-        out.append("geth.data.dir: ").append(gethConfig.getDataDirPath()).append("\n");
+        out.append("geth.path: ").append(gethRunner.getGethPath()).append("\n");
+        out.append("geth.data.dir: ").append(gethConfig.getGethDataDirPath()).append("\n");
         out.append("geth.version: ");
         if (StringUtils.isNotBlank(gethVer)) {
             out.append(gethVer);
@@ -230,7 +218,7 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         }
         out.append("\n\n");
 
-        out.append("solc.path: ").append(gethConfig.getSolcPath()).append("\n");
+        out.append("solc.path: ").append(gethRunner.getSolcPath()).append("\n");
         out.append("solc.version: ");
         if (StringUtils.isNotBlank(solcVer)) {
             out.append(solcVer);
@@ -331,7 +319,7 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         System.out.println();
 
         // test ethereum data dir
-        String dataDir = gethConfig.getDataDirPath();
+        String dataDir = gethConfig.getGethDataDirPath();
         System.out.println("Testing ethereum data dir path");
         System.out.println(dataDir);
         if (isDirAccesible(dataDir)) {
@@ -356,7 +344,7 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         // test geth binary
         System.out.println();
         System.out.println("Testing geth server binary");
-        String gethOutput = testBinary(gethConfig.getGethPath(), "version");
+        String gethOutput = testBinary(gethRunner.getGethPath(), "version");
         if (gethOutput == null || !gethOutput.contains("Version:")) {
             isHealthy = false;
             System.out.println("FAILED");
@@ -371,7 +359,7 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         // test solc binary
         System.out.println();
         System.out.println("Testing solc compiler binary");
-        String solcOutput = testBinary(gethConfig.getNodePath(), gethConfig.getSolcPath(), "--version");
+        String solcOutput = testBinary(gethRunner.getNodeJsPath(), gethRunner.getSolcPath(), "--version");
         if (solcOutput == null || !solcOutput.contains("Version:")) {
             isHealthy = false;
             System.out.println("FAILED");
@@ -411,7 +399,7 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
             return null;
         }
 
-        ProcessBuilder builder = ProcessUtils.createProcessBuilder(gethConfig, args);
+        ProcessBuilder builder = ProcessUtils.createProcessBuilder(gethRunner, args);
         try {
             Process proc = builder.start();
             StreamGobbler stdout = StreamGobbler.create(proc.getInputStream());

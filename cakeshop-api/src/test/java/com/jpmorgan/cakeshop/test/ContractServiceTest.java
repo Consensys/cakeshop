@@ -1,12 +1,10 @@
 package com.jpmorgan.cakeshop.test;
 
-import static com.jpmorgan.cakeshop.test.Assert.*;
-import static org.testng.Assert.*;
-
 import com.jpmorgan.cakeshop.db.BlockScanner;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Contract;
 import com.jpmorgan.cakeshop.model.ContractABI;
+import com.jpmorgan.cakeshop.model.SolcResponse.GasEstimates;
 import com.jpmorgan.cakeshop.model.Transaction;
 import com.jpmorgan.cakeshop.model.Transaction.Input;
 import com.jpmorgan.cakeshop.model.TransactionResult;
@@ -14,6 +12,9 @@ import com.jpmorgan.cakeshop.service.ContractService;
 import com.jpmorgan.cakeshop.service.ContractService.CodeType;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.TransactionService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.Assert.*;
+import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -21,9 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.Assert.ThrowingRunnable;
-import org.testng.annotations.Test;
+import static com.jpmorgan.cakeshop.test.Assert.assertNotEmptyString;
+import static org.testng.Assert.*;
 
 public class ContractServiceTest extends BaseGethRpcTest {
 
@@ -44,7 +44,7 @@ public class ContractServiceTest extends BaseGethRpcTest {
         long time = System.currentTimeMillis() / 1000;
         String code = readTestFile("contracts/simplestorage.sol");
 
-        List<Contract> contracts = contractService.compile(code, CodeType.solidity, true);
+        List<Contract> contracts = contractService.compile(code, CodeType.solidity, true, "simplestorage.sol");
         assertNotNull(contracts);
         assertEquals(1, contracts.size());
 
@@ -64,17 +64,18 @@ public class ContractServiceTest extends BaseGethRpcTest {
         assertNotNull(c.getFunctionHashes());
         assertNotNull(c.getGasEstimates());
 
-        Map<String, Object> gasEstimates = c.getGasEstimates();
-        List<Long> creation = (List<Long>) gasEstimates.get("creation");
+        GasEstimates gasEstimates = c.getGasEstimates();
+        Map<String, String> creation = gasEstimates.creation;
         assertNotNull(creation);
-        assertEquals(creation.size(), 2);
+        assertEquals(creation.size(), 3);
     }
 
     @Test
     public void testCreate() throws IOException {
         String code = readTestFile("contracts/simplestorage.sol");
 
-        TransactionResult result = contractService.create(null, code, ContractService.CodeType.solidity, null, null, null, null);
+        TransactionResult result = contractService.create(null, code, ContractService.CodeType.solidity, null, null, null, null,
+            "simplestorage.sol");
         assertNotNull(result);
         assertNotNull(result.getId());
         assertTrue(!result.getId().isEmpty());
@@ -84,11 +85,12 @@ public class ContractServiceTest extends BaseGethRpcTest {
     @Test
     public void testCreateWithBinary() throws IOException {
         String code = readTestFile("contracts/simplestorage.sol");
-        List<Contract> contracts = contractService.compile(code, CodeType.solidity, true);
+        List<Contract> contracts = contractService.compile(code, CodeType.solidity, true, "simplestorage.sol");
         Contract c = contracts.get(0);
         assertNotNull(c);
 
-        TransactionResult result = contractService.create(null, code, CodeType.solidity, null, c.getBinary(), null, null);
+        TransactionResult result = contractService.create(null, code, CodeType.solidity, null, c.getBinary(), null, null,
+            "simplestorage.sol");
         assertNotNull(result);
         assertNotNull(result.getId());
         assertTrue(!result.getId().isEmpty());
@@ -133,7 +135,7 @@ public class ContractServiceTest extends BaseGethRpcTest {
 
     @Test
     public void testReadBytesArr() throws InterruptedException, IOException {
-        String addr = createContract(readTestFile("contracts/testbytesarr.sol"), null);
+        String addr = createContract(readTestFile("contracts/testbytesarr.sol"), null, "testbytesarr.sol");
         ContractABI abi = ContractABI.fromJson(readTestFile("contracts/testbytesarr.abi.txt"));
         Object[] res = (Object[]) contractService.read(addr, abi, null, "foo", null, null)[0];
         assertNotNull(res);
@@ -146,7 +148,7 @@ public class ContractServiceTest extends BaseGethRpcTest {
         String code = readTestFile("contracts/simplestorage2.sol");
 
         // create with constructor val 500
-        String contractAddress = createContract(code, new Object[]{500});
+        String contractAddress = createContract(code, new Object[]{500}, "simplestorage2.sol");
 
         ContractABI abi = ContractABI.fromJson(readTestFile("contracts/simplestorage2.abi.txt"));
 
@@ -209,7 +211,7 @@ public class ContractServiceTest extends BaseGethRpcTest {
         assertEquals(val2.intValue(), 200);
 
         // read the previous value
-        BigInteger valPrev = (BigInteger) contractService.read(contractAddress, abi, null, "get", null, tx.getBlockNumber().longValue() - 1)[0];
+        BigInteger valPrev = (BigInteger) contractService.read(contractAddress, abi, null, "get", null, "0x" + Long.toHexString(tx.getBlockNumber().longValue() - 1))[0];
         assertEquals(valPrev.intValue(), 100);
     }
 

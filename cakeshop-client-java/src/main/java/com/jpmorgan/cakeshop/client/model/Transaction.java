@@ -1,22 +1,17 @@
 package com.jpmorgan.cakeshop.client.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
+import javax.annotation.Generated;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
-
-import io.swagger.annotations.ApiModelProperty;
-
-
-
-
-
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2016-05-26T17:07:52.216-04:00")
-public class Transaction   {
+@Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2016-05-26T17:07:52.216-04:00")
+public class Transaction {
 
     private String id = null;
     private String status = null;
@@ -35,11 +30,11 @@ public class Transaction   {
     private Long gasUsed = null;
     private String contractAddress = null;
     private List<Event> logs = new ArrayList<>();
+    private Boolean isPrivate = false;
 
     private String r;
     private String s;
     private String v;
-
 
     /**
      **/
@@ -53,6 +48,7 @@ public class Transaction   {
     public String getId() {
         return id;
     }
+
     public void setId(String id) {
         this.id = id;
     }
@@ -70,6 +66,7 @@ public class Transaction   {
     public String getStatus() {
         return status;
     }
+
     public void setStatus(String status) {
         this.status = status;
     }
@@ -87,6 +84,7 @@ public class Transaction   {
     public String getNonce() {
         return nonce;
     }
+
     public void setNonce(String nonce) {
         this.nonce = nonce;
     }
@@ -104,6 +102,7 @@ public class Transaction   {
     public String getBlockId() {
         return blockId;
     }
+
     public void setBlockId(String blockId) {
         this.blockId = blockId;
     }
@@ -121,6 +120,7 @@ public class Transaction   {
     public Long getBlockNumber() {
         return blockNumber;
     }
+
     public void setBlockNumber(Long blockNumber) {
         this.blockNumber = blockNumber;
     }
@@ -139,6 +139,7 @@ public class Transaction   {
     public Integer getTransactionIndex() {
         return transactionIndex;
     }
+
     public void setTransactionIndex(Integer transactionIndex) {
         this.transactionIndex = transactionIndex;
     }
@@ -157,6 +158,7 @@ public class Transaction   {
     public String getFrom() {
         return from;
     }
+
     public void setFrom(String from) {
         this.from = from;
     }
@@ -175,6 +177,7 @@ public class Transaction   {
     public String getTo() {
         return to;
     }
+
     public void setTo(String to) {
         this.to = to;
     }
@@ -192,6 +195,7 @@ public class Transaction   {
     public Object getInput() {
         return input;
     }
+
     public void setInput(Object input) {
         this.input = input;
     }
@@ -209,6 +213,7 @@ public class Transaction   {
     public Object getDecodedInput() {
         return decodedInput;
     }
+
     public void setDecodedInput(Object decodedInput) {
         this.decodedInput = decodedInput;
     }
@@ -226,6 +231,7 @@ public class Transaction   {
     public Long getValue() {
         return value;
     }
+
     public void setValue(Long value) {
         this.value = value;
     }
@@ -243,6 +249,7 @@ public class Transaction   {
     public Long getGas() {
         return gas;
     }
+
     public void setGas(Long gas) {
         this.gas = gas;
     }
@@ -260,6 +267,7 @@ public class Transaction   {
     public Long getGasPrice() {
         return gasPrice;
     }
+
     public void setGasPrice(Long gasPrice) {
         this.gasPrice = gasPrice;
     }
@@ -278,6 +286,7 @@ public class Transaction   {
     public Long getCumulativeGasUsed() {
         return cumulativeGasUsed;
     }
+
     public void setCumulativeGasUsed(Long cumulativeGasUsed) {
         this.cumulativeGasUsed = cumulativeGasUsed;
     }
@@ -296,6 +305,7 @@ public class Transaction   {
     public Long getGasUsed() {
         return gasUsed;
     }
+
     public void setGasUsed(Long gasUsed) {
         this.gasUsed = gasUsed;
     }
@@ -314,6 +324,7 @@ public class Transaction   {
     public String getContractAddress() {
         return contractAddress;
     }
+
     public void setContractAddress(String contractAddress) {
         this.contractAddress = contractAddress;
     }
@@ -332,6 +343,7 @@ public class Transaction   {
     public List<Event> getLogs() {
         return logs;
     }
+
     public void setLogs(List<Event> logs) {
         this.logs = logs;
     }
@@ -363,6 +375,15 @@ public class Transaction   {
         this.v = v;
     }
 
+    @JsonProperty("private")
+    public Boolean getIsPrivate() {
+        return this.isPrivate;
+    }
+
+    public void setIsPrivate(Boolean isPrivate) {
+        this.isPrivate = isPrivate;
+    }
+
     @Override
     public boolean equals(java.lang.Object o) {
         if (this == o) {
@@ -388,12 +409,13 @@ public class Transaction   {
                 Objects.equals(this.cumulativeGasUsed, transaction.cumulativeGasUsed) &&
                 Objects.equals(this.gasUsed, transaction.gasUsed) &&
                 Objects.equals(this.contractAddress, transaction.contractAddress) &&
-                Objects.equals(this.logs, transaction.logs);
+                Objects.equals(this.logs, transaction.logs) &&
+                Objects.equals(this.isPrivate, transaction.isPrivate);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, status, nonce, blockId, blockNumber, transactionIndex, from, to, input, decodedInput, value, gas, gasPrice, cumulativeGasUsed, gasUsed, contractAddress, logs);
+        return Objects.hash(id, status, nonce, blockId, blockNumber, transactionIndex, from, to, input, decodedInput, value, gas, gasPrice, cumulativeGasUsed, gasUsed, contractAddress, logs, isPrivate);
     }
 
     @Override

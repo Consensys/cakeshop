@@ -1,4 +1,4 @@
-pragma solidity ^0.4.9;
+pragma solidity ^0.5.4;
 contract ContractRegistry
 {
   address public owner;
@@ -19,19 +19,19 @@ contract ContractRegistry
 
   mapping (address => Contract) public contracts; // contracts by address
 
-  function ContractRegistry() {
+  constructor() public {
     owner = msg.sender;
     num_addrs = 0;
   }
 
-  function register(address addr, string name, string abi, string code, string code_type, int created_date) {
+  function register(address addr, string memory name, string memory abi, string memory code, string memory code_type, int created_date) public {
     addrs.length = ++num_addrs;
     addrs[num_addrs-1] = addr;
     contracts[addr] = Contract(addr, msg.sender, name, abi, code, code_type, created_date);
   }
 
-  function getById(address id) returns (address _id, string _name, string _abi, string _code, string _code_type, int _created_date) {
-    var c = contracts[id];
+  function getById(address id) public returns (address _id, string memory _name, string memory _abi, string memory _code, string memory _code_type, int _created_date) {
+    ContractRegistry.Contract storage c = contracts[id];
     _id = c.addr;
     _name = c.name;
     _abi = c.abi;
@@ -41,16 +41,16 @@ contract ContractRegistry
   }
 
   /*
-  function getByName(string name) returns (address _id, string _name, string _abi, string _code, string _code_type) {
+  function getByName(string memory name) public returns (address _id, string memory _name, string memory _abi, string memory _code, string memory _code_type) {
     // TODO
   }
   */
 
-  function listAddrs() returns (address[] _addresses) {
+  function listAddrs() public returns (address[] memory _addresses) {
     return addrs;
   }
 /*
-  function listByOwner() {
+  function listByOwner() public {
     // TODO
   }
 */

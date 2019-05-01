@@ -13,7 +13,7 @@ public class ContractPostJsonRequest {
 
     public static final String DEFAULT_CODE_TYPE = "solidity";
 
-    private String from, code, code_type = DEFAULT_CODE_TYPE, binary, privateFrom, address, method;
+    private String from, code, code_type = DEFAULT_CODE_TYPE, binary, privateFrom, address, method, filename;
     private Object args[];
     private Object blockNumber;
     private Boolean optimize;
@@ -115,6 +115,20 @@ public class ContractPostJsonRequest {
      */
     public void setMethod(String method) {
         this.method = method;
+    }
+
+    /**
+     * @return the filename
+     */
+    public String getFilename() {
+        return filename;
+    }
+
+    /**
+     * @param filename the filename to set
+     */
+    public void setFilename(String filename) {
+        this.filename = filename;
     }
 
     /**

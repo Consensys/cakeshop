@@ -17,7 +17,7 @@ module.exports = function() {
 		 '<thead style="font-weight: bold;"><tr><td style="width:60px;">Block</td><td>Age</td><td style="width:45px;">TXNs</td></tr></thead>' +
 		 '<tbody><%= rows %></tbody></table>'),
 
-		templateRow: _.template('<tr><td>#<a href="#"><%= block.num %></a></td><td><%= moment.unix(block.age).fromNow() %></td><td <% if (block.txnCount == 0) { %>style="opacity: 0.2;"<% } %>><%= block.txnCount %></td></tr>'),
+		templateRow: _.template('<tr><td>#<a href="#"><%= block.num %></a></td><td><%= moment(block.age/1000000).fromNow() %></td><td <% if (block.txnCount == 0) { %>style="opacity: 0.2;"<% } %>><%= block.txnCount %></td></tr>'),
 
 		setData: function(data) {
 			this.data = data;

@@ -13,8 +13,6 @@ nbactions.xml
 # temp build files
 data
 target
-*.war
-*.jar
 test-output
 /test.json
 logs/
@@ -26,6 +24,7 @@ node.conf
 WebContent/
 pom.xml.versionsBackup
 dependency-reduced-pom.xml
+tls-*
 
 # node stuff
 npm-debug.log*

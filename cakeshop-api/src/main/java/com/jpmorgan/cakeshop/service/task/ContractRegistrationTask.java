@@ -48,7 +48,7 @@ public class ContractRegistrationTask implements Runnable {
 
         Transaction tx = null;
 
-        LOG.debug("Waiting for contract to be comitted");
+        LOG.debug("Waiting for contract to be committed");
 
         while (tx == null) {
             try {

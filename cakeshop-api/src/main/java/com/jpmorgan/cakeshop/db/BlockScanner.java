@@ -1,6 +1,6 @@
 package com.jpmorgan.cakeshop.db;
 
-import com.jpmorgan.cakeshop.bean.GethConfigBean;
+import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.dao.BlockDAO;
 import com.jpmorgan.cakeshop.dao.TransactionDAO;
 import com.jpmorgan.cakeshop.error.APIException;
@@ -9,21 +9,19 @@ import com.jpmorgan.cakeshop.model.Transaction;
 import com.jpmorgan.cakeshop.service.BlockService;
 import com.jpmorgan.cakeshop.service.NodeService;
 import com.jpmorgan.cakeshop.service.TransactionService;
-
-import java.io.IOException;
-import java.math.BigInteger;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -55,7 +53,7 @@ public class BlockScanner extends Thread {
     private TransactionService txService;
 
     @Autowired
-    private GethConfigBean gethConfig;
+    private GethConfig gethConfig;
 
     @Autowired
     private ApplicationContext appContext;
@@ -220,7 +218,7 @@ public class BlockScanner extends Thread {
 
     private void saveContractRegistryAddress(String addr) throws APIException {
         try {
-            gethConfig.setProperty("contract.registry.addr", addr);
+            gethConfig.setContractAddress(addr);
             gethConfig.save();
         } catch (IOException e) {
             LOG.warn("Unable to update env.properties", e);

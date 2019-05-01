@@ -59,13 +59,6 @@ public class AppConfig implements AsyncConfigurer {
         String webappRoot = FileUtils.expandPath(FileUtils.getClasspathPath(""), "..", "..");
         String tomcatRoot = FileUtils.expandPath(webappRoot, "..", "..");
 
-        // migrate conf dir to new name
-        File oldPath = new File(FileUtils.expandPath(tomcatRoot, "data", "enterprise-ethereum"));
-        File newPath = new File(FileUtils.expandPath(tomcatRoot, "data", "cakeshop"));
-        if (oldPath.exists() && !newPath.exists()) {
-            oldPath.renameTo(newPath);
-        }
-
         return FileUtils.expandPath(tomcatRoot, "data", "cakeshop", getEnv());
     }
 

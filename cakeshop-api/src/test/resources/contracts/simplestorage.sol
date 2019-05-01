@@ -1,24 +1,24 @@
-pragma solidity ^0.4.9;
+pragma solidity ^0.5.4;
 contract SimpleStorage {
 	event Debug(string msg, uint val);
     uint storedData;
-    function SimpleStorage() {
-    	Debug("init storage", 100);
+    constructor() public {
+    	emit Debug("init storage", 100);
         storedData = 100;
     }
-    function set(uint x) {
-    	Debug("change val", x);
+    function set(uint x) public {
+    	emit Debug("change val", x);
         storedData = x;
     }
-    function get() constant returns (uint retVal) {
+    function get() view public returns (uint retVal) {
         return storedData;
     }
-    function echo_2(address foo, string bar) returns(address _foo, string _bar) {
+    function echo_2(address foo, string memory bar) public returns(address _foo, string memory _bar) {
         _foo = foo;
         _bar = bar;
     }
-    function echo_contract(address id, string name, string abi, string code, string code_type)
-            returns (address _id, string _name, string _abi, string _code, string _code_type) {
+    function echo_contract(address id, string memory name, string memory abi, string memory code, string memory code_type)
+            public returns (address _id, string memory _name, string memory _abi, string memory _code, string memory _code_type) {
 
         _id = id;
         _name = name;

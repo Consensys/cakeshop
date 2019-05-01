@@ -1,9 +1,7 @@
 package com.jpmorgan.cakeshop.test;
 
-import static org.testng.Assert.*;
-
 import com.google.common.collect.Lists;
-import com.jpmorgan.cakeshop.bean.GethConfigBean;
+import com.jpmorgan.cakeshop.bean.GethRunner;
 import com.jpmorgan.cakeshop.config.AppStartup;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Transaction;
@@ -15,16 +13,6 @@ import com.jpmorgan.cakeshop.test.config.TempFileManager;
 import com.jpmorgan.cakeshop.test.config.TestAppConfig;
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.ProcessUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import javax.sql.DataSource;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +27,16 @@ import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeClass;
+
+import javax.sql.DataSource;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 @ActiveProfiles("test")
 @ContextConfiguration(classes = {TestAppConfig.class})
@@ -72,7 +70,7 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
     private String CONFIG_ROOT;
 
     @Autowired
-    private GethConfigBean gethConfig;
+    private GethRunner gethRunner;
 
     @Autowired
     @Qualifier("hsql")
@@ -89,11 +87,11 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
     @AfterSuite(alwaysRun = true)
     public void stopSolc() throws IOException {
         List<String> args = Lists.newArrayList(
-                gethConfig.getNodePath(),
-                gethConfig.getSolcPath(),
+                gethRunner.getNodeJsPath(),
+                gethRunner.getSolcPath(),
                 "--stop-ipc");
 
-        ProcessBuilder builder = ProcessUtils.createProcessBuilder(gethConfig, args);
+        ProcessBuilder builder = ProcessUtils.createProcessBuilder(gethRunner, args);
         builder.start();
     }
 
@@ -120,23 +118,10 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
     }
 
     private boolean _startGeth() throws IOException {
-        gethConfig.setGenesisBlockFilename(FileUtils.getClasspathPath("genesis_block.json").toAbsolutePath().toString());
-        gethConfig.setKeystorePath(FileUtils.getClasspathPath("keystore").toAbsolutePath().toString());
-        gethConfig.setIsEmbeddedQuorum(false);
-        List<String> additionalParams = new ArrayList<>();
-        additionalParams.add("--blockmakeraccount");
-        additionalParams.add("0xca843569e3427144cead5e4d5999a3d0ccf92b8e");
-        additionalParams.add("--blockmakerpassword");
-        additionalParams.add("");
-        additionalParams.add("--minblocktime");
-        additionalParams.add("2");
-        additionalParams.add("--maxblocktime");
-        additionalParams.add("5");
-        additionalParams.add("--voteaccount");
-        additionalParams.add("0x0fbdc686b912d7722dc86510934589e0aaf3b55a");
-        additionalParams.add("--votepassword");
-        additionalParams.add("");
-        return geth.start(additionalParams.toArray(additionalParams.toArray(new String[additionalParams.size()])));
+        gethRunner.setGenesisBlockFilename(FileUtils.getClasspathPath("genesis_block.json").toAbsolutePath().toString());
+        gethRunner.setKeystorePath(FileUtils.getClasspathPath("keystore").toAbsolutePath().toString());
+        gethRunner.setIsEmbeddedQuorum(false);
+        return geth.start();
     }
 
     /**
@@ -152,7 +137,7 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
     }
 
     private void _stopGeth() {
-        gethConfig.setIsEmbeddedQuorum(false);
+        gethRunner.setIsEmbeddedQuorum(false);
         geth.stop();
         try {
             FileUtils.deleteDirectory(new File(ethDataDir));
@@ -185,25 +170,27 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
      */
     protected String createContract() throws IOException, InterruptedException {
         String code = readTestFile("contracts/simplestorage.sol");
-        return createContract(code, null);
+        return createContract(code, null, "simplestorage.sol");
     }
 
     /**
      * Deploy the given contract code to the chain
      *
      * @param code
+     * @param filename
      * @return
      * @throws APIException
      * @throws InterruptedException
      */
-    protected String createContract(String code, Object[] args) throws APIException, InterruptedException {
-        TransactionResult result = contractService.create(null, code, ContractService.CodeType.solidity, args, null, null, null);
+    protected String createContract(String code, Object[] args, String filename) throws APIException, InterruptedException {
+        TransactionResult result = contractService.create(null, code, ContractService.CodeType.solidity, args, null, null, null,
+            filename);
         assertNotNull(result);
         assertNotNull(result.getId());
         assertTrue(!result.getId().isEmpty());
 
         // make sure mining is enabled
-        if (!gethConfig.isQuorum()) {
+        if (!gethRunner.isQuorum()) {
             Map<String, Object> res = geth.executeGethCall("miner_start", new Object[]{});
         }
 

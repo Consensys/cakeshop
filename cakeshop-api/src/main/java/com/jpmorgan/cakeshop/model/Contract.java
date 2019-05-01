@@ -1,6 +1,7 @@
 package com.jpmorgan.cakeshop.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.jpmorgan.cakeshop.model.SolcResponse.GasEstimates;
 import com.jpmorgan.cakeshop.service.ContractService.CodeType;
 
 import java.util.Map;
@@ -55,7 +56,7 @@ public class Contract {
     /**
      * Gas estimates for each method
      */
-    private Map<String, Object> gasEstimates;
+    private GasEstimates gasEstimates;
 
     /**
      * Contract interface in solidity code
@@ -131,6 +132,12 @@ public class Contract {
         this.contractAbi = ContractABI.fromJson(this.abi);
     }
 
+    public void setABI(ContractABI contractABI) {
+        this.abi = contractABI.toJson();
+        this.contractAbi = contractABI;
+    }
+
+
     public Long getCreatedDate() {
         return createdDate;
     }
@@ -147,11 +154,11 @@ public class Contract {
         this.name = name;
     }
 
-    public Map<String, Object> getGasEstimates() {
+    public GasEstimates getGasEstimates() {
         return gasEstimates;
     }
 
-    public void setGasEstimates(Map<String, Object> gasEstimates) {
+    public void setGasEstimates(GasEstimates gasEstimates) {
         this.gasEstimates = gasEstimates;
     }
 
