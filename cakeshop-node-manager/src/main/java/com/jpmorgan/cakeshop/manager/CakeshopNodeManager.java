@@ -1,7 +1,9 @@
 package com.jpmorgan.cakeshop.manager;
 
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
@@ -14,9 +16,7 @@ import org.springframework.context.annotation.Profile;
 
 import java.time.Duration;
 
-@Configuration
-@ComponentScan
-@EnableAutoConfiguration
+@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class, JpaRepositoriesAutoConfiguration.class})
 public class CakeshopNodeManager extends SpringBootServletInitializer {
 
     private static final Class<CakeshopNodeManager> APPLICATION_CLASS = CakeshopNodeManager.class;
