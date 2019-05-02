@@ -54,7 +54,7 @@ public class TransactionManagerRunner implements InitializingBean {
         this.gethConfig = gethConfig;
     }
 
-    public String createTransactionManagerNodeKeys() throws IOException, InterruptedException {
+    public void createTransactionManagerNodeKeys() throws IOException, InterruptedException {
 
         if (!keysExist(TransactionManager.Type.TRANSACTION_MANAGER_KEY_NAME)) {
             //create keys
@@ -82,8 +82,6 @@ public class TransactionManagerRunner implements InitializingBean {
                 process.destroy();
             }
         }
-        return expandPath(gethConfig.getTransactionManagerDataPath(),
-            TransactionManager.Type.TRANSACTION_MANAGER_KEY_NAME + ".pub");
     }
 
     private List<String> generateMainCommand(String executable) {
@@ -226,18 +224,22 @@ public class TransactionManagerRunner implements InitializingBean {
             return false;
         }
 
-        List<String> commandArgs = generateMainCommand(
-            gethConfig.getTransactionManagerType().getTransactionManager(ethGethDir));
-        commandArgs.addAll(
-            gethConfig.getTransactionManagerType().getParams(
-                gethConfig.getTransactionManagerDataPath(),
-                TransactionManager.Type.TRANSACTION_MANAGER_KEY_NAME));
-        ProcessBuilder builder = new ProcessBuilder(commandArgs);
-        // TODO write to log file
-//        builder.redirectOutput(logFile);
-        builder.redirectErrorStream(true); // redirect error stream to output stream
-        builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
         try {
+            if (gethConfig.getTransactionManagerType() != TransactionManager.Type.none) {
+                createTransactionManagerNodeKeys();
+                writeTransactionManagerConfig();
+            }
+
+            List<String> commandArgs = generateMainCommand(
+                gethConfig.getTransactionManagerType().getTransactionManager(ethGethDir));
+            commandArgs.addAll(
+                gethConfig.getTransactionManagerType().getParams(
+                    gethConfig.getTransactionManagerDataPath(),
+                    TransactionManager.Type.TRANSACTION_MANAGER_KEY_NAME));
+            ProcessBuilder builder = new ProcessBuilder(commandArgs);
+            builder.redirectOutput(logFile);
+            builder.redirectErrorStream(true); // redirect error stream to output stream
+            builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
             Process process = builder.start();
             Integer constProcessId = getProcessPid(process);
             LOG.info("Transaction Manager started as " + String.join(" ", builder.command()));

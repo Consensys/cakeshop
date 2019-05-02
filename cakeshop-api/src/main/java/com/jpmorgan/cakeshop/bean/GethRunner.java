@@ -2,7 +2,6 @@ package com.jpmorgan.cakeshop.bean;
 
 import static com.jpmorgan.cakeshop.util.FileUtils.expandPath;
 import static com.jpmorgan.cakeshop.util.ProcessUtils.ensureFileIsExecutable;
-import static org.apache.commons.io.FileUtils.copyFile;
 
 import com.google.common.collect.Lists;
 import com.jpmorgan.cakeshop.error.APIException;
@@ -10,9 +9,9 @@ import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.ProcessUtils;
 import com.jpmorgan.cakeshop.util.StringUtils;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -26,7 +25,6 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,13 +43,6 @@ public class GethRunner {
     @Autowired
     private GethConfig gethConfig;
 
-    @Autowired
-    private TransactionManagerRunner transactionManagerRunner;
-
-    private String gethPidFilename;
-
-    private String transactionManagerPidFileName;
-
     private String gethPasswordFile;
 
     private String genesisBlockFilename;
@@ -62,12 +53,9 @@ public class GethRunner {
 
     private String solcPath;
 
-    private String publicKey;
-
     /**
      * Whether or not this is a quorum node
      */
-    private Boolean isQuorum;
     private Boolean isEmbeddedQuorum;
 
     private String binPath;
@@ -98,24 +86,10 @@ public class GethRunner {
             binPath = FileUtils.getClasspathName("bin");
         }
 
-        gethPidFilename = expandPath(gethConfig.getDataDirectory(), "geth.pid");
-
         // init genesis block file (using vendor copy if necessary)
         String vendorGenesisDir = expandPath(binPath,
             "genesis"); // TODO: this block is redundant now
         genesisBlockFilename = expandPath(gethConfig.getDataDirectory(), "genesis_block.json");
-        String vendorGenesisBlockFile = FileUtils
-            .join(vendorGenesisDir, gethConfig.getConsensusMode() + "_genesis_block.json");
-        copyFile(new File(vendorGenesisBlockFile), new File(genesisBlockFilename));
-
-        if (SystemUtils.IS_OS_WINDOWS) {
-            genesisBlockFilename = genesisBlockFilename
-                .replaceAll(File.separator + File.separator, "/");
-            if (genesisBlockFilename.startsWith("/")) {
-                // fix filename like /C:/foo/bar/.../genesis_block.json
-                genesisBlockFilename = genesisBlockFilename.substring(1);
-            }
-        }
 
         // set password file
         gethPasswordFile = expandPath(vendorGenesisDir, "geth_pass.txt");
@@ -135,28 +109,7 @@ public class GethRunner {
             "solc");
         ensureFileIsExecutable(solcPath);
 
-        // Clean up data dir path for default config (not an absolute path)
-        if (gethConfig.getGethDataDirPath() != null) {
-            if (gethConfig.getGethDataDirPath().startsWith("/.ethereum")) {
-                // support old ~/.ethereum dir if it exists
-                String path = expandPath(System.getProperty("user.home"),
-                    gethConfig.getGethDataDirPath());
-                if (new File(path).exists()) {
-                    gethConfig.setGethDataDirPath(path);
-                } else {
-                    gethConfig
-                        .setGethDataDirPath(expandPath(gethConfig.getDataDirectory(), "ethereum"));
-                }
-            } else {
-                if (!new File(gethConfig.getGethDataDirPath()).exists()) {
-                    gethConfig
-                        .setGethDataDirPath(expandPath(gethConfig.getDataDirectory(), "ethereum"));
-                }
-            }
-        } else {
-            // null, init it
-            gethConfig.setGethDataDirPath(expandPath(gethConfig.getDataDirectory(), "ethereum"));
-        }
+        gethConfig.setGethDataDirPath(expandPath(gethConfig.getDataDirectory(), "ethereum"));
 
         // Initialize node identity
         String identity = gethConfig.getIdentity();
@@ -184,21 +137,7 @@ public class GethRunner {
         }
 
         if (gethConfig.shouldUseQuorum()) {
-            setQuorum(true);
             setIsEmbeddedQuorum(true);
-
-            if (gethConfig.getTransactionManagerType() != TransactionManager.Type.none) {
-                String publicKeyPath = transactionManagerRunner
-                    .createTransactionManagerNodeKeys();
-                transactionManagerRunner.writeTransactionManagerConfig();
-
-                File pubKey = new File(publicKeyPath);
-                try (Scanner scanner = new Scanner(pubKey)) {
-                    while (scanner.hasNext()) {
-                        setPublicKey(scanner.nextLine());
-                    }
-                }
-            }
         }
 
         LOG.debug("Using geth at {}", getGethPath());
@@ -223,11 +162,7 @@ public class GethRunner {
     }
 
     public String getGethPidFilename() {
-        return gethPidFilename;
-    }
-
-    public void setGethPidFilename(String gethPidFilename) {
-        this.gethPidFilename = gethPidFilename;
+        return expandPath(gethConfig.getDataDirectory(), "geth.pid");
     }
 
     public String getGenesisBlockFilename() {
@@ -300,15 +235,6 @@ public class GethRunner {
         this.nodeJsPath = nodeJsPath;
     }
 
-    public boolean isQuorum() {
-        return isQuorum;
-    }
-
-    public void setQuorum(Boolean isQuorum) {
-        this.isQuorum = isQuorum;
-    }
-
-
     /**
      * @return the isEmbeddedQuorum
      */
@@ -321,20 +247,6 @@ public class GethRunner {
      */
     public void setIsEmbeddedQuorum(boolean isEmbeddedQuorum) {
         this.isEmbeddedQuorum = isEmbeddedQuorum;
-    }
-
-    /**
-     * @return Constellation public key
-     */
-    public String getPublicKey() {
-        return publicKey;
-    }
-
-    /**
-     * @param publicKey public key
-     */
-    public void setPublicKey(String publicKey) {
-        this.publicKey = publicKey;
     }
 
     /**
@@ -536,7 +448,8 @@ public class GethRunner {
         }
 
         Path istanbullocation = Paths
-            .get(expandPath(baseResourcePath, "quorum/istanbul-tools/mac/istanbul"));
+            .get(expandPath(baseResourcePath,
+                "quorum/istanbul-tools/" + ProcessUtils.getPlatformDirectory() + "/istanbul"));
 
         File istanbulbinary = istanbullocation.toFile();
         if (!istanbulbinary.canExecute()) {
@@ -544,37 +457,29 @@ public class GethRunner {
         }
 
         List<String> istanbulcommand = Lists
-            .newArrayList(istanbullocation.toString(), "extra", "encode", "--validators",
-                "0x" + localnodeaddress);
+            .newArrayList(istanbullocation.toString(),
+                "reinit",
+                "--nodekey",
+                FileUtils.readFileToString(verifyNodeKey().toFile(), Charset.defaultCharset()));
+        if (gethConfig.shouldUseQuorum()) {
+            istanbulcommand.add("--quorum");
+        }
         ProcessBuilder builder = new ProcessBuilder(istanbulcommand);
-        LOG.info("generating instanbul extradata as " + String.join(" ", builder.command()));
+        LOG.info(
+            "generating instanbul genesis_block.json as " + String.join(" ", builder.command()));
         Process process = builder.start();
 
-        String extradata = ""; // TODO: make a library call
-        try (Scanner scanner = new Scanner(process.getInputStream())) {
-            extradata = scanner.next();
-        }
+        String jsonOutput = IOUtils.toString(process.getInputStream(), Charset.defaultCharset());
 
         if (process.isAlive()) {
             process.destroy();
         }
-        //TODO ISTANBUL WRAPPER
 
-        File instabulgenesisfile = Paths
-            .get(Paths.get(expandPath(baseResourcePath, "genesis")).toString(),
-                "istanbul_genesis_block.json").toFile();
-        JSONObject instabulgenesis = new JSONObject(
-            IOUtils.toString(new FileInputStream(instabulgenesisfile)));
-        instabulgenesis.put("extraData", extradata);
-        FileWriter fw = new FileWriter(instabulgenesisfile);
-        fw.write(instabulgenesis.toString());
+        FileWriter fw = new FileWriter(
+            Paths.get(gethConfig.getDataDirectory(), "genesis_block.json").toFile());
+        fw.write(jsonOutput);
         fw.flush();
         fw.close();
-
-        Files.copy(instabulgenesisfile.toPath(),
-            Paths.get(Paths.get(gethConfig.getGethDataDirPath()).getParent().toString(),
-                "genesis_block.json"),
-            StandardCopyOption.REPLACE_EXISTING);
     }
 
     private void updateRaftGenesis() throws IOException {
@@ -585,7 +490,7 @@ public class GethRunner {
 
         File raftgenesisfile = Paths
             .get(Paths.get(expandPath(baseResourcePath, "genesis")).toString(),
-                "raft_genesis_block.json").toFile();
+                "genesis_block.json").toFile();
         Files.copy(raftgenesisfile.toPath(),
             Paths.get(Paths.get(gethConfig.getGethDataDirPath()).getParent().toString(),
                 "genesis_block.json"),
