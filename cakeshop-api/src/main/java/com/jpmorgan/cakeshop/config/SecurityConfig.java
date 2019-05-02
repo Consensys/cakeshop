@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -13,7 +12,6 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 
 @Configuration
 @EnableWebSecurity
-@Profile("!local")
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SecurityConfig.class);
@@ -33,12 +31,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http
                 .authorizeRequests()
-                .antMatchers("/resources/**", "/user").permitAll()
-                .anyRequest().authenticated()
-                .and().formLogin().failureUrl("/login?error")
-                .loginPage("/login").permitAll()
-                .and().httpBasic()
-                .and().logout().logoutSuccessUrl("/login").permitAll();
+                .anyRequest().permitAll()
+        .and().httpBasic().disable().formLogin().disable();
+//                .antMatchers("/resources/**", "/user").permitAll()
+//                .anyRequest().authenticated()
+//                .and().formLogin().failureUrl("/login?error")
+//                .loginPage("/login").permitAll()
+//                .and().httpBasic()
+//                .and().logout().logoutSuccessUrl("/login").permitAll();
 
         http.csrf().disable();
     }
