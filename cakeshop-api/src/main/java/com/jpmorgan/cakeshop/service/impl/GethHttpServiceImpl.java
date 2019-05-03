@@ -360,6 +360,8 @@ public class GethHttpServiceImpl implements GethHttpService {
             File newChainDataDir = new File(FileUtils.expandPath(dataDir, "geth", "chaindata"));
             if (!(chainDataDir.exists() || newChainDataDir.exists())) {
                 //chainDataDir.mkdirs();
+                LOG.debug("Running consensus mode init");
+                gethRunner.initializeConsensusMode();
                 LOG.debug("Running geth init");
                 if (!initGeth()) {
                     logError("Geth datadir failed to initialize");
@@ -370,6 +372,7 @@ public class GethHttpServiceImpl implements GethHttpService {
             if (gethRunner.isEmbeddedQuorum()) {
                 additionalParams = setAdditionalParams(additionalParams).toArray(new String[setAdditionalParams(additionalParams).size()]);
                 LOG.info("Embedded quorum, additional params: {}", (Object) additionalParams);
+
                 if (gethConfig.isTransactionManagerEnabled() && !isProcessRunning(
                     readPidFromFile(transactionManagerRunner.getPidFilePath())) && gethConfig
                     .shouldUseQuorum()) {
@@ -394,7 +397,6 @@ public class GethHttpServiceImpl implements GethHttpService {
                 env.put("PRIVATE_CONFIG", transactionManagerIpcPath);
             }
 
-            gethRunner.initializeConsensusMode();
 
             LOG.info("geth command: " +  String.join(" ", builder.command()));
             Process process = builder.start();
@@ -580,7 +582,7 @@ public class GethHttpServiceImpl implements GethHttpService {
         commands.add("--verbosity");
         commands.add(String.valueOf(gethConfig.getVerbosity() == null ? "3" : gethConfig.getVerbosity()));
 
-        if (null != gethConfig.isMining() && gethConfig.isMining() == true && !gethRunner.isEmbeddedQuorum()) {
+        if (null != gethConfig.isMining() && gethConfig.isMining()) {
             commands.add("--mine");
             commands.add("--minerthreads");
             commands.add("1");
