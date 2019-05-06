@@ -30,7 +30,7 @@ sudo apt-get install libtinfo-dev
 ```shell
 mkdir ~/Projects/cakeshop.git
 cd ~/Projects/cakeshop.git
-git clone -b quorum-ui --single-branch https://github.com/yourcodesucks/cakeshop.git
+git clone https://github.com/jpmorganchase/cakeshop.git
 ```
 
 ```shell
@@ -38,7 +38,7 @@ cd ~/Projects/cakeshop.git/cakeshop
 mvn clean install -DskipTests
 cd cakeshop-api
 mvn install -DskipTests
-java -jar target/cakeshop-0.10.0.war
+java -jar target/cakeshop-0.11.0.war
 ```
 
 ## Related projects

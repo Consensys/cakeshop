@@ -79,6 +79,8 @@ geth.identity=
 #
 # Can be modified at runtime without restart via API. Only applies to vanilla
 # geth.
+#
+# When using Raft-based consensus with quorum, the mining value doesn't have any affect.
 geth.mining=true
 
 # Enable CORS for geth RPC endpoint [managed only]

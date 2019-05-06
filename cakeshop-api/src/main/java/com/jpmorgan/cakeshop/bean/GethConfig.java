@@ -36,37 +36,37 @@ public class GethConfig {
     private static final Logger LOG = LoggerFactory.getLogger(GethConfig.class);
     private static final String DEFAULT_NODE_PORT = "30303";
 
-    private static final String GETH_DATA_DIR = "geth.datadir";
-    private static final String GETH_LOG_DIR = "geth.log";
-    private static final String GETH_RPC_URL = "geth.url";
-    private static final String GETH_RPCAPI_LIST = "geth.rpcapi.list";
-    private static final String GETH_NODE_PORT = "geth.node.port";
-    private static final String GETH_AUTO_START = "geth.auto.start";
-    private static final String GETH_AUTO_STOP = "geth.auto.stop";
-    private static final String GETH_START_TIMEOUT = "geth.start.timeout";
-    private static final String GETH_UNLOCK_TIMEOUT = "geth.unlock.timeout";
-    private static final String EMBEDDED_NODE = System.getProperty("geth.node");
+    public static final String GETH_DATA_DIR = "geth.datadir";
+    public static final String GETH_LOG_DIR = "geth.log";
+    public static final String GETH_RPC_URL = "geth.url";
+    public static final String GETH_RPCAPI_LIST = "geth.rpcapi.list";
+    public static final String GETH_NODE_PORT = "geth.node.port";
+    public static final String GETH_AUTO_START = "geth.auto.start";
+    public static final String GETH_AUTO_STOP = "geth.auto.stop";
+    public static final String GETH_START_TIMEOUT = "geth.start.timeout";
+    public static final String GETH_UNLOCK_TIMEOUT = "geth.unlock.timeout";
+    public static final String EMBEDDED_NODE = System.getProperty("geth.node");
 
     //geth.db.enabled
-    private static final String GETH_DB_ENABLED = "cakeshop.database.vendor";
+    public static final String GETH_DB_ENABLED = "cakeshop.database.vendor";
 
     // User-configurable settings
-    private static final String GETH_NETWORK_ID = "geth.networkid";
-    private static final String GETH_VERBOSITY = "geth.verbosity";
-    private static final String GETH_MINING = "geth.mining";
-    private static final String GETH_IDENTITY = "geth.identity";
-    private static final String GETH_EXTRA_PARAMS = "geth.params.extra";
+    public static final String GETH_NETWORK_ID = "geth.networkid";
+    public static final String GETH_VERBOSITY = "geth.verbosity";
+    public static final String GETH_MINING = "geth.mining";
+    public static final String GETH_IDENTITY = "geth.identity";
+    public static final String GETH_EXTRA_PARAMS = "geth.params.extra";
     // Quorum specific settings
-    private static final String GETH_PERMISSIONED = "geth.permissioned";
-    private static final String GETH_RAFT_PORT = "geth.raft.port";
-    private static final String GETH_RAFT_BLOCKTIME = "geth.raft.blocktime";
-    private static final String GETH_CONSENSUS_MODE = "geth.consensus.mode";
-    private static final String GETH_STARTUP_MODE = "geth.startup.mode";
-    private static final String GETH_RAFT_NETWORK_ID = "geth.raft.network.id";
+    public static final String GETH_PERMISSIONED = "geth.permissioned";
+    public static final String GETH_RAFT_PORT = "geth.raft.port";
+    public static final String GETH_RAFT_BLOCKTIME = "geth.raft.blocktime";
+    public static final String GETH_CONSENSUS_MODE = "geth.consensus.mode";
+    public static final String GETH_STARTUP_MODE = "geth.startup.mode";
+    public static final String GETH_RAFT_NETWORK_ID = "geth.raft.network.id";
 
-    private static final String GETH_TRANSACTION_MANAGER_TYPE = "geth.transaction_manager.type";
-    private static final String GETH_TRANSACTION_MANAGER_URL = "geth.transaction_manager.url";
-    private static final String GETH_TRANSACTION_MANAGER_PEERS = "geth.transaction_manager.peers";
+    public static final String GETH_TRANSACTION_MANAGER_TYPE = "geth.transaction_manager.type";
+    public static final String GETH_TRANSACTION_MANAGER_URL = "geth.transaction_manager.url";
+    public static final String GETH_TRANSACTION_MANAGER_PEERS = "geth.transaction_manager.peers";
     public static final String GETH_BOOT_NODE = "geth.boot.node";
     public static final String GETH_BOOTNODE_ADDRESS = "geth.bootnode.address";
     public static final String GETH_BOOTNODE_KEY = "geth.bootnode.key";
@@ -310,7 +310,7 @@ public class GethConfig {
     }
 
     public int getGethUnlockTimeout() {
-        return Integer.parseInt(get(GETH_UNLOCK_TIMEOUT, "2000"));
+        return Integer.parseInt(get(GETH_UNLOCK_TIMEOUT, "5000"));
     }
 
     public void setGethUnlockTimeout(int timeout) {
@@ -395,6 +395,13 @@ public class GethConfig {
         return transactionManagerType;
     }
 
+    public String getCakeshopPort() {
+        return props.getProperty("server.port", "8080");
+    }
+
+    public void setCakeshopPort(String port) {
+        props.setProperty("server.port", port);
+    }
 
     /**
      * Write the underlying config file to disk (persist all properties)

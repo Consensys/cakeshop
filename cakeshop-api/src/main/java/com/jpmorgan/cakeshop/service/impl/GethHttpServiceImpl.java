@@ -1,5 +1,7 @@
 package com.jpmorgan.cakeshop.service.impl;
 
+import static com.jpmorgan.cakeshop.bean.GethConfig.GETH_NODE_PORT;
+import static com.jpmorgan.cakeshop.bean.GethConfig.GETH_RPC_URL;
 import static com.jpmorgan.cakeshop.bean.TransactionManager.Type.TRANSACTION_MANAGER_KEY_NAME;
 import static com.jpmorgan.cakeshop.util.ProcessUtils.createProcessBuilder;
 import static com.jpmorgan.cakeshop.util.ProcessUtils.getProcessPid;
@@ -66,7 +68,7 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     public static final String SIMPLE_RESULT = "_result";
     public static final Integer DEFAULT_NETWORK_ID = 1006;
-    public static final Integer DEFAULT_NUMBER_ACCOUNTS = 8;
+    public static final Integer DEFAULT_NUMBER_ACCOUNTS = 3;
 
     private static final Logger LOG = LoggerFactory.getLogger(GethHttpServiceImpl.class);
     private static final Logger GETH_LOG = LoggerFactory.getLogger("geth");
@@ -326,13 +328,7 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     @Override
     public Boolean stopTransactionManager() {
-        String name = gethConfig.getTransactionManagerType().transactionManagerName;
-        try {
-            return killProcess(transactionManagerRunner.getPidFilePath(), name);
-        } catch (InterruptedException | IOException ex) {
-            LOG.error("Could not stop {}", name);
-            return false;
-        }
+        return transactionManagerRunner.stopTransactionManager();
     }
 
     @Override
@@ -392,11 +388,12 @@ public class GethHttpServiceImpl implements GethHttpService {
                     transactionManagerIpcPath = FileUtils
                         .expandPath(gethConfig.getTransactionManagerDataPath(),
                             TRANSACTION_MANAGER_KEY_NAME + ".ipc");
+                    LOG.info("Waiting for tm ipc file to be created: {}", transactionManagerIpcPath);
+                    FileUtils.waitFor(new File(transactionManagerIpcPath), 20);
                 }
                 LOG.info("Setting env variable PRIVATE_CONFIG to: {}", transactionManagerIpcPath);
                 env.put("PRIVATE_CONFIG", transactionManagerIpcPath);
             }
-
 
             LOG.info("geth command: " +  String.join(" ", builder.command()));
             Process process = builder.start();
@@ -552,13 +549,33 @@ public class GethHttpServiceImpl implements GethHttpService {
 
         //Option to overwrite default port nide post and geth http usr through command line
         Boolean saveGethConfig = false;
-        if (StringUtils.isNotBlank(System.getProperty("geth.url"))) {
-            gethConfig.setRpcUrl(System.getProperty("geth.url"));
+        if (StringUtils.isNotBlank(System.getProperty(GETH_RPC_URL))) {
+            gethConfig.setRpcUrl(System.getProperty(GETH_RPC_URL));
             saveGethConfig = true;
         }
 
-        if (StringUtils.isNotBlank(System.getProperty("geth.node.port"))) {
-            gethConfig.setGethNodePort(System.getProperty("geth.node.port"));
+        if (StringUtils.isNotBlank(System.getProperty(GETH_NODE_PORT))) {
+            gethConfig.setGethNodePort(System.getProperty(GETH_NODE_PORT));
+            saveGethConfig = true;
+        }
+
+        if (StringUtils.isNotBlank(System.getProperty(GethConfig.GETH_RAFT_PORT))) {
+            gethConfig.setRaftPort(System.getProperty(GethConfig.GETH_RAFT_PORT));
+            saveGethConfig = true;
+        }
+
+        if (StringUtils.isNotBlank(System.getProperty(GethConfig.GETH_TRANSACTION_MANAGER_URL))) {
+            gethConfig.setGethTransactionManagerUrl(System.getProperty(GethConfig.GETH_TRANSACTION_MANAGER_URL));
+            saveGethConfig = true;
+        }
+
+        if (StringUtils.isNotBlank(System.getProperty(GethConfig.GETH_TRANSACTION_MANAGER_TYPE))) {
+            gethConfig.setGethTransactionManagerUrl(System.getProperty(GethConfig.GETH_TRANSACTION_MANAGER_TYPE));
+            saveGethConfig = true;
+        }
+
+        if (StringUtils.isNotBlank(System.getProperty("server.port"))) {
+            gethConfig.setCakeshopPort(System.getProperty("server.port"));
             saveGethConfig = true;
         }
 
