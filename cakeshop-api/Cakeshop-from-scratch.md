@@ -30,7 +30,7 @@ sudo apt-get install libtinfo-dev
 ```shell
 mkdir ~/Projects/cakeshop.git
 cd ~/Projects/cakeshop.git
-git clone -b quorum-ui --single-branch https://github.com/yourcodesucks/cakeshop.git
+git clone https://github.com/jpmorganchase/cakeshop.git
 ```
 
 ```shell

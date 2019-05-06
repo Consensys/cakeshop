@@ -1,9 +1,6 @@
-# Documentation updates v0.9.x -> v0.10.x are in progress. Sections marked NEEDS UPDATE may not behave as expected.
-
-
 # Cakeshop
 
-[![Build Status](https://travis-ci.org/yourcodesucks/cakeshop.svg?branch=quorum-ui)](https://travis-ci.org/yourcodesucks/cakeshop)
+[![Build Status](https://travis-ci.org/jpmorganchase/cakeshop.svg?branch=quorum-ui)](https://travis-ci.org/jpmorganchase/cakeshop)
 
 An integrated development environment and SDK for Ethereum-like ledgers
 
