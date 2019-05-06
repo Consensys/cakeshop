@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.jpmorgan</groupId>
         <artifactId>cakeshop-parent</artifactId>
-        <version>0.10.0</version>
+        <version>0.11.0</version>
     </parent>
 
     <artifactId>cakeshop</artifactId>
@@ -58,7 +58,7 @@
         <dependency>
             <groupId>com.jpmorgan</groupId>
             <artifactId>cakeshop-abi</artifactId>
-            <version>0.10.0</version>
+            <version>0.11.0</version>
         </dependency>
 
         <!-- SPRING & SPRING BOOT -->

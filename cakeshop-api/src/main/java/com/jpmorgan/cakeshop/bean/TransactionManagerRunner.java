@@ -7,9 +7,11 @@ package com.jpmorgan.cakeshop.bean;
 
 import static com.jpmorgan.cakeshop.util.FileUtils.expandPath;
 import static com.jpmorgan.cakeshop.util.ProcessUtils.getProcessPid;
+import static com.jpmorgan.cakeshop.util.ProcessUtils.killProcess;
 import static com.jpmorgan.cakeshop.util.ProcessUtils.writePidToFile;
 
 import com.jpmorgan.cakeshop.util.FileUtils;
+import com.jpmorgan.cakeshop.util.StreamLogAdapter;
 import com.moandjiezana.toml.TomlWriter;
 import com.quorum.tessera.config.Config;
 import com.quorum.tessera.config.keypairs.ConfigKeyPair;
@@ -30,7 +32,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
-import java.util.concurrent.TimeUnit;
 import javax.xml.bind.JAXBException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -44,6 +45,7 @@ import org.springframework.util.StreamUtils;
 public class TransactionManagerRunner implements InitializingBean {
 
     private static final Logger LOG = LoggerFactory.getLogger(TransactionManagerRunner.class);
+    private static final Logger TM_LOG = LoggerFactory.getLogger("tm");
 
     public GethConfig gethConfig;
 
@@ -208,22 +210,6 @@ public class TransactionManagerRunner implements InitializingBean {
     }
 
     public boolean startTransactionManager() {
-        File logFile;
-        try {
-            File logDir = new File(gethConfig.getTransactionManagerDataPath().concat("logs"));
-            if (!logDir.exists()) {
-                logDir.mkdirs();
-            }
-            logFile = new File(logDir,
-                TransactionManager.Type.TRANSACTION_MANAGER_KEY_NAME + ".log");
-            if (!logFile.exists()) {
-                logFile.createNewFile();
-            }
-        } catch (IOException ex) {
-            LOG.error("Could not create log for transaction manager", ex.getMessage());
-            return false;
-        }
-
         try {
             if (gethConfig.getTransactionManagerType() != TransactionManager.Type.none) {
                 createTransactionManagerNodeKeys();
@@ -237,13 +223,11 @@ public class TransactionManagerRunner implements InitializingBean {
                     gethConfig.getTransactionManagerDataPath(),
                     TransactionManager.Type.TRANSACTION_MANAGER_KEY_NAME));
             ProcessBuilder builder = new ProcessBuilder(commandArgs);
-            builder.redirectOutput(logFile);
-            builder.redirectErrorStream(true); // redirect error stream to output stream
-            builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
             Process process = builder.start();
+            new StreamLogAdapter(TM_LOG, process.getInputStream()).startAsync();
+            new StreamLogAdapter(TM_LOG, process.getErrorStream()).startAsync();
             Integer constProcessId = getProcessPid(process);
             LOG.info("Transaction Manager started as " + String.join(" ", builder.command()));
-            TimeUnit.SECONDS.sleep(5);
             if (constProcessId == -1) {
                 throw new RuntimeException("Error starting transaction manager");
             } else {
@@ -274,6 +258,16 @@ public class TransactionManagerRunner implements InitializingBean {
             gethConfig.getTransactionManagerType().getTransactionManager(ethGethDir));
         if (!constExec.canExecute()) {
             constExec.setExecutable(true);
+        }
+    }
+
+    public Boolean stopTransactionManager() {
+        String name = gethConfig.getTransactionManagerType().transactionManagerName;
+        try {
+            return killProcess(getPidFilePath(), name);
+        } catch (InterruptedException | IOException ex) {
+            LOG.error("Could not stop {}", name);
+            return false;
         }
     }
 }
