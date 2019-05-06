@@ -15,8 +15,8 @@ An integrated development environment and SDK for Ethereum-like ledgers
 
 _Cakeshop_ is a set of tools and APIs for working with [Ethereum](https://ethereum.org/)-like ledgers, packaged as a Java web application archive (WAR) that gets you up and running in under 60 seconds.
 
-Included in the package is the [geth](https://github.com/ethereum/go-ethereum), [quorum](https://github.com/jpmorganchase/quorum), and [constellation](https://github.com/jpmorganchase/constellation) Ethereum servers, a [Solidity](https://solidity.readthedocs.org/en/latest/)
-compiler and all dependencies.
+Included in the package is the [geth](https://github.com/ethereum/go-ethereum), [quorum](https://github.com/jpmorganchase/quorum), [tessera](https://github.com/jpmorganchase/tessera),  and [constellation](https://github.com/jpmorganchase/constellation) Ethereum servers, a [Solidity](https://solidity.readthedocs.org/en/latest/)
+compiler, and all dependencies.
 
 It provides tools for managing a local blockchain node, setting up clusters,
 exploring the state of the chain, and working with contracts.
@@ -29,7 +29,7 @@ Binary packages are available for macOS, Windows, and Linux platforms on the [re
 
 ### Requirements
 
-* Java 7+
+* Java 8+
 * Java app server (Tomcat, Jetty, etc) [Optional]
 
 ### Running via Spring Boot
@@ -55,14 +55,14 @@ Binary packages are available for macOS, Windows, and Linux platforms on the [re
 Run via docker and access UI on [http://localhost:8080/cakeshop/](http://localhost:8080/cakeshop/)
 
 ```sh
-docker run -p 8080:8080 jpmc/cakeshop
+docker run -p 8080:8080 quorumengineering/cakeshop
 ```
 
 You'll probably want to mount a data volume:
 
 ```sh
 mkdir data
-docker run -p 8080:8080 -v "$PWD/data":/opt/cakeshop/data jpmc/cakeshop
+docker run -p 8080:8080 -v "$PWD/data":/opt/cakeshop/data quorumengineering/cakeshop
 ```
 
 Running under a specific environment
@@ -70,7 +70,7 @@ Running under a specific environment
 ```sh
 docker run -p 8080:8080 -v "$PWD/data":/opt/cakeshop/data \
     -e JAVA_OPTS="-Dspring.profiles.active=local" \
-    jpmc/cakeshop
+    quorumengineering/cakeshop
 ```
 
 Note that DAG generation will take time and Cakeshop will not be available until it's complete. If you already have a DAG for epoch 0 in your `$HOME/.ethash` folder, then you can expose that to your container (or just cache it for later):
@@ -78,7 +78,7 @@ Note that DAG generation will take time and Cakeshop will not be available until
 ```sh
 docker run -p 8080:8080 -v "$PWD/data":/opt/cakeshop/data \
     -v $HOME/.ethash:/opt/cakeshop/.ethash \
-    jpmc/cakeshop
+    quorumengineering/cakeshop
 ```
 
 ## Further Reading
@@ -99,7 +99,7 @@ Cakeshop is built on open source and we invite you to contribute enhancements. U
 
 ## License
 
-Copyright (c) 2016-2017 JPMorgan Chase and/or applicable contributors
+Copyright (c) 2016-2019 JPMorgan Chase and/or applicable contributors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
