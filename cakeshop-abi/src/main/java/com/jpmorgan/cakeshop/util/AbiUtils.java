@@ -94,6 +94,24 @@ public class AbiUtils {
 	    return "0x" + Hex.toHexString(input.toByteArray());
 	}
 
+	public static String toHexWithNoLeadingZeros(BigInteger input) {
+		// Convert BigInteger to String based hex representtion
+		String hex = Hex.toHexString(input.toByteArray());
+		
+		// Remove leading 0s in string from non-zero hex values
+		if (hex.startsWith("0") && hex.length() > 1) {
+			hex = hex.replaceFirst("^0+", "");
+
+			// In case the value was all zeros
+			if (hex.length() == 0) {
+				hex = "0";
+			}
+		}
+
+		// Prefix hex string with 0x
+	    return "0x" + hex;
+	}
+
 	public static String toHex(Long input) {
 	    return "0x" + Long.toHexString(input);
 	}

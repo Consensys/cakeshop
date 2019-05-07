@@ -48,7 +48,7 @@
         // console.log(input);
 
         Sandbox.trigger("compile", input);
-        Contract.compile(input, optimize).then(
+        Contract.compile(input, optimize, Sandbox.Filer.getActiveFilename()).then(
             function(data) {
                 Sandbox.trigger("compiled", data);
                 renderContracts(data, editorSource);
@@ -95,8 +95,8 @@
           while (match = importRegex.exec(files[fileName])) {
             var m = match[1];
             if (m in files) continue;
-            if (getFiles().indexOf(fileKey(m)) !== -1) {
-              files[m] = window.localStorage[fileKey(match[1])];
+            if (getFiles().indexOf(Sandbox.Filer.fileKey(m)) !== -1) {
+              files[m] = window.localStorage[Sandbox.Filer.fileKey(match[1])];
               reloop = true;
             } else if (m in cachedRemoteFiles) {
               files[m] = cachedRemoteFiles[m];
@@ -150,7 +150,7 @@
         var errFile = err[1];
         var errLine = parseInt(err[2], 10) - 1;
         var errCol = err[4] ? parseInt(err[4], 10) : 0;
-        if (errFile === '' || errFile === fileNameFromKey(Sandbox.SOL_CACHE_FILE)) {
+        if (errFile === '' || errFile === Sandbox.Filer.fileNameFromKey(Sandbox.SOL_CACHE_FILE)) {
           sourceAnnotations[sourceAnnotations.length] = {
             row: errLine,
             column: errCol,
@@ -160,9 +160,9 @@
           editor.getSession().setAnnotations(sourceAnnotations);
         }
         $error.click(function(ev){
-          if (errFile !== '' && errFile !== fileNameFromKey(Sandbox.SOL_CACHE_FILE) && getFiles().indexOf(fileKey(errFile)) !== -1) {
+          if (errFile !== '' && errFile !== Sandbox.Filer.fileNameFromKey(Sandbox.SOL_CACHE_FILE) && getFiles().indexOf(Sandbox.Filer.fileKey(errFile)) !== -1) {
             // Switch to file
-            Sandbox.SOL_CACHE_FILE = fileKey(errFile);
+            Sandbox.SOL_CACHE_FILE = Sandbox.Filer.fileKey(errFile);
             updateFiles();
             // @TODO could show some error icon in files with errors
           }

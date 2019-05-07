@@ -57,29 +57,29 @@ public interface NodeService {
     public boolean addPeer(String address) throws APIException;
 
     /**
-     * Get list of constellation nodes
+     * Get list of transaction manager nodes
      *
      * @return
      * @throws APIException
      */
-    public Map<String, Object> getConstellationNodes() throws APIException;
+    public Map<String, Object> getTransactionManagerNodes() throws APIException;
 
     /**
-     * Add new constellation node
+     * Add new transaction manager node
      *
-     * @param constellationNode
+     * @param transactionManagerNode
      * @return
      * @throws APIException
      */
-    public NodeConfig addConstellationNode(String constellationNode) throws APIException;
+    public NodeConfig addTransactionManagerNode(String transactionManagerNode) throws APIException;
 
     /**
-     * Remove constellation node from the list
+     * Remove transaction manager node from the list
      *
-     * @param constellationNode
+     * @param transactionManagerNode
      * @return
      * @throws APIException
      */
-    public NodeConfig removeConstellationNode(String constellationNode) throws APIException;
+    public NodeConfig removeTransactionManagerNode(String transactionManagerNode) throws APIException;
 
 }

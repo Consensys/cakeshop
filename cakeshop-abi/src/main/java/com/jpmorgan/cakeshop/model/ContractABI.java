@@ -1,28 +1,30 @@
 package com.jpmorgan.cakeshop.model;
 
-import static com.jpmorgan.cakeshop.model.SolidityType.IntType.*;
-import static java.lang.String.*;
-import static org.apache.commons.collections4.ListUtils.*;
-import static org.apache.commons.lang3.ArrayUtils.*;
-import static org.apache.commons.lang3.StringUtils.*;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jpmorgan.cakeshop.error.ABIException;
 import com.jpmorgan.cakeshop.model.ContractABI.Entry.Type;
 import com.jpmorgan.cakeshop.util.AbiUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.Predicate;
+import org.bouncycastle.util.encoders.Hex;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.Predicate;
-import org.bouncycastle.util.encoders.Hex;
+import static com.jpmorgan.cakeshop.model.SolidityType.IntType.decodeInt;
+import static com.jpmorgan.cakeshop.model.SolidityType.IntType.encodeInt;
+import static java.lang.String.format;
+import static org.apache.commons.collections4.ListUtils.select;
+import static org.apache.commons.lang3.ArrayUtils.subarray;
+import static org.apache.commons.lang3.StringUtils.join;
+import static org.apache.commons.lang3.StringUtils.stripEnd;
 
 public class ContractABI extends ArrayList<ContractABI.Entry> {
 
@@ -116,6 +118,14 @@ public class ContractABI extends ArrayList<ContractABI.Entry> {
             event
         }
 
+        public enum StateMutability {
+            pure,
+            view,
+            payable,
+            nonpayable
+        }
+
+
         @JsonInclude(Include.NON_NULL)
         public static class Param {
 
@@ -207,8 +217,9 @@ public class ContractABI extends ArrayList<ContractABI.Entry> {
         public final List<Param> outputs;
         public final Type type;
         public final Boolean payable;
+        public final StateMutability stateMutability;
 
-        public Entry(Boolean anonymous, Boolean constant, String name, List<Param> inputs, List<Param> outputs, Type type, Boolean payable) {
+        public Entry(Boolean anonymous, Boolean constant, String name, List<Param> inputs, List<Param> outputs, Type type, Boolean payable, StateMutability stateMutability) {
             this.anonymous = anonymous;
             this.constant = constant;
             this.name = name;
@@ -216,6 +227,7 @@ public class ContractABI extends ArrayList<ContractABI.Entry> {
             this.outputs = outputs;
             this.type = type;
             this.payable = payable == null ? Boolean.FALSE : payable;
+            this.stateMutability = stateMutability;
         }
 
         /**
@@ -252,21 +264,22 @@ public class ContractABI extends ArrayList<ContractABI.Entry> {
 
         @JsonCreator
         public static Entry create(@JsonProperty("anonymous") boolean anonymous,
-                @JsonProperty("constant") boolean constant,
-                @JsonProperty("name") String name,
-                @JsonProperty("inputs") List<Param> inputs,
-                @JsonProperty("outputs") List<Param> outputs,
-                @JsonProperty("type") Type type) {
+                                   @JsonProperty("constant") boolean constant,
+                                   @JsonProperty("name") String name,
+                                   @JsonProperty("inputs") List<Param> inputs,
+                                   @JsonProperty("outputs") List<Param> outputs,
+                                   @JsonProperty("type") Type type,
+                                   @JsonProperty("stateMutability") StateMutability stateMutability) {
             Entry result = null;
             switch (type) {
                 case constructor:
-                    result = new Constructor(inputs, outputs);
+                    result = new Constructor(inputs, outputs, stateMutability);
                     break;
                 case function:
-                    result = new Function(constant, name, inputs, outputs);
+                    result = new Function(constant, name, inputs, outputs, stateMutability);
                     break;
                 case event:
-                    result = new Event(anonymous, name, inputs, outputs);
+                    result = new Event(anonymous, name, inputs, outputs, stateMutability);
                     break;
             }
 
@@ -296,12 +309,16 @@ public class ContractABI extends ArrayList<ContractABI.Entry> {
         public Type getType() {
             return type;
         }
+
+        public StateMutability getStateMutability() {
+            return stateMutability;
+        }
     }
 
     public static class Constructor extends Entry {
 
-        public Constructor(List<Param> inputs, List<Param> outputs) {
-            super(null, null, "", inputs, outputs, Type.constructor, false);
+        public Constructor(List<Param> inputs, List<Param> outputs, StateMutability stateMutability) {
+            super(null, null, "", inputs, outputs, Type.constructor, false, stateMutability);
         }
 
         public List<?> decode(byte[] encoded) {
@@ -321,8 +338,8 @@ public class ContractABI extends ArrayList<ContractABI.Entry> {
 
         private static final int ENCODED_SIGN_LENGTH = 4;
 
-        public Function(boolean constant, String name, List<Param> inputs, List<Param> outputs) {
-            super(null, constant, name, inputs, outputs, Type.function, false);
+        public Function(boolean constant, String name, List<Param> inputs, List<Param> outputs, StateMutability stateMutability) {
+            super(null, constant, name, inputs, outputs, Type.function, false, stateMutability);
         }
 
         public String encodeAsHex(Object... args) {
@@ -378,8 +395,8 @@ public class ContractABI extends ArrayList<ContractABI.Entry> {
 
     public static class Event extends Entry {
 
-        public Event(boolean anonymous, String name, List<Param> inputs, List<Param> outputs) {
-            super(anonymous, null, name, inputs, outputs, Type.event, false);
+        public Event(boolean anonymous, String name, List<Param> inputs, List<Param> outputs, StateMutability stateMutability) {
+            super(anonymous, null, name, inputs, outputs, Type.event, false, stateMutability);
         }
 
         public List<?> decode(byte[] data, byte[][] topics) {

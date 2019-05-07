@@ -1,19 +1,19 @@
-pragma solidity ^0.4.9;
+pragma solidity ^0.5.4;
 contract SimpleStorage {
 
     uint public storedData;
     address public owner;
 
-    function SimpleStorage(uint initVal) {
+    constructor(uint initVal) public {
       owner = msg.sender;
       storedData = initVal;
     }
 
-    function set(uint x) {
+    function set(uint x) public {
         storedData = x;
     }
 
-    function get() constant returns (uint retVal) {
+    function get() view public returns (uint retVal) {
         return storedData;
     }
     

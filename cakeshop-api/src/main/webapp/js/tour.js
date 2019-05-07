@@ -11,7 +11,7 @@ import 'jif-dashboard/dashboard-template';
     backdropContainer: "body",
     onEnd: function() {
       //for autostart
-    	window.localStorage.setItem('tourEnded', true);
+    	window.localStorage.setItem('tour_end', true);
     },
 
     steps: [].concat([
@@ -26,6 +26,7 @@ import 'jif-dashboard/dashboard-template';
       {
         element: ".tower-sidebar ul",
         content: "This is the main navigation menu, where you can access the other parts of the tool",
+        backdropContainer: ".tower-sidebar",
         onShow: function() {
           $(".tower-navigation").css({"z-index": 1100});
         },

@@ -4,12 +4,12 @@
     <parent>
     <artifactId>cakeshop-parent</artifactId>
     <groupId>com.jpmorgan</groupId>
-    <version>0.10.0</version>
+    <version>0.11.0</version>
   </parent>
 
     <groupId>com.jpmorgan</groupId>
     <artifactId>cakeshop-node-manager</artifactId>
-    <version>0.10.0</version>
+    <version>0.11.0</version>
     <packaging>war</packaging>
 
    <properties>
@@ -50,7 +50,7 @@
         <dependency>
             <groupId>com.jpmorgan</groupId>
             <artifactId>cakeshop-client</artifactId>
-            <version>0.10.0</version>
+            <version>0.11.0</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>

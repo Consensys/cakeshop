@@ -161,7 +161,7 @@
         }
     });
 
-    Contract.deploy = function(code, optimize, args, binary, privateFrom, privateFor) {
+    Contract.deploy = function(code, optimize, args, binary, privateFrom, privateFor, filename) {
         return new Promise(function(resolve, reject) {
             Client.post(Contract.prototype.url('create'),
                 {
@@ -171,7 +171,8 @@
                     args: args,
                     binary: binary,
                     privateFrom: privateFrom,
-                    privateFor: privateFor
+                    privateFor: privateFor,
+                    filename: filename
                 }
             ).done(function(res, status, xhr) {
                 var txid = res.data.id;
@@ -219,13 +220,14 @@
             });
     };
 
-    Contract.compile = function(code, optimize, cb) {
+    Contract.compile = function(code, optimize, filename) {
         return new Promise(function(resolve, reject) {
             Client.post(Contract.prototype.url('compile'),
                 {
                     code: code,
                     code_type: 'solidity',
-                    optimize: optimize
+                    optimize: optimize,
+                    filename: filename,
                 }
             ).done(function(res, status, xhr) {
                 if (res.data && _.isArray(res.data)) {

@@ -73,9 +73,13 @@ public class ContractDeserializer extends JsonDeserializer<ContractPostJsonReque
         if (null != node.get("blockNumber")) {
             request.setBlockNumber(node.get("blockNumber").textValue());
         }
-        
+
         if (null != node.get("optimize")) {
             request.setOptimize(node.get("optimize").booleanValue());
+        }
+
+        if (null != node.get("filename")) {
+            request.setFilename(node.get("filename").textValue());
         }
 
         if (null != node.get("args")) {

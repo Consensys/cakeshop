@@ -1,0 +1,10 @@
+{
+  "name": "cakeshop-api",
+  "version": "1.0.0",
+  "description": "",
+  "author": "",
+  "license": "Apache2",
+  "dependencies": {
+    "solc-cakeshop-cli": "0.4.0"
+  }
+}

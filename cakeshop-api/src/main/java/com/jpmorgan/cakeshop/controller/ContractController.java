@@ -71,12 +71,14 @@ public class ContractController extends BaseController {
         @ApiImplicitParam(name = "code_type", required = false, value = "Required. Only solidity is supported for now.", dataType = "java.lang.String", paramType = "body")
         ,
         @ApiImplicitParam(name = "optimize", required = false, value = "Optimize code.", dataType = "java.lang.Boollean", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "filename", required = false, value = "Required. Filename of solidity file", dataType = "java.lang.String", paramType = "body")
     })
     @RequestMapping("/compile")
     public ResponseEntity<APIResponse> compile(@RequestBody ContractPostJsonRequest jsonRequest) throws APIException {
 
         List<Contract> contracts = contractService.compile(jsonRequest.getCode(),
-                CodeType.valueOf(jsonRequest.getCode_type()), jsonRequest.getOptimize());
+                CodeType.valueOf(jsonRequest.getCode_type()), jsonRequest.getOptimize(), jsonRequest.getFilename());
         APIResponse res = new APIResponse();
 
         if (contracts != null) {
@@ -100,18 +102,20 @@ public class ContractController extends BaseController {
         , 
         @ApiImplicitParam(name = "args", required = false, value = "Required. Function arguments to pass", dataType = "java.util.Arrays", paramType = "body")
         ,
-        @ApiImplicitParam(name = "binary", required = false, value = "Bynary contract code.", dataType = "java.lang.String", paramType = "body")
+        @ApiImplicitParam(name = "binary", required = false, value = "Binary contract code.", dataType = "java.lang.String", paramType = "body")
         ,
         @ApiImplicitParam(name = "privateFrom", required = false, value = "Private from Account", dataType = "java.lang.String", paramType = "body")
         ,
         @ApiImplicitParam(name = "privateFor", required = false, value = "Private for Account", dataType = "java.lang.String", paramType = "body")
+        ,
+        @ApiImplicitParam(name = "filename", required = false, value = "Required. Filename of solidity file", dataType = "java.lang.String", paramType = "body")
     })
     @RequestMapping("/create")
     public ResponseEntity<APIResponse> create(@RequestBody ContractPostJsonRequest jsonRequest) throws APIException {
 
         TransactionResult tx = contractService.create(jsonRequest.getFrom(), jsonRequest.getCode(),
                 CodeType.valueOf(jsonRequest.getCode_type()), jsonRequest.getArgs(), jsonRequest.getBinary(),
-                jsonRequest.getPrivateFrom(), jsonRequest.getPrivateFor());
+                jsonRequest.getPrivateFrom(), jsonRequest.getPrivateFor(), jsonRequest.getFilename());
 
         APIResponse res = new APIResponse();
 

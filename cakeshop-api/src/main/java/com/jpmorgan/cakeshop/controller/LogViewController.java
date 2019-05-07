@@ -1,22 +1,24 @@
 package com.jpmorgan.cakeshop.controller;
 
-import com.jpmorgan.cakeshop.bean.GethConfigBean;
+import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.json.LogViewJsonRequest;
 import com.jpmorgan.cakeshop.service.LogViewService;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
-import java.util.Deque;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.OK;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+
+import java.util.Deque;
+
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Controller
 @RequestMapping(value = "/api/log", method = RequestMethod.POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
@@ -32,7 +34,7 @@ public class LogViewController {
             : null;
 
     @Autowired
-    private GethConfigBean gethConfig;
+    private GethConfig gethConfig;
 
     @Autowired
     private LogViewService service;
@@ -65,7 +67,7 @@ public class LogViewController {
                     logPath = StringUtils.isNotBlank(CONSTELLATION_PATH)
                             ? CONSTELLATION_PATH.concat("logs/")
                                     .concat(StringUtils.isNotBlank(logFileName) ? logFileName : "constellation.log")
-                            : gethConfig.getDataDirPath().concat("/constellation/logs/")
+                            : gethConfig.getGethDataDirPath().concat("/constellation/logs/")
                                     .concat(StringUtils.isNotBlank(logFileName) ? logFileName : "constellation.log");
                     break;
                 case "geth":

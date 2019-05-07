@@ -4,7 +4,7 @@
     var Sandbox = window.Sandbox = window.Sandbox || {};
 
     var SOL_CACHE_FILE_PREFIX = 'sol-cache-file-';
-    Sandbox.SOL_CACHE_FILE = null;
+    Sandbox.SOL_CACHE_FILE = '';
 
     var Filer = Sandbox.Filer = {
         untitledCount: 0,
@@ -34,12 +34,20 @@
             }
         },
 
+        fileKey: function (file) {
+            return SOL_CACHE_FILE_PREFIX + file;
+        },
+
+        fileNameFromKey: function (fileKey) {
+            return fileKey.replace(SOL_CACHE_FILE_PREFIX, "");
+        },
+
         // Get a list of file names (without prefix)
         list: function() {
             var files = [];
-            for (var f in localStorage) {
-                if (f.startsWith(SOL_CACHE_FILE_PREFIX) === true) {
-                    files.push(f.replace(SOL_CACHE_FILE_PREFIX, ""));
+            for (var fileKey in localStorage) {
+                if (fileKey.startsWith(SOL_CACHE_FILE_PREFIX) === true) {
+                    files.push(this.fileNameFromKey(fileKey));
                 }
             }
             files.sort(function(a, b) {
@@ -56,20 +64,25 @@
             if (localStorage[key]) {
                 return localStorage[key];
             }
-            return localStorage[SOL_CACHE_FILE_PREFIX + key];
+            return localStorage[this.fileKey(key)];
         },
 
         // Add a new file to storage
         add: function(key, source) {
-            localStorage[SOL_CACHE_FILE_PREFIX + key] = source;
+            localStorage[this.fileKey(key)] = source;
         },
 
         remove: function(key) {
-            localStorage.removeItem(SOL_CACHE_FILE_PREFIX + key);
+            localStorage.removeItem(this.fileKey(key));
         },
 
         getActiveFile: function() {
             return localStorage.active_file;
+        },
+
+        getActiveFilename: function () {
+            let activeFile = this.getActiveFile();
+            return activeFile.split(" ")[0] + ".sol"
         },
 
         setActiveFile: function(file) {

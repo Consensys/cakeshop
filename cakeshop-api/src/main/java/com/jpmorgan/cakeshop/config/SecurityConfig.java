@@ -31,12 +31,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http
                 .authorizeRequests()
-                .antMatchers("/resources/**", "/user").permitAll()
-                .anyRequest().authenticated()
-                .and().formLogin().failureUrl("/login?error")
-                .loginPage("/login").permitAll()
-                .and().httpBasic()
-                .and().logout().logoutSuccessUrl("/login").permitAll();
+                .anyRequest().permitAll()
+        .and().httpBasic().disable().formLogin().disable();
+//                .antMatchers("/resources/**", "/user").permitAll()
+//                .anyRequest().authenticated()
+//                .and().formLogin().failureUrl("/login?error")
+//                .loginPage("/login").permitAll()
+//                .and().httpBasic()
+//                .and().logout().logoutSuccessUrl("/login").permitAll();
 
         http.csrf().disable();
     }

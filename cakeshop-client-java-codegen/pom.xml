@@ -6,7 +6,7 @@
   <parent>
     <groupId>com.jpmorgan</groupId>
     <artifactId>cakeshop-parent</artifactId>
-    <version>0.10.0</version>
+    <version>0.11.0</version>
   </parent>
 
   <artifactId>cakeshop-client-codegen</artifactId>
@@ -22,7 +22,7 @@
     <dependency>
       <groupId>com.jpmorgan</groupId>
       <artifactId>cakeshop-abi</artifactId>
-      <version>0.10.0</version>
+      <version>0.11.0</version>
     </dependency>
 
     <!-- JSON processing: jackson -->
@@ -83,6 +83,7 @@
     <dependency>
       <groupId>org.apache.velocity</groupId>
       <artifactId>velocity</artifactId>
+      <version>1.7</version>
     </dependency>
 
 

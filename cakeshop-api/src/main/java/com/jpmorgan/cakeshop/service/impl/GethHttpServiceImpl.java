@@ -1,15 +1,25 @@
 package com.jpmorgan.cakeshop.service.impl;
 
-import static com.jpmorgan.cakeshop.util.ProcessUtils.*;
-import static org.springframework.http.HttpMethod.*;
-import static org.springframework.http.MediaType.*;
+import static com.jpmorgan.cakeshop.bean.GethConfig.GETH_NODE_PORT;
+import static com.jpmorgan.cakeshop.bean.GethConfig.GETH_RPC_URL;
+import static com.jpmorgan.cakeshop.bean.TransactionManager.Type.TRANSACTION_MANAGER_KEY_NAME;
+import static com.jpmorgan.cakeshop.util.ProcessUtils.createProcessBuilder;
+import static com.jpmorgan.cakeshop.util.ProcessUtils.getProcessPid;
+import static com.jpmorgan.cakeshop.util.ProcessUtils.isProcessRunning;
+import static com.jpmorgan.cakeshop.util.ProcessUtils.killProcess;
+import static com.jpmorgan.cakeshop.util.ProcessUtils.readPidFromFile;
+import static com.jpmorgan.cakeshop.util.ProcessUtils.writePidToFile;
+import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.jpmorgan.cakeshop.bean.GethConfigBean;
-import com.jpmorgan.cakeshop.bean.QuorumConfigBean;
+import com.jpmorgan.cakeshop.bean.GethConfig;
+import com.jpmorgan.cakeshop.bean.GethRunner;
+import com.jpmorgan.cakeshop.bean.TransactionManager;
+import com.jpmorgan.cakeshop.bean.TransactionManagerRunner;
 import com.jpmorgan.cakeshop.dao.BlockDAO;
 import com.jpmorgan.cakeshop.dao.TransactionDAO;
 import com.jpmorgan.cakeshop.dao.WalletDAO;
@@ -25,7 +35,6 @@ import com.jpmorgan.cakeshop.service.task.LoadPeersTask;
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.ProcessUtils;
 import com.jpmorgan.cakeshop.util.StreamLogAdapter;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,7 +43,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.PreDestroy;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -60,17 +68,20 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     public static final String SIMPLE_RESULT = "_result";
     public static final Integer DEFAULT_NETWORK_ID = 1006;
-    public static final Integer DEFAULT_NUMBER_ACCOUNTS = 8;
+    public static final Integer DEFAULT_NUMBER_ACCOUNTS = 3;
 
     private static final Logger LOG = LoggerFactory.getLogger(GethHttpServiceImpl.class);
     private static final Logger GETH_LOG = LoggerFactory.getLogger("geth");
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Autowired
-    private GethConfigBean gethConfig;
+    private GethConfig gethConfig;
 
     @Autowired
-    private QuorumConfigBean quorumConfig;
+    private GethRunner gethRunner;
+
+    @Autowired
+    private TransactionManagerRunner transactionManagerRunner;
 
     @Autowired(required = false)
     private BlockDAO blockDAO;
@@ -143,6 +154,7 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     @Override
     public Map<String, Object> executeGethCall(String funcName, Object... args) throws APIException {
+        LOG.info("Geth call: " + funcName);
         return executeGethCall(new RequestModel(funcName, args, GETH_API_VERSION, GETH_REQUEST_ID));
     }
 
@@ -155,20 +167,21 @@ public class GethHttpServiceImpl implements GethHttpService {
             throw new APIException("Received empty reply from server");
         }
 
-        Map<String, Object> data;
         try {
-            data = OBJECT_MAPPER.readValue(response, Map.class);
+            return processResponse(OBJECT_MAPPER.readValue(response, Map.class));
+        } catch (APIException e) {
+            LOG.error("RPC request for " + requestToJson(request) + " failed with " + e.getMessage());
+            throw e;
         } catch (IOException e) {
             throw new APIException("RPC call failed", e);
         }
-
-        return processResponse(data);
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public List<Map<String, Object>> batchExecuteGethCall(List<RequestModel> requests) throws APIException {
-        String response = executeGethCallInternal(requestToJson(requests));
+        String json = requestToJson(requests);
+        String response = executeGethCallInternal(json);
 
         List<Map<String, Object>> responses;
         try {
@@ -181,7 +194,7 @@ public class GethHttpServiceImpl implements GethHttpService {
             return results;
 
         } catch (IOException e) {
-            throw new APIException("RPC call failed", e);
+            throw new APIException("RPC call failed for " + json, e);
         }
     }
 
@@ -218,13 +231,13 @@ public class GethHttpServiceImpl implements GethHttpService {
     public Boolean stop() {
         LOG.info("Stopping geth");
 
-        if (gethConfig.isEmbeddedQuorum()) {
-            if (!stopConstellation()) {
-                LOG.error("Could not stop constellation");
-            }
-        }
-
         try {
+            if (gethRunner.isEmbeddedQuorum()) {
+                if (!stopTransactionManager()) {
+                    LOG.error("Could not stop constellation");
+                }
+            }
+
             if (blockScanner != null) {
                 blockScanner.shutdown();
             }
@@ -237,7 +250,7 @@ public class GethHttpServiceImpl implements GethHttpService {
                 stdoutLogger.stopAsync();
             }
 
-            return killProcess(readPidFromFile(gethConfig.getGethPidFilename()), "geth.exe");
+            return killProcess(gethRunner.getGethPidFilename(), "geth");
 
         } catch (IOException | InterruptedException ex) {
             LOG.error("Cannot shutdown process " + ex.getMessage());
@@ -254,10 +267,8 @@ public class GethHttpServiceImpl implements GethHttpService {
             return stopped;
         }
 
-        this.deletePid();
-
         try {
-            FileUtils.deleteDirectory(new File(gethConfig.getDataDirPath()));
+            FileUtils.deleteDirectory(new File(gethConfig.getGethDataDirPath()));
         } catch (IOException ex) {
             LOG.error("Cannot delete directory " + ex.getMessage());
             return false;
@@ -277,11 +288,6 @@ public class GethHttpServiceImpl implements GethHttpService {
         return this.start(additionalParams);
     }
 
-    @Override
-    public Boolean deletePid() {
-        return new File(gethConfig.getGethPidFilename()).delete();
-    }
-
     @PreDestroy
     protected void autoStop() {
         if (!gethConfig.isAutoStop()) {
@@ -289,16 +295,15 @@ public class GethHttpServiceImpl implements GethHttpService {
         }
 
         stop();
-        deletePid();
 
         // stop solc server
         LOG.info("Stopping solc daemon");
         List<String> args = Lists.newArrayList(
-                gethConfig.getNodePath(),
-                gethConfig.getSolcPath(),
+                gethRunner.getNodeJsPath(),
+                gethRunner.getSolcPath(),
                 "--stop-ipc");
 
-        ProcessBuilder builder = ProcessUtils.createProcessBuilder(gethConfig, args);
+        ProcessBuilder builder = ProcessUtils.createProcessBuilder(gethRunner, args);
         try {
             Process proc = builder.start();
             proc.waitFor();
@@ -317,57 +322,13 @@ public class GethHttpServiceImpl implements GethHttpService {
     }
 
     @Override
-    public Boolean startConstellation() {
-        Boolean success = false;
-        File constellationLogDir = new File(quorumConfig.getConstellationConfigPath().concat("logs"));
-        File constellationLog = new File(quorumConfig.getConstellationConfigPath().concat("logs/").concat("constellation.log"));
-        if (!constellationLogDir.exists()) {
-            constellationLogDir.mkdirs();
-            if (!constellationLog.exists()) {
-                try {
-                    constellationLog.createNewFile();
-                } catch (IOException ex) {
-                    LOG.error("Could not create log for constellation", ex.getMessage());
-                    return false;
-                }
-            }
-        }
-        //TODO: When Windows verision for constellation is available - add the functionality to start it under Windows.
-        String[] command = new String[]{"/bin/sh", "-c",
-            quorumConfig.getConstellationPath().concat(" ")
-            .concat(quorumConfig.getConstellationConfigPath()).concat("node.conf")
-            .concat(" 2>> ").concat(constellationLog.getAbsolutePath())
-            .concat(" &")};
-        ProcessBuilder builder = new ProcessBuilder(command);
-        try {
-            Process process = builder.start();
-            Integer constProcessId = getUnixPID(process);
-            writePidToFile(constProcessId, gethConfig.getConstPidFileName());
-            success = true;
-            LOG.info("CONSTELLATION STARTED");
-            TimeUnit.SECONDS.sleep(5);
-        } catch (IOException | InterruptedException ex) {
-            LOG.error(ex.getMessage());
-        }
-        return success;
+    public boolean startTransactionManager() {
+        return transactionManagerRunner.startTransactionManager();
     }
 
     @Override
-    public Boolean stopConstellation() {
-        Boolean success = false;
-        try {
-            String pid = ProcessUtils.getUnixPidByName("constellation");
-            if (StringUtils.isNotBlank(pid)) {
-                success = killProcess(pid, null);
-                LOG.info("Stopping Constellation with pid " + pid);
-                new File(gethConfig.getConstPidFileName()).delete();
-            } else {
-                LOG.warn("Could not get PID to stop Constellation");
-            }
-        } catch (InterruptedException | IOException ex) {
-            LOG.error(ex.getMessage());
-        }
-        return success;
+    public Boolean stopTransactionManager() {
+        return transactionManagerRunner.stopTransactionManager();
     }
 
     @Override
@@ -375,19 +336,19 @@ public class GethHttpServiceImpl implements GethHttpService {
 
         startupErrors.clear();
 
-        if (isProcessRunning(readPidFromFile(gethConfig.getGethPidFilename()))) {
+        if (isProcessRunning(readPidFromFile(gethRunner.getGethPidFilename()))) {
             LOG.info("Ethereum was already running; not starting again");
             return this.running = true;
         }
 
         try {
-            String dataDir = gethConfig.getDataDirPath();
+            String dataDir = gethConfig.getGethDataDirPath();
 
             // copy keystore if necessary
             File keystoreDir = new File(FileUtils.expandPath(dataDir, "keystore"));
             if (!keystoreDir.exists()) {
                 LOG.debug("Initializing keystore");
-                FileUtils.copyDirectory(new File(gethConfig.getKeystorePath()), keystoreDir);
+                FileUtils.copyDirectory(new File(gethRunner.getKeystorePath()), keystoreDir);
             }
 
             // run geth init
@@ -395,6 +356,8 @@ public class GethHttpServiceImpl implements GethHttpService {
             File newChainDataDir = new File(FileUtils.expandPath(dataDir, "geth", "chaindata"));
             if (!(chainDataDir.exists() || newChainDataDir.exists())) {
                 //chainDataDir.mkdirs();
+                LOG.debug("Running consensus mode init");
+                gethRunner.initializeConsensusMode();
                 LOG.debug("Running geth init");
                 if (!initGeth()) {
                     logError("Geth datadir failed to initialize");
@@ -402,27 +365,44 @@ public class GethHttpServiceImpl implements GethHttpService {
                 }
             }
 
-            if (gethConfig.isEmbeddedQuorum()) {
+            if (gethRunner.isEmbeddedQuorum()) {
                 additionalParams = setAdditionalParams(additionalParams).toArray(new String[setAdditionalParams(additionalParams).size()]);
-                if (gethConfig.isConstellationEnabled() && !isProcessRunning(readPidFromFile(gethConfig.getConstPidFileName())) && !gethConfig.IS_BOOT_NODE) {
-                    startConstellation();
+                LOG.info("Embedded quorum, additional params: {}", (Object) additionalParams);
+
+                if (gethConfig.isTransactionManagerEnabled() && !isProcessRunning(
+                    readPidFromFile(transactionManagerRunner.getPidFilePath())) && gethConfig
+                    .shouldUseQuorum()) {
+                    LOG.info("Transaction Manager enabled");
+                    startTransactionManager();
                 }
             }
 
-            ProcessBuilder builder = createProcessBuilder(gethConfig, createGethCommand(additionalParams));
+            ProcessBuilder builder = createProcessBuilder(gethRunner, createGethCommand(additionalParams));
             final Map<String, String> env = builder.environment();
 
-            if (gethConfig.isEmbeddedQuorum() && !gethConfig.IS_BOOT_NODE) {
-                env.put("PRIVATE_CONFIG", quorumConfig.getConstellationConfigPath().concat("node.conf"));
+            if (gethRunner.isEmbeddedQuorum() && gethConfig.shouldUseQuorum()) {
+                String transactionManagerIpcPath;
+                if (gethConfig.getTransactionManagerType() == TransactionManager.Type.none) {
+                    transactionManagerIpcPath = "ignore";
+                } else {
+                    transactionManagerIpcPath = FileUtils
+                        .expandPath(gethConfig.getTransactionManagerDataPath(),
+                            TRANSACTION_MANAGER_KEY_NAME + ".ipc");
+                    LOG.info("Waiting for tm ipc file to be created: {}", transactionManagerIpcPath);
+                    FileUtils.waitFor(new File(transactionManagerIpcPath), 20);
+                }
+                LOG.info("Setting env variable PRIVATE_CONFIG to: {}", transactionManagerIpcPath);
+                env.put("PRIVATE_CONFIG", transactionManagerIpcPath);
             }
 
+            LOG.info("geth command: " +  String.join(" ", builder.command()));
             Process process = builder.start();
             this.stdoutLogger = (StreamLogAdapter) new StreamLogAdapter(GETH_LOG, process.getInputStream()).startAsync();
             this.stderrLogger = (StreamLogAdapter) new StreamLogAdapter(GETH_LOG, process.getErrorStream()).startAsync();
 
             Integer pid = getProcessPid(process);
             if (pid != null) {
-                writePidToFile(pid, gethConfig.getGethPidFilename());
+                writePidToFile(pid, gethRunner.getGethPidFilename());
             }
 
             if (!(checkGethStarted() && checkWalletUnlocked())) {
@@ -464,105 +444,41 @@ public class GethHttpServiceImpl implements GethHttpService {
         } else {
             additionalParams = new ArrayList<>();
         }
-        Boolean isBootNode = false;
-        Boolean saveProps = false;
+        boolean saveProps = false;
         //figure out if node is boot node
-        if (quorumConfig.isBootNode()) {
-            if (StringUtils.isNotBlank(quorumConfig.getBootNodeAddress())) {
+        if (gethConfig.isBootNode()) {
+            if (StringUtils.isNotBlank(gethConfig.getBootNodeAddress())) {
                 additionalParams.add("bootnode");
                 additionalParams.add("--nodekeyhex");
-                additionalParams.add(quorumConfig.getBootNodeKey());
+                additionalParams.add(gethConfig.getBootNodeKey());
                 additionalParams.add(" --addr");
-                additionalParams.add(quorumConfig.getBootNodeAddress());
-                isBootNode = true;
+                additionalParams.add(gethConfig.getBootNodeAddress());
             } else if (StringUtils.isNotBlank(System.getProperty("geth.bootnode.address"))
                     && StringUtils.isNotBlank(System.getProperty("geth.bootnode.key"))) {
                 String nodeport = System.getProperty("geth.bootnode.address", "127.0.0.1:33445").split(":")[1];
-                gethConfig.setProperty("geth.boot.node", "true");
-                gethConfig.setProperty("geth.bootnode.address", System.getProperty("geth.bootnode.address", "127.0.0.1:33445"));
-                gethConfig.setProperty("geth.bootnode.key", System.getProperty("geth.bootnode.key"));
-                gethConfig.setProperty("geth.node.port", nodeport);
+                gethConfig.setBootNode("true");
+                gethConfig.setBootNodeAddress(System.getProperty("geth.bootnode.address", "127.0.0.1:33445"));
+                gethConfig.setBootNodeKey(System.getProperty("geth.bootnode.key"));
+                gethConfig.setGethNodePort(nodeport);
                 additionalParams.add("bootnode");
                 additionalParams.add("--nodekeyhex");
                 additionalParams.add(System.getProperty("geth.bootnode.key"));
                 additionalParams.add(" --addr");
                 additionalParams.add(System.getProperty("geth.bootnode.address", "127.0.0.1:33445"));
                 saveProps = true;
-                isBootNode = true;
             }
-        }
-
-        if (!isBootNode) {
-            if (StringUtils.isNotBlank(quorumConfig.getBootNodes())) {
+        } else {
+            if (StringUtils.isNotBlank(gethConfig.getBootNodeList())) {
                 additionalParams.add("--bootnodes");
-                additionalParams.add(quorumConfig.getBootNodes());
+                additionalParams.add(gethConfig.getBootNodeList());
 
             } else if (StringUtils.isNotBlank(System.getProperty("geth.bootnodes.list"))) {
                 additionalParams.add("--bootnodes");
                 additionalParams.add(System.getProperty("geth.bootnodes.list"));
-                gethConfig.setProperty("geth.bootnodes.list", System.getProperty("geth.bootnodes.list"));
+                gethConfig.setBootNodeList(System.getProperty("geth.bootnodes.list"));
                 saveProps = true;
             }
 
-            //Set Block Maker account
-            if (StringUtils.isNotBlank(gethConfig.getBlockMaker())) {
-                additionalParams.add("--blockmakeraccount");
-                additionalParams.add(gethConfig.getBlockMaker());
-                additionalParams.add("--blockmakerpassword");
-                additionalParams.add(null != gethConfig.getBlockMakerPass() ? gethConfig.getBlockMakerPass() : "");
-            } else if (StringUtils.isNotBlank(System.getProperty("geth.block.maker"))) {
-                additionalParams.add("--blockmakeraccount");
-                additionalParams.add(System.getProperty("geth.block.maker"));
-                additionalParams.add("--blockmakerpassword");
-                String pass = StringUtils.isNotBlank(System.getProperty("geth.block.maker.pass")) ? System.getProperty("geth.block.maker.pass") : "";
-                additionalParams.add(pass);
-                gethConfig.setBlockMaker(System.getProperty("geth.block.maker"));
-                gethConfig.setBlockMakerPass(pass);
-                saveProps = true;
-            }
-            //Set min and max block time
-            if (null != gethConfig.getMinBlockTime()) {
-                additionalParams.add("--minblocktime");
-                additionalParams.add(String.valueOf(gethConfig.getMinBlockTime()));
-            } else if (StringUtils.isNotBlank(System.getProperty("geth.min.blocktime"))) {
-                additionalParams.add("--minblocktime");
-                additionalParams.add(System.getProperty("geth.min.blocktime"));
-                gethConfig.setProperty("geth.min.blocktime", System.getProperty("geth.min.blocktime"));
-                saveProps = true;
-            } else {
-                additionalParams.add("--minblocktime");
-                additionalParams.add("2");
-            }
-
-            if (null != gethConfig.getMaxBlockTime()) {
-                additionalParams.add("--maxblocktime");
-                additionalParams.add(String.valueOf(gethConfig.getMaxBlockTime()));
-            } else if (StringUtils.isNotBlank(System.getProperty("geth.max.blocktime"))) {
-                additionalParams.add("--maxblocktime");
-                additionalParams.add(System.getProperty("geth.max.blocktime"));
-                gethConfig.setProperty("geth.max.blocktime", System.getProperty("geth.max.blocktime"));
-                saveProps = true;
-            } else {
-                additionalParams.add("--maxblocktime");
-                additionalParams.add("5");
-            }
-
-            //Set Vote Account
-            if (StringUtils.isNotBlank(gethConfig.getVoteAccount())) {
-                additionalParams.add("--voteaccount");
-                additionalParams.add(gethConfig.getVoteAccount());
-                additionalParams.add("--votepassword");
-                additionalParams.add(null != gethConfig.getVoteAccountPass() ? gethConfig.getVoteAccountPass() : "");
-            } else if (StringUtils.isNotBlank(System.getProperty("geth.vote.account"))) {
-                additionalParams.add("--voteaccount");
-                additionalParams.add(System.getProperty("geth.vote.account"));
-                additionalParams.add("--votepassword");
-                String pass = StringUtils.isNotBlank(System.getProperty("geth.vote.account.pass")) ? System.getProperty("geth.vote.account.pass") : "";
-                additionalParams.add(pass);
-                gethConfig.setVoteAccount(System.getProperty("geth.vote.account"));
-                gethConfig.setVoteAccountPass(pass);
-                saveProps = true;
-            }
             //Set permissioned 
             if (gethConfig.isPermissionedNode()) {
                 additionalParams.add("--permissioned");
@@ -594,7 +510,7 @@ public class GethHttpServiceImpl implements GethHttpService {
      * @throws IOException
      */
     private boolean initGeth() throws IOException {
-        ProcessBuilder builder = createProcessBuilder(gethConfig, createGethInitCommand());
+        ProcessBuilder builder = createProcessBuilder(gethRunner, createGethInitCommand());
         builder.inheritIO();
         try {
             Process process = builder.start();
@@ -614,9 +530,9 @@ public class GethHttpServiceImpl implements GethHttpService {
     }
 
     private List<String> createGethInitCommand() {
-        return Lists.newArrayList(gethConfig.getGethPath(),
-                "--datadir", gethConfig.getDataDirPath(),
-                "init", gethConfig.getGenesisBlockFilename()
+        return Lists.newArrayList(gethRunner.getGethPath(),
+                "--datadir", gethConfig.getGethDataDirPath(),
+                "init", gethRunner.getGenesisBlockFilename()
         );
     }
 
@@ -633,32 +549,47 @@ public class GethHttpServiceImpl implements GethHttpService {
 
         //Option to overwrite default port nide post and geth http usr through command line
         Boolean saveGethConfig = false;
-        if (StringUtils.isNotBlank(System.getProperty("geth.url"))) {
-            gethConfig.setRpcUrl(System.getProperty("geth.url"));
+        if (StringUtils.isNotBlank(System.getProperty(GETH_RPC_URL))) {
+            gethConfig.setRpcUrl(System.getProperty(GETH_RPC_URL));
             saveGethConfig = true;
         }
 
-        if (StringUtils.isNotBlank(System.getProperty("geth.node.port"))) {
-            gethConfig.setGethNodePort(System.getProperty("geth.node.port"));
+        if (StringUtils.isNotBlank(System.getProperty(GETH_NODE_PORT))) {
+            gethConfig.setGethNodePort(System.getProperty(GETH_NODE_PORT));
             saveGethConfig = true;
         }
 
-        List<String> commands = Lists.newArrayList(gethConfig.getGethPath(),
-                "--port", gethConfig.getGethNodePort(),
-                "--datadir", gethConfig.getDataDirPath(),
-                "--solc", gethConfig.getSolcPath(),
-                "--nat", "none",
-                "--nodiscover",
-                "--unlock", accountsToUnlock, "--password", gethConfig.getGethPasswordFile(),
-                "--rpc", "--rpcaddr", "127.0.0.1", "--rpcport", gethConfig.getRpcPort(),
-                "--rpcapi", gethConfig.getRpcApiList()
-        );
+        if (StringUtils.isNotBlank(System.getProperty(GethConfig.GETH_RAFT_PORT))) {
+            gethConfig.setRaftPort(System.getProperty(GethConfig.GETH_RAFT_PORT));
+            saveGethConfig = true;
+        }
+
+        if (StringUtils.isNotBlank(System.getProperty(GethConfig.GETH_TRANSACTION_MANAGER_URL))) {
+            gethConfig.setGethTransactionManagerUrl(System.getProperty(GethConfig.GETH_TRANSACTION_MANAGER_URL));
+            saveGethConfig = true;
+        }
+
+        if (StringUtils.isNotBlank(System.getProperty(GethConfig.GETH_TRANSACTION_MANAGER_TYPE))) {
+            gethConfig.setGethTransactionManagerUrl(System.getProperty(GethConfig.GETH_TRANSACTION_MANAGER_TYPE));
+            saveGethConfig = true;
+        }
+
+        if (StringUtils.isNotBlank(System.getProperty("server.port"))) {
+            gethConfig.setCakeshopPort(System.getProperty("server.port"));
+            saveGethConfig = true;
+        }
+
+        List<String> commands = gethRunner.GethCommandLine();
+        commands.add("--unlock");
+        commands.add(accountsToUnlock);
+        commands.add("--password");
+        commands.add(gethRunner.getGethPasswordFile());
 
         if (null != additionalParams && additionalParams.length > 0) {
             commands.addAll(Lists.newArrayList(additionalParams));
         }
 
-        if (!gethConfig.isEmbeddedQuorum()) {
+        if (!gethRunner.isEmbeddedQuorum()) {
             commands.add("--ipcdisable");
         }
 
@@ -668,7 +599,7 @@ public class GethHttpServiceImpl implements GethHttpService {
         commands.add("--verbosity");
         commands.add(String.valueOf(gethConfig.getVerbosity() == null ? "3" : gethConfig.getVerbosity()));
 
-        if (null != gethConfig.isMining() && gethConfig.isMining() == true && !gethConfig.isEmbeddedQuorum()) {
+        if (null != gethConfig.isMining() && gethConfig.isMining()) {
             commands.add("--mine");
             commands.add("--minerthreads");
             commands.add("1");

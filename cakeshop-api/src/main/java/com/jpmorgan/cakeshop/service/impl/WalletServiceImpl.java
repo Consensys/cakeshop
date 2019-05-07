@@ -120,7 +120,8 @@ public class WalletServiceImpl implements WalletService, GethRpcConstants {
             Map<String, Object> fundArgs = new HashMap<>();
             fundArgs.put("from", accountFrom);
             fundArgs.put("to", request.getAccount());
-            fundArgs.put("value", request.getNewBalance());
+            fundArgs.put("value", AbiUtils.toHexWithNoLeadingZeros(request.getNewBalance()));
+            
             Map<String, Object> result = gethService.executeGethCall("eth_sendTransaction", new Object[]{fundArgs});
             String response = result.get("_result").toString();
             if (StringUtils.isNotBlank(response)) {
@@ -136,12 +137,12 @@ public class WalletServiceImpl implements WalletService, GethRpcConstants {
     @Override
     public boolean isUnlocked(String address) throws APIException {
         try {
-            Map<String, Object> result = gethService.executeGethCall("eth_sign", new Object[]{address, DUMMY_PAYLOAD_HASH});
+            Map<String, Object> result = gethService.executeGethCall("eth_sign", new Object[]{address, "0x" + DUMMY_PAYLOAD_HASH});
             if (StringUtils.isNotBlank((String) result.get("_result"))) {
                 return true;
             }
         } catch (APIException e) {
-            if (!e.getMessage().contains("account is locked")) {
+            if (!e.getMessage().contains("authentication needed: password or unlock")) {
                 throw e;
             }
         }

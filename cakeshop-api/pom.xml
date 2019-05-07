@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.jpmorgan</groupId>
         <artifactId>cakeshop-parent</artifactId>
-        <version>0.10.0</version>
+        <version>0.11.0</version>
     </parent>
 
     <artifactId>cakeshop</artifactId>
@@ -15,7 +15,6 @@
     <name>Cakeshop API</name>
 
     <properties>
-        <geth.url.base>https://github.com/fixanoid/cakeshop/releases/download/0.10.0/</geth.url.base>
     </properties>
 
     <profiles>
@@ -27,9 +26,7 @@
                 </os>
             </activation>
             <properties>
-                <geth.file>geth-1.5.4-b70acf3c-windows.zip</geth.file>
-                <geth.sha512>4d5bb0b451aa9b59babba6007d56aa1538f5c7fe141ca9071c8e2fcb37e11c136ba3b9d98a810d41a5d39c5e8ad1b0a7bfd1a2aa3fcd2553d6e84b0033c4b652</geth.sha512>
-                <geth.dir>win</geth.dir>
+                <platform.dir>win</platform.dir>
             </properties>
         </profile>
         <profile>
@@ -40,9 +37,7 @@
                 </os>
             </activation>
             <properties>
-                <geth.file>geth-1.5.4-b70acf3c-mac.zip</geth.file>
-                <geth.sha512>0b7ee396d03c557764ea777e55282049bd308809067eea0e2b5e9f35b557f696c1662f400934e72f5cb183d0321545fd28057f7c62df76c7ae19dd6e21007e9d</geth.sha512>
-                <geth.dir>mac</geth.dir>
+                <platform.dir>mac</platform.dir>
             </properties>
         </profile>
         <profile>
@@ -53,9 +48,7 @@
                 </os>
             </activation>
             <properties>
-                <geth.file>geth-1.5.4-b70acf3c-linux.zip</geth.file>
-                <geth.sha512>966bb9b476c13f557d33c474ca63ab46146775cc7ed6dfef7b3bae64281a39cccfd2f6647d30d1dbdde39f460771daf11a90d0c1f1cae7f8f5d8fac15232807a</geth.sha512>
-                <geth.dir>linux</geth.dir>
+                <platform.dir>linux</platform.dir>
             </properties>
         </profile>
     </profiles>
@@ -65,7 +58,7 @@
         <dependency>
             <groupId>com.jpmorgan</groupId>
             <artifactId>cakeshop-abi</artifactId>
-            <version>0.10.0</version>
+            <version>0.11.0</version>
         </dependency>
 
         <!-- SPRING & SPRING BOOT -->
@@ -160,6 +153,7 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
+            <version>5.1.17.Final</version>
         </dependency>
         <dependency>
             <groupId>org.hsqldb</groupId>
@@ -205,6 +199,11 @@
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20180130</version>
+        </dependency>
 
         <!-- COMMONS / UTILS -->
         <dependency>
@@ -239,12 +238,6 @@
             <groupId>com.jcabi</groupId>
             <artifactId>jcabi-manifests</artifactId>
             <version>1.1</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.jcabi</groupId>
-                    <artifactId>jcabi-log</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!-- CRYPTO -->
@@ -268,18 +261,18 @@
         </dependency>
         <dependency>
             <groupId>org.thymeleaf</groupId>
-            <artifactId>thymeleaf-spring4</artifactId>
-            <version>2.1.4.RELEASE</version>
+            <artifactId>thymeleaf-spring5</artifactId>
+            <version>3.0.9.RELEASE</version>
         </dependency>
-        <dependency>
-            <groupId>org.thymeleaf.extras</groupId>
-            <artifactId>thymeleaf-extras-springsecurity4</artifactId>
-            <version>2.1.3.RELEASE</version>
-        </dependency>
+      <dependency>
+        <groupId>org.thymeleaf.extras</groupId>
+        <artifactId>thymeleaf-extras-springsecurity4</artifactId>
+        <version>3.0.2.RELEASE</version>
+      </dependency>
         <dependency>
             <groupId>nz.net.ultraq.thymeleaf</groupId>
             <artifactId>thymeleaf-layout-dialect</artifactId>
-            <version>2.2.0</version>
+            <version>2.3.0</version>
         </dependency>
         <dependency>
             <groupId>io.springfox</groupId>
@@ -290,6 +283,35 @@
             <groupId>io.springfox</groupId>
             <artifactId>springfox-swagger-ui</artifactId>
             <version>2.6.1</version>
+        </dependency>
+
+        <!-- TESSERA -->
+        <dependency>
+            <groupId>com.jpmorgan.quorum</groupId>
+            <version>0.9</version>
+            <artifactId>config</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.jpmorgan.quorum</groupId>
+            <version>0.9</version>
+            <artifactId>config-migration</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.moandjiezana.toml</groupId>
+            <artifactId>toml4j</artifactId>
+            <version>0.7.2</version>
         </dependency>
 
         <!-- ############################################# -->
@@ -329,7 +351,6 @@
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <scope>test</scope>
         </dependency>
 
         <!-- bean validator api impl -->
@@ -369,7 +390,7 @@
                 <!-- Import dependency management from Spring Boot -->
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>1.4.3.RELEASE</version>
+                <version>${spring.boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -494,7 +515,7 @@
                             <goal>npm</goal>
                         </goals>
                         <configuration>
-                            <workingDirectory>src/main/resources/geth/solc</workingDirectory>
+                            <workingDirectory>src/main/resources/bin/solc</workingDirectory>
                         </configuration>
                     </execution>
 
@@ -510,7 +531,7 @@
                             <followSymlinks>false</followSymlinks>
                         </fileset>
                         <fileset>
-                            <directory>src/main/resources/geth/solc/node_modules</directory>
+                            <directory>src/main/resources/bin/solc/node_modules</directory>
                             <followSymlinks>false</followSymlinks>
                         </fileset>
                         <fileset>
@@ -527,27 +548,6 @@
             </plugin>
 
             <plugin>
-                <groupId>com.googlecode.maven-download-plugin</groupId>
-                <artifactId>download-maven-plugin</artifactId>
-                <version>1.3.0</version>
-                <executions>
-                    <execution>
-                        <id>install-geth</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>wget</goal>
-                        </goals>
-                        <configuration>
-                            <url>${geth.url.base}/${geth.file}</url>
-                            <unpack>true</unpack>
-                            <outputDirectory>${project.build.directory}/classes/geth/bin/${geth.dir}/</outputDirectory>
-                            <sha512>${geth.sha512}</sha512>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>3.0.1</version>
                 <executions>
@@ -558,7 +558,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/classes/geth/bin/${geth.dir}/</outputDirectory>
+                            <outputDirectory>${project.build.directory}/classes/bin/nodejs/${platform.dir}/</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${project.build.directory}/node/</directory>

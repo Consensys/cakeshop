@@ -548,8 +548,9 @@
 
       var editorSource = Contract.preprocess(Sandbox.getEditorSource());
       var optimize = document.querySelector('#optimize').checked;
+      var filename = Sandbox.Filer.getActiveFilename();
 
-      Contract.compile(editorSource, optimize).then(function(compiler_output) {
+        Contract.compile(editorSource, optimize, filename).then(function(compiler_output) {
         var contract = _.find(compiler_output, function(c) { return c.get("name") === sel; });
 
         var quorum = readQuorumVals(".constructor");
@@ -568,7 +569,9 @@
         Contract.deploy(contract.get("code"), optimize, _params,
           contract.get("binary"),
           quorum.privateFrom,
-          quorum.privateFor).then(function(addr) {
+          quorum.privateFor,
+          filename
+        ).then(function(addr) {
 
           addTx("Contract '" + contract.get("name") + "' deployed at " + wrapAddr(addr));
           $(".select_contract .address input").val(addr);

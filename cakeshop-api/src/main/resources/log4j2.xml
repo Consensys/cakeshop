@@ -22,10 +22,21 @@
                 </pattern>
             </PatternLayout>
         </File>
+        <File name="TM-Appender" fileName="${sys:logging.path}/tm.log">
+            <PatternLayout>
+                <pattern>
+                    [%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n
+                </pattern>
+            </PatternLayout>
+        </File>
     </Appenders>
     <Loggers>
         <Logger name="geth" level="debug" additivity="false">
             <AppenderRef ref="Geth-Appender"/>
+            <AppenderRef ref="Console-Appender"/>
+        </Logger>
+        <Logger name="tm" level="debug" additivity="false">
+            <AppenderRef ref="TM-Appender"/>
             <AppenderRef ref="Console-Appender"/>
         </Logger>
         <Logger name="com.jpmorgan.cakeshop" level="info" additivity="false">

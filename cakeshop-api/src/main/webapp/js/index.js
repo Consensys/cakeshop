@@ -48,17 +48,7 @@ window.Tower = {
 
 		// Set the client once status is retrieved
 		if (Tower.client === null) {
-			if (status.quorumInfo === null) {
-				delete status.quorumInfo;
-
-				Tower.client = 'geth';
-			} else {
-				Tower.client = 'quorum';
-
-				// Show all quorum controls
-				$('.quorum-control').show();
-			}
-
+			Tower.client = 'geth';
 			// Redraw the current section
 			$('#' + Dashboard.section).click();
 		}
@@ -105,7 +95,7 @@ window.Tower = {
 		// let everyone listening in know
 		Dashboard.Utils.emit('tower-control|ready|true');
 
-		if (window.localStorage.getItem('tourEnded') === null) {
+		if (window.localStorage.getItem('tour_end') === null) {
 			//first time, activate tour automatically
 			$(document).trigger('StartTour');
 			Tower.tour.start(true);
@@ -141,15 +131,15 @@ window.Tower = {
 			'node-settings'          : require('./widgets/node-settings'),
 			'peers-add'              : require('./widgets/peers-add'),
 			'peers-list'             : require('./widgets/peers-list'),
-			'peers-neighborhood'     : require('./widgets/peers-neighborhood'),
+            // TODO turn this back on after fixing nodeIP issue
+			// 'peers-neighborhood'     : require('./widgets/peers-neighborhood'),
 			'txn-detail'             : require('./widgets/txn-detail')
 		});
 
 
 		// Quorum widgets
 		Dashboard.preregisterWidgets({
-			'quorum-settings': require('./widgets/quorum-settings'),
-			'constellation': require('./widgets/constellation')
+			'transaction-manager': require('./widgets/transaction-manager')
 		});
 
 		Dashboard.init();
@@ -312,8 +302,7 @@ window.Tower = {
 			];
 
 			if (Tower.client === 'quorum') {
-				widgets.push({ widgetId: 'quorum-settings' });
-				widgets.push({ widgetId: 'constellation' });
+				widgets.push({ widgetId: 'transaction-manager' });
 			}
 
 			Dashboard.showSection('console', widgets);
@@ -323,11 +312,11 @@ window.Tower = {
 			var widgets = [
 				{ widgetId: 'peers-add' },
 				{ widgetId: 'peers-list' },
-				{ widgetId: 'peers-neighborhood', data: Tower.status.nodeIP }
+				// { widgetId: 'peers-neighborhood', data: Tower.status.nodeIP }
 			];
 
 			if (Tower.client === 'quorum') {
-				widgets.push({ widgetId: 'constellation' });
+				widgets.push({ widgetId: 'transaction-manager' });
 			}
 
 			Dashboard.showSection('peers', widgets);

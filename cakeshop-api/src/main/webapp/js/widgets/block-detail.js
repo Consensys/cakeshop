@@ -49,7 +49,7 @@ module.exports = function() {
 				keys = utils.idAlwaysFirst(keys);
 
 				if (keys.indexOf('timestamp') >= 0) {
-					res.data.attributes.timestamp = moment.unix(res.data.attributes.timestamp).format('hh:mm:ss A MM/DD/YYYY') + ' (' + moment.unix(res.data.attributes.timestamp).fromNow() + ')' ;
+					res.data.attributes.timestamp = moment(res.data.attributes.timestamp/1000000).format('hh:mm:ss A MM/DD/YYYY') + ' (' + moment(res.data.attributes.timestamp/1000000).fromNow() + ')' ;
 				}
 
 				_.each(keys, function(val, key) {

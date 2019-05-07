@@ -1,6 +1,6 @@
 package com.jpmorgan.cakeshop.service.impl;
 
-import com.jpmorgan.cakeshop.bean.GethConfigBean;
+import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Contract;
 import com.jpmorgan.cakeshop.model.ContractABI;
@@ -13,6 +13,11 @@ import com.jpmorgan.cakeshop.service.TransactionService;
 import com.jpmorgan.cakeshop.util.CakeshopUtils;
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -22,12 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 @Service
 public class ContractRegistryServiceImpl implements ContractRegistryService {
@@ -50,7 +49,7 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
     private String contractRegistryAddress;
 
     @Autowired
-    private GethConfigBean gethConfig;
+    private GethConfig gethConfig;
 
     private final ContractABI abi;
 
@@ -63,7 +62,8 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
 
         try {
             String code = FileUtils.readClasspathFile("contracts/ContractRegistry.sol");
-            TransactionResult txr = contractService.create(null, code, CodeType.solidity, null, null, null, null);
+            TransactionResult txr = contractService.create(null, code, CodeType.solidity, null, null, null, null,
+                "ContractRegistry.sol");
             Transaction tx = transactionService.waitForTx(txr, 200, TimeUnit.MILLISECONDS);
             this.contractRegistryAddress = tx.getContractAddress();
             saveContractRegistryAddress(this.contractRegistryAddress);
@@ -80,7 +80,7 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
     private void saveContractRegistryAddress(String addr) throws APIException {
         try {
             LOG.debug("Storing ContractRegistry address " + addr);
-            gethConfig.setProperty("contract.registry.addr", addr);
+            gethConfig.setContractAddress(addr);
             gethConfig.save();
         } catch (IOException e) {
             LOG.warn("Unable to update application.properties", e);
@@ -131,8 +131,12 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
             return null; // FIXME return silently because registry hasn't yet been registered
         }
 
-        if (name.equalsIgnoreCase("ContractRegistry")) {
-            LOG.debug("Skipping registration for ContractRegistry");
+        LOG.info("Registering contract {} with address {}", name, id);
+
+        if (name.equalsIgnoreCase("ContractRegistry") || contractRegistryAddress.equals(id)) {
+            // Solidity compiler now prefixes contract names with ':'
+            // In the future it will be "{filename}:{Contractname}"
+            LOG.info("Skipping registration for ContractRegistry");
             return null;
         }
 

@@ -61,48 +61,12 @@ module.exports = function() {
 			keys = utils.idAlwaysFirst(keys);
 
 			// objects not shown in this widget
-			keys = _.without(keys, 'config', 'peers', 'quorumInfo');
+			keys = _.without(keys, 'config', 'peers');
 
 			_.each(keys, function(val, key) {
 				rows.push( this.templateRow({ key: utils.camelToRegularForm(val), value: status[val] }) );
 			}.bind(this));
 
-
-			// Appending quorum info if present
-			if (status.hasOwnProperty('quorumInfo') && !_.isEmpty(status.quorumInfo)) {
-				rows.push( '<tr><td colspan="2" style="font-weight:bold;padding-top:20px;">Quorum Info</td></tr>' );
-
-				keys =_.keys(status.quorumInfo).sort(function (a, b) {
-					if (a < b) return -1;
-					if (b < a) return 1;
-
-					return 0;
-				});
-
-				keys = _.without(keys, 'blockMakerStrategy');
-
-				_.each(keys, function(val, key) {
-					rows.push( this.templateRow({ key: utils.camelToRegularForm(val), value: status.quorumInfo[val] }) );
-				}.bind(this));
-
-				// Strategy
-				if ( status.quorumInfo.hasOwnProperty('blockMakerStrategy')
-					&& !_.isEmpty(status.quorumInfo.blockMakerStrategy) ) {
-
-					rows.push( '<tr><td colspan="2" style="font-weight:bold;padding-top:20px;">Block Maker Strategy</td></tr>' );
-
-					keys =_.keys(status.quorumInfo.blockMakerStrategy).sort(function (a, b) {
-						if (a < b) return -1;
-						if (b < a) return 1;
-
-						return 0;
-					});
-
-					_.each(keys, function(val, key) {
-						rows.push( this.templateRow({ key: utils.camelToRegularForm(val), value: status.quorumInfo.blockMakerStrategy[val] }) );
-					}.bind(this));
-				}
-			}
 
 			$('#widget-' + this.shell.id).html( this.template({ rows: rows.join('') }) );
 

@@ -8,10 +8,8 @@ package com.jpmorgan.cakeshop.model.json;
 public class NodePostJsonRequest {
 
     private String address;
-    private String logLevel, networkId, identity, genesisBlock, blockMakerAccount, voterAccount, extraParams,
-            constellationNode;
+    private String logLevel, networkId, identity, genesisBlock, extraParams, transactionManagerNode;
     private Object committingTransactions;
-    private Integer minBlockTime, maxBlockTime;
 
     /**
      * @return the address
@@ -84,34 +82,6 @@ public class NodePostJsonRequest {
     }
 
     /**
-     * @return the blockMakerAccount
-     */
-    public String getBlockMakerAccount() {
-        return blockMakerAccount;
-    }
-
-    /**
-     * @param blockMakerAccount the blockMakerAccount to set
-     */
-    public void setBlockMakerAccount(String blockMakerAccount) {
-        this.blockMakerAccount = blockMakerAccount;
-    }
-
-    /**
-     * @return the voterAccount
-     */
-    public String getVoterAccount() {
-        return voterAccount;
-    }
-
-    /**
-     * @param voterAccount the voterAccount to set
-     */
-    public void setVoterAccount(String voterAccount) {
-        this.voterAccount = voterAccount;
-    }
-
-    /**
      * @return the committingTransactions
      */
     public Object getCommittingTransactions() {
@@ -123,34 +93,6 @@ public class NodePostJsonRequest {
      */
     public void setCommittingTransactions(Object committingTransactions) {
         this.committingTransactions = committingTransactions;
-    }
-
-    /**
-     * @return the minBlockTime
-     */
-    public Integer getMinBlockTime() {
-        return minBlockTime;
-    }
-
-    /**
-     * @param minBlockTime the minBlockTime to set
-     */
-    public void setMinBlockTime(Integer minBlockTime) {
-        this.minBlockTime = minBlockTime;
-    }
-
-    /**
-     * @return the maxBlockTime
-     */
-    public Integer getMaxBlockTime() {
-        return maxBlockTime;
-    }
-
-    /**
-     * @param maxBlockTime the maxBlockTime to set
-     */
-    public void setMaxBlockTime(Integer maxBlockTime) {
-        this.maxBlockTime = maxBlockTime;
     }
 
     /**
@@ -168,17 +110,17 @@ public class NodePostJsonRequest {
     }
 
     /**
-     * @return the constellationNode
+     * @return the transactionManagerNode
      */
-    public String getConstellationNode() {
-        return constellationNode;
+    public String getTransactionManagerNode() {
+        return transactionManagerNode;
     }
 
     /**
-     * @param constellationNode the constellationNode to set
+     * @param transactionManagerNode the constellationNode to set
      */
-    public void setConstellationNode(String constellationNode) {
-        this.constellationNode = constellationNode;
+    public void setTransactionManagerNode(String transactionManagerNode) {
+        this.transactionManagerNode = transactionManagerNode;
     }
 
 }
