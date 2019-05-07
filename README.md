@@ -1,6 +1,6 @@
 # Cakeshop
 
-[![Build Status](https://travis-ci.com/jpmorganchase/cakeshop.svg?branch=quorum-ui)](https://travis-ci.org/jpmorganchase/cakeshop)
+[![Build Status](https://travis-ci.com/jpmorganchase/cakeshop.svg?branch=master)](https://travis-ci.org/jpmorganchase/cakeshop)
 
 An integrated development environment and SDK for Ethereum-like ledgers
 
