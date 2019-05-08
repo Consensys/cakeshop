@@ -67,7 +67,7 @@ import org.springframework.web.client.RestTemplate;
 public class GethHttpServiceImpl implements GethHttpService {
 
     public static final String SIMPLE_RESULT = "_result";
-    public static final Integer DEFAULT_NETWORK_ID = 1006;
+    public static final Long DEFAULT_NETWORK_ID = 1006L;
     public static final Integer DEFAULT_NUMBER_ACCOUNTS = 3;
 
     private static final Logger LOG = LoggerFactory.getLogger(GethHttpServiceImpl.class);

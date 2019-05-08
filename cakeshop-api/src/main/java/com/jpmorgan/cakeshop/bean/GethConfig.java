@@ -248,11 +248,11 @@ public class GethConfig {
         props.setProperty(GETH_AUTO_STOP, autoStop.toString());
     }
 
-    public Integer getNetworkId() {
-        return Integer.valueOf(get(GETH_NETWORK_ID, "1006"));
+    public Long getNetworkId() {
+        return Long.valueOf(get(GETH_NETWORK_ID, "1006"));
     }
 
-    public void setNetworkId(Integer networkId) {
+    public void setNetworkId(Long networkId) {
         props.setProperty(GETH_NETWORK_ID, networkId.toString());
     }
 
