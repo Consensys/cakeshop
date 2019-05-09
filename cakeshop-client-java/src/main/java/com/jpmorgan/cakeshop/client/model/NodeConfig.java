@@ -1,13 +1,10 @@
 package com.jpmorgan.cakeshop.client.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import io.swagger.annotations.ApiModelProperty;
 import java.util.Objects;
-
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-
-import io.swagger.annotations.ApiModelProperty;
 
 
 
@@ -18,7 +15,7 @@ public class NodeConfig   {
 
     private String identity = null;
     private Boolean committingTransactions = null;
-    private Integer networkId = null;
+    private Long networkId = null;
     private Integer logLevel = null;
     private String genesisBlock = null;
     private String extraParams = null;
@@ -63,17 +60,17 @@ public class NodeConfig   {
     /**
      * Network identifier
      **/
-    public NodeConfig networkId(Integer networkId) {
+    public NodeConfig networkId(Long networkId) {
         this.networkId = networkId;
         return this;
     }
 
     @ApiModelProperty(example = "null", value = "Network identifier")
     @JsonProperty("networkId")
-    public Integer getNetworkId() {
+    public Long getNetworkId() {
         return networkId;
     }
-    public void setNetworkId(Integer networkId) {
+    public void setNetworkId(Long networkId) {
         this.networkId = networkId;
     }
 

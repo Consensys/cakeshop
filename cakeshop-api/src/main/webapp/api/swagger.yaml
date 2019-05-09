@@ -894,7 +894,7 @@ paths:
           description: 'Set log level (0-6, 6 is most verbose)'
           in: body
         - name: networkId
-          type: integer
+          type: long
           required: false
           description: Network ID (any integer value; node will restart)
           in: body
@@ -1217,7 +1217,7 @@ definitions:
             type: boolean
             description: Indicates whether the node is commiting transactions or not
           networkId:
-            type: integer
+            type: long
             description: Network identifier
           logLevel:
             type: integer

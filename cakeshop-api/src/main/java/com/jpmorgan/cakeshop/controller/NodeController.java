@@ -1,27 +1,35 @@
 package com.jpmorgan.cakeshop.controller;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.error.APIException;
-import com.jpmorgan.cakeshop.model.*;
+import com.jpmorgan.cakeshop.model.APIData;
+import com.jpmorgan.cakeshop.model.APIError;
+import com.jpmorgan.cakeshop.model.APIResponse;
+import com.jpmorgan.cakeshop.model.Node;
+import com.jpmorgan.cakeshop.model.NodeSettings;
+import com.jpmorgan.cakeshop.model.Peer;
 import com.jpmorgan.cakeshop.model.json.NodePostJsonRequest;
 import com.jpmorgan.cakeshop.service.ContractService;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.NodeService;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  *
@@ -82,7 +90,7 @@ public class NodeController extends BaseController {
             }
 
             if (!StringUtils.isEmpty(jsonRequest.getNetworkId())) {
-                nodeSettings.networkId(Integer.parseInt(jsonRequest.getNetworkId()));
+                nodeSettings.networkId(Long.parseLong(jsonRequest.getNetworkId()));
             }
 
             if (jsonRequest.getCommittingTransactions() != null) {

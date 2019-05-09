@@ -10,15 +10,15 @@ public class NodeConfig {
 
     private String identity;
     private Boolean committingTransactions;
-    private Integer networkId;
+    private Long networkId;
     private Integer logLevel;
     private String genesisBlock;
     private String extraParams;
 
-    public NodeConfig (String identity, Boolean mining, Integer networkid, Integer verbosity, String genesisBlock, String extraParams) {
+    public NodeConfig(String identity, Boolean mining, Long networkId, Integer verbosity, String genesisBlock, String extraParams) {
         this.identity = identity;
         this.committingTransactions = mining;
-        this.networkId = networkid;
+        this.networkId = networkId;
         this.logLevel = verbosity;
         this.setGenesisBlock(genesisBlock);
         this.setExtraParams(extraParams);
@@ -55,14 +55,14 @@ public class NodeConfig {
     /**
      * @return the networkId
      */
-    public Integer getNetworkId() {
+    public Long getNetworkId() {
         return networkId;
     }
 
     /**
      * @param networkId the networkId to set
      */
-    public void setNetworkid(Integer networkId) {
+    public void setNetworkid(Long networkId) {
         this.networkId = networkId;
     }
 

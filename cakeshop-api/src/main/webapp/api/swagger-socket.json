@@ -861,7 +861,7 @@
 					"description": "Indicates whether the node is commiting transactions or not"
 				},
 				"networkId": {
-					"type": "integer",
+					"type": "long",
 					"description": "Network identifier"
 				},
 				"logLevel": {

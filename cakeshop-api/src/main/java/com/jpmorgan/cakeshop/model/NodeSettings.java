@@ -8,7 +8,8 @@ package com.jpmorgan.cakeshop.model;
 public class NodeSettings {
 
     private String identity, extraParams, genesisBlock;
-    private Integer logLevel, networkId;
+    private Integer logLevel;
+    private Long networkId;
     private Boolean isMining;
 
     public NodeSettings() {
@@ -37,18 +38,18 @@ public class NodeSettings {
     /**
      * @return the networkId
      */
-    public Integer getNetworkId() {
+    public Long getNetworkId() {
         return networkId;
     }
 
     /**
      * @param networkId the networkId to set
      */
-    public void setNetworkId(Integer networkId) {
+    public void setNetworkId(Long networkId) {
         this.networkId = networkId;
     }
 
-    public NodeSettings networkId(Integer networkId) {
+    public NodeSettings networkId(Long networkId) {
         this.networkId = networkId;
         return this;
     }
