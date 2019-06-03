@@ -2,9 +2,9 @@ pragma solidity ^0.5.4;
 contract SimpleStorage {
 	event Debug(string msg, uint val);
     uint storedData;
-    constructor() public {
-    	emit Debug("init storage", 100);
-        storedData = 100;
+    constructor(uint _storedData) public {
+    	emit Debug("init storage", _storedData);
+        storedData = _storedData;
     }
     function set(uint x) public {
     	emit Debug("change val", x);

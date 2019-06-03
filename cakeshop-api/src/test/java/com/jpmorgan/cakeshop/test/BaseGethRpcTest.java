@@ -173,7 +173,7 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
      */
     protected String createContract() throws IOException, InterruptedException {
         String code = readTestFile("contracts/simplestorage.sol");
-        return createContract(code, null, "simplestorage.sol");
+        return createContract(code, new Object[]{100}, "simplestorage.sol");
     }
 
     /**
