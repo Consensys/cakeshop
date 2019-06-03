@@ -597,7 +597,7 @@ public class GethHttpServiceImpl implements GethHttpService {
         commands.add(String.valueOf(gethConfig.getNetworkId() == null ? DEFAULT_NETWORK_ID : gethConfig.getNetworkId()));
 
         commands.add("--verbosity");
-        commands.add(String.valueOf(gethConfig.getVerbosity() == null ? "3" : gethConfig.getVerbosity()));
+        commands.add(String.valueOf(gethConfig.getVerbosity()));
 
         if (null != gethConfig.isMining() && gethConfig.isMining()) {
             commands.add("--mine");
