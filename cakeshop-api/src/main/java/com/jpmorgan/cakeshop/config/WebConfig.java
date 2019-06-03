@@ -1,6 +1,7 @@
 package com.jpmorgan.cakeshop.config;
 
-import com.jpmorgan.cakeshop.util.FileUtils;
+import javax.annotation.PreDestroy;
+import javax.servlet.ServletContext;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,15 +13,13 @@ import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.servlet.ViewResolver;
-import org.springframework.web.servlet.config.annotation.*;
+import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
+import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 import org.thymeleaf.templateresolver.ServletContextTemplateResolver;
-
-import javax.annotation.PreDestroy;
-import javax.servlet.ServletContext;
-import java.io.FileInputStream;
-import java.util.Properties;
 
 /**
  *
@@ -48,23 +47,6 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void configureAsyncSupport(AsyncSupportConfigurer configurer) {
         configurer.setTaskExecutor(createMvcAsyncExecutor());
-    }
-
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        String configFile = FileUtils.expandPath(CONFIG_ROOT, "application.properties");
-        Properties props = new Properties();
-        try {
-        	props.load(new FileInputStream(configFile));
-        } catch (Exception e) { }
-       
-        if (Boolean.valueOf(env.getProperty("geth.cors.enabled"))) {
-            registry.addMapping("/**")
-                    .allowedOrigins(env.getProperty("geth.cors.url"));
-        } else if (Boolean.valueOf(props.getProperty("geth.cors.enabled"))) {
-            registry.addMapping("/**")
-            .allowedOrigins(props.getProperty("geth.cors.url"));
-        }
     }
 
     @Override
