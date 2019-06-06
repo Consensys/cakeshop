@@ -341,8 +341,7 @@ public class GethRunner {
         try (FileWriter writer = new FileWriter(staticnodespath.toFile())) {
             writer.write("[\n");
             writer.write(
-                "\"" + createEnodeURL(localnodeaddress, gethConfig.getGethNodePort(),
-                    gethConfig.getRaftPort())
+                "\"" + createEnodeURL()
                     + "\"\n");
             writer.write("]\n");
         } catch (IOException e) {
@@ -355,9 +354,11 @@ public class GethRunner {
         LOG.info("created static-nodes.json at " + staticnodespath.getParent());
     }
 
-    public static String createEnodeURL(String localaddress, String gethport, String raftport) {
-        String enodeurl = "enode://" + localaddress + "@127.0.0.1:" + gethport;
+    public String createEnodeURL() throws IOException {
+        String enodeurl =
+            "enode://" + getLocalEthereumAddress() + "@127.0.0.1:" + gethConfig.getGethNodePort();
 
+        String raftport = gethConfig.getRaftPort();
         if (raftport != null && raftport.trim().length() > 0
             && Integer.parseInt(raftport) > 0) {
             enodeurl += "?raftport=" + raftport;
