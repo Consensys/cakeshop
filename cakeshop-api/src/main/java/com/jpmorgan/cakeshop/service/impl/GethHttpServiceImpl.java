@@ -1,7 +1,5 @@
 package com.jpmorgan.cakeshop.service.impl;
 
-import static com.jpmorgan.cakeshop.bean.GethConfig.GETH_NODE_PORT;
-import static com.jpmorgan.cakeshop.bean.GethConfig.GETH_RPC_URL;
 import static com.jpmorgan.cakeshop.bean.TransactionManager.Type.TRANSACTION_MANAGER_KEY_NAME;
 import static com.jpmorgan.cakeshop.util.ProcessUtils.createProcessBuilder;
 import static com.jpmorgan.cakeshop.util.ProcessUtils.getProcessPid;
@@ -547,38 +545,6 @@ public class GethHttpServiceImpl implements GethHttpService {
             accountsToUnlock += i;
         }
 
-        //Option to overwrite default port nide post and geth http usr through command line
-        Boolean saveGethConfig = false;
-        if (StringUtils.isNotBlank(System.getProperty(GETH_RPC_URL))) {
-            gethConfig.setRpcUrl(System.getProperty(GETH_RPC_URL));
-            saveGethConfig = true;
-        }
-
-        if (StringUtils.isNotBlank(System.getProperty(GETH_NODE_PORT))) {
-            gethConfig.setGethNodePort(System.getProperty(GETH_NODE_PORT));
-            saveGethConfig = true;
-        }
-
-        if (StringUtils.isNotBlank(System.getProperty(GethConfig.GETH_RAFT_PORT))) {
-            gethConfig.setRaftPort(System.getProperty(GethConfig.GETH_RAFT_PORT));
-            saveGethConfig = true;
-        }
-
-        if (StringUtils.isNotBlank(System.getProperty(GethConfig.GETH_TRANSACTION_MANAGER_URL))) {
-            gethConfig.setGethTransactionManagerUrl(System.getProperty(GethConfig.GETH_TRANSACTION_MANAGER_URL));
-            saveGethConfig = true;
-        }
-
-        if (StringUtils.isNotBlank(System.getProperty(GethConfig.GETH_TRANSACTION_MANAGER_TYPE))) {
-            gethConfig.setGethTransactionManagerUrl(System.getProperty(GethConfig.GETH_TRANSACTION_MANAGER_TYPE));
-            saveGethConfig = true;
-        }
-
-        if (StringUtils.isNotBlank(System.getProperty("server.port"))) {
-            gethConfig.setCakeshopPort(System.getProperty("server.port"));
-            saveGethConfig = true;
-        }
-
         List<String> commands = gethRunner.GethCommandLine();
         commands.add("--unlock");
         commands.add(accountsToUnlock);
@@ -617,9 +583,6 @@ public class GethHttpServiceImpl implements GethHttpService {
                     commands.add(param);
                 }
             }
-        }
-        if (saveGethConfig) {
-            gethConfig.save();
         }
 
         return commands;
