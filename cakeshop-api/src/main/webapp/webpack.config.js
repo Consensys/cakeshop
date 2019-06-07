@@ -19,7 +19,7 @@ module.exports = {
 		hot: true,
 		inline: true,
 		stats: 'errors-only',
-		port: 8081
+		port: 7999
 	},
 	plugins: [
 		new webpack.ProvidePlugin({

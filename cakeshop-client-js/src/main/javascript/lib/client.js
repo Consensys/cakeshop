@@ -7,6 +7,11 @@
             data = JSON.stringify(data);
         }
 
+        if(window.location.host === "localhost:7999") {
+            // when running webpack dev server, point urls to 8080
+            url = "http://localhost:8080/cakeshop/" + url;
+        }
+
         return $.ajax({
             url: url,
             method: "POST",
@@ -47,7 +52,7 @@
     Client.connect = function() {
 
         var wsUrl;
-        if(window.location.host === "localhost:8081") {
+        if(window.location.host === "localhost:7999") {
             // when running webpack dev server, point urls to 8080
             wsUrl = "http://localhost:8080/cakeshop/ws"
         } else {
