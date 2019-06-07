@@ -3,6 +3,8 @@ package com.jpmorgan.cakeshop.bean;
 import static com.jpmorgan.cakeshop.util.FileUtils.expandPath;
 import static com.jpmorgan.cakeshop.util.ProcessUtils.ensureFileIsExecutable;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.util.FileUtils;
@@ -40,8 +42,9 @@ public class GethRunner {
     public static final String START_QUORUM_COMMAND =
         "quorum/" + ProcessUtils.getPlatformDirectory() + "/geth";
 
-    @Autowired
-    private GethConfig gethConfig;
+    private final GethConfig gethConfig;
+
+    private final ObjectMapper jsonMapper;
 
     private String gethPasswordFile;
 
@@ -59,6 +62,12 @@ public class GethRunner {
     private Boolean isEmbeddedQuorum;
 
     private String binPath;
+
+    @Autowired
+    public GethRunner(GethConfig gethConfig, ObjectMapper jsonMapper) {
+        this.gethConfig = gethConfig;
+        this.jsonMapper = jsonMapper;
+    }
 
     /**
      * Reset back to vendored config file and re-init bean config
@@ -148,7 +157,7 @@ public class GethRunner {
     }
 
     public void initializeConsensusMode() throws IOException {
-        createStaticNodesConfig();
+        addToEnodesConfig(createEnodeURL(), "static-nodes.json");
         if (gethConfig.getConsensusMode().equalsIgnoreCase("istanbul")) {
             updateIstanbulGenesis();
         } else if (gethConfig.getConsensusMode().equalsIgnoreCase("raft")) {
@@ -325,43 +334,72 @@ public class GethRunner {
         return localnodeaddress;
     }
 
-    /**
-     *
-     */
-    private void createStaticNodesConfig() throws IOException {
-        Path staticnodespath = Paths.get(gethConfig.getGethDataDirPath(), "static-nodes.json");
-        if (Files.exists(staticnodespath)) {
+    public void addToEnodesConfig(String enodeURL, String fileName) throws IOException {
+        List<String> enodeIds = getCurrentEnodesList(fileName);
+
+        if (enodeIds.contains(enodeURL)) {
+            LOG.info("static-nodes.json already includes enode url");
             return;
         }
-        if (!Files.exists(staticnodespath.getParent())) {
-            staticnodespath.getParent().toFile().mkdirs();
+
+        enodeIds.add(enodeURL);
+
+        writeEnodesList(enodeIds, fileName);
+    }
+
+    public void removeFromEnodesConfig(String enodeURL, String fileName) throws IOException {
+        List<String> enodeIds = getCurrentEnodesList(fileName);
+
+        if (!enodeIds.contains(enodeURL)) {
+            LOG.info("static-nodes.json doesn't include enode url");
+            return;
         }
 
-        String localnodeaddress = getLocalEthereumAddress();
-        try (FileWriter writer = new FileWriter(staticnodespath.toFile())) {
-            writer.write("[\n");
-            writer.write(
-                "\"" + createEnodeURL()
-                    + "\"\n");
-            writer.write("]\n");
+        enodeIds.remove(enodeURL);
+
+        writeEnodesList(enodeIds, fileName);
+    }
+
+    private List<String> getCurrentEnodesList(String fileName) throws IOException {
+        Path enodeListFilePath = Paths.get(gethConfig.getGethDataDirPath(), fileName);
+        List<String> enodeIds;
+        if (Files.exists(enodeListFilePath)) {
+            enodeIds = jsonMapper.readValue(
+                enodeListFilePath.toFile(),
+                new TypeReference<List<String>>() {
+                });
+        } else {
+            enodeListFilePath.getParent().toFile().mkdirs();
+            enodeIds = new ArrayList<>();
+        }
+        return enodeIds;
+    }
+
+    private void writeEnodesList(List<String> enodeIds, String fileName) throws APIException {
+        Path enodeListFilePath = Paths.get(gethConfig.getGethDataDirPath(), fileName);
+        try {
+            enodeListFilePath.getParent().toFile().mkdirs();
+            jsonMapper.writeValue(enodeListFilePath.toFile(), enodeIds);
         } catch (IOException e) {
             String message =
-                "unable to generate static-nodes.json at " + staticnodespath.getParent();
+                "unable to generate static-nodes.json at " + enodeListFilePath.getParent();
             LOG.error(message);
             throw new APIException(message, e);
         }
 
-        LOG.info("created static-nodes.json at " + staticnodespath.getParent());
+        LOG.info("updated static-nodes.json at " + enodeListFilePath.getParent());
     }
 
     public String createEnodeURL() throws IOException {
-        String enodeurl =
-            "enode://" + getLocalEthereumAddress() + "@127.0.0.1:" + gethConfig.getGethNodePort();
+        return formatEnodeUrl(getLocalEthereumAddress(), "127.0.0.1", gethConfig.getGethNodePort(),
+            gethConfig.getRaftPort());
+    }
 
-        String raftport = gethConfig.getRaftPort();
-        if (raftport != null && raftport.trim().length() > 0
-            && Integer.parseInt(raftport) > 0) {
-            enodeurl += "?raftport=" + raftport;
+    public String formatEnodeUrl(String address, String ip, String port, String raftPort) {
+        String enodeurl = String.format("enode://%s@%s:%s", address, ip, port);
+
+        if (raftPort != null && raftPort.trim().length() > 0 && Integer.parseInt(raftPort) > 0) {
+            enodeurl += "?raftport=" + raftPort;
         }
 
         return enodeurl;
@@ -440,8 +478,6 @@ public class GethRunner {
     }
 
     private void updateIstanbulGenesis() throws IOException {
-        String localnodeaddress = getLocalEthereumAddress();
-
         //TODO remove << ISTANBUL WRAPPER
         String baseResourcePath = System.getProperty("eth.bin.dir");
         if (StringUtils.isBlank(baseResourcePath)) {

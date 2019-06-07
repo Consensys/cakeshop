@@ -2,9 +2,7 @@ package com.jpmorgan.cakeshop.model;
 
 
 import com.jpmorgan.cakeshop.util.StringUtils;
-
 import java.util.List;
-
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
 public class Node  {
@@ -68,6 +66,11 @@ public class Node  {
      * Node configuration
      */
     private NodeConfig config;
+
+    /**
+     * Consensus role
+     */
+    private String role;
 
     /**
      * Connected peer list
@@ -177,6 +180,14 @@ public class Node  {
 
     public void setDataDirectory(String dataDirectory) {
         this.dataDirectory = dataDirectory;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 
     @Override

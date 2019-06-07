@@ -9,7 +9,8 @@ module.exports = function() {
 		hideLink: true,
 		hideRefresh: true,
 
-		url: 'api/node/peers/add',
+		addUrl: 'api/node/peers/add',
+        removeUrl: 'api/node/peers/remove',
 
 		template: _.template(
 			'  <div class="form-group">' +
@@ -17,7 +18,8 @@ module.exports = function() {
 			'    <input type="text" class="form-control" id="addy">' +
 			'  </div>'+
 			'  <div class="form-group pull-right">' +
-			'    <button type="button" class="btn btn-primary" id="restart">Add</button>' +
+			'    <button type="button" class="btn btn-primary" id="peerAdd">Add</button>' +
+            '    <button type="button" class="btn btn-secondary" id="peerRemove">Remove</button>' +
 			'  </div>'+
 			'  <div id="notification">' +
 			'  </div>'),
@@ -29,7 +31,9 @@ module.exports = function() {
 		},
 
 		_handler: function(ev) {
+
 			var _this = widget,
+             url = ev.target.id === "peerRemove" ? widget.removeUrl : widget.addUrl,
 			 input = $('#widget-' + _this.shell.id + ' #addy'),
 			 notif = $('#widget-' + _this.shell.id + ' #notification');
 
@@ -38,18 +42,11 @@ module.exports = function() {
 			}
 
 			$.when(
-				utils.load({ url: widget.url, data: { "address": input.val() } })
+				utils.load({ url: url, data: { "address": input.val() } })
 			).done(function(r) {
 				console.log('peers',r)
 				notif.show();
 
-				if ( (r) && (r.error) ) {
-					notif
-					 .addClass('text-danger')
-					 .removeClass('text-success')
-					 .html(r.error.message);
-
-				} else {
 					input.val('');
 
 					notif
@@ -60,7 +57,13 @@ module.exports = function() {
 					setTimeout(function() {
 						notif.fadeOut();
 					}, 2000);
-				}
+			}).fail(function(r) {
+			    console.log(r)
+                notif
+                  .addClass('text-danger')
+                  .removeClass('text-success')
+                  .html(r.responseJSON.errors.map((error) => error.detail));
+
 			});
 		}
 	};

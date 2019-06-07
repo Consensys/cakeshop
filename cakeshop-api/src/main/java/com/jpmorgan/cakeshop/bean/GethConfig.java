@@ -491,4 +491,8 @@ public class GethConfig {
             .sslClientTrustMode(SslTrustMode.TOFU)
             .build();
     }
+
+    public boolean isRaft() {
+        return getConsensusMode().equals("raft");
+    }
 }

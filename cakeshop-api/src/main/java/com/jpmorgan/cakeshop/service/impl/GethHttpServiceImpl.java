@@ -70,7 +70,6 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     private static final Logger LOG = LoggerFactory.getLogger(GethHttpServiceImpl.class);
     private static final Logger GETH_LOG = LoggerFactory.getLogger("geth");
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Autowired
     private GethConfig gethConfig;
@@ -99,6 +98,9 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired
+    private ObjectMapper jsonMapper;
 
     private BlockScanner blockScanner;
 
@@ -144,7 +146,7 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     private String requestToJson(Object request) throws APIException {
         try {
-            return OBJECT_MAPPER.writeValueAsString(request);
+            return jsonMapper.writeValueAsString(request);
         } catch (JsonProcessingException e) {
             throw new APIException("Failed to serialize request(s)", e);
         }
@@ -166,7 +168,7 @@ public class GethHttpServiceImpl implements GethHttpService {
         }
 
         try {
-            return processResponse(OBJECT_MAPPER.readValue(response, Map.class));
+            return processResponse(jsonMapper.readValue(response, Map.class));
         } catch (APIException e) {
             LOG.error("RPC request for " + requestToJson(request) + " failed with " + e.getMessage());
             throw e;
@@ -183,7 +185,7 @@ public class GethHttpServiceImpl implements GethHttpService {
 
         List<Map<String, Object>> responses;
         try {
-            responses = OBJECT_MAPPER.readValue(response, List.class);
+            responses = jsonMapper.readValue(response, List.class);
 
             List<Map<String, Object>> results = new ArrayList<>(responses.size());
             for (Map<String, Object> data : responses) {

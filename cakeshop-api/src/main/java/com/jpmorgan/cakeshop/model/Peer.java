@@ -4,7 +4,6 @@ import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -38,6 +37,16 @@ public class Peer implements Serializable  {
      * Node IP
      */
     private String nodeIP;
+
+    /**
+     * Raft Id
+     */
+    private String raftId;
+
+    /**
+     * Raft leader
+     */
+    private boolean leader;
 
     public String getStatus() {
          return status;
@@ -77,6 +86,22 @@ public class Peer implements Serializable  {
 
     public String getNodeIP() {
         return nodeIP;
+    }
+
+    public String getRaftId() {
+        return raftId;
+    }
+
+    public void setRaftId(String raftId) {
+        this.raftId = raftId;
+    }
+
+    public boolean isLeader() {
+        return leader;
+    }
+
+    public void setLeader(boolean leader) {
+        this.leader = leader;
     }
 
     @Override

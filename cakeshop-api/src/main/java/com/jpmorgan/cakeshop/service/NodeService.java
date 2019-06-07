@@ -5,7 +5,6 @@ import com.jpmorgan.cakeshop.model.Node;
 import com.jpmorgan.cakeshop.model.NodeConfig;
 import com.jpmorgan.cakeshop.model.NodeSettings;
 import com.jpmorgan.cakeshop.model.Peer;
-
 import java.util.List;
 import java.util.Map;
 
@@ -55,6 +54,15 @@ public interface NodeService {
      * @throws APIException
      */
     public boolean addPeer(String address) throws APIException;
+
+    /**
+     * Remove the given peer
+     *
+     * @param address
+     * @return
+     * @throws APIException
+     */
+    boolean removePeer(String address) throws APIException;
 
     /**
      * Get list of transaction manager nodes
