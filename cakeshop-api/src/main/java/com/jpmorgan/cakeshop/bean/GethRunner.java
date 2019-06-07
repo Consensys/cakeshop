@@ -367,24 +367,24 @@ public class GethRunner {
         return enodeurl;
     }
 
-    public ArrayList<String> GethCommandLine() {
-        return GethCommandLine(gethConfig.getConsensusMode());
+    public ArrayList<String> gethCommandLine() {
+        return gethCommandLine(gethConfig.getConsensusMode());
     }
 
     /**
      * @param mode - raft, instanbul
      */
-    public ArrayList<String> GethCommandLine(String mode) {
+    public ArrayList<String> gethCommandLine(String mode) {
         if (null == mode || mode.trim().isEmpty()) {
-            return GethRaftCommandLine();
+            return gethRaftCommandLine();
         } else if (mode.equalsIgnoreCase("istanbul")) { // TODO: Mode should be an enum
-            return GethIstanbulCommandLine();
+            return gethIstanbulCommandLine();
         } else {
-            return GethRaftCommandLine();
+            return gethRaftCommandLine();
         }
     }
 
-    public ArrayList<String> GethRaftCommandLine() {
+    public ArrayList<String> gethRaftCommandLine() {
         ArrayList<String> command = new ArrayList<String>();
 
         command.add(getGethPath());
@@ -416,7 +416,7 @@ public class GethRunner {
         return command;
     }
 
-    public ArrayList<String> GethIstanbulCommandLine() {
+    public ArrayList<String> gethIstanbulCommandLine() {
         ArrayList<String> command = new ArrayList<String>();
 
         command.add(getGethPath());

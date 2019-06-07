@@ -545,7 +545,7 @@ public class GethHttpServiceImpl implements GethHttpService {
             accountsToUnlock += i;
         }
 
-        List<String> commands = gethRunner.GethCommandLine();
+        List<String> commands = gethRunner.gethCommandLine();
         commands.add("--unlock");
         commands.add(accountsToUnlock);
         commands.add("--password");
