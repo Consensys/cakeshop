@@ -1,7 +1,5 @@
 package com.jpmorgan.cakeshop.service.impl;
 
-import static com.jpmorgan.cakeshop.bean.GethConfig.GETH_NODE_PORT;
-import static com.jpmorgan.cakeshop.bean.GethConfig.GETH_RPC_URL;
 import static com.jpmorgan.cakeshop.bean.TransactionManager.Type.TRANSACTION_MANAGER_KEY_NAME;
 import static com.jpmorgan.cakeshop.util.ProcessUtils.createProcessBuilder;
 import static com.jpmorgan.cakeshop.util.ProcessUtils.getProcessPid;
@@ -72,7 +70,6 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     private static final Logger LOG = LoggerFactory.getLogger(GethHttpServiceImpl.class);
     private static final Logger GETH_LOG = LoggerFactory.getLogger("geth");
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Autowired
     private GethConfig gethConfig;
@@ -101,6 +98,9 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired
+    private ObjectMapper jsonMapper;
 
     private BlockScanner blockScanner;
 
@@ -146,7 +146,7 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     private String requestToJson(Object request) throws APIException {
         try {
-            return OBJECT_MAPPER.writeValueAsString(request);
+            return jsonMapper.writeValueAsString(request);
         } catch (JsonProcessingException e) {
             throw new APIException("Failed to serialize request(s)", e);
         }
@@ -168,7 +168,7 @@ public class GethHttpServiceImpl implements GethHttpService {
         }
 
         try {
-            return processResponse(OBJECT_MAPPER.readValue(response, Map.class));
+            return processResponse(jsonMapper.readValue(response, Map.class));
         } catch (APIException e) {
             LOG.error("RPC request for " + requestToJson(request) + " failed with " + e.getMessage());
             throw e;
@@ -185,7 +185,7 @@ public class GethHttpServiceImpl implements GethHttpService {
 
         List<Map<String, Object>> responses;
         try {
-            responses = OBJECT_MAPPER.readValue(response, List.class);
+            responses = jsonMapper.readValue(response, List.class);
 
             List<Map<String, Object>> results = new ArrayList<>(responses.size());
             for (Map<String, Object> data : responses) {
@@ -547,39 +547,7 @@ public class GethHttpServiceImpl implements GethHttpService {
             accountsToUnlock += i;
         }
 
-        //Option to overwrite default port nide post and geth http usr through command line
-        Boolean saveGethConfig = false;
-        if (StringUtils.isNotBlank(System.getProperty(GETH_RPC_URL))) {
-            gethConfig.setRpcUrl(System.getProperty(GETH_RPC_URL));
-            saveGethConfig = true;
-        }
-
-        if (StringUtils.isNotBlank(System.getProperty(GETH_NODE_PORT))) {
-            gethConfig.setGethNodePort(System.getProperty(GETH_NODE_PORT));
-            saveGethConfig = true;
-        }
-
-        if (StringUtils.isNotBlank(System.getProperty(GethConfig.GETH_RAFT_PORT))) {
-            gethConfig.setRaftPort(System.getProperty(GethConfig.GETH_RAFT_PORT));
-            saveGethConfig = true;
-        }
-
-        if (StringUtils.isNotBlank(System.getProperty(GethConfig.GETH_TRANSACTION_MANAGER_URL))) {
-            gethConfig.setGethTransactionManagerUrl(System.getProperty(GethConfig.GETH_TRANSACTION_MANAGER_URL));
-            saveGethConfig = true;
-        }
-
-        if (StringUtils.isNotBlank(System.getProperty(GethConfig.GETH_TRANSACTION_MANAGER_TYPE))) {
-            gethConfig.setGethTransactionManagerUrl(System.getProperty(GethConfig.GETH_TRANSACTION_MANAGER_TYPE));
-            saveGethConfig = true;
-        }
-
-        if (StringUtils.isNotBlank(System.getProperty("server.port"))) {
-            gethConfig.setCakeshopPort(System.getProperty("server.port"));
-            saveGethConfig = true;
-        }
-
-        List<String> commands = gethRunner.GethCommandLine();
+        List<String> commands = gethRunner.gethCommandLine();
         commands.add("--unlock");
         commands.add(accountsToUnlock);
         commands.add("--password");
@@ -597,7 +565,7 @@ public class GethHttpServiceImpl implements GethHttpService {
         commands.add(String.valueOf(gethConfig.getNetworkId() == null ? DEFAULT_NETWORK_ID : gethConfig.getNetworkId()));
 
         commands.add("--verbosity");
-        commands.add(String.valueOf(gethConfig.getVerbosity() == null ? "3" : gethConfig.getVerbosity()));
+        commands.add(String.valueOf(gethConfig.getVerbosity()));
 
         if (null != gethConfig.isMining() && gethConfig.isMining()) {
             commands.add("--mine");
@@ -617,9 +585,6 @@ public class GethHttpServiceImpl implements GethHttpService {
                     commands.add(param);
                 }
             }
-        }
-        if (saveGethConfig) {
-            gethConfig.save();
         }
 
         return commands;

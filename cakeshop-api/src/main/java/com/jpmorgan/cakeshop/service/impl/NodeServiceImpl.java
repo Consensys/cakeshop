@@ -1,9 +1,8 @@
 package com.jpmorgan.cakeshop.service.impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static com.jpmorgan.cakeshop.service.impl.GethHttpServiceImpl.SIMPLE_RESULT;
+
 import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.bean.GethRunner;
 import com.jpmorgan.cakeshop.bean.TransactionManagerRunner;
@@ -19,27 +18,27 @@ import com.jpmorgan.cakeshop.service.NodeService;
 import com.jpmorgan.cakeshop.util.AbiUtils;
 import com.jpmorgan.cakeshop.util.EEUtils;
 import com.jpmorgan.cakeshop.util.EEUtils.IP;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import static com.jpmorgan.cakeshop.service.impl.GethHttpServiceImpl.SIMPLE_RESULT;
-
 @Service
 public class NodeServiceImpl implements NodeService, GethRpcConstants {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(NodeServiceImpl.class);
+    public static final String STATIC_NODES_JSON = "static-nodes.json";
+    public static final String PERMISSIONED_NODES_JSON = "permissioned-nodes.json";
 
     @Autowired
     private GethHttpService gethService;
@@ -55,6 +54,8 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
 
     @Autowired
     private PeerDAO peerDAO;
+
+    private String enodeId = "";
 
     @Override
     public Node get() throws APIException {
@@ -79,6 +80,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
             if (StringUtils.isNotEmpty(nodeURI)) {
                 try {
                     URI uri = new URI(nodeURI);
+                    enodeId = uri.getUserInfo();
                     String host = uri.getHost();
                     // if host or IP aren't set, then populate with correct IP
                     if (StringUtils.isEmpty(host) || "[::]".equals(host) || "0.0.0.0".equalsIgnoreCase(host)) {
@@ -122,6 +124,12 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
             data = gethService.executeGethCall(ADMIN_TXPOOL_STATUS);
             Integer pending = AbiUtils.hexToBigInteger((String) data.get("pending")).intValue();
             node.setPendingTxn(pending == null ? 0 : pending);
+
+            if (gethConfig.isRaft()) {
+                // get raft role
+                data = gethService.executeGethCall(RAFT_ROLE);
+                node.setRole((String) data.get(SIMPLE_RESULT));
+            }
 
             try {
                 node.setConfig(createNodeConfig());
@@ -252,21 +260,52 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
     @Override
     public List<Peer> peers() throws APIException {
         Map<String, Object> data = gethService.executeGethCall(ADMIN_PEERS);
+        Map<String, Peer> peerList = new HashMap<>();
+        if (data != null) {
+            List<Map<String, Object>> peers = (List<Map<String, Object>>) data.get(SIMPLE_RESULT);
+            if (peers != null) {
+                for (Map<String, Object> peerMap : peers) {
+                    Peer peer = createPeer(peerMap);
+                    peerList.put(peer.getId(), peer);
+                }
+            }
 
-        if (data == null) {
-            return null;
         }
 
-        List<Peer> peerList = new ArrayList<>();
-        List<Map<String, Object>> peers = (List<Map<String, Object>>) data.get("_result");
-        if (peers != null) {
-            for (Map<String, Object> peerMap : peers) {
-                Peer peer = createPeer(peerMap);
-                peerList.add(peer);
+        if (gethConfig.isRaft()) {
+            String raftLeader = ((String) gethService.executeGethCall(RAFT_LEADER)
+                .get(SIMPLE_RESULT));
+            List<Map<String, Object>> raftPeers = (List<Map<String, Object>>) gethService
+                .executeGethCall(RAFT_CLUSTER).get(SIMPLE_RESULT);
+            if (raftPeers != null) {
+                for (Map<String, Object> raftPeer : raftPeers) {
+                    String id = (String) raftPeer.get("nodeId");
+                    Peer peer;
+                    if (!peerList.containsKey(id)) {
+                        peerList.put(id, new Peer());
+                    }
+
+                    peer = peerList.get(id);
+                    peer.setId(id);
+                    peer.setRaftId(String.valueOf(raftPeer.get("raftId")));
+                    peer.setLeader(id.equalsIgnoreCase(raftLeader));
+                    String nodeUrl = gethRunner.formatEnodeUrl(id,
+                        (String) raftPeer.get("ip"),
+                        String.valueOf(raftPeer.get("p2pPort")),
+                        String.valueOf(raftPeer.get("raftPort")));
+                    peer.setNodeUrl(nodeUrl);
+
+                    if (id.equals(this.enodeId)) {
+                        peer.setNodeName("Self");
+                    }
+                }
             }
         }
 
-        return peerList;
+        ArrayList<Peer> peers = new ArrayList<>(peerList.values());
+        peers.sort(Comparator.comparing(Peer::getRaftId));
+
+        return peers;
     }
 
     @Override
@@ -279,37 +318,31 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
             throw new APIException("Bad peer address URI: " + address, e);
         }
 
-        if (gethConfig.isPermissionedNode()) {
-            File permissionJson = new File(gethConfig.getGethDataDirPath().concat("/").concat("permissioned-nodes.json"));
-            List<String> permissionNodes;
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                if (!permissionJson.exists()) {
-                    permissionJson.createNewFile();
-                    permissionNodes = Lists.newArrayList(address);
-                    mapper.writeValue(permissionJson, permissionNodes);
-                } else {
-                    permissionNodes = mapper.readValue(permissionJson, new TypeReference<List<String>>() {
-                    });
-                    if (!permissionNodes.contains(address)) {
-                        permissionNodes.add(address);
-                        mapper.writeValue(permissionJson, permissionNodes);
-                    }
-                }
-            } catch (IOException ex) {
-                LOG.error("Could not operate with permission file", ex);
-                throw new APIException("Could not operate with permission file");
+        if (gethConfig.isRaft()) {
+            Map<String, Object> res = gethService.executeGethCall(RAFT_ADD_PEER, address);
+            if (res == null) {
+                throw new APIException("Could not add raft peer: " + address);
             }
         }
 
         Map<String, Object> res = gethService.executeGethCall(ADMIN_PEERS_ADD, address);
         if (res == null) {
-            return false;
+            throw new APIException("Could not add geth peer: " + address);
         }
 
         boolean added = (boolean) res.get(SIMPLE_RESULT);
 
         if (added) {
+            try {
+                gethRunner.addToEnodesConfig(uri.toString(), STATIC_NODES_JSON);
+                if (gethConfig.isPermissionedNode()) {
+                    gethRunner.addToEnodesConfig(address, PERMISSIONED_NODES_JSON);
+                }
+
+            } catch (IOException e) {
+                LOG.error("Error updating static-nodes.json and permissioned-nodes.json", e);
+            }
+
             Peer peer = new Peer();
             peer.setId(uri.getUserInfo());
             peer.setNodeIP(uri.getHost());
@@ -321,6 +354,60 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
 
         return added;
     }
+
+    @Override
+    public boolean removePeer(String address) throws APIException {
+
+        URI uri = null;
+        try {
+            uri = new URI(address);
+        } catch (URISyntaxException e) {
+            throw new APIException("Bad peer address URI: " + address, e);
+        }
+
+        if (gethConfig.isRaft()) {
+            LOG.info("Attempting to remove raft peer");
+            List<Peer> raftPeers = peers();
+            for (Peer raftPeer : raftPeers) {
+                if (raftPeer.getNodeUrl().equals(address)) {
+                    LOG.info("Found raft peer at id: {}, removing.", raftPeer.getRaftId());
+                    Map<String, Object> res = gethService
+                        .executeGethCall(RAFT_REMOVE_PEER, Integer.valueOf(raftPeer.getRaftId()));
+                    if (res == null) {
+                        throw new APIException("Could not remove raft peer: " + address);
+                    }
+                }
+            }
+        }
+
+        Map<String, Object> res = gethService.executeGethCall(ADMIN_PEERS_REMOVE, address);
+        if (res == null) {
+            throw new APIException("Could not remove geth peer: " + address);
+        }
+
+        boolean removed = (boolean) res.get(SIMPLE_RESULT);
+
+        if (removed) {
+            try {
+                gethRunner.removeFromEnodesConfig(uri.toString(), STATIC_NODES_JSON);
+                if (gethConfig.isPermissionedNode()) {
+                    gethRunner.removeFromEnodesConfig(address, PERMISSIONED_NODES_JSON);
+                }
+
+            } catch (IOException e) {
+                LOG.error("Error updating static-nodes.json", e);
+            }
+
+            Peer peerInDb = peerDAO.getById(uri.getUserInfo());
+            if (peerInDb != null) {
+                peerDAO.delete(peerInDb);
+            }
+
+        }
+
+        return removed;
+    }
+
 
     @Override
     public Map<String, Object> getTransactionManagerNodes() {
@@ -371,22 +458,21 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
     }
 
     @SuppressWarnings("unchecked")
-    private Peer createPeer(Map<String, Object> data
-    ) {
+    private Peer createPeer(Map<String, Object> data) {
         if (data == null || data.isEmpty()) {
             return null;
         }
 
         Peer peer = new Peer();
         peer.setStatus("running");
-        peer.setId((String) data.get("id"));
         peer.setNodeName((String) data.get("name"));
+        peer.setRaftId("0");
 
         try {
-            String remoteAddress = (String) ((Map<String, Object>) data.get("network")).get("remoteAddress");
-            URI uri = new URI("enode://" + peer.getId() + "@" + remoteAddress);
+            URI uri = new URI((String) data.get("enode"));
             peer.setNodeUrl(uri.toString());
             peer.setNodeIP(uri.getHost());
+            peer.setId(uri.getUserInfo());
 
         } catch (URISyntaxException ex) {
             LOG.error("error parsing Peer Address ", ex.getMessage());

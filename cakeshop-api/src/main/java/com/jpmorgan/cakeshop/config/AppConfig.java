@@ -1,21 +1,21 @@
 package com.jpmorgan.cakeshop.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.SortedProperties;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.Executor;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.aop.interceptor.SimpleAsyncUncaughtExceptionHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.jmx.export.annotation.AnnotationMBeanExporter;
@@ -139,6 +139,12 @@ public class AppConfig implements AsyncConfigurer {
         LOG.info("Loading config from " + configFile.toString());
 
         return propConfig;
+    }
+
+    @Primary
+    @Bean
+    public ObjectMapper jsonMapper() {
+        return new ObjectMapper();
     }
 
     @Bean(name = "asyncExecutor")

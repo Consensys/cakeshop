@@ -1,11 +1,8 @@
 package com.jpmorgan.cakeshop.dao;
 
 import com.jpmorgan.cakeshop.model.Peer;
-
 import java.util.ArrayList;
-
 import java.util.List;
-
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.springframework.stereotype.Repository;
@@ -36,6 +33,13 @@ public class PeerDAO extends BaseDAO {
     public void save(Peer peer) {
         if (null != getCurrentSession()) {
             getCurrentSession().merge(peer);
+        }
+    }
+
+    @Transactional
+    public void delete(Peer peer) {
+        if (null != getCurrentSession()) {
+            getCurrentSession().delete(peer);
         }
     }
 

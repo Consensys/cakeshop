@@ -107,7 +107,45 @@ public class GethConfig {
         transactionManagerType = TransactionManager.Type
             .valueOf(getGethTransactionManagerType().toLowerCase());
         LOG.debug("Using transaction manager: {}", transactionManagerType);
+        handleCommandLineOverrides();
 
+    }
+
+    private void handleCommandLineOverrides() throws IOException {
+        //Option to overwrite default port nide post and geth http usr through command line
+        Boolean saveGethConfig = false;
+        if (StringUtils.isNotBlank(System.getProperty(GETH_RPC_URL))) {
+            setRpcUrl(System.getProperty(GETH_RPC_URL));
+            saveGethConfig = true;
+        }
+
+        if (StringUtils.isNotBlank(System.getProperty(GETH_NODE_PORT))) {
+            setGethNodePort(System.getProperty(GETH_NODE_PORT));
+            saveGethConfig = true;
+        }
+
+        if (StringUtils.isNotBlank(System.getProperty(GethConfig.GETH_RAFT_PORT))) {
+            setRaftPort(System.getProperty(GethConfig.GETH_RAFT_PORT));
+            saveGethConfig = true;
+        }
+
+        if (StringUtils.isNotBlank(System.getProperty(GethConfig.GETH_TRANSACTION_MANAGER_URL))) {
+            setGethTransactionManagerUrl(System.getProperty(GethConfig.GETH_TRANSACTION_MANAGER_URL));
+            saveGethConfig = true;
+        }
+
+        if (StringUtils.isNotBlank(System.getProperty(GethConfig.GETH_TRANSACTION_MANAGER_TYPE))) {
+            setGethTransactionManagerUrl(System.getProperty(GethConfig.GETH_TRANSACTION_MANAGER_TYPE));
+            saveGethConfig = true;
+        }
+
+        if (StringUtils.isNotBlank(System.getProperty("server.port"))) {
+            setCakeshopPort(System.getProperty("server.port"));
+            saveGethConfig = true;
+        }
+        if (saveGethConfig) {
+            save();
+        }
     }
 
     public String getDataDirectory() {
@@ -452,5 +490,9 @@ public class GethConfig {
             .sslClientTrustMode(SslTrustMode.TOFU)
             .sslClientTrustMode(SslTrustMode.TOFU)
             .build();
+    }
+
+    public boolean isRaft() {
+        return getConsensusMode().equals("raft");
     }
 }

@@ -39,6 +39,7 @@ module.exports = function() {
 				'pendingTxn',
 				'status',
 				'mining',
+                'role',
 				'quorum',
 				'quorumInfo'
 			], function(memo, v, i) {

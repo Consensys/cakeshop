@@ -133,6 +133,19 @@ public class NodeController extends BaseController {
         return new ResponseEntity<>(APIResponse.newSimpleResponse(added), HttpStatus.OK);
     }
 
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "address", required = false, value = "Required. External node address to remove", dataType = "java.lang.String", paramType = "body")
+    })
+    @RequestMapping("/peers/remove")
+    public ResponseEntity<APIResponse> removePeer(@RequestBody NodePostJsonRequest jsonRequest) throws APIException {
+        if (StringUtils.isBlank(jsonRequest.getAddress())) {
+            return new ResponseEntity<>(new APIResponse().error(new APIError().title("Missing param 'address'")),
+                HttpStatus.BAD_REQUEST);
+        }
+        boolean removed = nodeService.removePeer(jsonRequest.getAddress());
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(removed), HttpStatus.OK);
+    }
+
     @RequestMapping("/peers")
     public ResponseEntity<APIResponse> peers() throws APIException {
         List<Peer> peers = nodeService.peers();

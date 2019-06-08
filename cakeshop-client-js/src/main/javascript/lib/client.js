@@ -7,6 +7,11 @@
             data = JSON.stringify(data);
         }
 
+        if(window.location.host === "localhost:7999") {
+            // when running webpack dev server, point urls to 8080
+            url = "http://localhost:8080/cakeshop/" + url;
+        }
+
         return $.ajax({
             url: url,
             method: "POST",
@@ -46,18 +51,12 @@
     Client.connected = false;
     Client.connect = function() {
 
-        // try to derive the websocket location from the current location
-        var pathname = window.location.pathname;
         var wsUrl;
-        if (/^\/[\w-.]*\/$/.test(pathname)) {
-          // e.g. '/cakeshop/' -> '/cakeshop/ws'
-          wsUrl = pathname + 'ws';
-        } else if (/^\/[\w-.]*$/.test(pathname)) {
-          // e.g. '/cakeshop' -> '/cakeshop/ws'
-          wsUrl = pathname + '/ws';
+        if(window.location.host === "localhost:7999") {
+            // when running webpack dev server, point urls to 8080
+            wsUrl = "http://localhost:8080/cakeshop/ws"
         } else {
-          // otherwise just fall back to a safe value
-          wsUrl = '/cakeshop/ws';
+            wsUrl = '/cakeshop/ws';
         }
 
         var stomp = Client.stomp = Stomp.over(new SockJS(wsUrl));

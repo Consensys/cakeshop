@@ -10,16 +10,16 @@ NODES=("node1" "node2" "node3")
 
 
 case "$1" in 
- start)
-   for i in "${NODES[@]}" 
-     do : 
-         mkdir -p "$CURRENT/$i" 
+ init)
+   for i in "${NODES[@]}"
+     do :
+         rm -rf "$CURRENT/$i"
+         mkdir -p "$CURRENT/$i"
          cp -n cakeshop.war "$CURRENT/$i"
          cd "$CURRENT/$i"
-         set +x
-         nohup java -Dserver.port=$CAKESHOP_PORT -Dgeth.url=http://localhost:$GETH_HTTP_PORT -Dgeth.node.port=$GETH_NODE_PORT -Dgeth.raft.port=$RAFT_PORT -Dgeth.transaction_manager.url=http://127.0.0.1:$TM_PORT  -jar cakeshop.war &>/dev/null &
-         set -x
-         sleep 5
+         echo "Initializing $i"
+         java -Dserver.port=$CAKESHOP_PORT -Dgeth.url=http://localhost:$GETH_HTTP_PORT -Dgeth.node.port=$GETH_NODE_PORT -Dgeth.raft.port=$RAFT_PORT -Dgeth.transaction_manager.url=http://127.0.0.1:$TM_PORT  -jar cakeshop.war init > /dev/null
+         echo "done"
          GETH_HTTP_PORT=$(( GETH_HTTP_PORT+1 ))
          GETH_NODE_PORT=$(( GETH_NODE_PORT+1 ))
          RAFT_PORT=$(( RAFT_PORT+1 ))
@@ -27,6 +27,18 @@ case "$1" in
          CAKESHOP_PORT=$(( CAKESHOP_PORT+1 ))
          cd ../
       done
+ ;;
+
+ start)
+   for i in "${NODES[@]}"
+     do :
+         cd "$CURRENT/$i"
+         set +x
+         nohup java -jar cakeshop.war &>/dev/null &
+         set -x
+         sleep 5
+         cd ../
+     done
  ;;
  
  stop)

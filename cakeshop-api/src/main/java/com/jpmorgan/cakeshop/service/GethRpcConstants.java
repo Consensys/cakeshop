@@ -8,6 +8,7 @@ public interface GethRpcConstants {
 
     public static final String ADMIN_PEERS = "admin_peers";
     public static final String ADMIN_PEERS_ADD = "admin_addPeer";
+    public static final String ADMIN_PEERS_REMOVE = "admin_removePeer";
 
     public static final String ADMIN_NODE_INFO = "admin_nodeInfo";
     public static final String ADMIN_VERBOSITY = "debug_verbosity";
@@ -23,5 +24,11 @@ public interface GethRpcConstants {
 
     public static final String PERSONAL_LIST_ACCOUNTS = "personal_listAccounts";
     public static final String PERSONAL_GET_ACCOUNT_BALANCE = "eth_getBalance";
+
+    public static final String RAFT_CLUSTER = "raft_cluster";
+    public static final String RAFT_ADD_PEER = "raft_addPeer";
+    public static final String RAFT_REMOVE_PEER = "raft_removePeer";
+    public static final String RAFT_LEADER = "raft_leader";
+    public static final String RAFT_ROLE = "raft_role";
 
 }
