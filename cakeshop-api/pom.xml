@@ -288,7 +288,7 @@
         <!-- TESSERA -->
         <dependency>
             <groupId>com.jpmorgan.quorum</groupId>
-            <version>0.9</version>
+            <version>${tessera.version}</version>
             <artifactId>config</artifactId>
             <exclusions>
                 <exclusion>
@@ -299,7 +299,7 @@
         </dependency>
         <dependency>
             <groupId>com.jpmorgan.quorum</groupId>
-            <version>0.9</version>
+            <version>${tessera.version}</version>
             <artifactId>config-migration</artifactId>
             <exclusions>
                 <exclusion>
