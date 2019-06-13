@@ -248,8 +248,8 @@ window.Tower = {
 	},
 
 	processHash: function() {
-		// http://localhost:8080/cakeshop/index.html#section=explorer&widgetId=txn-detail&data=0xd6398cb5cb5bac9d191de62665c1e7e4ef8cd9fe1e9ff94eec181a7b4046345c
-		// http://localhost:8080/cakeshop/index.html#section=explorer&widgetId=block-detail&data=2
+		// http://localhost:8080/index.html#section=explorer&widgetId=txn-detail&data=0xd6398cb5cb5bac9d191de62665c1e7e4ef8cd9fe1e9ff94eec181a7b4046345c
+		// http://localhost:8080/index.html#section=explorer&widgetId=block-detail&data=2
 		if (window.location.hash) {
 			const params = {};
 			const hash = window.location.hash.substring(1, window.location.hash.length);

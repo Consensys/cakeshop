@@ -9,7 +9,7 @@
 
         if(window.location.host === "localhost:7999") {
             // when running webpack dev server, point urls to 8080
-            url = "http://localhost:8080/cakeshop/" + url;
+            url = "http://localhost:8080/" + url;
         }
 
         return $.ajax({
@@ -54,9 +54,9 @@
         var wsUrl;
         if(window.location.host === "localhost:7999") {
             // when running webpack dev server, point urls to 8080
-            wsUrl = "http://localhost:8080/cakeshop/ws"
+            wsUrl = "http://localhost:8080/ws"
         } else {
-            wsUrl = '/cakeshop/ws';
+            wsUrl = '/ws';
         }
 
         var stomp = Client.stomp = Stomp.over(new SockJS(wsUrl));
