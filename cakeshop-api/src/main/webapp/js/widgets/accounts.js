@@ -12,7 +12,6 @@ module.exports = function() {
 		url_unlock: 'api/wallet/unlock',
 
 		hideLink: true,
-		customButtons: '<li><i class="add-account fa fa-plus-circle"></i></li>',
 
 		template: _.template('<table style="width: 100%; table-layout: fixed;" class="table table-striped">' +
 		 	'	<thead style="font-weight: bold;">' +
@@ -94,7 +93,7 @@ module.exports = function() {
 
 		postRender: function() {
 			var _this = this;
-			$('#widget-shell-' + _this.shell.id + ' .add-account').click(function(e) {
+            $('#widget-' + _this.shell.id).on('click', '.add-account', function(e) {
 				$.when(
 					utils.load({ url: _this.url_create })
 				).done(function() {
