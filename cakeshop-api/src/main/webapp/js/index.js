@@ -3,7 +3,6 @@ import $ from 'jquery';
 import 'bootstrap';
 import 'd3';
 import 'bootstrap-tour';
-
 // importing here to be used by metrix widgets
 import 'epoch-charting-ie-patched';
 
@@ -17,7 +16,6 @@ import './tour';
 import 'jif-dashboard/dashboard-core';
 import 'jif-dashboard/dashboard-util';
 import 'jif-dashboard/dashboard-template';
-
 // import this first because it sets a global all the rest of the widgets need
 import './widgets/widget-root';
 
@@ -67,7 +65,12 @@ window.Tower = {
 			 .addClass('fa-pause tower-txt-danger');
 		}
 
-		utils.prettyUpdate(Tower.status.peerCount, status.peerCount, $('#default-peers'));
+        let numPeers = status.peers.length - 1;
+		if(status.peerCount < numPeers) {
+		    // show fraction of current connected peers vs total raft peers
+            numPeers = status.peerCount + "/" + (status.peers.length - 1);
+        }
+        utils.prettyUpdate(Tower.status.peerCount, numPeers, $('#default-peers'));
 		utils.prettyUpdate(Tower.status.latestBlock, status.latestBlock, $('#default-blocks'));
 		utils.prettyUpdate(Tower.status.pendingTxn, status.pendingTxn, $('#default-txn'));
 
