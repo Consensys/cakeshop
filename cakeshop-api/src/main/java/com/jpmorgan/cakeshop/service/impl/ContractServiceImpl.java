@@ -39,7 +39,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
@@ -250,7 +249,8 @@ public class ContractServiceImpl implements ContractService {
         throw new APIException("Not yet implemented"); // TODO
     }
 
-    @Cacheable(value = "contracts", unless = "#result == null")
+    // TODO 'unless' part of this not working, fix later and re-enable
+    // @Cacheable(value = "contracts", unless = "#result == null")
     @Override
     public Contract get(String address) throws APIException {
         if (LOG.isDebugEnabled()) {
