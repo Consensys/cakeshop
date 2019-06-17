@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
@@ -249,8 +250,9 @@ public class ContractServiceImpl implements ContractService {
         throw new APIException("Not yet implemented"); // TODO
     }
 
-    // TODO 'unless' part of this not working, fix later and re-enable
-    // @Cacheable(value = "contracts", unless = "#result == null")
+    // Contract doesn't get it's ABI until it has been registered in the contract registry,
+    // so we don't want to cache it until the ABI and stuff is ready
+    @Cacheable(value = "contracts", unless = "#result.getABI() == null")
     @Override
     public Contract get(String address) throws APIException {
         if (LOG.isDebugEnabled()) {
@@ -339,12 +341,11 @@ public class ContractServiceImpl implements ContractService {
     }
 
     @Override
-    public List<Transaction> listTransactions(String contractId) throws APIException {
+    public List<Transaction> listTransactions(Contract contract) throws APIException {
 
-        Contract contract = get(contractId);
         ContractABI abi = ContractABI.fromJson(contract.getABI());
 
-        List<Transaction> txns = transactionDAO.listForContractId(contractId);
+        List<Transaction> txns = transactionDAO.listForContractId(contract.getAddress());
 
         for (Transaction tx : txns) {
             txnService.loadPrivatePayload(tx);

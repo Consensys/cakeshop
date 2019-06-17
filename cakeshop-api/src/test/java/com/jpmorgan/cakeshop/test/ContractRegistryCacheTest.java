@@ -28,7 +28,7 @@ public class ContractRegistryCacheTest extends BaseGethRpcTest {
     ContractRegistryService contractRegistry;
 
 
-    @Test(enabled = false)
+    @Test
 	public void testCache() throws IOException, InterruptedException, APIException  {
 
 		Contract first = contractRegistry.list().get(0);
