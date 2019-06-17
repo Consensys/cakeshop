@@ -9,7 +9,7 @@
 	"schemes": [
 		"http"
 	],
-	"basePath": "/cakeshop/api",
+	"basePath": "/api",
 	"tags": [
 		{
 			"name": "node"

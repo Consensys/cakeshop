@@ -11,7 +11,7 @@
 //        var stompTransClient = null;
 
         function connect() {
-            var socket = new SockJS('/cakeshop/ws');
+            var socket = new SockJS('/ws');
             stompClient = Stomp.over(socket);
             stompClient.connect({}, function(frame) {
                 console.log('Connected NODE: ' + frame);

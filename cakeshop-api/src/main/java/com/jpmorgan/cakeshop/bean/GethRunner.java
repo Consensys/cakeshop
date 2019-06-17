@@ -1,5 +1,6 @@
 package com.jpmorgan.cakeshop.bean;
 
+import static com.jpmorgan.cakeshop.service.impl.NodeServiceImpl.STATIC_NODES_JSON;
 import static com.jpmorgan.cakeshop.util.FileUtils.expandPath;
 import static com.jpmorgan.cakeshop.util.ProcessUtils.ensureFileIsExecutable;
 
@@ -157,12 +158,24 @@ public class GethRunner {
     }
 
     public void initializeConsensusMode() throws IOException {
-        addToEnodesConfig(createEnodeURL(), "static-nodes.json");
+        addToEnodesConfig(createEnodeURL(), STATIC_NODES_JSON);
         if (gethConfig.getConsensusMode().equalsIgnoreCase("istanbul")) {
             updateIstanbulGenesis();
         } else if (gethConfig.getConsensusMode().equalsIgnoreCase("raft")) {
             updateRaftGenesis();
         }
+    }
+
+    public void clearRaftStateIfSingleNode() throws IOException {
+        if (getCurrentEnodesList(STATIC_NODES_JSON).size() <= 1) {
+            LOG.info(
+                "Single node found in static-nodes.json, deleting any existing raft folders to fix a leader election bug in raft");
+            String ethereumFolder = gethConfig.getGethDataDirPath();
+            FileUtils.deleteQuietly(new File(ethereumFolder, "quorum-raft-state"));
+            FileUtils.deleteQuietly(new File(ethereumFolder, "raft-snap"));
+            FileUtils.deleteQuietly(new File(ethereumFolder, "raft-wal"));
+        }
+
     }
 
     public String getGethPath() {

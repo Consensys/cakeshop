@@ -10,7 +10,7 @@
 	"schemes": [
 		"http"
 	],
-	"basePath": "/cakeshop/ws",
+	"basePath": "/ws",
 	"tags": [
 		{
 			"name": "node "

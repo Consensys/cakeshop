@@ -3,7 +3,6 @@ import $ from 'jquery';
 import 'bootstrap';
 import 'd3';
 import 'bootstrap-tour';
-
 // importing here to be used by metrix widgets
 import 'epoch-charting-ie-patched';
 
@@ -17,7 +16,6 @@ import './tour';
 import 'jif-dashboard/dashboard-core';
 import 'jif-dashboard/dashboard-util';
 import 'jif-dashboard/dashboard-template';
-
 // import this first because it sets a global all the rest of the widgets need
 import './widgets/widget-root';
 
@@ -67,7 +65,12 @@ window.Tower = {
 			 .addClass('fa-pause tower-txt-danger');
 		}
 
-		utils.prettyUpdate(Tower.status.peerCount, status.peerCount, $('#default-peers'));
+        let numPeers = status.peers.length - 1;
+		if(status.peerCount < numPeers) {
+		    // show fraction of current connected peers vs total raft peers
+            numPeers = status.peerCount + "/" + (status.peers.length - 1);
+        }
+        utils.prettyUpdate(Tower.status.peerCount, numPeers, $('#default-peers'));
 		utils.prettyUpdate(Tower.status.latestBlock, status.latestBlock, $('#default-blocks'));
 		utils.prettyUpdate(Tower.status.pendingTxn, status.pendingTxn, $('#default-txn'));
 
@@ -245,8 +248,8 @@ window.Tower = {
 	},
 
 	processHash: function() {
-		// http://localhost:8080/cakeshop/index.html#section=explorer&widgetId=txn-detail&data=0xd6398cb5cb5bac9d191de62665c1e7e4ef8cd9fe1e9ff94eec181a7b4046345c
-		// http://localhost:8080/cakeshop/index.html#section=explorer&widgetId=block-detail&data=2
+		// http://localhost:8080/index.html#section=explorer&widgetId=txn-detail&data=0xd6398cb5cb5bac9d191de62665c1e7e4ef8cd9fe1e9ff94eec181a7b4046345c
+		// http://localhost:8080/index.html#section=explorer&widgetId=block-detail&data=2
 		if (window.location.hash) {
 			const params = {};
 			const hash = window.location.hash.substring(1, window.location.hash.length);

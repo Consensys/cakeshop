@@ -236,7 +236,8 @@ public class ContractServiceTest extends BaseGethRpcTest {
 
         ((TestBlockScanner) blockScanner).manualRun();
 
-        List<Transaction> txns = contractService.listTransactions(contractAddress);
+        Contract contract = contractService.get(contractAddress);
+        List<Transaction> txns = contractService.listTransactions(contract);
 
         assertNotNull(txns);
         assertTrue(!txns.isEmpty());

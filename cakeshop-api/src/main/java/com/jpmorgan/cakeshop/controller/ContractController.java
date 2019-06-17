@@ -17,11 +17,9 @@ import com.jpmorgan.cakeshop.service.ContractService;
 import com.jpmorgan.cakeshop.service.ContractService.CodeType;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
-
 import org.bouncycastle.util.encoders.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -240,9 +238,10 @@ public class ContractController extends BaseController {
     @RequestMapping("/transactions/list")
     public ResponseEntity<APIResponse> listTransactions(@RequestBody final ContractPostJsonRequest jsonRequest) throws APIException {
 
-        List<Transaction> txns = contractService.listTransactions(jsonRequest.getAddress());
 
         List<APIData> data = new ArrayList<>();
+        Contract contract = contractService.get(jsonRequest.getAddress());
+        List<Transaction> txns = contractService.listTransactions(contract);
         txns.forEach((tx) -> {
             data.add(tx.toAPIData());
         });

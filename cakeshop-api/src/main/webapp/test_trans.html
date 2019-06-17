@@ -9,7 +9,7 @@
         var stompClient = null;
 
         function initilizeSocket() {
-            var socket = new SockJS('/cakeshop/ws');
+            var socket = new SockJS('/ws');
             stompClient = Stomp.over(socket);
             stompClient.connect({}, function (frame){});
         }

@@ -44,6 +44,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
             .authorizeRequests()
             .anyRequest().permitAll()
+            .and().headers().frameOptions().sameOrigin()
             .and().httpBasic().disable()
             .formLogin().disable();
 //                .antMatchers("/resources/**", "/user").permitAll()

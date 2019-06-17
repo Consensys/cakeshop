@@ -1,8 +1,13 @@
 package com.jpmorgan.cakeshop.config;
 
-import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.StringUtils;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import org.apache.commons.lang3.SystemUtils;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -14,13 +19,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Enumeration;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 @Configuration
 @EnableAutoConfiguration
@@ -114,7 +112,6 @@ public class SpringBootApplication {
     @Profile("spring-boot")
     public ConfigurableServletWebServerFactory webServerFactory() {
       JettyServletWebServerFactory factory = new JettyServletWebServerFactory();
-      factory.setContextPath("/cakeshop");
       factory.addErrorPages(new ErrorPage(HttpStatus.NOT_FOUND, "/notfound.html"));
       return factory;
     }

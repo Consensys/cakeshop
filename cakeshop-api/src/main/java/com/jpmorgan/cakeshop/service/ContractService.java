@@ -6,7 +6,6 @@ import com.jpmorgan.cakeshop.model.ContractABI;
 import com.jpmorgan.cakeshop.model.Transaction;
 import com.jpmorgan.cakeshop.model.TransactionRequest;
 import com.jpmorgan.cakeshop.model.TransactionResult;
-
 import java.util.List;
 
 public interface ContractService {
@@ -82,12 +81,12 @@ public interface ContractService {
 	/**
 	 * List all transacrtions for the given contract
 	 *
-	 * @param contractId              Address hash for the contract
+	 * @param contract              contract
 	 *
 	 * @return
 	 * @throws APIException
 	 */
-	public List<Transaction> listTransactions(String contractId) throws APIException;
+	public List<Transaction> listTransactions(Contract contract) throws APIException;
 
 	/**
 	 * Migrate a contract to a new address. Not yet implemented.
