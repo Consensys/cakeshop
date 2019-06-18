@@ -2,20 +2,19 @@ package com.jpmorgan.cakeshop.model;
 
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.ContractABI.Function;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
-
 public class TransactionRequest {
 
     public static final String BLOCK_LATEST = "latest";
 
-    public static final int DEFAULT_GAS = 3_149_000;
+    public static final int DEFAULT_GAS = 8_000_000;
 
     private String fromAddress;
 
