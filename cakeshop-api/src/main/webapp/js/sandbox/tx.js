@@ -101,6 +101,8 @@
   function wrapInputs(method) {
     var s = '<div class="transact-inputs">';
     method.inputs.forEach(function(input) {
+      // public field mapping/array getter inputs don't have names, make it 'input' or the jquery selectors break
+      input.name = input.name || "input";
       s += '<div class="input-group method-inputs" data-param="' + input.name + '">';
       s += '<input type="text" class="form-control" data-param="' + input.name + '" data-type="' + input.type + '" placeholder="' + input.name + '(' + input.type + ')"> ';
       if (input.type.match(/\[(\d+)?\]/)) {
