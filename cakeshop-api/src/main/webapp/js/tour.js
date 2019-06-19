@@ -221,18 +221,18 @@ import 'jif-dashboard/dashboard-template';
         onHide: hideMenuStep,
       },
     ])
-    .concat([
+    // .concat([
       //------------------------------------------------------------------------
       // API DOCS
-      {
-        element: "#api",
-        title: "API Documentation",
-        content: "This dashboard and all related tools are built using a set of RESTful APIs. These APIs provide a friendly interface for interacting with the blockchain and abstract away some of the complexity",
-        backdropContainer: ".tower-sidebar",
-        onShow: showMenuStep("#api"),
-        onHide: hideMenuStep,
-      },
-    ])
+      // {
+      //   element: "#api",
+      //   title: "API Documentation",
+      //   content: "This dashboard and all related tools are built using a set of RESTful APIs. These APIs provide a friendly interface for interacting with the blockchain and abstract away some of the complexity",
+      //   backdropContainer: ".tower-sidebar",
+      //   onShow: showMenuStep("#api"),
+      //   onHide: hideMenuStep,
+      // },
+    // ])
 
   });
 

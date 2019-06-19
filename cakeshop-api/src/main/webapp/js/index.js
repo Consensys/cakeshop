@@ -124,7 +124,7 @@ window.Tower = {
 			'contract-detail'        : require('./widgets/contract-detail'),
 			'contract-list'          : require('./widgets/contract-list'),
 			'contract-paper-tape'    : require('./widgets/contract-paper-tape'),
-			'doc-frame'              : require('./widgets/doc-frame'),
+			// 'doc-frame'              : require('./widgets/doc-frame'),
 			'fund-accounts'			 : require('./widgets/fund-accounts'),
 			'metrix-blocks-min'      : require('./widgets/metrix-blocks-min'),
 			'metrix-txn-min'         : require('./widgets/metrix-txn-min'),
@@ -325,13 +325,13 @@ window.Tower = {
 			Dashboard.showSection('peers', widgets);
 		},
 
-		'api': function() {
-			var widgets = [
-				{ widgetId: 'doc-frame' }
-			];
-
-			Dashboard.showSection('api', widgets);
-		},
+		// 'api': function() {
+		// 	var widgets = [
+		// 		{ widgetId: 'doc-frame' }
+		// 	];
+        //
+		// 	Dashboard.showSection('api', widgets);
+		// },
 
 		'contracts': function() {
 			var widgets = [
