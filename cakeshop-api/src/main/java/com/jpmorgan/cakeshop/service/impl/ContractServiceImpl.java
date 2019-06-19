@@ -104,7 +104,7 @@ public class ContractServiceImpl implements ContractService {
                     gethRunner.getSolcPath(),
                     "--ipc",
                     "--evm-version",
-                    "byzantium",
+                    "constantinople",
                     "--filename",
                     filename);
 
