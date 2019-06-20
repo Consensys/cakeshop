@@ -180,7 +180,7 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         } catch (APIException e) {
             uri = uri + "localhost";
         }
-        return uri + ":" + Integer.toString(port) + "/cakeshop/";
+        return uri + ":" + Integer.toString(port) + "/";
     }
 
     public String getDebugInfo(ServletContext servletContext) {

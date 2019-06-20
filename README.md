@@ -4,7 +4,7 @@
 
 An integrated development environment and SDK for Ethereum-like ledgers
 
-![screenshot](docs/images/screenshot.png "screenshot")
+![screenshot](docs/images/console.png "screenshot")
 
 ![screenshot](docs/images/sandbox.png "sandbox screenshot")
 
@@ -33,7 +33,7 @@ Binary packages are available for macOS, Windows, and Linux platforms on the [re
 
 * Download WAR file
 * Run `java -jar cakeshop.war`
-* Navigate to [http://localhost:8080/cakeshop/](http://localhost:8080/cakeshop/)
+* Navigate to [http://localhost:8080/](http://localhost:8080/)
 
 *Note: when running in Windows, -Dgeth.node=geth must be specified as Quorum is not yet available on Windows OS*
 
@@ -43,13 +43,13 @@ Binary packages are available for macOS, Windows, and Linux platforms on the [re
 * Put in `/webapps` folder of your app server
 * Add Java system property `-Dspring.profiles.active=local` to startup script (`setenv.sh` for tomcat)
 * Start app server
-* Navigate to [http://localhost:8080/cakeshop/](http://localhost:8080/cakeshop/) (default port is usually 8080)
+* Navigate to [http://localhost:8080/](http://localhost:8080/) (default port is usually 8080)
 
 *Note: when running in Windows, -Dgeth.node=geth must be specified as Quorum is not yet available on Windows OS*
 
 ### Running via Docker -- NEEDS UPDATE
 
-Run via docker and access UI on [http://localhost:8080/cakeshop/](http://localhost:8080/cakeshop/)
+Run via docker and access UI on [http://localhost:8080/](http://localhost:8080/)
 
 ```sh
 docker run -p 8080:8080 quorumengineering/cakeshop
