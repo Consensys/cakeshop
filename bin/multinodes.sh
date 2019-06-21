@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 CURRENT=`pwd`
 GETH_NODE_PORT=30303

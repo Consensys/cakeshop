@@ -11,7 +11,6 @@ import com.jpmorgan.cakeshop.client.model.TransactionResult;
 import com.jpmorgan.cakeshop.client.proxy.ContractProxyBuilder;
 import com.jpmorgan.cakeshop.client.ws.TransactionEventHandler;
 import com.jpmorgan.cakeshop.model.ContractABI;
-
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -30,7 +29,7 @@ public class Main {
         }
 
         // setup our manager
-        final ClientManager manager = ClientManager.create("http://localhost:8080/cakeshop");
+        final ClientManager manager = ClientManager.create("http://localhost:8080");
         ContractApi contractApi = manager.getClient(ContractApi.class);
 
         // get val using "full" interface

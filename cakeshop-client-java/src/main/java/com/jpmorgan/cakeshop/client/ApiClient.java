@@ -7,24 +7,21 @@ import com.jpmorgan.cakeshop.client.auth.ApiKeyAuth;
 import com.jpmorgan.cakeshop.client.auth.HttpBasicAuth;
 import com.jpmorgan.cakeshop.client.auth.OAuth;
 import com.jpmorgan.cakeshop.client.auth.OAuth.AccessTokenListener;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.oltu.oauth2.client.request.OAuthClientRequest.AuthenticationRequestBuilder;
-import org.apache.oltu.oauth2.client.request.OAuthClientRequest.TokenRequestBuilder;
-
 import feign.Feign;
 import feign.RequestInterceptor;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.oltu.oauth2.client.request.OAuthClientRequest.AuthenticationRequestBuilder;
+import org.apache.oltu.oauth2.client.request.OAuthClientRequest.TokenRequestBuilder;
 
 public class ApiClient {
     public interface Api {}
 
     private final ObjectMapper objectMapper;
-    private String basePath = "http://localhost:8080/cakeshop/api";
+    private String basePath = "http://localhost:8080/api";
     private Map<String, RequestInterceptor> apiAuthorizations;
     private Feign.Builder feignBuilder;
 
