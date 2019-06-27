@@ -29,11 +29,9 @@ public class ProcessUtils {
         ProcessBuilder builder = new ProcessBuilder(commands);
 
         // need to modify PATH so it can locate compilers correctly
-        String solcDir = new File(gethRunner.getSolcPath()).getParent();
-        String nodeJsDir = new File(gethRunner.getNodeJsPath()).getParent();
         String gethDir = new File(gethRunner.getGethPath()).getParent();
         final Map<String, String> env = builder.environment();
-        env.put("PATH", prefixPathStr(nodeJsDir + File.pathSeparator + gethDir + File.pathSeparator + solcDir, env.get("PATH")));
+        env.put("PATH", prefixPathStr(gethDir + File.pathSeparator, env.get("PATH")));
 
         if (LOG.isDebugEnabled()) {
             LOG.debug(Joiner.on(" ").join(builder.command()));

@@ -6,21 +6,7 @@ import com.jpmorgan.cakeshop.bean.GethRunner;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.error.ErrorLog;
 import com.jpmorgan.cakeshop.service.GethHttpService;
-import com.jpmorgan.cakeshop.util.EEUtils;
-import com.jpmorgan.cakeshop.util.FileUtils;
-import com.jpmorgan.cakeshop.util.MemoryUtils;
-import com.jpmorgan.cakeshop.util.ProcessUtils;
-import com.jpmorgan.cakeshop.util.StreamGobbler;
-import com.jpmorgan.cakeshop.util.StringUtils;
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.servlet.ServletContext;
+import com.jpmorgan.cakeshop.util.*;
 import org.apache.commons.lang3.SystemUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +15,16 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
+
+import javax.servlet.ServletContext;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Order(999999)
 @Service(value = "appStartup")
@@ -370,7 +366,7 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         // test solc binary
         System.out.println();
         System.out.println("Testing solc compiler binary");
-        String solcOutput = testBinary(gethRunner.getNodeJsPath(), gethRunner.getSolcPath(), "--version");
+        String solcOutput = testBinary("node", gethRunner.getSolcPath(), "--version");
         if (solcOutput == null || !solcOutput.contains("Version:")) {
             isHealthy = false;
             System.out.println("FAILED");
@@ -403,12 +399,6 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
     }
 
     private String testBinary(String... args) {
-
-        ProcessUtils.ensureFileIsExecutable(args[0]);
-        if (!new File(args[0]).canExecute()) {
-            addError("File is not executable: " + args[0]);
-            return null;
-        }
 
         ProcessBuilder builder = ProcessUtils.createProcessBuilder(gethRunner, args);
         try {

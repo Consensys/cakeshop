@@ -1,36 +1,17 @@
 package com.jpmorgan.cakeshop.service.impl;
 
-import static org.apache.commons.io.FileUtils.forceDelete;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.jpmorgan.cakeshop.bean.GethRunner;
 import com.jpmorgan.cakeshop.dao.TransactionDAO;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.error.CompilerException;
-import com.jpmorgan.cakeshop.model.Contract;
-import com.jpmorgan.cakeshop.model.ContractABI;
+import com.jpmorgan.cakeshop.model.*;
 import com.jpmorgan.cakeshop.model.ContractABI.Constructor;
-import com.jpmorgan.cakeshop.model.SolcResponse;
-import com.jpmorgan.cakeshop.model.Transaction;
-import com.jpmorgan.cakeshop.model.TransactionRequest;
-import com.jpmorgan.cakeshop.model.TransactionResult;
-import com.jpmorgan.cakeshop.service.ContractRegistryService;
-import com.jpmorgan.cakeshop.service.ContractService;
-import com.jpmorgan.cakeshop.service.GethHttpService;
-import com.jpmorgan.cakeshop.service.TransactionService;
-import com.jpmorgan.cakeshop.service.WalletService;
+import com.jpmorgan.cakeshop.service.*;
 import com.jpmorgan.cakeshop.service.task.ContractRegistrationTask;
 import com.jpmorgan.cakeshop.util.ProcessUtils;
 import com.jpmorgan.cakeshop.util.StreamGobbler;
-import java.io.File;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.util.encoders.Hex;
@@ -43,6 +24,17 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.apache.commons.io.FileUtils.forceDelete;
 
 @Service
 public class ContractServiceImpl implements ContractService {
@@ -100,7 +92,7 @@ public class ContractServiceImpl implements ContractService {
         SolcResponse res = null;
         try {
             List<String> args = Lists.newArrayList(
-                    gethRunner.getNodeJsPath(),
+                    "node",
                     gethRunner.getSolcPath(),
                     "--ipc",
                     "--evm-version",
