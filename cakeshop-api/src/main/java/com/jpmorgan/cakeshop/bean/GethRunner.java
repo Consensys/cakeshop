@@ -524,15 +524,15 @@ public class GethRunner {
 
         File quorum = new File(gethDirectory, "geth");
         if (!quorum.exists()) {
-            LOG.info("Downloading quorum from: {}", DownloadUtils.getQuorumReleaseUrl());
-            restTemplate.execute(URI.create(DownloadUtils.getQuorumReleaseUrl()), HttpMethod.GET, DownloadUtils.getOctetStreamRequestCallback(), DownloadUtils.createTarResponseExtractor(quorum.getAbsolutePath(), "geth"));
+            LOG.info("Downloading quorum from: {}", gethConfig.getQuorumReleaseUrl());
+            restTemplate.execute(URI.create(gethConfig.getQuorumReleaseUrl()), HttpMethod.GET, DownloadUtils.getOctetStreamRequestCallback(), DownloadUtils.createTarResponseExtractor(quorum.getAbsolutePath(), "geth"));
             LOG.info("Done downloading quorum");
         }
 
         File bootnode = new File(gethDirectory, "bootnode");
         if (!bootnode.exists()) {
-            LOG.info("Downloading bootnode from: {}", DownloadUtils.getGethReleaseUrl());
-            restTemplate.execute(URI.create(DownloadUtils.getGethReleaseUrl()), HttpMethod.GET, DownloadUtils.getOctetStreamRequestCallback(), DownloadUtils.createTarResponseExtractor(bootnode.getAbsolutePath(), "bootnode"));
+            LOG.info("Downloading bootnode from: {}", gethConfig.getGethReleaseUrl());
+            restTemplate.execute(URI.create(gethConfig.getGethReleaseUrl()), HttpMethod.GET, DownloadUtils.getOctetStreamRequestCallback(), DownloadUtils.createTarResponseExtractor(bootnode.getAbsolutePath(), "bootnode"));
             LOG.info("Done downloading bootnode");
         }
     }

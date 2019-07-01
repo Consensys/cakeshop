@@ -295,7 +295,7 @@ public class GethHttpServiceImpl implements GethHttpService {
         // stop solc server
         LOG.info("Stopping solc daemon");
         List<String> args = Lists.newArrayList(
-                "node",
+                gethConfig.getNodeJsBinaryName(),
                 gethRunner.getSolcPath(),
                 "--stop-ipc");
 

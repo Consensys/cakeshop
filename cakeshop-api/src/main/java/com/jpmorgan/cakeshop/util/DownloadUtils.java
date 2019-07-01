@@ -18,7 +18,7 @@ public class DownloadUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(DownloadUtils.class);
 
-    public static String getGethReleaseUrl() {
+    public static String getDefaultGethReleaseUrl() {
         switch (ProcessUtils.getPlatformDirectory()) {
             case "mac":
                 return "https://gethstore.blob.core.windows.net/builds/geth-alltools-darwin-amd64-1.8.27-4bcc0a37.tar.gz";
@@ -30,7 +30,7 @@ public class DownloadUtils {
         }
     }
 
-    public static String getQuorumReleaseUrl() {
+    public static String getDefaultQuorumReleaseUrl() {
         switch (ProcessUtils.getPlatformDirectory()) {
             case "mac":
                 return "https://bintray.com/quorumengineering/quorum/download_file?file_path=v2.2.4%2Fgeth_v2.2.4_darwin_amd64.tar.gz";

@@ -2,6 +2,7 @@ package com.jpmorgan.cakeshop.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.bean.GethRunner;
 import com.jpmorgan.cakeshop.dao.TransactionDAO;
 import com.jpmorgan.cakeshop.error.APIException;
@@ -48,6 +49,9 @@ public class ContractServiceImpl implements ContractService {
     private GethRunner gethRunner;
 
     @Autowired
+    private GethConfig gethConfig;
+
+    @Autowired
     private GethHttpService geth;
 
     @Autowired
@@ -92,7 +96,7 @@ public class ContractServiceImpl implements ContractService {
         SolcResponse res = null;
         try {
             List<String> args = Lists.newArrayList(
-                    "node",
+                    gethConfig.getNodeJsBinaryName(),
                     gethRunner.getSolcPath(),
                     "--ipc",
                     "--evm-version",
