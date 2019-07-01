@@ -65,7 +65,7 @@ geth.datadir=/.ethereum
 #
 # NOTE: If running in `unmanaged` mode, make sure your geth is configured
 #       to enable at least these APIs.
-geth.rpcapi.list=admin,db,eth,debug,miner,net,shh,txpool,personal,web3
+geth.rpcapi.list=admin,db,eth,debug,miner,net,raft,shh,txpool,personal,web3
 
 # geth log verbosity (--verbosity) [managed or unmanaged]
 #
@@ -180,15 +180,20 @@ management.context-path=/manage
 endpoints.actuator.enabled=true
 ```
 
-## Tomcat
+### Custom Quorum Binaries
 
-Minimum requirements for tomcat (`conf/server.xml`):
+The following settings tells cakeshop where to download Quorum's version of 'geth' and the 'bootnode' binaries from. Leaving them blank will default to the latest versions tested with cakeshop.
 
-```xml
-  <Connector port="8080" protocol="HTTP/1.1"
-             enableLookups="false"
-             maxKeepAliveRequests="-1"
-             maxConnections="10000"
-             redirectPort="8443"
-             connectionTimeout="20000"/>
+```config
+geth.release.url=https://bintray.com/quorumengineering/quorum/download_file?file_path=v2.2.4%2Fgeth_v2.2.4_darwin_amd64.tar.gz
+geth.tools.url=https://gethstore.blob.core.windows.net/builds/geth-alltools-darwin-amd64-1.8.27-4bcc0a37.tar.gz
 ```
+
+### NodeJS Binary
+
+NodeJS is required to be installed on the machine running cakeshop in order to properly run the solc solidity compiler. Some machines may not use the default name of 'node'. You can customize that with the following settings:
+
+```config
+nodejs.binary=node
+```
+

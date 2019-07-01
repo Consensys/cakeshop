@@ -18,7 +18,7 @@ public class DownloadUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(DownloadUtils.class);
 
-    public static String getDefaultGethReleaseUrl() {
+    public static String getDefaultGethToolsUrl() {
         switch (ProcessUtils.getPlatformDirectory()) {
             case "mac":
                 return "https://gethstore.blob.core.windows.net/builds/geth-alltools-darwin-amd64-1.8.27-4bcc0a37.tar.gz";

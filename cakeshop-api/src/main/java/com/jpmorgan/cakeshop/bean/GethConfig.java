@@ -72,8 +72,8 @@ public class GethConfig {
     public static final String CONTRACT_REGISTRY_ADDR = "contract.registry.addr";
 
     // Binary download urls and binary names
-    public static final String QUORUM_RELEASE_URL = "geth.quorum.release.url";
     public static final String GETH_RELEASE_URL = "geth.release.url";
+    public static final String GETH_TOOLS_URL = "geth.tools.url";
     public static final String NODE_BINARY_NAME = "nodejs.binary";
 
 
@@ -465,12 +465,12 @@ public class GethConfig {
         return defaultStr;
     }
 
-    public String getQuorumReleaseUrl() {
-        return get(QUORUM_RELEASE_URL, DownloadUtils.getDefaultQuorumReleaseUrl());
+    public String getGethReleaseUrl() {
+        return get(GETH_RELEASE_URL, DownloadUtils.getDefaultQuorumReleaseUrl());
     }
 
-    public String getGethReleaseUrl() {
-        return get(GETH_RELEASE_URL, DownloadUtils.getDefaultGethReleaseUrl());
+    public String getGethToolsUrl() {
+        return get(GETH_TOOLS_URL, DownloadUtils.getDefaultGethToolsUrl());
     }
 
     public String getNodeJsBinaryName() {
