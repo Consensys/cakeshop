@@ -5,6 +5,7 @@ import com.jpmorgan.cakeshop.util.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.Banner;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.embedded.jetty.JettyServletWebServerFactory;
@@ -70,6 +71,7 @@ public class SpringBootApplication {
         // boot app
         new SpringApplicationBuilder(SpringBootApplication.class)
                 .profiles("container", "spring-boot")
+                .bannerMode(Banner.Mode.OFF) // we manually display the banner once everything is ready
                 .run(args);
     }
 

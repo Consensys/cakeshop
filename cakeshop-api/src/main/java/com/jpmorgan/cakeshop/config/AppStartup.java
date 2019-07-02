@@ -166,6 +166,7 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         System.out.println("          version:     " + AppVersion.BUILD_VERSION);
         System.out.println("          build id:    " + AppVersion.BUILD_ID);
         System.out.println("          build date:  " + AppVersion.BUILD_DATE);
+        System.out.println("          Access the Cakeshop UI at: http://localhost:" + gethConfig.getCakeshopPort());
     }
 
     // Try to determine listening URL
