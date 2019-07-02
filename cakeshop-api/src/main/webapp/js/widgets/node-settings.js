@@ -59,10 +59,15 @@ module.exports = function() {
 
 		rendered: false,
 		onData:function(status) {
-			if ( (this.rendered) || _.isEmpty(status.config) ) {
-				return;
-			}
+			if (this.rendered) {
+                return;
+            } else if (_.isEmpty(status.config)) {
+			    console.log("Attached mode, hiding node settings");
+			    Dashboard.removeWidget(widget.name);
+			    return;
+            }
 
+            Tower.status.mode = "managed";
 			this.rendered = true;
 			this._$('#networkId').val( status.config.networkId ? status.config.networkId : '' );
 			this._$('#identity').val( status.config.identity ? status.config.identity : '' );
