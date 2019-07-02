@@ -1,47 +1,44 @@
 package com.jpmorgan.cakeshop.bean;
 
-import static com.jpmorgan.cakeshop.service.impl.NodeServiceImpl.STATIC_NODES_JSON;
-import static com.jpmorgan.cakeshop.util.FileUtils.expandPath;
-import static com.jpmorgan.cakeshop.util.ProcessUtils.ensureFileIsExecutable;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.jpmorgan.cakeshop.error.APIException;
+import com.jpmorgan.cakeshop.util.DownloadUtils;
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.ProcessUtils;
 import com.jpmorgan.cakeshop.util.StringUtils;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.PostConstruct;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.SystemUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+
+import static com.jpmorgan.cakeshop.service.impl.NodeServiceImpl.STATIC_NODES_JSON;
+import static com.jpmorgan.cakeshop.util.FileUtils.expandPath;
+import static com.jpmorgan.cakeshop.util.ProcessUtils.ensureFileIsExecutable;
 
 @Component
 public class GethRunner {
 
     private static final Logger LOG = LoggerFactory.getLogger(GethRunner.class);
 
-    public static final String START_GETH_COMMAND =
-        "geth/" + ProcessUtils.getPlatformDirectory() + "/geth";
-    public static final String START_QUORUM_COMMAND =
-        "quorum/" + ProcessUtils.getPlatformDirectory() + "/geth";
+    private RestTemplate restTemplate;
 
     private final GethConfig gethConfig;
 
@@ -53,10 +50,6 @@ public class GethRunner {
 
     private String keystorePath;
 
-    private String nodeJsPath;
-
-    private String solcPath;
-
     /**
      * Whether or not this is a quorum node
      */
@@ -65,9 +58,10 @@ public class GethRunner {
     private String binPath;
 
     @Autowired
-    public GethRunner(GethConfig gethConfig, ObjectMapper jsonMapper) {
+    public GethRunner(GethConfig gethConfig, ObjectMapper jsonMapper, RestTemplate restTemplate) {
         this.gethConfig = gethConfig;
         this.jsonMapper = jsonMapper;
+        this.restTemplate = restTemplate;
     }
 
     /**
@@ -96,6 +90,7 @@ public class GethRunner {
             binPath = FileUtils.getClasspathName("bin");
         }
 
+        downloadQuorumIfNeeded();
         // init genesis block file (using vendor copy if necessary)
         String vendorGenesisDir = expandPath(binPath,
             "genesis"); // TODO: this block is redundant now
@@ -106,18 +101,6 @@ public class GethRunner {
 
         // set keystore path
         keystorePath = expandPath(vendorGenesisDir, "keystore");
-
-        // configure node, solc
-        nodeJsPath = FileUtils
-            .expandPath(binPath, "nodejs", ProcessUtils.getPlatformDirectory(), "node");
-        if (SystemUtils.IS_OS_WINDOWS) {
-            nodeJsPath = nodeJsPath + ".exe";
-        }
-        ensureFileIsExecutable(nodeJsPath);
-
-        solcPath = expandPath(binPath, "solc", "node_modules", "solc-cakeshop-cli", "bin",
-            "solc");
-        ensureFileIsExecutable(solcPath);
 
         gethConfig.setGethDataDirPath(expandPath(gethConfig.getDataDirectory(), "ethereum"));
 
@@ -156,7 +139,6 @@ public class GethRunner {
             throw new IOException("Path does not exist or is not executable: " + getGethPath());
         }
     }
-
     public void initializeConsensusMode() throws IOException {
         addToEnodesConfig(createEnodeURL(), STATIC_NODES_JSON);
         if (gethConfig.getConsensusMode().equalsIgnoreCase("istanbul")) {
@@ -179,8 +161,7 @@ public class GethRunner {
     }
 
     public String getGethPath() {
-        return expandPath(binPath,
-            gethConfig.shouldUseQuorum() ? START_QUORUM_COMMAND : START_GETH_COMMAND);
+        return expandPath(binPath, "quorum/geth");
     }
 
     public String getGethPidFilename() {
@@ -233,13 +214,8 @@ public class GethRunner {
     }
 
     public String getSolcPath() {
-        return solcPath;
+        return expandPath(binPath, "solc", "node_modules", "solc-cakeshop-cli", "bin", "solc");
     }
-
-    public void setSolcPath(String solcPath) {
-        this.solcPath = solcPath;
-    }
-
 
     public String getGenesisBlock() throws IOException {
         return FileUtils.readFileToString(new File(genesisBlockFilename));
@@ -247,14 +223,6 @@ public class GethRunner {
 
     public void setGenesisBlock(String genesisBlock) throws IOException {
         FileUtils.writeStringToFile(new File(genesisBlockFilename), genesisBlock);
-    }
-
-    public String getNodeJsPath() {
-        return nodeJsPath;
-    }
-
-    public void setNodeJsPath(String nodeJsPath) {
-        this.nodeJsPath = nodeJsPath;
     }
 
     /**
@@ -545,5 +513,27 @@ public class GethRunner {
             Paths.get(Paths.get(gethConfig.getGethDataDirPath()).getParent().toString(),
                 "genesis_block.json"),
             StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    private void downloadQuorumIfNeeded() {
+        File gethDirectory = new File(getGethPath()).getParentFile();
+        if (!gethDirectory.exists()) {
+            LOG.info("Quorum binary doesn't exist, creating bin directory");
+            gethDirectory.mkdirs();
+        }
+
+        File quorum = new File(gethDirectory, "geth");
+        if (!quorum.exists()) {
+            LOG.info("Downloading quorum from: {}", gethConfig.getGethReleaseUrl());
+            restTemplate.execute(URI.create(gethConfig.getGethReleaseUrl()), HttpMethod.GET, DownloadUtils.getOctetStreamRequestCallback(), DownloadUtils.createTarResponseExtractor(quorum.getAbsolutePath(), "geth"));
+            LOG.info("Done downloading quorum");
+        }
+
+        File bootnode = new File(gethDirectory, "bootnode");
+        if (!bootnode.exists()) {
+            LOG.info("Downloading bootnode from: {}", gethConfig.getGethToolsUrl());
+            restTemplate.execute(URI.create(gethConfig.getGethToolsUrl()), HttpMethod.GET, DownloadUtils.getOctetStreamRequestCallback(), DownloadUtils.createTarResponseExtractor(bootnode.getAbsolutePath(), "bootnode"));
+            LOG.info("Done downloading bootnode");
+        }
     }
 }

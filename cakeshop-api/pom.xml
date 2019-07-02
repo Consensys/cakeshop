@@ -17,42 +17,6 @@
     <properties>
     </properties>
 
-    <profiles>
-        <profile>
-            <id>windows</id>
-            <activation>
-                <os>
-                    <family>windows</family>
-                </os>
-            </activation>
-            <properties>
-                <platform.dir>win</platform.dir>
-            </properties>
-        </profile>
-        <profile>
-            <id>mac</id>
-            <activation>
-                <os>
-                    <family>mac</family>
-                </os>
-            </activation>
-            <properties>
-                <platform.dir>mac</platform.dir>
-            </properties>
-        </profile>
-        <profile>
-            <id>linux</id>
-            <activation>
-                <os>
-                    <name>linux</name>
-                </os>
-            </activation>
-            <properties>
-                <platform.dir>linux</platform.dir>
-            </properties>
-        </profile>
-    </profiles>
-
     <dependencies>
 
         <dependency>
@@ -223,6 +187,11 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.3.2</version>
             <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.18</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -551,25 +520,6 @@
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>3.0.1</version>
                 <executions>
-                    <execution>
-                        <id>copy-nodejs</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/classes/bin/nodejs/${platform.dir}/</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${project.build.directory}/node/</directory>
-                                    <includes>
-                                        <include>node</include>
-                                        <include>node.exe</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
                     <execution>
                         <id>copy-cakeshop-js</id>
                         <phase>generate-sources</phase>

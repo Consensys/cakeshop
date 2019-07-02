@@ -1,6 +1,7 @@
 package com.jpmorgan.cakeshop.bean;
 
 import com.google.common.collect.Lists;
+import com.jpmorgan.cakeshop.util.DownloadUtils;
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.SortedProperties;
 import com.jpmorgan.cakeshop.util.StringUtils;
@@ -10,6 +11,14 @@ import com.quorum.tessera.config.SslAuthenticationMode;
 import com.quorum.tessera.config.SslTrustMode;
 import com.quorum.tessera.config.builder.ConfigBuilder;
 import com.quorum.tessera.config.builder.KeyDataBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -17,18 +26,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import javax.annotation.PostConstruct;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Component;
+import java.util.*;
 
 @Component
 public class GethConfig {
@@ -72,6 +70,11 @@ public class GethConfig {
     public static final String GETH_BOOTNODE_KEY = "geth.bootnode.key";
     public static final String GETH_BOOTNODES_LIST = "geth.bootnodes.list";
     public static final String CONTRACT_REGISTRY_ADDR = "contract.registry.addr";
+
+    // Binary download urls and binary names
+    public static final String GETH_RELEASE_URL = "geth.release.url";
+    public static final String GETH_TOOLS_URL = "geth.tools.url";
+    public static final String NODE_BINARY_NAME = "nodejs.binary";
 
 
     @Value("${config.path}")
@@ -460,6 +463,18 @@ public class GethConfig {
             return props.getProperty(key);
         }
         return defaultStr;
+    }
+
+    public String getGethReleaseUrl() {
+        return get(GETH_RELEASE_URL, DownloadUtils.getDefaultQuorumReleaseUrl());
+    }
+
+    public String getGethToolsUrl() {
+        return get(GETH_TOOLS_URL, DownloadUtils.getDefaultGethToolsUrl());
+    }
+
+    public String getNodeJsBinaryName() {
+        return get(NODE_BINARY_NAME, "node");
     }
 
     public String getTransactionManagerDataPath() {

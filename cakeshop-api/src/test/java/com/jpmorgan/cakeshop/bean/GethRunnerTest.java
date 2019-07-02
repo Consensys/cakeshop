@@ -1,23 +1,23 @@
 package com.jpmorgan.cakeshop.bean;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.testng.Assert.assertEquals;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.FileUtils;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.web.client.RestTemplate;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.io.FileUtils;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static org.testng.Assert.assertEquals;
 
 public class GethRunnerTest {
 
@@ -29,6 +29,8 @@ public class GethRunnerTest {
     GethConfig gethConfig;
     @Mock
     ObjectMapper objectMapper;
+    @Mock
+    RestTemplate restTemplate;
 
     GethRunner gethRunner;
 
@@ -43,7 +45,7 @@ public class GethRunnerTest {
         when(objectMapper.readValue(any(File.class), any(TypeReference.class))).thenReturn(
             existingList);
 
-        gethRunner = new GethRunner(gethConfig, objectMapper);
+        gethRunner = new GethRunner(gethConfig, objectMapper, restTemplate);
     }
 
     @AfterMethod

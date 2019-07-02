@@ -12,7 +12,7 @@ An integrated development environment and SDK for Ethereum-like ledgers
 
 _Cakeshop_ is a set of tools and APIs for working with [Ethereum](https://ethereum.org/)-like ledgers, packaged as a Java web application archive (WAR) that gets you up and running in under 60 seconds.
 
-Included in the package is the [geth](https://github.com/ethereum/go-ethereum), [quorum](https://github.com/jpmorganchase/quorum), [tessera](https://github.com/jpmorganchase/tessera),  and [constellation](https://github.com/jpmorganchase/constellation) Ethereum servers, a [Solidity](https://solidity.readthedocs.org/en/latest/)
+Cakeshop will download the latest version of [quorum](https://github.com/jpmorganchase/quorum) and bootnode from [geth](https://github.com/ethereum/go-ethereum) (to use a different version, see [here](docs/configuration.md#custom-quorum-binaries)). The cakeshop package includes the [tessera](https://github.com/jpmorganchase/tessera) and [constellation](https://github.com/jpmorganchase/constellation) transaction managers, a [Solidity](https://solidity.readthedocs.org/en/latest/)
 compiler, and all dependencies.
 
 It provides tools for managing a local blockchain node, setting up clusters,
@@ -20,14 +20,14 @@ exploring the state of the chain, and working with contracts.
 
 ## Download
 
-Binary packages are available for macOS, Windows, and Linux platforms on the [releases](https://github.com/jpmorganchase/cakeshop/releases) page.
+Binary packages are available for macOS and Linux platforms on the [releases](https://github.com/jpmorganchase/cakeshop/releases) page.
 
 ## Quickstart
 
 ### Requirements
 
 * Java 8+
-* Java app server (Tomcat, Jetty, etc) [Optional]
+* NodeJS (if the nodejs binary on your machine isn't called 'node', see [here](docs/configuration.md#nodejs-binary))
 
 ### Running via Spring Boot
 
@@ -35,17 +35,6 @@ Binary packages are available for macOS, Windows, and Linux platforms on the [re
 * Run `java -jar cakeshop.war`
 * Navigate to [http://localhost:8080/](http://localhost:8080/)
 
-*Note: when running in Windows, -Dgeth.node=geth must be specified as Quorum is not yet available on Windows OS*
-
-### Running via App Server
-
-* Download WAR file
-* Put in `/webapps` folder of your app server
-* Add Java system property `-Dspring.profiles.active=local` to startup script (`setenv.sh` for tomcat)
-* Start app server
-* Navigate to [http://localhost:8080/](http://localhost:8080/) (default port is usually 8080)
-
-*Note: when running in Windows, -Dgeth.node=geth must be specified as Quorum is not yet available on Windows OS*
 
 ### Running via Docker -- NEEDS UPDATE
 

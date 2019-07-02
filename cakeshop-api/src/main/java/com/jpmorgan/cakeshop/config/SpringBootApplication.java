@@ -2,13 +2,9 @@ package com.jpmorgan.cakeshop.config;
 
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.StringUtils;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Enumeration;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import org.apache.commons.lang3.SystemUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.embedded.jetty.JettyServletWebServerFactory;
@@ -20,11 +16,20 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+
 @Configuration
 @EnableAutoConfiguration
 @ComponentScan(basePackages = "com.jpmorgan.cakeshop")
 @Profile("spring-boot")
 public class SpringBootApplication {
+
+    private static final Logger LOG = LoggerFactory.getLogger(SpringBootApplication.class);
 
     public static void main(String[] args) {
         // setup configs
@@ -45,7 +50,7 @@ public class SpringBootApplication {
 
         // extract binaries from WAR (if necessary)
         try {
-            extractGeth(configDir);
+            extractBinaries(configDir);
         } catch (IOException e) {
             System.err.println("!!! ERROR: Failed to extract binaries from WAR package");
             System.err.println(e.getMessage());
@@ -68,7 +73,7 @@ public class SpringBootApplication {
                 .run(args);
     }
 
-    private static void extractGeth(String configDir) throws IOException {
+    private static void extractBinaries(String configDir) throws IOException {
         URL url = SpringBootApplication.class.getClassLoader().getResource("");
         String warUrl = null;
 
@@ -99,9 +104,13 @@ public class SpringBootApplication {
                 File target = new File(FileUtils.join(configDir, file.substring(16)));
                 File targetDir = target.getParentFile();
                 if (!targetDir.exists()) {
+                    LOG.info("Creating bin directory: {}", targetDir.getAbsolutePath());
                     targetDir.mkdirs();
                 }
-                FileUtils.copyInputStreamToFile(warZip.getInputStream(zipEntry), target);
+                if(!target.exists()) {
+                    LOG.info("Copying binary: {}", target.getAbsolutePath());
+                    FileUtils.copyInputStreamToFile(warZip.getInputStream(zipEntry), target);
+                }
             }
         }
 
