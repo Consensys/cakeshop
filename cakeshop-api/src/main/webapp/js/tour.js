@@ -14,6 +14,7 @@ import 'jif-dashboard/dashboard-template';
     	window.localStorage.setItem('tour_end', true);
     },
 
+
     steps: [].concat([
       {
         element: "div.tower-logo-container",
@@ -70,14 +71,14 @@ import 'jif-dashboard/dashboard-template';
       {
         element: ".widget-shell.node-control",
         content: "From here you can start, stop, restart and even reset the node back to a fresh state",
-        placement: "bottom",
+        placement: "top",
         onShow: showMenuStep("#console"),
         onHide: hideMenuStep,
       },
       {
         element: ".widget-shell.node-settings",
         content: "Here you can alter various settings of the underlying node",
-        placement: "bottom",
+        placement: "top",
         onShow: showMenuStep("#console"),
         onHide: hideMenuStep,
       },
@@ -117,28 +118,28 @@ import 'jif-dashboard/dashboard-template';
       {
         element: ".widget-shell.contract-list",
         content: "Here we have a list of contracts deployed on the chain (via the Cakeshop APIs)",
-        placement: "bottom",
+        placement: "top",
         onShow: showMenuStep("#contracts"),
         onHide: hideMenuStep,
       },
       {
         element: ".widget-shell.contract-detail",
         content: "Metadata for the selected contract, such as the ABI and the original source code",
-        placement: "bottom",
+        placement: "top",
         onShow: loadWidget("#contracts", "contract-detail", ".widget-shell.contract-list tbody tr:first button.deets"),
         onHide: hideMenuStep,
       },
       {
         element: ".widget-shell.contract-paper-tape",
         content: "The paper tape shows the transaction history for the selected contract",
-        placement: "bottom",
+        placement: "top",
         onShow: loadWidget("#contracts", "contract-paper-tape", ".widget-shell.contract-list tbody tr:first button.tape"),
         onHide: hideMenuStep,
       },
       {
         element: ".widget-shell.contract-current-state",
         content: "Here we can see the current state of the contract, as read from any exposed public variables (methods marked 'constant' in solidity)",
-        placement: "bottom",
+        placement: "top",
         onShow: loadWidget("#contracts", "contract-current-state", ".widget-shell.contract-list tbody tr:first button.state"),
         onHide: hideMenuStep,
       },
@@ -157,21 +158,21 @@ import 'jif-dashboard/dashboard-template';
       {
         element: ".widget-shell.block-list",
         content: "List of Blocks, in reverse chronological order. This list will update in realtime",
-        placement: "bottom",
+        placement: "top",
         onShow: showMenuStep("#explorer"),
         onHide: hideMenuStep,
       },
       {
         element: ".widget-shell.block-detail",
         content: "This shows the detailed headers stored with each block and contains links to any transactions that were committed in the block as well",
-        placement: "bottom",
+        placement: "top",
         onShow: showMenuStep("#explorer"),
         onHide: hideMenuStep,
       },
       {
         element: ".widget-shell.block-view",
         content: "Search for a block or transaction",
-        placement: "bottom",
+        placement: "top",
         onShow: showMenuStep("#explorer"),
         onHide: hideMenuStep,
       },
@@ -202,21 +203,21 @@ import 'jif-dashboard/dashboard-template';
       {
         element: ".widget-shell.peers-list",
         content: "A list of peers connected to the node, if any",
-        placement: "bottom",
+        placement: "top",
         onShow: showMenuStep("#peers"),
         onHide: hideMenuStep,
       },
       {
         element: ".widget-shell.peers-neighborhood",
         content: "In order to make setting up a cluster as easy as possible, we scan the local subnet for available nodes and display them here",
-        placement: "bottom",
+        placement: "top",
         onShow: showMenuStep("#peers"),
         onHide: hideMenuStep,
       },
       {
         element: ".widget-shell.peers-add",
         content: "Manually connect to a peer by entering its Node URL here (See Node Info on the Console tab)",
-        placement: "bottom",
+        placement: "top",
         onShow: showMenuStep("#peers"),
         onHide: hideMenuStep,
       },
