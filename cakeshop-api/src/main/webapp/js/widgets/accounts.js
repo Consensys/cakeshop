@@ -66,7 +66,7 @@ module.exports = function() {
 				var rows = [];
 				_.each(accounts.data, function(acct) {
 					acct = acct.attributes;
-					var b = parseInt(acct.balance, 10);
+					var b = _this.humanBalance(acct.balance);
 
 					if (b > 1000000000) {
 						b = 'Unlimited';
@@ -81,6 +81,11 @@ module.exports = function() {
 				utils.makeAreaEditable('#widget-' + _this.shell.id + ' .value');
 			});
 		},
+
+        humanBalance: function(balance) {
+            var b = parseInt(balance, 10) / 1000000000000000000;
+            return (b > 1000000000) ? '∞' : Math.round(b * 100) / 100;
+        },
 
 		subscribe: function() {
 			//fetch when account funds are transferred
