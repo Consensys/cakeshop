@@ -128,7 +128,7 @@ window.Tower = {
 			'fund-accounts'			 : require('./widgets/fund-accounts'),
 			'metrix-blocks-min'      : require('./widgets/metrix-blocks-min'),
 			'metrix-txn-min'         : require('./widgets/metrix-txn-min'),
-			'metrix-txn-sec'         : require('./widgets/metrix-txn-sec'),
+			// 'metrix-txn-sec'         : require('./widgets/metrix-txn-sec'),
 			'node-control'           : require('./widgets/node-control'),
 			'node-info'              : require('./widgets/node-info'),
 			'node-settings'          : require('./widgets/node-settings'),
@@ -298,7 +298,7 @@ window.Tower = {
 				{ widgetId: 'node-info' },
 				{ widgetId: 'node-control' },
 				{ widgetId: 'node-settings' },
-				{ widgetId: 'metrix-txn-sec' },
+				// { widgetId: 'metrix-txn-sec' },
 				{ widgetId: 'metrix-txn-min' },
 				{ widgetId: 'metrix-blocks-min' },
 				{ widgetId: 'node-log' }
