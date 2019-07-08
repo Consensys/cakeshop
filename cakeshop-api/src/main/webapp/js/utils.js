@@ -127,7 +127,24 @@ export default {
 		var len = addr.startsWith('0x') ? 10 : 8;
 
 		return addr.substring(0, len);
-	}
+	},
+
+    convertTimestampToMillis: function(timestamp) {
+        if (timestamp > 1000000000000000000) {
+            // probably nanoseconds
+            timestamp = timestamp / 1000000
+            console.log("found nano", timestamp);
+        } else if (timestamp > 1000000000000000) {
+            // probably microseconds
+            timestamp = timestamp / 1000
+        } else if (timestamp < 1000000000000) {
+            // probably seconds
+            timestamp = timestamp * 1000;
+        }
+        // now that we're in millis, get user friendly time
+        return Math.round(timestamp);
+    }
+
 };
 
 
