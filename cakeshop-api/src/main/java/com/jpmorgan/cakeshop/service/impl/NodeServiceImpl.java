@@ -306,7 +306,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
             // non-raft peers calls don't include self, include it for consistency
             try {
                 Peer peer = new Peer();
-                peer.setNodeUrl(gethRunner.createEnodeURL());
+                peer.setNodeUrl(gethRunner.getEnodeURL());
                 peer.setNodeName("Self");
                 peer.setId(this.enodeId);
                 peer.setRaftId("0");

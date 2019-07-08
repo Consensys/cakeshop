@@ -56,6 +56,7 @@ public class GethRunner {
     private Boolean isEmbeddedQuorum;
 
     private String binPath;
+    private String enodeUrl;
 
     @Autowired
     public GethRunner(GethConfig gethConfig, ObjectMapper jsonMapper, RestTemplate restTemplate) {
@@ -140,7 +141,7 @@ public class GethRunner {
         }
     }
     public void initializeConsensusMode() throws IOException {
-        addToEnodesConfig(createEnodeURL(), STATIC_NODES_JSON);
+        addToEnodesConfig(getEnodeURL(), STATIC_NODES_JSON);
         if (gethConfig.getConsensusMode().equalsIgnoreCase("istanbul")) {
             updateIstanbulGenesis();
         } else if (gethConfig.getConsensusMode().equalsIgnoreCase("raft")) {
@@ -371,9 +372,13 @@ public class GethRunner {
         LOG.info("updated static-nodes.json at " + enodeListFilePath.getParent());
     }
 
-    public String createEnodeURL() throws IOException {
-        return formatEnodeUrl(getLocalEthereumAddress(), "127.0.0.1", gethConfig.getGethNodePort(),
-            gethConfig.getRaftPort());
+    public String getEnodeURL() throws IOException {
+        if(enodeUrl == null) {
+            enodeUrl = formatEnodeUrl(getLocalEthereumAddress(), "127.0.0.1",
+                gethConfig.getGethNodePort(),
+                gethConfig.getRaftPort());
+        }
+        return enodeUrl;
     }
 
     public String formatEnodeUrl(String address, String ip, String port, String raftPort) {
