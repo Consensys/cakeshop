@@ -459,30 +459,22 @@ public class GethRunner {
     }
 
     private void updateIstanbulGenesis() throws IOException {
-        //TODO remove << ISTANBUL WRAPPER
         String baseResourcePath = System.getProperty("eth.bin.dir");
         if (StringUtils.isBlank(baseResourcePath)) {
             baseResourcePath = FileUtils.getClasspathName("bin");
         }
 
-        Path istanbullocation = Paths
-            .get(expandPath(baseResourcePath,
-                "quorum/istanbul-tools/" + ProcessUtils.getPlatformDirectory() + "/istanbul"));
+        Path istanbulLocation = Paths.get(expandPath(baseResourcePath, "quorum/istanbul"));
 
-        File istanbulbinary = istanbullocation.toFile();
-        if (!istanbulbinary.canExecute()) {
-            istanbulbinary.setExecutable(true);
-        }
-
-        List<String> istanbulcommand = Lists
-            .newArrayList(istanbullocation.toString(),
+        List<String> istanbulCommand = Lists
+            .newArrayList(istanbulLocation.toString(),
                 "reinit",
                 "--nodekey",
                 FileUtils.readFileToString(verifyNodeKey().toFile(), Charset.defaultCharset()));
         if (gethConfig.shouldUseQuorum()) {
-            istanbulcommand.add("--quorum");
+            istanbulCommand.add("--quorum");
         }
-        ProcessBuilder builder = new ProcessBuilder(istanbulcommand);
+        ProcessBuilder builder = new ProcessBuilder(istanbulCommand);
         LOG.info(
             "generating instanbul genesis_block.json as " + String.join(" ", builder.command()));
         Process process = builder.start();
@@ -534,6 +526,13 @@ public class GethRunner {
             LOG.info("Downloading bootnode from: {}", gethConfig.getGethToolsUrl());
             restTemplate.execute(URI.create(gethConfig.getGethToolsUrl()), HttpMethod.GET, DownloadUtils.getOctetStreamRequestCallback(), DownloadUtils.createTarResponseExtractor(bootnode.getAbsolutePath(), "bootnode"));
             LOG.info("Done downloading bootnode");
+        }
+
+        File istanbulTools = new File(gethDirectory, "istanbul");
+        if (!istanbulTools.exists()) {
+            LOG.info("Downloading istanbul-tools from: {}", gethConfig.getIstanbulToolsUrl());
+            restTemplate.execute(URI.create(gethConfig.getIstanbulToolsUrl()), HttpMethod.GET, DownloadUtils.getOctetStreamRequestCallback(), DownloadUtils.createTarResponseExtractor(istanbulTools.getAbsolutePath(), "istanbul"));
+            LOG.info("Done downloading istanbul-tools");
         }
     }
 }
