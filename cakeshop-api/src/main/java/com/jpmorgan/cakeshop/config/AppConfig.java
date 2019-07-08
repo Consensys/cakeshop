@@ -1,6 +1,7 @@
 package com.jpmorgan.cakeshop.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.SortedProperties;
 import java.io.File;
@@ -144,7 +145,9 @@ public class AppConfig implements AsyncConfigurer {
     @Primary
     @Bean
     public ObjectMapper jsonMapper() {
-        return new ObjectMapper();
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        return objectMapper;
     }
 
     @Bean(name = "asyncExecutor")
