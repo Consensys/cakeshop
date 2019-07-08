@@ -41,6 +41,23 @@ module.exports = function() {
 				'</div>'+
 			'</div>'),
 
+        subscribe: function() {
+            // adding listener to reload the widget if identity is updated
+            Dashboard.Utils.on(function(ev, action) {
+                if (action === 'node-status|announce') {
+                    widget.onData(Tower.status);
+                }
+            });
+        },
+
+        onData:function(status) {
+            if (_.isEmpty(status.config)) {
+                console.log("Attached mode, hiding node control");
+                Dashboard.removeWidget(widget.name);
+            }
+        },
+
+
 		postRender: function() {
 			this._$().html(widget.template({}));
 			this._$('.ctrls').click(widget._handler);
