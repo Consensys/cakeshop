@@ -1,5 +1,7 @@
 package com.jpmorgan.cakeshop.service.impl;
 
+import static com.jpmorgan.cakeshop.service.impl.GethHttpServiceImpl.SIMPLE_RESULT;
+
 import com.google.common.base.Joiner;
 import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.bean.GethRunner;
@@ -16,18 +18,20 @@ import com.jpmorgan.cakeshop.service.NodeService;
 import com.jpmorgan.cakeshop.util.AbiUtils;
 import com.jpmorgan.cakeshop.util.EEUtils;
 import com.jpmorgan.cakeshop.util.EEUtils.IP;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.*;
-
-import static com.jpmorgan.cakeshop.service.impl.GethHttpServiceImpl.SIMPLE_RESULT;
 
 @Service
 public class NodeServiceImpl implements NodeService, GethRpcConstants {
@@ -297,6 +301,18 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
                         peer.setNodeName("Self");
                     }
                 }
+            }
+        } else {
+            // non-raft peers calls don't include self, include it for consistency
+            try {
+                Peer peer = new Peer();
+                peer.setNodeUrl(gethRunner.createEnodeURL());
+                peer.setNodeName("Self");
+                peer.setId(this.enodeId);
+                peer.setRaftId("0");
+                peerList.put(this.enodeId, peer);
+            } catch (IOException e) {
+                throw new APIException("Could not add self to peers list", e);
             }
         }
 
