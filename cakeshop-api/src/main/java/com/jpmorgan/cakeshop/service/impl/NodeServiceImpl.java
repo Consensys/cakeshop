@@ -298,6 +298,18 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
                     }
                 }
             }
+        } else {
+            // non-raft peers calls don't include self, include it for consistency
+            try {
+                Peer peer = new Peer();
+                peer.setNodeUrl(gethRunner.getEnodeURL());
+                peer.setNodeName("Self");
+                peer.setId(this.enodeId);
+                peer.setRaftId("0");
+                peerList.put(this.enodeId, peer);
+            } catch (IOException e) {
+                throw new APIException("Could not add self to peers list", e);
+            }
         }
 
         ArrayList<Peer> peers = new ArrayList<>(peerList.values());

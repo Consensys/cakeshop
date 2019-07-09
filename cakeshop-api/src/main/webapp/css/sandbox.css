@@ -207,13 +207,13 @@ nav.sidenav ul.navbar-right li.mining_status a {
 
 div.panel.accounts table {
     table-layout: fixed;
+    white-space: nowrap;
 }
 
 div.panel.accounts table td:last {
 }
 
 div.panel.accounts table td.address {
-    width: 80%;
     text-overflow: ellipsis;
     overflow: hidden;
 }

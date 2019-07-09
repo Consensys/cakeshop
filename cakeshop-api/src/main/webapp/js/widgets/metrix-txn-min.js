@@ -22,7 +22,7 @@ module.exports = function() {
 			widget.chart = $('#' + widget.name).epoch({
 				type: 'time.area',
 				data: [ {
-					label: 'TXN per SEC',
+					label: 'TXN per MIN',
 					values: [ { time: (new Date()).getTime() / 1000, y: 0 } ]
 				} ],
 				axes: ['left', 'right', 'bottom']

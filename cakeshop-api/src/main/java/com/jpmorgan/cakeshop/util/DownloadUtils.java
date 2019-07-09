@@ -1,5 +1,9 @@
 package com.jpmorgan.cakeshop.util;
 
+import static com.jpmorgan.cakeshop.util.ProcessUtils.ensureFileIsExecutable;
+
+import java.io.File;
+import java.util.Arrays;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
@@ -8,11 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.ResponseExtractor;
-
-import java.io.File;
-import java.util.Arrays;
-
-import static com.jpmorgan.cakeshop.util.ProcessUtils.ensureFileIsExecutable;
 
 public class DownloadUtils {
 
@@ -41,6 +40,19 @@ public class DownloadUtils {
                 throw new RuntimeException("Your OS is not currently supported");
         }
     }
+
+    public static String getDefaultIstanbulToolsUrl() {
+        switch (ProcessUtils.getPlatformDirectory()) {
+            case "mac":
+                return "https://dl.bintray.com/quorumengineering/istanbul-tools/istanbul-tools_v1.0.1_darwin_amd64.tar.gz";
+            case "linux":
+                return "https://dl.bintray.com/quorumengineering/istanbul-tools/istanbul-tools_v1.0.1_linux_amd64.tar.gz";
+            case "windows":
+            default:
+                throw new RuntimeException("Your OS is not currently supported");
+        }
+    }
+
 
     public static ResponseExtractor<Void> createTarResponseExtractor(String destinationPath, String filename) {
         return response -> {

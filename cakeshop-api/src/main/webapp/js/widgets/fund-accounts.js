@@ -16,7 +16,7 @@ module.exports = function() {
 		'		<select id="transfer-from" class="form-control" style="transition: none;"> </select>' +
 		'		<label for="transfer-to">To Account</label>' +
 		'		<select id="transfer-to" class="form-control" style="transition: none;"> </select>' +
-		'		<label for="amount">Amount</label>' +
+		'		<label for="amount">Amount in wei (1 Ether = 1000000000000000000 wei)</label>' +
 		'		<input type="text" class="form-control" id="amount">' +
 		'	</div>'+
 		'	<div class="form-group pull-right">' +
@@ -27,7 +27,7 @@ module.exports = function() {
 		'	</div>'),
 
 		modalTemplate: _.template( '<div class="modal-body">' +
-		'	Are you sure you want to transfer <span class="danger"><%=amount%></span> from <%=from%> to <%=to%> ?' +
+		'	Are you sure you want to transfer <span class="danger"><%=amount%> wei</span> from <%=from%> to <%=to%> ?' +
 		'	</div>' +
 		'	<div class="modal-footer">' +
 		'		<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
@@ -114,8 +114,9 @@ module.exports = function() {
 							message: 'Successfully transferred funds! You may have to wait a moment for the changes to reflect on the balance.'
 						}) );
 						setTimeout( function(){
-								Dashboard.Utils.emit(['fundTransfer'], true)
-							}, 6000);
+								Dashboard.Utils.emit(['fundTransfer'], true);
+                                $('#myModal').modal('hide');
+							}, 4000);
 					}).fail(function(err) {
 						$('#myModal .modal-content').html(_this.modalConfirmation({
 							message: 'Sorry, transaction did not complete. Please try again.'

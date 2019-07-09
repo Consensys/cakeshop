@@ -1,37 +1,37 @@
 package com.jpmorgan.cakeshop.bean;
 
+import static com.jpmorgan.cakeshop.service.impl.NodeServiceImpl.STATIC_NODES_JSON;
+import static com.jpmorgan.cakeshop.util.FileUtils.expandPath;
+import static com.jpmorgan.cakeshop.util.ProcessUtils.ensureFileIsExecutable;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.jpmorgan.cakeshop.error.APIException;
+import com.jpmorgan.cakeshop.model.Genesis;
 import com.jpmorgan.cakeshop.util.DownloadUtils;
 import com.jpmorgan.cakeshop.util.FileUtils;
-import com.jpmorgan.cakeshop.util.ProcessUtils;
 import com.jpmorgan.cakeshop.util.StringUtils;
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpMethod;
-import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
-
-import javax.annotation.PostConstruct;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
-
-import static com.jpmorgan.cakeshop.service.impl.NodeServiceImpl.STATIC_NODES_JSON;
-import static com.jpmorgan.cakeshop.util.FileUtils.expandPath;
-import static com.jpmorgan.cakeshop.util.ProcessUtils.ensureFileIsExecutable;
+import javax.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 @Component
 public class GethRunner {
@@ -56,6 +56,7 @@ public class GethRunner {
     private Boolean isEmbeddedQuorum;
 
     private String binPath;
+    private String enodeUrl;
 
     @Autowired
     public GethRunner(GethConfig gethConfig, ObjectMapper jsonMapper, RestTemplate restTemplate) {
@@ -140,12 +141,17 @@ public class GethRunner {
         }
     }
     public void initializeConsensusMode() throws IOException {
-        addToEnodesConfig(createEnodeURL(), STATIC_NODES_JSON);
+        addToEnodesConfig(getEnodeURL(), STATIC_NODES_JSON);
         if (gethConfig.getConsensusMode().equalsIgnoreCase("istanbul")) {
             updateIstanbulGenesis();
         } else if (gethConfig.getConsensusMode().equalsIgnoreCase("raft")) {
             updateRaftGenesis();
         }
+    }
+
+    public void reset() throws IOException {
+        enodeUrl = null;
+        FileUtils.deleteDirectory(new File(gethConfig.getGethDataDirPath()));
     }
 
     public void clearRaftStateIfSingleNode() throws IOException {
@@ -371,9 +377,13 @@ public class GethRunner {
         LOG.info("updated static-nodes.json at " + enodeListFilePath.getParent());
     }
 
-    public String createEnodeURL() throws IOException {
-        return formatEnodeUrl(getLocalEthereumAddress(), "127.0.0.1", gethConfig.getGethNodePort(),
-            gethConfig.getRaftPort());
+    public String getEnodeURL() throws IOException {
+        if(enodeUrl == null) {
+            enodeUrl = formatEnodeUrl(getLocalEthereumAddress(), "127.0.0.1",
+                gethConfig.getGethNodePort(),
+                gethConfig.getRaftPort());
+        }
+        return enodeUrl;
     }
 
     public String formatEnodeUrl(String address, String ip, String port, String raftPort) {
@@ -459,60 +469,74 @@ public class GethRunner {
     }
 
     private void updateIstanbulGenesis() throws IOException {
-        //TODO remove << ISTANBUL WRAPPER
-        String baseResourcePath = System.getProperty("eth.bin.dir");
-        if (StringUtils.isBlank(baseResourcePath)) {
-            baseResourcePath = FileUtils.getClasspathName("bin");
-        }
+        String baseResourcePath = getBaseResourcePath();
 
-        Path istanbullocation = Paths
-            .get(expandPath(baseResourcePath,
-                "quorum/istanbul-tools/" + ProcessUtils.getPlatformDirectory() + "/istanbul"));
+        Path istanbulLocation = Paths.get(expandPath(baseResourcePath, "quorum/istanbul"));
 
-        File istanbulbinary = istanbullocation.toFile();
-        if (!istanbulbinary.canExecute()) {
-            istanbulbinary.setExecutable(true);
-        }
-
-        List<String> istanbulcommand = Lists
-            .newArrayList(istanbullocation.toString(),
+        List<String> istanbulCommand = Lists
+            .newArrayList(istanbulLocation.toString(),
                 "reinit",
                 "--nodekey",
                 FileUtils.readFileToString(verifyNodeKey().toFile(), Charset.defaultCharset()));
         if (gethConfig.shouldUseQuorum()) {
-            istanbulcommand.add("--quorum");
+            istanbulCommand.add("--quorum");
         }
-        ProcessBuilder builder = new ProcessBuilder(istanbulcommand);
+        ProcessBuilder builder = new ProcessBuilder(istanbulCommand);
         LOG.info(
             "generating instanbul genesis_block.json as " + String.join(" ", builder.command()));
         Process process = builder.start();
 
-        String jsonOutput = IOUtils.toString(process.getInputStream(), Charset.defaultCharset());
+        Genesis istanbulGenesis = jsonMapper.readValue(process.getInputStream(), Genesis.class);
 
         if (process.isAlive()) {
             process.destroy();
         }
 
-        FileWriter fw = new FileWriter(
-            Paths.get(gethConfig.getDataDirectory(), "genesis_block.json").toFile());
-        fw.write(jsonOutput);
-        fw.flush();
-        fw.close();
+        jsonMapper.writeValue(
+            Paths.get(gethConfig.getDataDirectory(), "genesis_block.json").toFile(),
+            mergeWithBaseGenesis(istanbulGenesis));
     }
 
-    private void updateRaftGenesis() throws IOException {
+    private String getBaseResourcePath() {
         String baseResourcePath = System.getProperty("eth.bin.dir");
         if (StringUtils.isBlank(baseResourcePath)) {
             baseResourcePath = FileUtils.getClasspathName("bin");
         }
+        return baseResourcePath;
+    }
 
-        File raftgenesisfile = Paths
+    private Genesis getBaseGenesis() throws IOException {
+        String baseResourcePath = getBaseResourcePath();
+        File baseGenesisFile = Paths
             .get(Paths.get(expandPath(baseResourcePath, "genesis")).toString(),
                 "genesis_block.json").toFile();
-        Files.copy(raftgenesisfile.toPath(),
-            Paths.get(Paths.get(gethConfig.getGethDataDirPath()).getParent().toString(),
-                "genesis_block.json"),
-            StandardCopyOption.REPLACE_EXISTING);
+        return jsonMapper.readValue(baseGenesisFile, Genesis.class);
+    }
+
+    private Genesis mergeWithBaseGenesis(Genesis istanbulGenesis) throws IOException {
+        // the istanbul-tools generated json doesn't include the right config settings or the
+        // allocations to our ethereum accounts. Merge them together, overwriting the base with
+        // values from the istanbul genesis file where necessary
+        Genesis baseGenesis = getBaseGenesis();
+
+        baseGenesis.alloc.putAll(istanbulGenesis.alloc);
+        baseGenesis.config.istanbul = istanbulGenesis.config.istanbul;
+        baseGenesis.config.isQuorum = istanbulGenesis.config.isQuorum;
+        baseGenesis.extraData = istanbulGenesis.extraData;
+        baseGenesis.mixhash = istanbulGenesis.mixhash;
+        baseGenesis.timestamp = istanbulGenesis.timestamp;
+        baseGenesis.difficulty = istanbulGenesis.difficulty;
+        baseGenesis.number = istanbulGenesis.number;
+        baseGenesis.gasUsed = istanbulGenesis.gasUsed;
+        baseGenesis.parentHash = istanbulGenesis.parentHash;
+        return baseGenesis;
+    }
+
+    private void updateRaftGenesis() throws IOException {
+        Genesis baseGenesis = getBaseGenesis();
+        jsonMapper
+            .writeValue(Paths.get(gethConfig.getDataDirectory(), "genesis_block.json").toFile(),
+                baseGenesis);
     }
 
     private void downloadQuorumIfNeeded() {
@@ -534,6 +558,13 @@ public class GethRunner {
             LOG.info("Downloading bootnode from: {}", gethConfig.getGethToolsUrl());
             restTemplate.execute(URI.create(gethConfig.getGethToolsUrl()), HttpMethod.GET, DownloadUtils.getOctetStreamRequestCallback(), DownloadUtils.createTarResponseExtractor(bootnode.getAbsolutePath(), "bootnode"));
             LOG.info("Done downloading bootnode");
+        }
+
+        File istanbulTools = new File(gethDirectory, "istanbul");
+        if (!istanbulTools.exists()) {
+            LOG.info("Downloading istanbul-tools from: {}", gethConfig.getIstanbulToolsUrl());
+            restTemplate.execute(URI.create(gethConfig.getIstanbulToolsUrl()), HttpMethod.GET, DownloadUtils.getOctetStreamRequestCallback(), DownloadUtils.createTarResponseExtractor(istanbulTools.getAbsolutePath(), "istanbul"));
+            LOG.info("Done downloading istanbul-tools");
         }
     }
 }

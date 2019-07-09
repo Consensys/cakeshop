@@ -34,7 +34,7 @@
     // load and display panel
     Account.list().then(function(accounts) {
       Sandbox.accounts = accounts;
-      var s = '<div class="panel-overflow"><table class="table">';
+      var s = '<div class="panel-body"><table class="table">';
 
       accounts.forEach(function(a) {
         s += '<tr>';
@@ -45,7 +45,7 @@
 
       s += '</table></div>';
 
-      $(".panel.accounts .panel-overflow").remove();
+      $(".panel.accounts .panel-body").remove();
       $(".panel.accounts").append(s);
 
       $(".panel.accounts td.address").click(function(e) {
@@ -187,7 +187,7 @@
 
     abi = _.sortBy(abi, "name");
 
-    var s = '<div class="panel-overflow"><table class="table">';
+    var s = '<div class="panel-body"><table class="table">';
 
     s += accountsDropDown();
     s += quorumFields();
@@ -201,7 +201,7 @@
 
     s += '</table></div>';
 
-    $(".transact .panel-overflow").remove();
+    $(".transact .panel-body").remove();
     var transactPanel = $(".transact").append(s);
 
     // read/transact buttons
@@ -398,7 +398,7 @@
   }
 
   function displayStateTable(results) {
-    var s = '<div class="panel-overflow"><table class="table">';
+    var s = '<div class="panel-body"><table class="table">';
 
     results.sort(function(a, b) {
       return a.method.name.localeCompare(b.method.name);
@@ -407,7 +407,7 @@
     results.forEach(function(r) {
       s += '<tr>';
       s += '<td>' + r.method.name + '</td>';
-      s += '<td>';
+      s += '<td class="text-right">';
       // console.log(r);
       if (r.result && _.isArray(r.result)) {
         s += '<ol start="0">';
@@ -419,7 +419,7 @@
         _.keys(r.result).forEach(function(key) {
           s += '<tr>';
           s += '<td>' + key + '</td>';
-          s += '<td>' + r.result[key] + '</td>';
+          s += '<td class="text-right">' + r.result[key] + '</td>';
           s += '</tr>';
         });
         s += '</table>';
@@ -436,7 +436,7 @@
     });
     s += '</table></div>';
     try {
-      $(".panel.state .panel-overflow").remove();
+      $(".panel.state .panel-body").remove();
       $(".panel.state").append(s);
       Sandbox.trigger("col3-reflow");
     } catch (e) {
@@ -638,6 +638,7 @@
   shrinkify(".state");
   shrinkify(".papertape");
   shrinkify(".transact");
+  shrinkify(".accounts");
 
   Sandbox.showTxView = showTxView;
   Sandbox.accounts = [];

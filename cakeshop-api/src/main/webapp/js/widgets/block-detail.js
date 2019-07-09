@@ -49,7 +49,8 @@ module.exports = function() {
 				keys = utils.idAlwaysFirst(keys);
 
 				if (keys.indexOf('timestamp') >= 0) {
-					res.data.attributes.timestamp = moment(res.data.attributes.timestamp/1000000).format('hh:mm:ss A MM/DD/YYYY') + ' (' + moment(res.data.attributes.timestamp/1000000).fromNow() + ')' ;
+				    const timestamp = utils.convertTimestampToMillis(res.data.attributes.timestamp);
+				    res.data.attributes.timestamp = moment(timestamp).format('hh:mm:ss A MM/DD/YYYY') + ' (' + moment(timestamp).fromNow() + ')' ;
 				}
 
 				_.each(keys, function(val, key) {
