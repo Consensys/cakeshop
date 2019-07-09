@@ -149,6 +149,11 @@ public class GethRunner {
         }
     }
 
+    public void reset() throws IOException {
+        enodeUrl = null;
+        FileUtils.deleteDirectory(new File(gethConfig.getGethDataDirPath()));
+    }
+
     public void clearRaftStateIfSingleNode() throws IOException {
         if (getCurrentEnodesList(STATIC_NODES_JSON).size() <= 1) {
             LOG.info(
