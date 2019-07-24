@@ -231,8 +231,7 @@ public class WebSocketPushServiceImpl implements WebSocketPushService {
             gethLogSessions++;
             if (gethLogSessions == 1) {
                 LOG.info("Starting  Tailier");
-                tailer = Tailer.create(new File(GETH_LOG_PATH), logListener, 1);
-                tailer.run();
+                tailer = Tailer.create(new File(GETH_LOG_PATH), logListener, 500);
             }
             if (openedSessions > 1) {
                 openedSessions--;
