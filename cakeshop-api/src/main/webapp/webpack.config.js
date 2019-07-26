@@ -3,16 +3,24 @@ var webpack = require('webpack');
 
 
 module.exports = {
-	entry: ['webpack/hot/dev-server', './js/index.js'],
+	entry: {
+        index: './js/index.js',
+        sandbox: [
+            "./js/sandbox/init.js",
+            "./js/sandbox/lib.js",
+            "./js/sandbox/tx.js",
+            "./js/sandbox/filetabs.js",
+            "./js/sandbox/editor.js",
+            "./js/sandbox/sidebar.js",
+            "./js/sandbox/gist.js",
+            "./js/sandbox/tour.js",
+            "./js/sandbox.js"
+        ]
+    },
 	output: {
 		path: path.join(__dirname, 'js'),
-		filename: 'index-gen.js',
+		filename: '[name]-gen.js',
 		publicPath: '/js/'
-	},
-	devtool: 'source-map',
-	watchOptions: {
-		aggregateTimeout: 300,
-		poll: 1000
 	},
 	devServer: {
 		historyApiFallback: true,
@@ -32,31 +40,18 @@ module.exports = {
 			SockJS: 'sockjs-client',
 			moment: 'moment',
 		}),
-		new webpack.HotModuleReplacementPlugin({
-			multiStep: true
-		})
 	],
-	module: {
-		loaders: [
-			{
-				test: /\.js$/,
-				include: [
-					path.resolve(__dirname, 'js'),
-					path.resolve(__dirname, 'node_modules/jif-dashboard'),
-				],
-				loader: 'babel',
-				query: {
-					presets: ['es2015'],
-					plugins: [
-						'transform-promise-to-bluebird',
-						'transform-runtime'
-					],
-				}
-			}
-		]
-	},
-	node: {
-		fs: 'empty',
-		child_process: 'empty'
-	}
+    module: {
+        rules: [
+            {
+                test: /\.(js|jsx)$/,
+                include: [
+                    path.resolve(__dirname, 'js'),
+                    path.resolve(__dirname, 'node_modules/jif-dashboard'),
+                ],
+                exclude: /node_modules/,
+                use: ['babel-loader']
+            }
+        ]
+    }
 };

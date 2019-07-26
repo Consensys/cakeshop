@@ -37,6 +37,7 @@ node/
 cakeshop-api/src/main/webapp/js/index-gen.js*
 cakeshop-api/src/main/webapp/js/*hot-update*
 cakeshop-api/src/main/webapp/js/vendor/cakeshop.js
+*-gen.js
 
 # local testing
 FooTest.java

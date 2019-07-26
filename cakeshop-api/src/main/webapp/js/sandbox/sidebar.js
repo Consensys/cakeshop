@@ -36,7 +36,7 @@
     // subscribe to node status
     var is_mining = false;
     Node.subscribe(function(node) {
-        if (node.get("status") !== "running") {
+        if (node.get("status") !== "running" || node.get("config") === null) {
             updateStatus("n/a", false);
             return;
         }
