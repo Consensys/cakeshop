@@ -23,8 +23,12 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -49,8 +53,12 @@ public class NodeController extends BaseController {
 
     @Autowired
     private ContractService contractService;
+
     @Autowired
     private GethConfig gethConfig;
+
+    @Autowired
+    private CacheManager cacheManager;
 
     public NodeController() throws IOException {
     }
@@ -240,5 +248,26 @@ public class NodeController extends BaseController {
     ResponseEntity<APIResponse> startTransactionManager() throws APIException {
         boolean success = gethService.startTransactionManager();
         return new ResponseEntity<>(APIResponse.newSimpleResponse(success), HttpStatus.OK);
+    }
+
+    @GetMapping(path = "/currentUrl")
+    protected @ResponseBody
+    ResponseEntity<APIResponse> getNodeUrl() throws APIException {
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(gethConfig.getRpcUrl()),
+            HttpStatus.OK);
+    }
+
+    @PostMapping(path = "/url")
+    protected @ResponseBody
+    ResponseEntity<APIResponse> setNodeUrls(@RequestBody Map<String, String> body)
+        throws APIException {
+        gethConfig.setRpcUrl(body.get("url"));
+        gethConfig.setGethTransactionManagerUrl(body.get("transactionManagerUrl"));
+        // clear cache for contracts so that we don't keep private contracts for the wrong node
+        Cache cache = cacheManager.getCache("contracts");
+        if (cache != null) {
+            cache.clear();
+        }
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(true), HttpStatus.OK);
     }
 }

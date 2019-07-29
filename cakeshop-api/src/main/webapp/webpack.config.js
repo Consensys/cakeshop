@@ -5,6 +5,7 @@ var webpack = require('webpack');
 module.exports = {
 	entry: {
         index: './js/index.js',
+        manage: "./js/manage.js",
         sandbox: [
             "./js/sandbox/init.js",
             "./js/sandbox/lib.js",

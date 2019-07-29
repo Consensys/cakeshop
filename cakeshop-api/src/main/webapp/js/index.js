@@ -18,6 +18,9 @@ import 'jif-dashboard/dashboard-util';
 import 'jif-dashboard/dashboard-template';
 // import this first because it sets a global all the rest of the widgets need
 import './widgets/widget-root';
+import NodeChooser from "./components/NodeChooser";
+import React from "react";
+import ReactDOM from "react-dom";
 
 // HACK(joel): workaround since some templates require utils and moment globals
 window.utils = utils;
@@ -85,6 +88,7 @@ window.Tower = {
 
 		// Tower Control becomes ready only after the first status is received from the server
 		if (!Tower.ready) {
+            Tower.initUrlDropdown();
 			Tower.isReady();
 		}
 
@@ -107,6 +111,11 @@ window.Tower = {
 		return true;
 	},
 
+    initUrlDropdown: function () {
+        ReactDOM.render(<NodeChooser />,
+            document.getElementById('rpc-select-container')
+        );
+    },
 
 	init: function() {
 		Dashboard.setOptions({
