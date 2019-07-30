@@ -88,10 +88,10 @@ window.Tower = {
 
 		// Tower Control becomes ready only after the first status is received from the server
 		if (!Tower.ready) {
-            Tower.initUrlDropdown();
 			Tower.isReady();
 		}
 
+        Tower.initUrlDropdown();
 		Dashboard.Utils.emit('node-status|announce');
 	},
 
@@ -131,6 +131,7 @@ window.Tower = {
 			'block-view'             : require('./widgets/block-view'),
 			'contract-current-state' : require('./widgets/contract-current-state'),
 			'contract-detail'        : require('./widgets/contract-detail'),
+            'contract-transact'      : require('./widgets/contract-transact'),
 			'contract-list'          : require('./widgets/contract-list'),
 			'contract-paper-tape'    : require('./widgets/contract-paper-tape'),
 			// 'doc-frame'              : require('./widgets/doc-frame'),

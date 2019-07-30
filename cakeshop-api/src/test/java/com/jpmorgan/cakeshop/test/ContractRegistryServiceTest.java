@@ -1,6 +1,9 @@
 package com.jpmorgan.cakeshop.test;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Contract;
@@ -8,14 +11,12 @@ import com.jpmorgan.cakeshop.model.Transaction;
 import com.jpmorgan.cakeshop.model.TransactionResult;
 import com.jpmorgan.cakeshop.service.ContractRegistryService;
 import com.jpmorgan.cakeshop.service.ContractService;
-import com.jpmorgan.cakeshop.service.TransactionService;
 import com.jpmorgan.cakeshop.service.ContractService.CodeType;
-
+import com.jpmorgan.cakeshop.service.TransactionService;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,7 +68,8 @@ public class ContractRegistryServiceTest extends BaseGethRpcTest {
 
     private void registerContract(String addr, String abi, String code, Long createdDate)
             throws APIException, InterruptedException {
-        TransactionResult tr = contractRegistry.register(null, addr, "SimpleStorage", abi, code, CodeType.solidity, createdDate);
+        TransactionResult tr = contractRegistry.register(null, addr, "SimpleStorage", abi, code, CodeType.solidity, createdDate,
+            "");
 	    assertNotNull(tr);
 	    assertNotNull(tr.getId());
 	    assertTrue(!tr.getId().isEmpty());

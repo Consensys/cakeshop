@@ -1,84 +1,87 @@
+import React from 'react';
+import ReactDOM from 'react-dom';
 import utils from '../utils';
+import {PaperTape} from "../components/PaperTape";
+
+// TODO this is gross but there's no way to unsubscribe from Dashboard
+// events without unsubscribing every other widget. So do it once in the
+// widget, but update this function so it will always use the current txns
+window.updatePapertapeState = () => {
+};
 
 module.exports = function() {
 	var extended = {
 		name: 'contract-paper-tape',
 		title: 'Contract Paper Tape',
-		size: 'small',
+		size: 'third',
 
 		url: 'api/contract/transactions/list',
-		topic: 'topic/block',
-
-		template: _.template('<table style="width: 100%; table-layout: fixed; background-color: #fcf8e3;" class="table"><%= rows %></table>'),
-		templateRow: _.template('<tr style="border-bottom: 2px dotted #faebcc;"><td><%= text %></td></tr>'),
-		templateHeader: _.template('<span>[<a href="#" data-widget="block-detail" data-id="<%= txn.blockNumber %>">#<%= txn.blockNumber %></a>]</span>'),
 
 		header: function(txn) {
 			return this.templateHeader({txn: txn});
 		},
 
-		subscribe: function(data) {
-			// subscribe to get updated states
-			utils.subscribe(this.topic, this.onUpdatedState.bind(this));
-		},
+        subscribe: function (data) {
+            utils.subscribe('/topic/block', this.onNewTransactions.bind(this));
 
-		onUpdatedState: function(data) {
-			if (data.data.attributes.transactions.length > 0) {
-				this.fetch();
-			}
-		},
+            Dashboard.Utils.on(function (ev, action) {
+                if (action.indexOf('contract|transact|') === 0) {
+                    const message = action.replace('contract|transact|', '');
+                    window.updatePapertapeState({attributes: JSON.parse(message)})
+                }
+            });
+        },
 
-		setData: function(data) {
+        onNewTransactions: function (data) {
+            const transactions = data.data.attributes.transactions || [];
+            transactions.forEach((transactionId) => {
+                $.when(
+                    utils.load(
+                        {url: 'api/transaction/get', data: {id: transactionId}})
+                ).done((res) => {
+                    const data = res.data.attributes;
+                    Dashboard.Utils.emit(
+                        'contract|transact|' + JSON.stringify(data));
+                })
+            })
+        },
+
+        setData: function (data) {
 			this.data = data;
 
-			this.contractName = data.name;
-			this.contractId = data.id;
+            if (this.contractId !== data.id) {
+                this.contractName = data.name;
+                this.contractId = data.id;
+                this.shouldFetch = true;
+
+            } else {
+                this.shouldFetch = false;
+            }
 		},
 
 		fetch: function() {
 			var _this = this;
+            if (!this.shouldFetch) {
+                return;
+            }
 
 			$.when(
 				utils.load({ url: _this.url, data: { address: _this.contractId } })
 			).fail(function(err) {
+			    console.log("Error loading paper tape:", err)
 				// TODO: Error will robinson!
-				_this.postFetch();
 			}).done(function(txns) {
 				$('#widget-shell-' + _this.shell.id + ' .panel-title span').html(_this.contractName + ' Paper Tape');
 
-				var rows = [],
-				 data = _.sortBy(txns.data,
+				const data = _.sortBy(txns.data,
 					function(txn) {
 						return parseInt(txn.attributes.blockNumber + '' + txn.attributes.transactionIndex);
 					});
 
-				_.each(data, function(val, key) {
-					var txn = val.attributes,
-					 text = '';
+                $('#widget-' + _this.shell.id).html('<div id="paper-tape-container" style="width: 100%;"/>');
 
-					if (!_.isEmpty(txn.contractAddress)) {
-						// Contract creation
-						text = _this.header(txn) + ' Contract \'<a href="#" data-widget="contract-detail" data-id="' + txn.contractAddress +'">' + _this.contractName + '</a>\' created by TXN ' +
-							'<a href="#" data-widget="txn-detail" data-id="' + txn.id + '">' + utils.truncAddress(txn.id) + '</a>';
-
-					} else if (txn.decodedInput) {
-						text = _this.header(txn) + ' TXN <a href="#" data-widget="txn-detail" data-id="' + txn.id + '">' +
-									utils.truncAddress(txn.id) + '</a>: <span style="font-weight: bold; color: #375067;">' +
-									txn.decodedInput.method +'</span>(<span style="font-weight: bold; color: #375067;">' +
-									txn.decodedInput.args.join('</span>, <span style="font-weight: bold; color: #375067;">') +
-									'</span>)';
-
-					} else {
-						text = _this.header(txn) + ' TXN <a href="#" data-widget="txn-detail" data-id="' + txn.id + '">' +
-									utils.truncAddress(txn.id) + '</a>';
-					}
-
-					rows.push( _this.templateRow({ text: text }) );
-				});
-
-				$('#widget-' + _this.shell.id).html( _this.template({ rows: rows.join('') }) );
-
-				_this.postFetch();
+                ReactDOM.render(<PaperTape transactions={data} contractName={_this.contractName} />,
+                    document.getElementById('paper-tape-container'));
 			});
 		},
 

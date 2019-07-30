@@ -1,17 +1,15 @@
+import React from 'react';
+import ReactDOM from 'react-dom';
 import utils from '../utils';
+import {ContractState} from "../components/ContractState";
 
 module.exports = function() {
 	var extended = {
 		name: 'contract-current-state',
 		title: 'Contract State',
-		size: 'small',
+		size: 'third',
 
 		topic: 'topic/transaction',
-
-		template: _.template('<table style="width: 100%; table-layout: fixed;" class="table table-striped">' +
-			'<thead style="font-weight: bold;"><tr><td>Method</td><td>Result</td></tr></thead>' +
-			'<%= rows %></table>'),
-		templateRow: _.template('<tr><td><%= key %></td><td class="value" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= value %></td></tr>'),
 
 		setData: function(data) {
 			this.data = data;
@@ -40,18 +38,10 @@ module.exports = function() {
 						// TODO: show error / message?
 						return;
 					}
+                    $('#widget-' + _this.shell.id).html('<div id="contract-state-container" style="width: 100%;"/>');
 
-					var rows = [];
-
-					_.each(stateArray, function(state) {
-						rows.push( _this.templateRow({ key: state.method.name, value: state.result }) );
-					});
-
-					$('#widget-' + _this.shell.id).html( _this.template({ rows: rows.join('') }) );
-
-					utils.makeAreaEditable('#widget-' + _this.shell.id + ' .value');
-
-					_this.postFetch();
+                    ReactDOM.render(<ContractState contractState={stateArray} />,
+                        document.getElementById('contract-state-container'));
 				});
 			});
 		}

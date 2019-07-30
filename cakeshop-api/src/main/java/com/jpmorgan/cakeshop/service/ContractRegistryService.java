@@ -4,7 +4,6 @@ import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Contract;
 import com.jpmorgan.cakeshop.model.TransactionResult;
 import com.jpmorgan.cakeshop.service.ContractService.CodeType;
-
 import java.util.List;
 
 public interface ContractRegistryService {
@@ -37,11 +36,13 @@ public interface ContractRegistryService {
      * @param code
      * @param codeType
      * @param createdDate
+     * @param privateFor, used to determine whether to register the contract publicly
      *
      * @return {@link TransactionResult} The id of the registration transaction
      * @throws APIException
      */
-    public TransactionResult register(String from, String id, String name, String abi, String code, CodeType codeType, Long createdDate) throws APIException;
+    public TransactionResult register(String from, String id, String name, String abi, String code,
+        CodeType codeType, Long createdDate, String privateFor) throws APIException;
 
     /**
      * Lookup a contract in the registry by ID (address hash)
@@ -80,4 +81,17 @@ public interface ContractRegistryService {
      */
     public List<Contract> listByOwner(String owner) throws APIException;
 
+    /**
+     * Determine whether the registry needs to be deployed
+     *
+     * @return whether the contract exists
+     */
+    public boolean contractRegistryExists();
+
+    /**
+     * Lookup the address of the contract from application.properties
+     *
+     * @return the address where the contract registry is supposed to exist
+     */
+    String getAddress();
 }

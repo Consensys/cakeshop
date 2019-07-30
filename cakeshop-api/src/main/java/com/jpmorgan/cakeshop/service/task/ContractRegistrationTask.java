@@ -6,9 +6,7 @@ import com.jpmorgan.cakeshop.model.Transaction;
 import com.jpmorgan.cakeshop.model.TransactionResult;
 import com.jpmorgan.cakeshop.service.ContractRegistryService;
 import com.jpmorgan.cakeshop.service.TransactionService;
-
 import java.util.concurrent.TimeUnit;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -68,9 +66,11 @@ public class ContractRegistrationTask implements Runnable {
             contract.setAddress(tx.getContractAddress());
             LOG.info("Registering newly mined contract at address " + contract.getAddress());
             TransactionResult regTx = contractRegistry.register(contract.getOwner(), tx.getContractAddress(), contract.getName(), contract.getABI(),
-                    contract.getCode(), contract.getCodeType(), contract.getCreatedDate());
+                    contract.getCode(), contract.getCodeType(), contract.getCreatedDate(), contract.getPrivateFor());
 
             if (regTx == null) {
+                // evict cache for private transactions
+                cacheManager.getCache("contracts").evict(contract.getAddress());
                 return;
             }
 
