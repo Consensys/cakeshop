@@ -29,6 +29,7 @@ public class GethHttpServiceTest extends BaseGethRpcTest {
 
         assertTrue(geth.reset());
         assertTrue(geth.isRunning());
+        initializeChain();
 
         assertNotEquals(blockService.get(null, 1L, null).getId(), blockId);
     }
