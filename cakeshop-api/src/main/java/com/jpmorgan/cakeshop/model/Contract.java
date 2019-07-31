@@ -3,9 +3,7 @@ package com.jpmorgan.cakeshop.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jpmorgan.cakeshop.model.SolcResponse.GasEstimates;
 import com.jpmorgan.cakeshop.service.ContractService.CodeType;
-
 import java.util.Map;
-
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
@@ -68,6 +66,12 @@ public class Contract {
      */
     private Map<String, String> functionHashes;
 
+    /**
+     * Comma-separated public keys of in a private contract
+     * This is not saved in the ContractRegistry, but is used in the front-end
+     */
+    private String privateFor = "";
+
     @JsonIgnore
     private ContractABI contractAbi;
 
@@ -75,13 +79,15 @@ public class Contract {
     public Contract() {
     }
 
-    public Contract(String address, String name, String abi, String code, CodeType codeType, String binary, Long createdDate) {
+    public Contract(String address, String name, String abi, String code, CodeType codeType,
+        String binary, Long createdDate, String privateFor) {
         this.address = address;
         this.name = name;
         this.code = code;
         this.codeType = codeType;
         this.binary = binary;
         this.createdDate = createdDate;
+        this.privateFor = privateFor;
         setABI(abi);
     }
 
@@ -193,4 +199,11 @@ public class Contract {
         return contractAbi;
     }
 
+    public void setPrivateFor(String privateFor) {
+        this.privateFor = privateFor;
+    }
+
+    public String getPrivateFor() {
+        return privateFor;
+    }
 }

@@ -13,18 +13,24 @@ import com.jpmorgan.cakeshop.model.Transaction;
 import com.jpmorgan.cakeshop.model.TransactionRequest;
 import com.jpmorgan.cakeshop.model.TransactionResult;
 import com.jpmorgan.cakeshop.model.json.ContractPostJsonRequest;
+import com.jpmorgan.cakeshop.service.ContractRegistryService;
 import com.jpmorgan.cakeshop.service.ContractService;
 import com.jpmorgan.cakeshop.service.ContractService.CodeType;
+import com.jpmorgan.cakeshop.service.task.BlockchainInitializerTask;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import org.bouncycastle.util.encoders.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -40,6 +46,12 @@ public class ContractController extends BaseController {
 
     @Autowired
     private ContractService contractService;
+
+    @Autowired
+    private ContractRegistryService contractRegistryService;
+
+    @Autowired
+    private ApplicationContext applicationContext;
 
     @ApiImplicitParams({
         @ApiImplicitParam(name = "address", required = true, value = "Contract address", dataType = "java.lang.String", paramType = "body")
@@ -127,6 +139,32 @@ public class ContractController extends BaseController {
         err.setTitle("Bad Request");
         res.addError(err);
         return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
+    }
+
+    @GetMapping("/registry")
+    public ResponseEntity<APIResponse> registry() throws APIException {
+        String contractRegistryAddress = "0x";
+        if (contractRegistryService.contractRegistryExists()) {
+            contractRegistryAddress = contractRegistryService.getAddress();
+        }
+
+        return new ResponseEntity<>(
+            APIResponse.newSimpleResponse(contractRegistryAddress), HttpStatus.OK);
+    }
+
+    @PostMapping("/registry/use")
+    public ResponseEntity<APIResponse> useRegistry(@RequestBody Map<String, String> body) throws APIException {
+        contractRegistryService.updateRegistryAddress(body.get("address"));
+        return registry();
+    }
+
+    @PostMapping("/registry/deploy")
+    public ResponseEntity<APIResponse> deployRegistry() throws APIException {
+        // run chain init task
+        BlockchainInitializerTask chainInitTask =
+            applicationContext.getBean(BlockchainInitializerTask.class);
+        chainInitTask.run(); // run in same thread
+        return registry();
     }
 
     @RequestMapping("/list")

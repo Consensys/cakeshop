@@ -66,6 +66,15 @@ nav.sidenav ul.navbar-right li.mining_status a {
     padding-left: 5px;
 }
 
+.private_for__value-container {
+    /* will auto-size this to fit*/
+    width: 1px;
+}
+
+.private_for__menu {
+    /* will auto-size this to fit*/
+}
+
 /*
 @media (max-width: 939px) {
 	.row .sidebar {
@@ -183,11 +192,6 @@ nav.sidenav ul.navbar-right li.mining_status a {
 
 .transact tr.private_from, .transact tr.private_for {
   background-color: rgba(190, 255, 190, 0.54);
-}
-
-.transact tr.private_from textarea,
-.transact tr.private_for textarea {
-  width: 100%;
 }
 
 .method-inputs {
@@ -333,6 +337,9 @@ input[readonly] {
 	float: right;
 	margin-bottom: 5px;
 }
+.transact-inputs .form-control {
+    z-index: 0;
+}
 
 .compiled_contracts .form-control {
 	margin-top: 6px;
@@ -354,7 +361,7 @@ button.send {
 
 button.deploy {
     float: right;
-    margin-top: -20px;
+    margin-top: 8px;
     width: 75px;
 }
 

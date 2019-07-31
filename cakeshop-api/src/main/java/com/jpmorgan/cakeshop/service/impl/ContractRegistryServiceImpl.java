@@ -1,5 +1,6 @@
 package com.jpmorgan.cakeshop.service.impl;
 
+import com.google.common.collect.ObjectArrays;
 import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Contract;
@@ -13,20 +14,23 @@ import com.jpmorgan.cakeshop.service.TransactionService;
 import com.jpmorgan.cakeshop.util.CakeshopUtils;
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.StringUtils;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 @Service
 public class ContractRegistryServiceImpl implements ContractRegistryService {
@@ -47,6 +51,9 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
 
     @Value("${contract.registry.addr:}")
     private String contractRegistryAddress;
+
+    // TODO persist in a database, or at least in the data directory
+    private Map<String, Contract> privateContracts = new HashMap<>();
 
     @Autowired
     private GethConfig gethConfig;
@@ -124,7 +131,8 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
     }
 
     @Override
-    public TransactionResult register(String from, String id, String name, String abi, String code, CodeType codeType, Long createdDate) throws APIException {
+    public TransactionResult register(String from, String id, String name, String abi, String code,
+        CodeType codeType, Long createdDate, String privateFor) throws APIException {
 
         if (StringUtils.isBlank(contractRegistryAddress)) {
             LOG.warn("Not going to register contract since ContractRegistry address is null");
@@ -140,14 +148,26 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
             return null;
         }
 
+        if (StringUtils.isNotBlank(privateFor)) {
+            LOG.info("Registering in private local ContractRegistry");
+            privateContracts.put(id,
+                new Contract(id, name, abi, code, codeType, null, createdDate, privateFor));
+            return null;
+        }
+
+        LOG.info("Registering in public ContractRegistry");
         return contractService.transact(
-                contractRegistryAddress, this.abi, from,
-                "register",
-                new Object[] { id, name, abi, code, codeType.toString(), createdDate });
+            contractRegistryAddress, this.abi, from,
+            "register",
+            new Object[]{id, name, abi, code, codeType.toString(), createdDate});
     }
 
     @Override
     public Contract getById(String id) throws APIException {
+        if (privateContracts.containsKey(id)) {
+            return privateContracts.get(id);
+        }
+
         Object[] res = contractService.read(
                 contractRegistryAddress, this.abi, null,
                 "getById",
@@ -170,7 +190,8 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
                 (String) res[3],
                 CodeType.valueOf((String) res[4]),
                 null,
-                createdDate);
+                createdDate,
+                "");
     }
 
     @Override
@@ -186,17 +207,32 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
                 contractRegistryAddress, this.abi, null,
                 "listAddrs", null, null);
 
-        Object[] addrs = (Object[]) res[0];
+        Object[] addrs = ObjectArrays.concat(
+            (Object[]) res[0],
+            privateContracts.keySet().toArray(),
+            Object.class);
 
         List<Contract> contracts = new ArrayList<>();
         for (int i = 0; i < addrs.length; i++) {
             String addr = (String) addrs[i];
             try {
-                contracts.add(getById(addr));
+                Contract contract = getById(addr);
+                if(StringUtils.isNotBlank(contract.getPrivateFor())) {
+                    try {
+                        // will not succeed if this node is not in privateFor, mark for front end
+                        contractService.get(contract.getAddress());
+                    } catch (APIException e) {
+                        LOG.info("Contract {} is private, marking as such", contract.getAddress());
+                        contract.setPrivateFor("private");
+                    }
+                }
+                contracts.add(contract);
             } catch (APIException ex) {
                 LOG.warn("error loading contract details for " + addr, ex);
             }
         }
+
+        contracts.sort(Comparator.comparing(Contract::getCreatedDate));
 
         return contracts;
     }
@@ -207,4 +243,72 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
         return null;
     }
 
+    @Override
+    public boolean contractRegistryExists() {
+        // test stored address
+        loadContractRegistryAddress();
+        LOG.info("Loaded contract registry address " + contractRegistryAddress);
+        try {
+            contractService.get(contractRegistryAddress);
+            return true;
+        } catch (APIException e) {
+            LOG.warn("Contract registry contract doesn't exist at {}", contractRegistryAddress);
+        }
+        return false;
+    }
+
+    @Override
+    public String getAddress() {
+        return contractRegistryAddress;
+    }
+
+    private void loadContractRegistryAddress() {
+        String regAddr = getSharedNetworkConfig();
+        if (StringUtils.isNotBlank(regAddr)) {
+            LOG.info("Overriding contract registry address from shared config " + regAddr);
+            contractRegistryAddress = regAddr;
+        }
+
+        // Read from env
+        regAddr = System.getenv("CAKESHOP_REGISTRY_ADDR");
+        if (StringUtils.isNotBlank(regAddr)) {
+            LOG.info("Overriding contract registry address with " + regAddr);
+            contractRegistryAddress = regAddr;
+        }
+    }
+
+    /**
+     * Get the shared contract registry address, if configured
+     *
+     * @return String shared registry address
+     */
+    private String getSharedNetworkConfig() {
+
+        // TODO this is a temp solution to the problem of sharing the ContractRegistry
+        // address among multiple Cakeshop nodes running on the same machine.
+        File fSharedConfig = CakeshopUtils.getSharedNetworkConfigFile();
+        if (fSharedConfig == null) {
+            return null;
+        }
+
+        if (!fSharedConfig.exists()) {
+            LOG.debug("CAKESHOP_SHARED_CONFIG file not found: " + fSharedConfig.toString());
+            return null; // not found, skip it
+        }
+
+        Properties props = new Properties();
+        try {
+            props.load(new FileInputStream(fSharedConfig));
+        } catch (IOException e) {
+            LOG.warn("Error loading CAKESHOP_SHARED_CONFIG at " + fSharedConfig.toString() + ": " + e.getMessage(), e);
+            return null;
+        }
+
+        String addr = (String) props.get("contract.registry.addr");
+        if (StringUtils.isNotBlank(addr)) {
+            return addr;
+        }
+
+        return null;
+    }
 }

@@ -1,6 +1,6 @@
 [
     {
-        "constant": false,
+        "constant": true,
         "inputs": [],
         "name": "listAddrs",
         "outputs": [
@@ -10,11 +10,11 @@
             }
         ],
         "payable": false,
-        "stateMutability": "nonpayable",
+        "stateMutability": "view",
         "type": "function"
     },
     {
-        "constant": false,
+        "constant": true,
         "inputs": [
             {
                 "name": "id",
@@ -49,7 +49,7 @@
             }
         ],
         "payable": false,
-        "stateMutability": "nonpayable",
+        "stateMutability": "view",
         "type": "function"
     },
     {

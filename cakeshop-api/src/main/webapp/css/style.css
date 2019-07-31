@@ -756,3 +756,17 @@ td.locked i.fa-lock,
 .account-balance span {
 	float: right;
 }
+
+.method-inputs {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    width: 100%;
+}
+.transact-inputs .form-control {
+    z-index: 0;
+}
+
+button.send {
+    float: right;
+    width: 75px;
+}

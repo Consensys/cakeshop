@@ -1,6 +1,31 @@
 
 (function() {
 
+    function decodeBytes(val) {
+        var useB64 = document.querySelector('#base64').checked;
+        if (!useB64) {
+            return val;
+        }
+        return trimBase64Nulls(Base64.decode(val).trim());
+    }
+
+    function encodeBytes(val) {
+        var useB64 = document.querySelector('#base64').checked;
+        if (!useB64) {
+            return val;
+        }
+        return Base64.encode(val);
+    }
+
+    function trimBase64Nulls(s) {
+        for (var i = 0; i < s.length; i++) {
+            if (s.charCodeAt(i) === 0) {
+                return s.substring(0, i);
+            }
+        }
+        return s; // no nulls?
+    }
+
     Contract.Proxy = (function() {
         function Proxy(contract) {
             this._contract = contract;
@@ -25,7 +50,7 @@
                             arg   = args[i];
                         if (input.type.match(/^bytes\d+$/)) {
                             // base64 encode bytes
-                            ret.push(Sandbox.encodeBytes(arg));
+                            ret.push(encodeBytes(arg));
                         } else {
                             // all other input types, just accumulate
                             ret.push(arg);
@@ -50,11 +75,11 @@
                             result = results[i];
                         if (output.type.match(/^bytes\d+$/)) {
                             // base64 decode bytes
-                            ret.push(Sandbox.decodeBytes(result));
+                            ret.push(decodeBytes(result));
                         } else if (output.type.match(/^bytes\d+\[\d*\]$/) && _.isArray(result)) {
                             // console.log("decoding result bytes32[]", result);
                             // base64 decode arrays of bytes
-                            result = _.map(result, function(v) { return Sandbox.decodeBytes(v); });
+                            result = _.map(result, function(v) { return decodeBytes(v); });
                             // console.log("decoded ", result);
                             ret.push(result);
                         } else {

@@ -27,11 +27,11 @@ public class ContractRegistryCacheTest extends BaseGethRpcTest {
     @Autowired
     ContractRegistryService contractRegistry;
 
-
     @Test
 	public void testCache() throws IOException, InterruptedException, APIException  {
+        createContract();
 
-		Contract first = contractRegistry.list().get(0);
+        Contract first = contractRegistry.list().get(0);
         assertNotNull(first);
 
         String addr = first.getAddress();

@@ -30,7 +30,7 @@ contract ContractRegistry
     contracts[addr] = Contract(addr, msg.sender, name, abi, code, code_type, created_date);
   }
 
-  function getById(address id) public returns (address _id, string memory _name, string memory _abi, string memory _code, string memory _code_type, int _created_date) {
+  function getById(address id) public view returns (address _id, string memory _name, string memory _abi, string memory _code, string memory _code_type, int _created_date) {
     ContractRegistry.Contract storage c = contracts[id];
     _id = c.addr;
     _name = c.name;
@@ -46,7 +46,7 @@ contract ContractRegistry
   }
   */
 
-  function listAddrs() public returns (address[] memory _addresses) {
+  function listAddrs() public view returns (address[] memory _addresses) {
     return addrs;
   }
 /*

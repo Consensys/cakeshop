@@ -59,14 +59,13 @@
                 <li role="presentation" class="help" id="help"><a title="Help"><i class="fa fa-question"></i></a></li>
               </ul>
 
-              <!-- block number & mining status widgets -->
+              <!-- current node & block number widgets -->
               <ul class="nav navbar-nav navbar-right">
                   <li>
                       <div id="rpc-select-container">
                       </div>
                   </li>
                 <li id="block_num" class="block_number"><a title="Current block number">n/a</a></li>
-                <li id="mining_status" class="mining_status"><a title="Click to toggle mining"><i class="fa fa-pause"></i></a></li>
               </ul>
             </div>
           </nav>
@@ -95,8 +94,8 @@
                         <label class="withRefreshLabel">Or Deploy From Editor:</label>
 						<i class="refresh fa fa-refresh fa-2x fa-spin start_hidden"></i>
 						<select class="form-control"></select>
-                        <div class="form-group constructor start_hidden">
-                        </div>
+                        <table id="constructor-react" class="table">
+                        </table>
                       </div>
 
                       <div class="form-group address">

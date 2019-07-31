@@ -7,9 +7,12 @@ import com.jpmorgan.cakeshop.config.AppStartup;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Transaction;
 import com.jpmorgan.cakeshop.model.TransactionResult;
+import com.jpmorgan.cakeshop.service.ContractRegistryService;
 import com.jpmorgan.cakeshop.service.ContractService;
+import com.jpmorgan.cakeshop.service.ContractService.CodeType;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.TransactionService;
+import com.jpmorgan.cakeshop.service.task.BlockchainInitializerTask;
 import com.jpmorgan.cakeshop.test.config.TempFileManager;
 import com.jpmorgan.cakeshop.test.config.TestAppConfig;
 import com.jpmorgan.cakeshop.util.FileUtils;
@@ -119,6 +122,7 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
         assertTrue(appStartup.isHealthy(), "Healthcheck should pass");
         LOG.info("Starting Ethereum at test startup");
         assertTrue(_startGeth());
+        initializeChain();
     }
 
     private boolean _startGeth() throws IOException {
@@ -201,4 +205,10 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
         return tx.getContractAddress();
     }
 
+
+    void initializeChain() throws APIException {
+        BlockchainInitializerTask chainInitTask =
+            applicationContext.getBean(BlockchainInitializerTask.class);
+        chainInitTask.run(); // run in same thread
+    }
 }

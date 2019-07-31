@@ -1,5 +1,6 @@
 package com.jpmorgan.cakeshop.controller;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import com.jpmorgan.cakeshop.bean.GethConfig;
@@ -25,6 +26,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,6 +38,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 /**
  *
@@ -53,6 +58,9 @@ public class NodeController extends BaseController {
 
     @Autowired
     private ContractService contractService;
+
+    @Autowired
+    private RestTemplate restTemplate;
 
     @Autowired
     private GethConfig gethConfig;
@@ -205,6 +213,18 @@ public class NodeController extends BaseController {
     ResponseEntity<APIResponse> resetNodeInfo() {
         Boolean reset = nodeService.reset();
         return new ResponseEntity<>(APIResponse.newSimpleResponse(reset), HttpStatus.OK);
+    }
+
+    @RequestMapping("/tm/peers")
+    protected @ResponseBody
+    ResponseEntity<APIResponse> getTransactionManagerPeers() throws APIException {
+        String transactionManagerUrl = gethConfig.getGethTransactionManagerUrl();
+        HttpHeaders jsonContentHeaders = new HttpHeaders();
+        jsonContentHeaders.setContentType(APPLICATION_JSON);
+        HttpEntity<String> httpEntity = new HttpEntity<>(jsonContentHeaders);
+        ResponseEntity<Map> exchange = restTemplate
+            .exchange(transactionManagerUrl + "/partyinfo", HttpMethod.GET, httpEntity, Map.class);
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(exchange.getBody()), HttpStatus.OK);
     }
 
     @RequestMapping("/tm/list")
