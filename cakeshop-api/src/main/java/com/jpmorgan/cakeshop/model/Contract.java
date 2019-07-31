@@ -206,4 +206,8 @@ public class Contract {
     public String getPrivateFor() {
         return privateFor;
     }
+
+    public Contract shallowCopy() {
+        return new Contract(address, name, abi, code, codeType, binary, createdDate, privateFor);
+    }
 }
