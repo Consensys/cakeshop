@@ -1,18 +1,33 @@
-import React from "react";
+import React, {useState} from "react";
 import Select from "react-select";
 import {PrivateFor} from "./PrivateFor";
 
-export const Method = ({method, onClick, onInputChange}) => {
+export const Method = ({method, onSubmit, inlineButton=true}) => {
+
+    const [inputValues, setInputValues] = useState({});
+
+    const submit = (e) => {
+        e.stopPropagation();
+        onSubmit(inputValues)
+    };
+
+    const onInputChange = (inputName, value) => {
+        setInputValues({
+            ...inputValues,
+            [inputName]: value
+        });
+    };
+
     return <tr className="method"
                data-method={method.name}>
             <td colSpan="2">
                 { method.name &&
                     <span>
                         <label>{method.name}</label>
-                        <button onClick={onClick}
-                            className="btn btn-default send">
-                            {method.constant === true ? "Read" : "Transact"}
-                        </button>
+                        {inlineButton &&
+                        <button onClick={submit} className="btn btn-default send">
+                            {getButtonLabel(method)}
+                        </button>}
                     </span>
                 }
             <div className="transact-inputs">
@@ -20,12 +35,13 @@ export const Method = ({method, onClick, onInputChange}) => {
                     <TransactionInput
                             key={method.name + input.name}
                             onChange={onInputChange}
-                            methodName={method.name}
                             input={input}/>
-                )
-
-                }
+                )}
             </div>
+            {!inlineButton &&
+            <button onClick={submit} className="btn btn-default deploy">
+                {getButtonLabel(method)}
+            </button>}
         </td>
     </tr>;
 };
@@ -74,8 +90,7 @@ export class TransactTable extends React.Component {
                 .map((method) => (
                     <Method key={method.name}
                             method={method}
-                            onInputChange={this.onInputChange}
-                            onClick={() => this.onMethodCalled(method)}
+                            onSubmit={(inputValues) => this.onMethodCalled(method, inputValues)}
                             />
                 ))
             }
@@ -83,41 +98,20 @@ export class TransactTable extends React.Component {
         )
     }
 
-    onInputChange = (methodName, inputName, value) => {
-        console.log("input change:", methodName, inputName, value)
-        this.setState((prevState, props) => {
-            return {
-                ...prevState,
-                [methodName]: {
-                    ...prevState[methodName],
-                    [inputName]: value
-                }
-            }
-        })
-    };
-
-    onMethodCalled = (method) => {
-        console.log("method", method)
+    onMethodCalled = (method, inputValues) => {
         const {activeContract, selectedAccount, privateFor} = this.state;
 
-        // highlightMethod(method);
-
-        const params = this.state[method.name] || {};
-        console.log("params:", params, "account:", selectedAccount.value, "privateFor:", privateFor)
-        this.doMethodCall(activeContract, selectedAccount.value, method, params,
+        this.doMethodCall(activeContract, selectedAccount.value, method, inputValues,
             "", privateFor);
 
     };
 
     onAccountSelected = (account) => {
-        console.log("selected", account)
         this.setState({selectedAccount: account});
     };
 
     onPrivateForChange = (privateFor) => {
-        let publicKeys = privateFor.map((option) => option.value);
-        console.log("privateFor", publicKeys)
-        this.setState({privateFor: publicKeys})
+        this.setState({privateFor})
     };
 
     doMethodCall = (contract, from, method, params, privateFrom,
@@ -137,6 +131,7 @@ export class TransactTable extends React.Component {
             methodArgs.privateFor = privateFor;
         }
 
+        console.log("test", method.name, methodArgs);
         contract.proxy[method.name](methodArgs).then((res) => {
             this.props.onTransactionSubmitted(res, method, methodSig,
                 methodArgs)
@@ -144,27 +139,71 @@ export class TransactTable extends React.Component {
     };
 }
 
-export const TransactionInput = ({methodName, input, onChange}) => {
-    // public field mapping/array getter inputs don't have names, make it 'input' or the jquery selectors break
-    input.name = input.name || "input";
-    return (
-        <div className="input-group method-inputs" data-param={input.name}>
-            <input type="text" className="form-control" data-param={input.name}
-                   data-type={input.type}
-                   placeholder={input.name + '(' + input.type + ')'}
-                   onChange={(e) => onChange(methodName, input.name,
-                       e.target.value)}>
-            </input>
-            {(input.type.match(/\[(\d+)?\]/)) &&
-            // handle dynamic array input types - like bytes32[]
-            ([
-                <span key={"minus"} className="input-group-addon"><a
-                    className="remove text-danger disabled"><i
-                    className="fa fa-minus"/></a></span>,
-                <span  key={"plus"} className="input-group-addon"><a
-                    className="add text-success"><i className="fa fa-plus"/></a></span>
-            ])
-            }
-        </div>
-    )
+export const TransactionInput = ({input, onChange}) => {
+
+    const isDynamic = isDynamicArray(input);
+    const [values, setValues] = useState([""]);
+    // const [numInputs, setNumInputs] = useState(1);
+
+    const setValuesAndNotify = (newValues) => {
+        onChange(input.name, isDynamic ? newValues : newValues[0]);
+        setValues(newValues);
+    };
+
+    const onInputChange = (index, value) => {
+        const newValues = [...values];
+        newValues[index] = value;
+        setValuesAndNotify(newValues);
+    };
+
+    const onPlus = (index) => {
+        const newValues = [...values];
+        newValues.splice(index + 1, 0, "");
+        setValuesAndNotify(newValues);
+    };
+
+    const onMinus = (index) => {
+        const newValues = [...values];
+        newValues.splice(index, 1);
+        setValuesAndNotify(newValues);
+    };
+
+    return values.map((value, index) => (
+            <div key={`${input.name}${index}`}className="input-group method-inputs" data-param={input.name}>
+                <input type="text" className="form-control" data-param={input.name}
+                       data-type={input.type}
+                       value={value}
+                       placeholder={getInputPlaceholder(input)}
+                       onChange={(e) => onInputChange(index, e.target.value)}>
+                </input>
+                {isDynamic &&
+                // handle dynamic array input types - like bytes32[]
+                ([
+                    <a key={"minus"} onClick={() => onMinus(index)}
+                       className="remove input-group-addon text-danger">
+                        <i className="fa fa-minus"/>
+                    </a>,
+                    <a key={"plus"} onClick={() => onPlus(index)}
+                       className="add input-group-addon text-success">
+                        <i className="fa fa-plus"/>
+                    </a>
+                ])
+                }
+            </div>
+        ))
 };
+
+const getButtonLabel = (method) => {
+    if(!method.name) {
+        return "Deploy";
+    } else if(method.constant) {
+        return "Read";
+    }
+    return "Transact";
+};
+
+// public field mapping/array getter inputs don't have names, make it 'input'
+const getInputPlaceholder =
+    (input) => `${input.name || "input"} (${input.type})`;
+
+const isDynamicArray = (input) => input.type.match(/\[(\d+)?\]/);

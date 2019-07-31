@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import NodeChooser from "../components/NodeChooser";
-import Constructor from "../components/Constructor";
+import {Constructor} from "../components/Constructor";
 import {TransactTable} from "../components/Transact";
 import utils from "../utils"
 
