@@ -355,10 +355,7 @@ public class ContractServiceImpl implements ContractService {
         if (StringUtils.isNotBlank(from)) {
             return from;
         }
-        if (defaultFromAddress == null) {
-            defaultFromAddress = walletService.list().get(0).getAddress();
-        }
-        return defaultFromAddress;
+        return walletService.list().get(0).getAddress();
     }
 
     private ContractABI lookupABI(String id) throws APIException {

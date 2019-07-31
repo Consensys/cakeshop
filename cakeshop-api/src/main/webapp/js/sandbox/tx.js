@@ -1,3 +1,7 @@
+import React from "react";
+import ReactDOM from "react-dom";
+import NodeChooser from "../components/NodeChooser";
+
 (function() {
   var Sandbox = window.Sandbox = window.Sandbox || {};
   var activeContract, compiler_output;
@@ -8,6 +12,9 @@
     }
 
     loadAccounts();
+    ReactDOM.render(<NodeChooser />,
+          document.getElementById('rpc-select-container')
+      );
   }
 
   var events_enabled = true;

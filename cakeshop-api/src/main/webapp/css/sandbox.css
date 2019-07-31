@@ -361,3 +361,10 @@ button.deploy {
 div.contracts .withRefreshLabel {
 	margin-bottom: 7px;
 }
+
+#rpc-select-container {
+    height: 44px;
+    padding-top: 3px;
+    width: 162px;
+}
+

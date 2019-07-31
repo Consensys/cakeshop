@@ -2,6 +2,19 @@
     var Client = window.Client = {};
     _.extend(Client, Backbone.Events);
 
+    Client.get = function(url) {
+        if(window.location.host === "localhost:7999") {
+            // when running webpack dev server, point urls to 8080
+            url = "http://localhost:8080/" + url;
+        }
+
+        return $.ajax({
+            url: url,
+            method: "GET",
+            contentType: "application/json"
+        });
+    };
+
     Client.post = function(url, data) {
         if (!_.isString(data)) {
             data = JSON.stringify(data);

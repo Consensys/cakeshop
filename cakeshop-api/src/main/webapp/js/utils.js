@@ -133,7 +133,6 @@ export default {
         if (timestamp > 1000000000000000000) {
             // probably nanoseconds
             timestamp = timestamp / 1000000
-            console.log("found nano", timestamp);
         } else if (timestamp > 1000000000000000) {
             // probably microseconds
             timestamp = timestamp / 1000
@@ -167,3 +166,4 @@ jQuery.fn.selectText = function() {
 		selection.addRange(range);
 	}
 };
+

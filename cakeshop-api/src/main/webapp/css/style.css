@@ -46,6 +46,13 @@ a:active {
 	text-shadow: none;
 }
 
+#rpc-select-container {
+    width: 162px;
+    right: 72px;
+    bottom: 20px;
+    position: absolute;
+}
+
 .settings {
     right: 25px;
     position: absolute;
