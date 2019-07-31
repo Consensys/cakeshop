@@ -157,22 +157,17 @@ import utils from "../utils"
       return;
     }
 
-      var s = '<div class="panel-body"><table id="react-transact" class="table"></table></div>';
+    var s = '<div class="panel-body"><table id="react-transact" class="table"></table></div>';
 
     $(".transact .panel-body").remove();
-      const accounts = Sandbox.accounts.map(
-          (account) => ({address: account.get("address")}));
-    var transactPanel = $(".transact").append(s);
+    const accounts = Sandbox.accounts.map(
+        (account) => ({address: account.get("address")}));
+    $(".transact").append(s);
       ReactDOM.render(<TransactTable accounts={accounts}
                                      activeContract={activeContract}
                                      onTransactionSubmitted={onTransactionSubmitted}/>,
           document.getElementById('react-transact')
       );
-
-    // add/remove input fields
-    $(".transact .method-inputs a").click(function(e) {
-      addRemoveInputs(transactPanel, e);
-    });
 
     // highlight associated sourcecode on method input click
     $(".transact .method").click(function(e) {
@@ -184,57 +179,7 @@ import utils from "../utils"
     });
   }
 
-  function addRemoveInputs(container, e) {
-    e.preventDefault();
-    var btn = $(e.currentTarget);
-    if (btn.hasClass("disabled")) {
-      return;
-    }
-
-    var div = btn.parents("div.method-inputs");
-    var param = div.attr("data-param");
-
-    if (btn.hasClass("add")) {
-      // add new field
-      div.clone(true).insertAfter(div).find("input").val("");
-      container.find(".method-inputs[data-param=" + param + "] a.remove").removeClass("disabled");
-
-    } else {
-      // remove field
-      div.remove();
-      var removeButtons = container.find(".method-inputs[data-param=" + param + "] a.remove");
-      if (removeButtons.length == 1) {
-        removeButtons.addClass("disabled");
-      }
-
-    }
-  }
-
-  /**
-   * Collect all the form inputs for the given method
-   *
-   * @param [Object] method     ABI object
-   * @param [Element] container   Container element which wraps all inputs
-   */
-    function collectInputVals(method, container) {
-        var params = {};
-        if (method !== null && method !== undefined) {
-            method.inputs.forEach(function (input) {
-                var val;
-                if (input.type.match(/\[(\d+)?\]/)) {
-                    val = container.find(".method-inputs[data-param=" + input.name + "] input").map(function (i, el) {
-                        return $(el).val();
-                    }).toArray();
-                } else {
-                    val = container.find(".method-inputs[data-param=" + input.name + "] input").val();
-                }
-                params[input.name] = val;
-            });
-        }
-        return params;
-    }
-
-  /**
+   /**
    * Highlight the given method in the source code editor
    *
    * @param [Object] method (ABI object)
