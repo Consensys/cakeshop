@@ -1,17 +1,20 @@
 
 (function() {
 
+    function useB64() {
+        const element = document.querySelector('#base64');
+        return !element || element.checked; // default to on, only sandbox has option
+    }
+
     function decodeBytes(val) {
-        var useB64 = document.querySelector('#base64').checked;
-        if (!useB64) {
+        if (!useB64()) {
             return val;
         }
         return trimBase64Nulls(Base64.decode(val).trim());
     }
 
     function encodeBytes(val) {
-        var useB64 = document.querySelector('#base64').checked;
-        if (!useB64) {
+        if (!useB64()) {
             return val;
         }
         return Base64.encode(val);

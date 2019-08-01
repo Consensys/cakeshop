@@ -165,7 +165,7 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
     @Override
     public Contract getById(String id) throws APIException {
         if (privateContracts.containsKey(id)) {
-            return privateContracts.get(id);
+            return privateContracts.get(id).shallowCopy();
         }
 
         Object[] res = contractService.read(
