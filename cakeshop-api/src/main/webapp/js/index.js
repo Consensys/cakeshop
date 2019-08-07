@@ -68,10 +68,10 @@ window.Tower = {
 			 .addClass('fa-pause tower-txt-danger');
 		}
 
-        let numPeers = status.peers.length - 1;
+        let numPeers = status.peers ? status.peers.length - 1 : 0;
 		if(status.peerCount < numPeers) {
 		    // show fraction of current connected peers vs total raft peers
-            numPeers = status.peerCount + "/" + (status.peers.length - 1);
+            numPeers = status.peerCount + "/" + (numPeers);
         }
         utils.prettyUpdate(Tower.status.peerCount, numPeers, $('#default-peers'));
 		utils.prettyUpdate(Tower.status.latestBlock, status.latestBlock, $('#default-blocks'));
