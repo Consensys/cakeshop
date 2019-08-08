@@ -37,70 +37,82 @@ import 'jif-dashboard/dashboard-template';
       },
     ])
     .concat([
+        //------------------------------------------------------------------------
+        // CONSOLE
+        {
+            element: "#console",
+            title: "Console",
+            content: "You're currently looking at the console, which gives you an overview of the blockchain node running on the local system",
+            backdropContainer: ".tower-sidebar",
+            onShow: showMenuStep("#console"),
+            onHide: hideMenuStep,
+        },
+        {
+            element: "#heads-up",
+            content: "Here are some simple metrics which are always available, such as the node's status, number of connected peers, current block number, and pending transaction count",
+            placement: "bottom",
+            onShow: showMenuStep("#console"),
+            onHide: hideMenuStep,
+        },
+        {
+            element: "#grounds",
+            content: "This is the main application area and is composed of a number of widgets. They can be reordered and resized as needed",
+            placement: "top",
+            onShow: showMenuStep("#console"),
+            onHide: hideMenuStep,
+        },
+        {
+            element: ".widget-shell.node-info",
+            content: "This widget shows a snapshot of the node, including configuration details and some statistics",
+            placement: "bottom",
+            onShow: showMenuStep("#console"),
+            onHide: hideMenuStep,
+        },
+        {
+            element: ".widget-shell.metrix-txn-min",
+            content: "Transactions committed per minute",
+            placement: "top",
+            onShow: showMenuStep("#console"),
+            onHide: hideMenuStep,
+        },
+        {
+            element: ".widget-shell.metrix-blocks-min",
+            content: "Blocks generated per minute",
+            placement: "top",
+            onShow: showMenuStep("#console"),
+            onHide: hideMenuStep,
+        },
+    ])
+    .concat([
       //------------------------------------------------------------------------
-      // CONSOLE
+      // MANAGED NODE
       {
-        element: "#console",
-        title: "Console",
-        content: "You're currently looking at the console, which gives you an overview of the blockchain node running on the local system",
+        element: "#managed",
+        title: "Managed Node",
+        content: "The managed node tab gives the ability to have cakeshop run its own local Quorum node",
         backdropContainer: ".tower-sidebar",
-        onShow: showMenuStep("#console"),
-        onHide: hideMenuStep,
-      },
-      {
-        element: "#heads-up",
-        content: "Here are some simple metrics which are always available, such as the node's status, number of connected peers, current block number, and pending transaction count",
-        placement: "bottom",
-        onShow: showMenuStep("#console"),
-        onHide: hideMenuStep,
-      },
-      {
-        element: "#grounds",
-        content: "This is the main application area and is composed of a number of widgets. They can be reordered and resized as needed",
-        placement: "top",
-        onShow: showMenuStep("#console"),
-        onHide: hideMenuStep,
-      },
-      {
-        element: ".widget-shell.node-info",
-        content: "This widget shows a snapshot of the node, including configuration details and some statistics",
-        placement: "bottom",
-        onShow: showMenuStep("#console"),
+        onShow: showMenuStep("#managed"),
         onHide: hideMenuStep,
       },
       {
         element: ".widget-shell.node-control",
         content: "From here you can start, stop, restart and even reset the node back to a fresh state",
         placement: "top",
-        onShow: showMenuStep("#console"),
+        onShow: showMenuStep("#managed"),
         onHide: hideMenuStep,
       },
       {
         element: ".widget-shell.node-settings",
         content: "Here you can alter various settings of the underlying node",
         placement: "top",
-        onShow: showMenuStep("#console"),
+        onShow: showMenuStep("#managed"),
         onHide: hideMenuStep,
       },
       {
-        element: ".widget-shell.metrix-txn-sec",
-        content: "Transactions committed per second",
+        element: ".widget-shell.node-log",
+        content: "Here you can stream the logs of the managed node",
         placement: "top",
-        onShow: showMenuStep("#console"),
-        onHide: hideMenuStep,
-      },
-      {
-        element: ".widget-shell.metrix-txn-min",
-        content: "Transactions committed per minute",
-        placement: "top",
-        onShow: showMenuStep("#console"),
-        onHide: hideMenuStep,
-      },
-      {
-        element: ".widget-shell.metrix-blocks-min",
-        content: "Blocks generated per minute",
-        placement: "top",
-        onShow: showMenuStep("#console"),
+        onShow: showMenuStep("#managed"),
         onHide: hideMenuStep,
       },
     ])
