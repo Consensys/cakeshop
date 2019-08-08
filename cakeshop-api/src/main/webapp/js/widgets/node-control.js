@@ -14,9 +14,9 @@ module.exports = function() {
 		},
 
 		template: _.template('<ul class="widget-node-control">'+
+                '<li><button type="button" class="btn btn-default ctrls" id="start">Start Node</button></li>'+
+                '<li><button type="button" class="btn btn-default ctrls" id="stop">Stop Node</button></li>'+
 				'<li><button type="button" class="btn btn-default ctrls" id="restart">Restart Node</button></li>'+
-				'<li><button type="button" class="btn btn-default ctrls" id="stop">Stop Node</button></li>'+
-				'<li><button type="button" class="btn btn-default ctrls" id="start">Start Node</button></li>'+
 				'<li><button type="button" class="btn btn-default" id="confirm" data-toggle="modal" data-target="#newchainconfirm">Create New Chain</button></li>'+
 				'<li><button type="button" class="btn btn-default ctrls quorum-control" id="tm/stop">Stop Constellation</button></li>'+
 				'<li><button type="button" class="btn btn-default ctrls quorum-control" id="tm/start">Start Constellation</button></li>'+
@@ -51,10 +51,6 @@ module.exports = function() {
         },
 
         onData:function(status) {
-            if (_.isEmpty(status.config)) {
-                console.log("Attached mode, hiding node control");
-                Dashboard.removeWidget(widget.name);
-            }
         },
 
 

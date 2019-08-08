@@ -4,12 +4,12 @@ module.exports = function() {
 	var extended = {
 		name: 'transaction-manager',
 		title: 'Transaction Manager Settings',
-		size: 'small',
+		size: 'medium',
 
 		hideLink: true,
 
 		url: {
-			list: 'api/node/tm/list',
+			list: 'api/node/tm/peers',
 			add: 'api/node/tm/add',
 			remove: 'api/node/tm/remove'
 		},
@@ -17,16 +17,17 @@ module.exports = function() {
 		template: _.template(
 			'<table style="width: 100%; table-layout: fixed;" class="table table-striped">' +
 			'	<tr><td style="width: 150px;">Own node</td><td class="value" id="own-node" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"></td></tr>' +
-			'	<tr><td style="width: 150px;">Other nodes</td><td class="value" id="other-node" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"></td></tr>' +
+			'	<tr><td style="width: 150px;">Other nodes</td><td class="value" id="other-node" contentEditable="false" style="text-overflow: ellipsis; overflow: hidden;"></td></tr>' +
 			'</table>' +
-			'<div class="form-group">' +
-			'	<label for="addy">Peer URL</label>' +
-			'	<input type="text" class="form-control" id="addy">' +
-			'</div>'+
-			'<div class="form-group pull-right">' +
-			'	<button type="button" class="btn btn-primary" id="add">Add</button>' +
-            '	<button type="button" class="btn btn-secondary" id="remove">Remove</button>' +
-			'</div>'+
+            // TODO connect to admin api on tessera and add/remove peers
+			// '<div class="form-group">' +
+			// '	<label for="addy">Peer URL</label>' +
+			// '	<input type="text" class="form-control" id="addy">' +
+			// '</div>'+
+			// '<div class="form-group pull-right">' +
+			// '	<button type="button" class="btn btn-primary" id="add">Add</button>' +
+            // '	<button type="button" class="btn btn-secondary" id="remove">Remove</button>' +
+			// '</div>'+
 			'<div id="notification">' +
 			'</div>'),
 
@@ -46,8 +47,13 @@ module.exports = function() {
 			).done(function(info) {
 				info = info.data.attributes.result;
 
-				_this._$('#own-node').html(info.local);
-				_this._$('#other-node').html( info.remote ? info.remote.join(', ') : '' );
+				console.log("peers", info)
+				_this._$('#own-node').html(info.url);
+                _this._$('#other-node').html(
+                    info.peers.map(peer => peer.url)
+                    .filter(peerUrl => peerUrl !== info.url)
+                    .sort((a, b) => a.localeCompare(b))
+                    .join(", "));
 
 				_this.postFetch();
 			}.bind(this));

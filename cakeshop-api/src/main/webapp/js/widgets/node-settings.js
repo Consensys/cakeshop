@@ -61,10 +61,6 @@ module.exports = function() {
 		onData:function(status) {
 			if (this.rendered) {
                 return;
-            } else if (_.isEmpty(status.config)) {
-			    console.log("Attached mode, hiding node settings");
-			    Dashboard.removeWidget(widget.name);
-			    return;
             }
 
             Tower.status.mode = "managed";

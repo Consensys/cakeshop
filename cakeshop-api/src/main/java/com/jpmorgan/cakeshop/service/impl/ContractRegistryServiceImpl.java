@@ -1,7 +1,9 @@
 package com.jpmorgan.cakeshop.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ObjectArrays;
 import com.jpmorgan.cakeshop.bean.GethConfig;
+import com.jpmorgan.cakeshop.dao.ContractDAO;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Contract;
 import com.jpmorgan.cakeshop.model.ContractABI;
@@ -21,9 +23,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.ArrayUtils;
@@ -52,8 +52,8 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
     @Value("${contract.registry.addr:}")
     private String contractRegistryAddress;
 
-    // TODO persist in a database, or at least in the data directory
-    private Map<String, Contract> privateContracts = new HashMap<>();
+    @Autowired
+    private ContractDAO contractDAO;
 
     @Autowired
     private GethConfig gethConfig;
@@ -150,8 +150,13 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
 
         if (StringUtils.isNotBlank(privateFor)) {
             LOG.info("Registering in private local ContractRegistry");
-            privateContracts.put(id,
-                new Contract(id, name, abi, code, codeType, null, createdDate, privateFor));
+            Contract contract = new Contract(id, name, abi, code, codeType, null, createdDate,
+                privateFor);
+            try {
+                contractDAO.save(contract);
+            } catch (IOException e) {
+                throw new APIException("error saving private contract to database", e);
+            }
             return null;
         }
 
@@ -164,8 +169,13 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
 
     @Override
     public Contract getById(String id) throws APIException {
-        if (privateContracts.containsKey(id)) {
-            return privateContracts.get(id).shallowCopy();
+        try {
+            Contract contract = contractDAO.getById(id);
+            if (contract != null) {
+                return contract;
+            }
+        } catch (IOException e) {
+            throw new APIException("Error reading private contract from database", e);
         }
 
         Object[] res = contractService.read(
@@ -207,9 +217,10 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
                 contractRegistryAddress, this.abi, null,
                 "listAddrs", null, null);
 
+        List<String> privateAddresses = contractDAO.listAddresses();
         Object[] addrs = ObjectArrays.concat(
             (Object[]) res[0],
-            privateContracts.keySet().toArray(),
+            privateAddresses.toArray(),
             Object.class);
 
         List<Contract> contracts = new ArrayList<>();

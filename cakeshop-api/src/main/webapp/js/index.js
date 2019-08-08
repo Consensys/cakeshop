@@ -68,10 +68,10 @@ window.Tower = {
 			 .addClass('fa-pause tower-txt-danger');
 		}
 
-        let numPeers = status.peers.length - 1;
+        let numPeers = status.peers ? status.peers.length - 1 : 0;
 		if(status.peerCount < numPeers) {
 		    // show fraction of current connected peers vs total raft peers
-            numPeers = status.peerCount + "/" + (status.peers.length - 1);
+            numPeers = status.peerCount + "/" + (numPeers);
         }
         utils.prettyUpdate(Tower.status.peerCount, numPeers, $('#default-peers'));
 		utils.prettyUpdate(Tower.status.latestBlock, status.latestBlock, $('#default-blocks'));
@@ -146,13 +146,8 @@ window.Tower = {
 			'peers-list'             : require('./widgets/peers-list'),
             // TODO turn this back on after fixing nodeIP issue
 			// 'peers-neighborhood'     : require('./widgets/peers-neighborhood'),
-			'txn-detail'             : require('./widgets/txn-detail')
-		});
-
-
-		// Quorum widgets
-		Dashboard.preregisterWidgets({
-			'transaction-manager': require('./widgets/transaction-manager')
+			'txn-detail'             : require('./widgets/txn-detail'),
+            'transaction-manager'    : require('./widgets/transaction-manager')
 		});
 
 		Dashboard.init();
@@ -306,26 +301,19 @@ window.Tower = {
 		'console': function() {
 			var widgets = [
 				{ widgetId: 'node-info' },
-				{ widgetId: 'node-control' },
-				{ widgetId: 'node-settings' },
 				// { widgetId: 'metrix-txn-sec' },
 				{ widgetId: 'metrix-txn-min' },
 				{ widgetId: 'metrix-blocks-min' },
-				{ widgetId: 'node-log' }
 			];
-
-			if (Tower.client === 'quorum') {
-				widgets.push({ widgetId: 'transaction-manager' });
-			}
 
 			Dashboard.showSection('console', widgets);
 		},
 
 		'peers': function() {
 			var widgets = [
-				{ widgetId: 'peers-add' },
 				{ widgetId: 'peers-list' },
-				// { widgetId: 'peers-neighborhood', data: Tower.status.nodeIP }
+                { widgetId: 'transaction-manager' },
+                { widgetId: 'peers-add' }
 			];
 
 			if (Tower.client === 'quorum') {
@@ -342,6 +330,16 @@ window.Tower = {
         //
 		// 	Dashboard.showSection('api', widgets);
 		// },
+
+        'managed': function() {
+            var widgets = [
+                { widgetId: 'node-control' },
+                { widgetId: 'node-settings' },
+                { widgetId: 'node-log' },
+            ];
+
+            Dashboard.showSection('managed', widgets);
+        },
 
 		'contracts': function() {
 			var widgets = [
