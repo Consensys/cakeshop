@@ -43,13 +43,13 @@ public class EmbeddedDbDataSourceConfig implements ApplicationContextAware {
     @Value("${config.path}")
     private String CONFIG_ROOT;
 
-    @Value("${hibernate.hbm2ddl.auto:update}")
+    @Value("${cakeshop.hibernate.hbm2ddl.auto:update}")
     private String hibernateAuto;
 
-    @Value("${hibernate.dialect:org.hibernate.dialect.HSQLDialect}")
+    @Value("${cakeshop.hibernate.dialect:org.hibernate.dialect.HSQLDialect}")
     private String hibernateDialect;
 
-    @Value("${hibernate.jdbc.batch_size:20}")
+    @Value("${cakeshop.hibernate.jdbc.batch_size:20}")
     private String hibernateBatchSize;
 
     private ApplicationContext applicationContext;
