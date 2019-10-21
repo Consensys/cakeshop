@@ -12,15 +12,15 @@ import Button from "@material-ui/core/Button";
 export const AddNodeDialog = ({open, onSubmit, onCancel}) => {
 
     const [name, setName] = useState("");
-    const [geth, setGeth] = useState("http://localhost:22000");
-    const [tessera, setTessera] = useState("http://localhost:9001");
+    const [rpcUrl, setRpcUrl] = useState("http://localhost:22000");
+    const [transactionManagerUrl, setTransactionManagerUrl] = useState("http://localhost:9001");
     return (
         <Dialog open={open} onClose={onCancel}
                 aria-labelledby="form-dialog-title">
             <DialogTitle id="form-dialog-title">Add Node</DialogTitle>
             <form onSubmit={(e) => {
                 e.preventDefault();
-                onSubmit({name, geth, tessera});
+                onSubmit({name, rpcUrl, transactionManagerUrl});
             }}>
                 <DialogContent>
                     <DialogContentText>
@@ -42,9 +42,9 @@ export const AddNodeDialog = ({open, onSubmit, onCancel}) => {
                         id="geth"
                         label="Geth RPC Url"
                         type="url"
-                        value={geth}
+                        value={rpcUrl}
                         fullWidth
-                        onChange={(e) => setGeth(e.target.value)}
+                        onChange={(e) => setRpcUrl(e.target.value)}
                     />
                     <TextField
                         margin="dense"
@@ -53,7 +53,7 @@ export const AddNodeDialog = ({open, onSubmit, onCancel}) => {
                         defaultValue="http://localhost:9001"
                         type="url"
                         fullWidth
-                        onChange={(e) => setTessera(e.target.value)}
+                        onChange={(e) => setTransactionManagerUrl(e.target.value)}
                     />
                 </DialogContent>
                 <DialogActions>

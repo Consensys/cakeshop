@@ -4,11 +4,13 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import com.jpmorgan.cakeshop.bean.GethConfig;
+import com.jpmorgan.cakeshop.dao.NodeInfoDAO;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.APIData;
 import com.jpmorgan.cakeshop.model.APIError;
 import com.jpmorgan.cakeshop.model.APIResponse;
 import com.jpmorgan.cakeshop.model.Node;
+import com.jpmorgan.cakeshop.model.NodeInfo;
 import com.jpmorgan.cakeshop.model.NodeSettings;
 import com.jpmorgan.cakeshop.model.Peer;
 import com.jpmorgan.cakeshop.model.json.NodePostJsonRequest;
@@ -68,6 +70,9 @@ public class NodeController extends BaseController {
     @Autowired
     private CacheManager cacheManager;
 
+    @Autowired
+    private NodeInfoDAO nodeInfoDAO;
+
     public NodeController() throws IOException {
     }
 
@@ -84,11 +89,11 @@ public class NodeController extends BaseController {
 
     @ApiImplicitParams({
         @ApiImplicitParam(name = "extraParams", required = false, value = "Extra params to start geth", dataType = "java.lang.String", paramType = "body")
-        , 
+        ,
         @ApiImplicitParam(name = "genesisBlock", required = false, value = "Genesis block", dataType = "java.lang.String", paramType = "body")
         ,
         @ApiImplicitParam(name = "logLevel", required = false, value = "Log verbosity level", dataType = "java.lang.String", paramType = "body")
-        , 
+        ,
         @ApiImplicitParam(name = "networkId", required = false, value = "Network Id", dataType = "java.lang.String", paramType = "body")
         ,
         @ApiImplicitParam(name = "committingTransactions", required = false, value = "Commit transactions true/false", dataType = "java.lang.Object", paramType = "body")
@@ -270,6 +275,39 @@ public class NodeController extends BaseController {
         return new ResponseEntity<>(APIResponse.newSimpleResponse(success), HttpStatus.OK);
     }
 
+    @GetMapping(path = "/nodes")
+    protected @ResponseBody
+    ResponseEntity<APIResponse> getNodes() throws APIException {
+        List<NodeInfo> list = nodeInfoDAO.list();
+        list.forEach((nodeInfo -> {
+            if(nodeInfo.rpcUrl.equals(gethConfig.getRpcUrl())) {
+                nodeInfo.isSelected = true;
+            }
+        }));
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(list), HttpStatus.OK);
+    }
+
+    @PostMapping(path = "/add")
+    protected @ResponseBody
+    ResponseEntity<APIResponse> addNode(@RequestBody NodeInfo nodeInfo) throws IOException {
+        nodeInfoDAO.save(nodeInfo);
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(nodeInfo), HttpStatus.CREATED);
+    }
+
+    @PostMapping(path = "/addAll")
+    protected @ResponseBody
+    ResponseEntity<APIResponse> addAllNodes(@RequestBody List<NodeInfo> nodeInfos) throws IOException {
+        nodeInfoDAO.save(nodeInfos);
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(nodeInfos), HttpStatus.CREATED);
+    }
+
+    @PostMapping(path = "/remove")
+    protected @ResponseBody
+    ResponseEntity<APIResponse> removeNode(@RequestBody NodeInfo nodeInfo) throws IOException {
+        nodeInfoDAO.delete(nodeInfo);
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(nodeInfo), HttpStatus.NO_CONTENT);
+    }
+
     @GetMapping(path = "/currentUrl")
     protected @ResponseBody
     ResponseEntity<APIResponse> getNodeUrl() throws APIException {
@@ -279,10 +317,10 @@ public class NodeController extends BaseController {
 
     @PostMapping(path = "/url")
     protected @ResponseBody
-    ResponseEntity<APIResponse> setNodeUrls(@RequestBody Map<String, String> body)
+    ResponseEntity<APIResponse> setNodeUrls(@RequestBody NodeInfo nodeInfo)
         throws APIException {
-        gethConfig.setRpcUrl(body.get("url"));
-        gethConfig.setGethTransactionManagerUrl(body.get("transactionManagerUrl"));
+        gethConfig.setRpcUrl(nodeInfo.rpcUrl);
+        gethConfig.setGethTransactionManagerUrl(nodeInfo.transactionManagerUrl);
         // clear cache for contracts so that we don't keep private contracts for the wrong node
         Cache cache = cacheManager.getCache("contracts");
         if (cache != null) {
