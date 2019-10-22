@@ -132,6 +132,7 @@ public class ContractABI extends ArrayList<ContractABI.Entry> {
             public Boolean indexed;
             public String name;
             public SolidityType type;
+            public String internalType;
 
             public static List<?> decodeList(List<Param> params, byte[] encoded) {
                 List<Object> result = new ArrayList<>(params.size());
@@ -207,6 +208,10 @@ public class ContractABI extends ArrayList<ContractABI.Entry> {
 
             public SolidityType getType() {
                 return type;
+            }
+
+            public String getInternalType() {
+                return internalType;
             }
         }
 
