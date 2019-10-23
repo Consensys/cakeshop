@@ -153,7 +153,7 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
             Contract contract = new Contract(id, name, abi, code, codeType, null, createdDate,
                 privateFor);
             try {
-                contractDAO.save(contract);
+                contractDAO.save(contract, contractRegistryAddress);
             } catch (IOException e) {
                 throw new APIException("error saving private contract to database", e);
             }
@@ -217,7 +217,7 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
                 contractRegistryAddress, this.abi, null,
                 "listAddrs", null, null);
 
-        List<String> privateAddresses = contractDAO.listAddresses();
+        List<String> privateAddresses = contractDAO.listAddresses(contractRegistryAddress);
         Object[] addrs = ObjectArrays.concat(
             (Object[]) res[0],
             privateAddresses.toArray(),

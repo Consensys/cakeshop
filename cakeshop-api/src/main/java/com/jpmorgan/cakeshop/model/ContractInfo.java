@@ -13,6 +13,8 @@ public class ContractInfo {
     @Id
     public String address;
 
+    public String contractRegistryAddress;
+
     @Lob
     @Column(length = Integer.MAX_VALUE)
     public String contractJson;
@@ -20,8 +22,9 @@ public class ContractInfo {
     public ContractInfo() {
     }
 
-    public ContractInfo(String address, String contractJson) {
+    public ContractInfo(String address, String contractRegistryAddress, String contractJson) {
         this.address = address;
+        this.contractRegistryAddress = contractRegistryAddress;
         this.contractJson = contractJson;
     }
 }
