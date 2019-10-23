@@ -1,68 +1,37 @@
-{
-  "network": "7nodes",
-  "nodes": [
-    {
-      "name": "node1",
-      "geth": {
-        "url": "http://localhost:22000"
-      },
-      "tessera": {
-        "url": "http://localhost:9001"
-      }
-    },
-    {
-      "name": "node2",
-      "geth": {
-        "url": "http://localhost:22001"
-      },
-      "tessera": {
-        "url": "http://localhost:9002"
-      }
-    },
-    {
-      "name": "node3",
-      "geth": {
-        "url": "http://localhost:22002"
-      },
-      "tessera": {
-        "url": "http://localhost:9003"
-      }
-    },
-    {
-      "name": "node4",
-      "geth": {
-        "url": "http://localhost:22003"
-      },
-      "tessera": {
-        "url": "http://localhost:9004"
-      }
-    },
-    {
-      "name": "node5",
-      "geth": {
-        "url": "http://localhost:22004"
-      },
-      "tessera": {
-        "url": "http://localhost:9005"
-      }
-    },
-    {
-      "name": "node6",
-      "geth": {
-        "url": "http://localhost:22005"
-      },
-      "tessera": {
-        "url": "http://localhost:9006"
-      }
-    },
-    {
-      "name": "node7",
-      "geth": {
-        "url": "http://localhost:22006"
-      },
-      "tessera": {
-        "url": "http://localhost:9007"
-      }
-    }
-  ]
-}
+[
+  {
+    "name": "node1",
+    "rpcUrl": "http://localhost:22000",
+    "transactionManagerUrl": "http://localhost:9001"
+  },
+  {
+    "name": "node2",
+    "rpcUrl": "http://localhost:22001",
+    "transactionManagerUrl": "http://localhost:9002"
+  },
+  {
+    "name": "node3",
+    "rpcUrl": "http://localhost:22002",
+    "transactionManagerUrl": "http://localhost:9003"
+  },
+  {
+    "name": "node4",
+    "rpcUrl": "http://localhost:22003",
+    "transactionManagerUrl": "http://localhost:9004"
+  },
+  {
+    "name": "node5",
+    "rpcUrl": "http://localhost:22004",
+    "transactionManagerUrl": "http://localhost:9005"
+  },
+  {
+    "name": "node6",
+    "rpcUrl": "http://localhost:22005",
+    "transactionManagerUrl": "http://localhost:9006"
+  },
+  {
+    "name": "node7",
+    "rpcUrl": "http://localhost:22006",
+    "transactionManagerUrl": "http://localhost:9007"
+  }
+]

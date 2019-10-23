@@ -28,6 +28,7 @@ import com.jpmorgan.cakeshop.model.Account;
 import com.jpmorgan.cakeshop.model.RequestModel;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.WalletService;
+import com.jpmorgan.cakeshop.service.task.InitializeNodesTask;
 import com.jpmorgan.cakeshop.service.task.LoadPeersTask;
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.ProcessUtils;
@@ -430,6 +431,9 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     @Override
     public void runPostStartupTasks() {
+        // Make sure initial nodes are in the DB if file provided
+        executor.execute(applicationContext.getBean(InitializeNodesTask.class));
+
         // Reconnect peers on startup
         executor.execute(applicationContext.getBean(LoadPeersTask.class));
 
@@ -481,7 +485,7 @@ public class GethHttpServiceImpl implements GethHttpService {
                 saveProps = true;
             }
 
-            //Set permissioned 
+            //Set permissioned
             if (gethConfig.isPermissionedNode()) {
                 additionalParams.add("--permissioned");
             } else if (StringUtils.isNotBlank(System.getProperty("geth.permissioned"))

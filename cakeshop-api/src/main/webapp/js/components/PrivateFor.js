@@ -1,6 +1,5 @@
 import React, {Component} from "react";
 import Creatable from "react-select/creatable";
-import {getNodesFromLocalStorage} from "./node_utils";
 
 export class PrivateFor extends Component {
 
@@ -24,11 +23,15 @@ export class PrivateFor extends Component {
 
     componentDidMount() {
         const {initialPrivateFor} = this.props;
+        let _this = this;
         Client.post('api/node/tm/peers')
         .then((response) => {
-            const nodes = getNodesFromLocalStorage();
             const parties = response.data.attributes.result.keys;
-            this.setOptionsAndsSelection(parties, nodes, initialPrivateFor);
+            Client.get('api/node/nodes')
+            .done(function (response) {
+                    let nodes = response.data.attributes.result;
+                _this.setOptionsAndsSelection(parties, nodes, initialPrivateFor);
+            })
         })
     }
 
@@ -54,11 +57,11 @@ export class PrivateFor extends Component {
         };
         nodes.forEach((node) => {
             // urls from tessera always have the trailing slash
-            if (!node.tessera.url.endsWith("/")) {
-                node.tessera.url += "/"
+            if (!node.transactionManagerUrl.endsWith("/")) {
+                node.transactionManagerUrl += "/"
             }
 
-            if (node.tessera.url === party.url) {
+            if (node.transactionManagerUrl === party.url) {
                 option.label = `${node.name} (${party.key})`
             }
         });

@@ -6,6 +6,7 @@
     "plugins": [
         "@babel/plugin-transform-modules-commonjs",
         "babel-plugin-transform-class-properties",
-        "transform-promise-to-bluebird"
+        "transform-promise-to-bluebird",
+        "@babel/plugin-transform-runtime"
     ]
 }
