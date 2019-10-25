@@ -3,11 +3,6 @@
     _.extend(Client, Backbone.Events);
 
     Client.get = function(url) {
-        if(window.location.host === "localhost:7999") {
-            // when running webpack dev server, point urls to 8080
-            url = "http://localhost:8080/" + url;
-        }
-
         return $.ajax({
             url: url,
             method: "GET",
@@ -18,11 +13,6 @@
     Client.post = function(url, data) {
         if (!_.isString(data)) {
             data = JSON.stringify(data);
-        }
-
-        if(window.location.host === "localhost:7999") {
-            // when running webpack dev server, point urls to 8080
-            url = "http://localhost:8080/" + url;
         }
 
         return $.ajax({
@@ -64,13 +54,7 @@
     Client.connected = false;
     Client.connect = function() {
 
-        var wsUrl;
-        if(window.location.host === "localhost:7999") {
-            // when running webpack dev server, point urls to 8080
-            wsUrl = "http://localhost:8080/ws"
-        } else {
-            wsUrl = '/ws';
-        }
+        var wsUrl = '/ws';
 
         var stomp = Client.stomp = Stomp.over(new SockJS(wsUrl));
 

@@ -1,9 +1,5 @@
 export default {
 	load: function(opts) {
-	    if(window.location.host === "localhost:7999") {
-	        // when running webpack dev server, point urls to 8080
-	        opts.url = "http://localhost:8080/" + opts.url;
-        }
 		var config = {
 			type: opts.method ? opts.method : 'POST',
 			url: opts.url,

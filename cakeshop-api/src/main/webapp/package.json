@@ -22,7 +22,7 @@
     "babel-plugin-transform-promise-to-bluebird": "^2.0.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
-    "webpack": "^4.35.3",
+    "webpack": "^4.41.2",
     "webpack-cli": "^3.3.5",
     "webpack-dev-server": "^3.7.2"
   },

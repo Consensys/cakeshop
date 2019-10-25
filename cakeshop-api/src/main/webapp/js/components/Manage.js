@@ -23,7 +23,7 @@ export default class Manage extends Component {
     componentDidMount() {
         let _this = this
 
-        fetch(this.getUrl('api/node/nodes'), {
+        fetch('api/node/nodes', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
@@ -75,7 +75,7 @@ export default class Manage extends Component {
     onNodesJsonLoaded = async (newNodes) => {
         console.log('Nodes successfully loaded:', newNodes)
         if (newNodes != null && newNodes.length > 0) {
-            const response = await fetch(this.getUrl('api/node/addAll'), {
+            const response = await fetch('api/node/addAll', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -103,7 +103,7 @@ export default class Manage extends Component {
 
     onSubmit = async (newNode) => {
         this.setState({dialogOpen: false});
-        const response = await fetch(this.getUrl('api/node/add'), {
+        const response = await fetch('api/node/add', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -125,7 +125,7 @@ export default class Manage extends Component {
     };
 
     onView = (node) => {
-        fetch(this.getUrl("api/node/url"), {
+        fetch("api/node/url", {
             method: "POST",
             mode: 'cors',
             headers: {
@@ -142,17 +142,8 @@ export default class Manage extends Component {
         })
     };
 
-    getUrl = (path) => {
-        let {host, protocol} = window.location;
-        if (host === "localhost:7999") {
-            // when running webpack dev server, point urls to 8080
-            host = "localhost:8080";
-        }
-        return `${protocol}//${host}/${path}`;
-    };
-
     onDismiss = async (nodeToRemove) => {
-        const response = await fetch(this.getUrl('api/node/remove'), {
+        const response = await fetch('api/node/remove', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
