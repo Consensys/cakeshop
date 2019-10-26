@@ -28,8 +28,15 @@ module.exports = {
 		hot: true,
 		inline: true,
 		stats: 'errors-only',
-		port: 7999
-	},
+        port: 7999,
+        proxy: {
+            '/api': 'http://localhost:8080',
+            '/ws': {
+                target: 'ws://localhost:8080',
+                ws: true
+            }
+        }
+    },
 	plugins: [
 		new webpack.ProvidePlugin({
 			$: 'jquery',
