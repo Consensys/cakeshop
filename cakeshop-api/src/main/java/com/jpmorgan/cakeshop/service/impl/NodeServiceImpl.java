@@ -1,5 +1,7 @@
 package com.jpmorgan.cakeshop.service.impl;
 
+import static com.jpmorgan.cakeshop.service.impl.GethHttpServiceImpl.SIMPLE_RESULT;
+
 import com.google.common.base.Joiner;
 import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.bean.GethRunner;
@@ -16,18 +18,20 @@ import com.jpmorgan.cakeshop.service.NodeService;
 import com.jpmorgan.cakeshop.util.AbiUtils;
 import com.jpmorgan.cakeshop.util.EEUtils;
 import com.jpmorgan.cakeshop.util.EEUtils.IP;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.*;
-
-import static com.jpmorgan.cakeshop.service.impl.GethHttpServiceImpl.SIMPLE_RESULT;
 
 @Service
 public class NodeServiceImpl implements NodeService, GethRpcConstants {
@@ -51,7 +55,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
     @Autowired
     private PeerDAO peerDAO;
 
-    private String enodeId = "";
+    private Map<String, Object> lastNodeInfo;
 
     @Override
     public Node get() throws APIException {
@@ -62,7 +66,10 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
 
         try {
             //check if node is available
+            // TODO we should be able to use a proper AdminNodeInfo object instead of a generic Map,
+            // TODO but let's make that change when we switch to using the web3j-quorum library
             data = gethService.executeGethCall(ADMIN_NODE_INFO);
+            lastNodeInfo = data;
 
             node.setRpcUrl(gethConfig.getRpcUrl());
             node.setDataDirectory(gethConfig.getGethDataDirPath());
@@ -76,7 +83,6 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
             if (StringUtils.isNotEmpty(nodeURI)) {
                 try {
                     URI uri = new URI(nodeURI);
-                    enodeId = uri.getUserInfo();
                     String host = uri.getHost();
                     // if host or IP aren't set, then populate with correct IP
                     if (StringUtils.isEmpty(host) || "[::]".equals(host) || "0.0.0.0".equalsIgnoreCase(host)) {
@@ -121,7 +127,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
             Integer pending = AbiUtils.hexToBigInteger((String) data.get("pending")).intValue();
             node.setPendingTxn(pending == null ? 0 : pending);
 
-            if (gethConfig.isRaft()) {
+            if (isRaft()) {
                 // get raft role
                 data = gethService.executeGethCall(RAFT_ROLE);
                 node.setRole((String) data.get(SIMPLE_RESULT));
@@ -270,7 +276,12 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
 
         }
 
-        if (gethConfig.isRaft()) {
+        // peers doesn't include self normally, add it
+        Peer self = createPeer(lastNodeInfo);
+        self.setNodeName("Self");
+        peerList.put(self.getId(), self);
+
+        if (isRaft()) {
             String raftLeader = ((String) gethService.executeGethCall(RAFT_LEADER)
                 .get(SIMPLE_RESULT));
             List<Map<String, Object>> raftPeers = (List<Map<String, Object>>) gethService
@@ -292,23 +303,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
                         String.valueOf(raftPeer.get("p2pPort")),
                         String.valueOf(raftPeer.get("raftPort")));
                     peer.setNodeUrl(nodeUrl);
-
-                    if (id.equals(this.enodeId)) {
-                        peer.setNodeName("Self");
-                    }
                 }
-            }
-        } else {
-            // non-raft peers calls don't include self, include it for consistency
-            try {
-                Peer peer = new Peer();
-                peer.setNodeUrl(gethRunner.getEnodeURL());
-                peer.setNodeName("Self");
-                peer.setId(this.enodeId);
-                peer.setRaftId("0");
-                peerList.put(this.enodeId, peer);
-            } catch (IOException e) {
-                throw new APIException("Could not add self to peers list", e);
             }
         }
 
@@ -328,7 +323,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
             throw new APIException("Bad peer address URI: " + address, e);
         }
 
-        if (gethConfig.isRaft()) {
+        if (isRaft()) {
             Map<String, Object> res = gethService.executeGethCall(RAFT_ADD_PEER, address);
             if (res == null) {
                 throw new APIException("Could not add raft peer: " + address);
@@ -375,7 +370,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
             throw new APIException("Bad peer address URI: " + address, e);
         }
 
-        if (gethConfig.isRaft()) {
+        if (isRaft()) {
             LOG.info("Attempting to remove raft peer");
             List<Peer> raftPeers = peers();
             for (Peer raftPeer : raftPeers) {
@@ -469,11 +464,12 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
 
     @SuppressWarnings("unchecked")
     private Peer createPeer(Map<String, Object> data) {
+        Peer peer = new Peer();
         if (data == null || data.isEmpty()) {
-            return null;
+            peer.setStatus("down");
+            return peer;
         }
 
-        Peer peer = new Peer();
         peer.setStatus("running");
         peer.setNodeName((String) data.get("name"));
         peer.setRaftId("0");
@@ -490,5 +486,18 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
         }
 
         return peer;
+    }
+
+    private boolean isRaft() {
+        // this check will get better when we use a proper AdminNodeInfo object rather than a Map
+        String consensus = "unknown";
+        try {
+            Map<String, Object> protocols = (Map<String, Object>) lastNodeInfo.get("protocols");
+            Map<String, Object> eth = (Map<String, Object>) protocols.get("eth");
+            consensus = (String) eth.get("consensus");
+        } catch (Exception e) {
+            LOG.error("Could not retrieve consensus type from admin_node_info", e);
+        }
+        return "raft".equals(consensus);
     }
 }
