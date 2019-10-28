@@ -68,12 +68,7 @@ window.Tower = {
 			 .addClass('fa-pause tower-txt-danger');
 		}
 
-        let numPeers = status.peers ? status.peers.length - 1 : 0;
-		if(status.peerCount < numPeers) {
-		    // show fraction of current connected peers vs total raft peers
-            numPeers = status.peerCount + "/" + (numPeers);
-        }
-        utils.prettyUpdate(Tower.status.peerCount, numPeers, $('#default-peers'));
+        utils.prettyUpdate(Tower.status.peerCount, this.getPeerNumberText(status), $('#default-peers'));
 		utils.prettyUpdate(Tower.status.latestBlock, status.latestBlock, $('#default-blocks'));
 		utils.prettyUpdate(Tower.status.pendingTxn, status.pendingTxn, $('#default-txn'));
 
@@ -369,14 +364,18 @@ window.Tower = {
 		},
 	},
 
-
 	debug: function(message) {
 		var _ref;
 		return typeof window !== 'undefined' && window !== null ? (_ref = window.console) !== null ? _ref.log(message) : void 0 : void 0;
-	}
+	},
+
+    getPeerNumberText: function (status) {
+        const peers = status.peers ? status.peers : []
+        const connected = peers.filter(peer => peer.status === 'running').length
+        const total = peers.length
+        return connected < total ? `${connected}/${total}` : total
+    },
 };
-
-
 
 $(function() {
 	$(window).on('scroll', function(e) {
