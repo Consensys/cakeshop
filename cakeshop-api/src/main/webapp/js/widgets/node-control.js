@@ -69,6 +69,9 @@ module.exports = function() {
 				utils.load({ url: widget.url.nodeControl + '/' + action })
 			).done(function() {
 				_this.removeAttr('disabled');
+				if(action === 'start') {
+				    window.location.reload()
+                }
 			}).fail(function() {
 				// TODO: fill in
 			});

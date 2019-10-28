@@ -69,9 +69,10 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
             // TODO we should be able to use a proper AdminNodeInfo object instead of a generic Map,
             // TODO but let's make that change when we switch to using the web3j-quorum library
             data = gethService.executeGethCall(ADMIN_NODE_INFO);
+            gethService.setConnected(true);
             lastNodeInfo = data;
 
-            node.setRpcUrl(gethConfig.getRpcUrl());
+            node.setRpcUrl(gethService.getCurrentRpcUrl());
             node.setDataDirectory(gethConfig.getGethDataDirPath());
 
             node.setId((String) data.get("id"));
@@ -144,6 +145,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
             node.setPeers(peers());
 
         } catch (APIException ex) {
+            gethService.setConnected(false);
             Throwable cause = ex.getCause();
             if (cause instanceof ResourceAccessException) {
                 node.setStatus(NODE_NOT_RUNNING_STATUS);
@@ -153,9 +155,9 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
             throw ex;
 
         } catch (NumberFormatException ex) {
+            gethService.setConnected(false);
             LOG.error(ex.getMessage());
             throw new APIException(ex.getMessage());
-
         }
 
         return node;

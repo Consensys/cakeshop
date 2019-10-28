@@ -58,8 +58,6 @@ public interface GethHttpService {
      */
     public Boolean stopTransactionManager();
 
-    public void runPostStartupTasks();
-
     /**
      * Stop the Geth node, if already running
      *
@@ -72,7 +70,15 @@ public interface GethHttpService {
      *
      * @return
      */
-    public Boolean isRunning();
+    Boolean isConnected();
+
+    void setConnected(boolean running);
+
+    void connectToNode(String rpcUrl, String transactionManagerUrl);
+
+    String getCurrentRpcUrl();
+
+    String getCurrentTransactionManagerUrl();
 
     /**
      * Reset the Geth data directory and restart the node

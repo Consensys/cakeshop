@@ -280,7 +280,7 @@ public class NodeController extends BaseController {
     ResponseEntity<APIResponse> getNodes() throws APIException {
         List<NodeInfo> list = nodeInfoDAO.list();
         list.forEach((nodeInfo -> {
-            if(nodeInfo.rpcUrl.equals(gethConfig.getRpcUrl())) {
+            if(nodeInfo.rpcUrl.equals(gethService.getCurrentRpcUrl())) {
                 nodeInfo.isSelected = true;
             }
         }));
@@ -311,7 +311,7 @@ public class NodeController extends BaseController {
     @GetMapping(path = "/currentUrl")
     protected @ResponseBody
     ResponseEntity<APIResponse> getNodeUrl() throws APIException {
-        return new ResponseEntity<>(APIResponse.newSimpleResponse(gethConfig.getRpcUrl()),
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(gethService.getCurrentRpcUrl()),
             HttpStatus.OK);
     }
 
@@ -319,8 +319,7 @@ public class NodeController extends BaseController {
     protected @ResponseBody
     ResponseEntity<APIResponse> setNodeUrls(@RequestBody NodeInfo nodeInfo)
         throws APIException {
-        gethConfig.setRpcUrl(nodeInfo.rpcUrl);
-        gethConfig.setGethTransactionManagerUrl(nodeInfo.transactionManagerUrl);
+        gethService.connectToNode(nodeInfo.rpcUrl, nodeInfo.transactionManagerUrl);
         // clear cache for contracts so that we don't keep private contracts for the wrong node
         Cache cache = cacheManager.getCache("contracts");
         if (cache != null) {

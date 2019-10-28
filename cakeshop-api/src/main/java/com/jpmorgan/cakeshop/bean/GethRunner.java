@@ -91,7 +91,6 @@ public class GethRunner {
             binPath = FileUtils.getClasspathName("bin");
         }
 
-        downloadQuorumIfNeeded();
         // init genesis block file (using vendor copy if necessary)
         String vendorGenesisDir = expandPath(binPath,
             "genesis"); // TODO: this block is redundant now
@@ -134,11 +133,6 @@ public class GethRunner {
             setIsEmbeddedQuorum(true);
         }
 
-        LOG.debug("Using geth at {}", getGethPath());
-
-        if (!ensureFileIsExecutable(getGethPath())) {
-            throw new IOException("Path does not exist or is not executable: " + getGethPath());
-        }
     }
     public void initializeConsensusMode() throws IOException {
         addToEnodesConfig(getEnodeURL(), STATIC_NODES_JSON);
@@ -539,7 +533,7 @@ public class GethRunner {
                 baseGenesis);
     }
 
-    private void downloadQuorumIfNeeded() {
+    public void downloadQuorumIfNeeded() {
         File gethDirectory = new File(getGethPath()).getParentFile();
         if (!gethDirectory.exists()) {
             LOG.info("Quorum binary doesn't exist, creating bin directory");

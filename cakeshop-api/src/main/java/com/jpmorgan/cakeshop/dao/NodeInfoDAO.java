@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import org.hibernate.Session;
+import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -17,10 +18,14 @@ public class NodeInfoDAO extends BaseDAO {
 
 
     @Transactional
-    public NodeInfo getById(String id) throws IOException {
+    public NodeInfo getByUrls(String rpcUrl, String transactionManagerUrl) throws IOException {
         if (null != getCurrentSession()) {
-            NodeInfo nodeInfo = getCurrentSession().get(NodeInfo.class, id);
-            return nodeInfo;
+            List<NodeInfo> matches = (List<NodeInfo>) getCurrentSession().createCriteria(NodeInfo.class)
+                .add(Restrictions.eq("rpcUrl", rpcUrl))
+                .add(Restrictions.eq("transactionManagerUrl", transactionManagerUrl))
+                .list();
+
+            return matches.isEmpty() ? null : matches.get(0);
         }
         return null;
     }
