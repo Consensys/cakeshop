@@ -34,6 +34,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -120,6 +121,10 @@ public class GethHttpServiceImpl implements GethHttpService {
 
             if (LOG.isDebugEnabled()) {
                 LOG.debug("> " + json);
+            }
+
+            if (StringUtils.isEmpty(currentRpcUrl)) {
+                throw new ResourceAccessException("Current RPC URL not set, skipping request");
             }
 
             HttpEntity<String> httpEntity = new HttpEntity<>(json, jsonContentHeaders);
