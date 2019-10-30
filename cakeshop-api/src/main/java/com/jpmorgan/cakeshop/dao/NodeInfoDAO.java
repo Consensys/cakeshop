@@ -1,9 +1,6 @@
 package com.jpmorgan.cakeshop.dao;
 
 import com.jpmorgan.cakeshop.model.NodeInfo;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
@@ -11,11 +8,24 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+
 @Repository
 public class NodeInfoDAO extends BaseDAO {
 
     static final Logger LOG = LoggerFactory.getLogger(NodeInfoDAO.class);
 
+
+    @Transactional
+    public NodeInfo getById(Long id) throws IOException {
+        if (null != getCurrentSession()) {
+            NodeInfo nodeInfo = getCurrentSession().get(NodeInfo.class, id);
+            return nodeInfo;
+        }
+        return null;
+    }
 
     @Transactional
     public NodeInfo getByUrls(String rpcUrl, String transactionManagerUrl) throws IOException {

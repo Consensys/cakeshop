@@ -1,46 +1,31 @@
 package com.jpmorgan.cakeshop.controller;
 
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-
 import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.dao.NodeInfoDAO;
 import com.jpmorgan.cakeshop.error.APIException;
-import com.jpmorgan.cakeshop.model.APIData;
-import com.jpmorgan.cakeshop.model.APIError;
-import com.jpmorgan.cakeshop.model.APIResponse;
-import com.jpmorgan.cakeshop.model.Node;
-import com.jpmorgan.cakeshop.model.NodeInfo;
-import com.jpmorgan.cakeshop.model.NodeSettings;
-import com.jpmorgan.cakeshop.model.Peer;
+import com.jpmorgan.cakeshop.model.*;
 import com.jpmorgan.cakeshop.model.json.NodePostJsonRequest;
 import com.jpmorgan.cakeshop.service.ContractService;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.NodeService;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /**
  *
@@ -319,7 +304,7 @@ public class NodeController extends BaseController {
     protected @ResponseBody
     ResponseEntity<APIResponse> setNodeUrls(@RequestBody NodeInfo nodeInfo)
         throws APIException {
-        gethService.connectToNode(nodeInfo.rpcUrl, nodeInfo.transactionManagerUrl);
+        gethService.connectToNode(nodeInfo.id);
         // clear cache for contracts so that we don't keep private contracts for the wrong node
         Cache cache = cacheManager.getCache("contracts");
         if (cache != null) {

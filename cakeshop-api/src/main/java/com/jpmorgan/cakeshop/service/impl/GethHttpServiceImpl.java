@@ -315,7 +315,6 @@ public class GethHttpServiceImpl implements GethHttpService {
     @Override
     public void setConnected(boolean connected) {
         this.connected = connected;
-        runPostConnectTasks();
     }
 
     @Override
@@ -453,25 +452,40 @@ public class GethHttpServiceImpl implements GethHttpService {
         NodeInfo embeddedNodeInfo = nodeInfoDao
             .getByUrls(rpcUrl, transactionManagerUrl);
         if (embeddedNodeInfo == null) {
-            LOG.debug("Couldn't find node in db, adding");
-            nodeInfoDao.save(new NodeInfo("Embedded Node", rpcUrl,
-                transactionManagerUrl));
+            embeddedNodeInfo = new NodeInfo("Embedded Node", rpcUrl,
+                transactionManagerUrl);
+            LOG.info("Couldn't find node in db, adding, {}", embeddedNodeInfo.id);
+            nodeInfoDao.save(embeddedNodeInfo);
+            LOG.info("does it have an id now? {}", embeddedNodeInfo.id);
         }
-        connectToNode(rpcUrl, transactionManagerUrl);
+        connectToNode(embeddedNodeInfo.id);
     }
 
     @Override
-    public void connectToNode(String rpcUrl, String transactionManagerUrl) {
-        setCurrentRpcUrl(rpcUrl);
-        setCurrentTransactionManagerUrl(transactionManagerUrl);
-        runPostConnectTasks();
+    public void connectToNode(Long nodeId) {
+        try {
+            NodeInfo node = nodeInfoDao.getById(nodeId);
+            if (node != null) {
+                setCurrentRpcUrl(node.rpcUrl);
+                setCurrentTransactionManagerUrl(node.transactionManagerUrl);
+                runPostConnectTasks();
+                gethConfig.setSelectedNode(nodeId);
+                gethConfig.save();
+            } else {
+                LOG.info("Node with id {} does not exist", nodeId);
+            }
+        } catch (IOException e) {
+            LOG.error("Could not connect to node with ID: {}", nodeId);
+        }
     }
 
     private void runPostConnectTasks() {
         if(blockScanner != null) {
+            LOG.info("Shutting down BlockScanner");
             blockScanner.shutdown();
         }
         // run scanner thread
+        LOG.info("Starting new BlockScanner");
         blockScanner = applicationContext.getBean(BlockScanner.class);
         blockScanner.start();
     }

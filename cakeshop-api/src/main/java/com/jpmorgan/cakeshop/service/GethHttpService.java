@@ -74,7 +74,7 @@ public interface GethHttpService {
 
     void setConnected(boolean running);
 
-    void connectToNode(String rpcUrl, String transactionManagerUrl);
+    void connectToNode(Long nodeId);
 
     String getCurrentRpcUrl();
 

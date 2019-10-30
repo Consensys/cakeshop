@@ -70,6 +70,7 @@ public class GethConfig {
     public static final String GETH_BOOTNODE_KEY = "geth.bootnode.key";
     public static final String GETH_BOOTNODES_LIST = "geth.bootnodes.list";
     public static final String CONTRACT_REGISTRY_ADDR = "contract.registry.addr";
+    public static final String CAKESHOP_SELECTED_NODE = "cakeshop.selected_node";
 
     // Binary download urls and binary names
     public static final String GETH_RELEASE_URL = "geth.release.url";
@@ -435,6 +436,14 @@ public class GethConfig {
 
     public TransactionManager.Type getTransactionManagerType() {
         return transactionManagerType;
+    }
+
+    public Long getSelectedNode() {
+        return Long.valueOf(props.getProperty(CAKESHOP_SELECTED_NODE, "1"));
+    }
+
+    public void setSelectedNode(Long nodeId) {
+        props.setProperty(CAKESHOP_SELECTED_NODE, String.valueOf(nodeId));
     }
 
     public String getCakeshopPort() {
