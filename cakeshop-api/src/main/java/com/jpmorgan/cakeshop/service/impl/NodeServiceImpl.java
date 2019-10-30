@@ -1,7 +1,5 @@
 package com.jpmorgan.cakeshop.service.impl;
 
-import static com.jpmorgan.cakeshop.service.impl.GethHttpServiceImpl.SIMPLE_RESULT;
-
 import com.google.common.base.Joiner;
 import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.bean.GethRunner;
@@ -18,20 +16,18 @@ import com.jpmorgan.cakeshop.service.NodeService;
 import com.jpmorgan.cakeshop.util.AbiUtils;
 import com.jpmorgan.cakeshop.util.EEUtils;
 import com.jpmorgan.cakeshop.util.EEUtils.IP;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.*;
+
+import static com.jpmorgan.cakeshop.service.impl.GethHttpServiceImpl.SIMPLE_RESULT;
 
 @Service
 public class NodeServiceImpl implements NodeService, GethRpcConstants {
@@ -78,6 +74,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
             node.setId((String) data.get("id"));
             node.setStatus(StringUtils.isEmpty((String) data.get("id")) ? NODE_NOT_RUNNING_STATUS : NODE_RUNNING_STATUS);
             node.setNodeName((String) data.get("name"));
+            node.setConsensus(getConsensusType());
 
             // populate enode and url/ip
             String nodeURI = (String) data.get("enode");
@@ -491,15 +488,23 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
     }
 
     private boolean isRaft() {
+        return "raft".equals(getConsensusType());
+    }
+
+    private String getConsensusType() {
         // this check will get better when we use a proper AdminNodeInfo object rather than a Map
         String consensus = "unknown";
         try {
             Map<String, Object> protocols = (Map<String, Object>) lastNodeInfo.get("protocols");
-            Map<String, Object> eth = (Map<String, Object>) protocols.get("eth");
-            consensus = (String) eth.get("consensus");
+            if(protocols.containsKey("istanbul")) {
+                consensus = "istanbul";
+            } else {
+                Map<String, Object> eth = (Map<String, Object>) protocols.get("eth");
+                consensus = (String) eth.get("consensus");
+            }
         } catch (Exception e) {
-            LOG.error("Could not retrieve consensus type from admin_node_info", e);
+            LOG.debug("Could not retrieve consensus type from admin_nodeInfo", e);
         }
-        return "raft".equals(consensus);
+        return consensus;
     }
 }

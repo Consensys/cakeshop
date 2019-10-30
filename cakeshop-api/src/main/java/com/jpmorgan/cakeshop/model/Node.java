@@ -2,8 +2,9 @@ package com.jpmorgan.cakeshop.model;
 
 
 import com.jpmorgan.cakeshop.util.StringUtils;
-import java.util.List;
 import org.apache.commons.lang3.builder.EqualsBuilder;
+
+import java.util.List;
 
 public class Node  {
 
@@ -66,6 +67,11 @@ public class Node  {
      * Node configuration
      */
     private NodeConfig config;
+
+    /**
+     * Network Consensus Type
+     */
+    private String consensus;
 
     /**
      * Consensus role
@@ -156,6 +162,14 @@ public class Node  {
 
     public void setConfig(NodeConfig config) {
         this.config = config;
+    }
+
+    public String getConsensus() {
+        return consensus;
+    }
+
+    public void setConsensus(String consensus) {
+        this.consensus = consensus;
     }
 
     public List<Peer> getPeers() {
