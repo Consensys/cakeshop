@@ -382,12 +382,6 @@ public class GethHttpServiceImpl implements GethHttpService {
                 }
             }
 
-            if(gethConfig.isRaft()) {
-                // there is an issue with raft where a single node network will never elect a leader
-                // when restarted. Just delete all raft state if there is only a single node
-                gethRunner.clearRaftStateIfSingleNode();
-            }
-
             if (gethRunner.isEmbeddedQuorum()) {
                 additionalParams = setAdditionalParams(additionalParams).toArray(new String[setAdditionalParams(additionalParams).size()]);
                 LOG.info("Embedded quorum, additional params: {}", (Object) additionalParams);

@@ -1,9 +1,5 @@
 package com.jpmorgan.cakeshop.util;
 
-import static com.jpmorgan.cakeshop.util.ProcessUtils.ensureFileIsExecutable;
-
-import java.io.File;
-import java.util.Arrays;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
@@ -12,6 +8,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.ResponseExtractor;
+
+import java.io.File;
+import java.util.Arrays;
+
+import static com.jpmorgan.cakeshop.util.ProcessUtils.ensureFileIsExecutable;
 
 public class DownloadUtils {
 
@@ -32,9 +33,9 @@ public class DownloadUtils {
     public static String getDefaultQuorumReleaseUrl() {
         switch (ProcessUtils.getPlatformDirectory()) {
             case "mac":
-                return "https://bintray.com/quorumengineering/quorum/download_file?file_path=v2.2.4%2Fgeth_v2.2.4_darwin_amd64.tar.gz";
+                return "https://bintray.com/quorumengineering/quorum/download_file?file_path=v2.3.0%2Fgeth_v2.3.0_darwin_amd64.tar.gz";
             case "linux":
-                return "https://bintray.com/quorumengineering/quorum/download_file?file_path=v2.2.4%2Fgeth_v2.2.4_linux_amd64.tar.gz";
+                return "https://bintray.com/quorumengineering/quorum/download_file?file_path=v2.3.0%2Fgeth_v2.3.0_linux_amd64.tar.gz";
             case "windows":
             default:
                 throw new RuntimeException("Your OS is not currently supported");

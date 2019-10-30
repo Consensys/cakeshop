@@ -1,9 +1,5 @@
 package com.jpmorgan.cakeshop.bean;
 
-import static com.jpmorgan.cakeshop.service.impl.NodeServiceImpl.STATIC_NODES_JSON;
-import static com.jpmorgan.cakeshop.util.FileUtils.expandPath;
-import static com.jpmorgan.cakeshop.util.ProcessUtils.ensureFileIsExecutable;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
@@ -12,6 +8,14 @@ import com.jpmorgan.cakeshop.model.Genesis;
 import com.jpmorgan.cakeshop.util.DownloadUtils;
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -19,19 +23,11 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.PostConstruct;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpMethod;
-import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
+
+import static com.jpmorgan.cakeshop.service.impl.NodeServiceImpl.STATIC_NODES_JSON;
+import static com.jpmorgan.cakeshop.util.FileUtils.expandPath;
 
 @Component
 public class GethRunner {
@@ -146,18 +142,6 @@ public class GethRunner {
     public void reset() throws IOException {
         enodeUrl = null;
         FileUtils.deleteDirectory(new File(gethConfig.getGethDataDirPath()));
-    }
-
-    public void clearRaftStateIfSingleNode() throws IOException {
-        if (getCurrentEnodesList(STATIC_NODES_JSON).size() <= 1) {
-            LOG.info(
-                "Single node found in static-nodes.json, deleting any existing raft folders to fix a leader election bug in raft");
-            String ethereumFolder = gethConfig.getGethDataDirPath();
-            FileUtils.deleteQuietly(new File(ethereumFolder, "quorum-raft-state"));
-            FileUtils.deleteQuietly(new File(ethereumFolder, "raft-snap"));
-            FileUtils.deleteQuietly(new File(ethereumFolder, "raft-wal"));
-        }
-
     }
 
     public String getGethPath() {
