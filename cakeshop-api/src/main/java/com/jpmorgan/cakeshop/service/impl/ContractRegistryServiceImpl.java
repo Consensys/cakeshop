@@ -169,6 +169,11 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
 
     @Override
     public Contract getById(String id) throws APIException {
+        if (StringUtils.isBlank(contractRegistryAddress)) {
+            LOG.debug("Skipping lookup because there is not contract registry yet");
+            return null;
+        }
+
         try {
             Contract contract = contractDAO.getById(id);
             if (contract != null) {
