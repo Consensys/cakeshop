@@ -78,6 +78,8 @@ public class Transaction implements Serializable {
 
 	private Status status;
 
+	private String returnCode;
+
 	private String nonce;
 
 	private String blockId;
@@ -243,6 +245,14 @@ public class Transaction implements Serializable {
 	public void setStatus(Status status) {
 		this.status = status;
 	}
+
+    public String getReturnCode() {
+        return returnCode;
+    }
+
+    public void setReturnCode(String returnCode) {
+        this.returnCode = returnCode;
+    }
 
 	public String getR() {
         return r;

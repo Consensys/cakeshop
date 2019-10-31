@@ -97,6 +97,7 @@ public class TransactionServiceImpl implements TransactionService {
         tx.setGas(toBigInt("gas", txData));
         tx.setCumulativeGasUsed(toBigInt("cumulativeGasUsed", txData));
         tx.setGasUsed(toBigInt("gasUsed", txData));
+        tx.setReturnCode((String) txData.get("status"));
 
         if (tx.getBlockId() == null || tx.getBlockNumber() == null
                 || tx.getBlockId().contentEquals("0x0000000000000000000000000000000000000000000000000000000000000000")) {

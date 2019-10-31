@@ -16,7 +16,7 @@ public interface ContractRegistryService {
      * @return
      * @throws APIException
      */
-    public boolean deploy() throws APIException;
+    public void deploy() throws APIException;
 
     /**
      * Update the location of the ContractRegistry
