@@ -80,7 +80,7 @@ public class ContractServiceTest extends BaseGethRpcTest {
         String code = readTestFile("contracts/simplestorage.sol");
 
         TransactionResult result = contractService.create(null, code, ContractService.CodeType.solidity, new Object[] { 100 }, null, null, null,
-            "simplestorage.sol", "byzantium");
+            "simplestorage.sol", true, "byzantium");
         assertNotNull(result);
         assertNotNull(result.getId());
         assertTrue(!result.getId().isEmpty());
@@ -96,7 +96,7 @@ public class ContractServiceTest extends BaseGethRpcTest {
         assertNotNull(c);
 
         TransactionResult result = contractService.create(null, code, CodeType.solidity, new Object[] { 100 }, c.getBinary(), null, null,
-            "simplestorage.sol", "byzantium");
+            "simplestorage.sol", true, "byzantium");
         assertNotNull(result);
         assertNotNull(result.getId());
         assertTrue(!result.getId().isEmpty());

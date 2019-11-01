@@ -68,7 +68,7 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
         try {
             String code = FileUtils.readClasspathFile("contracts/ContractRegistry.sol");
             TransactionResult txr = contractService.create(null, code, CodeType.solidity, null, null, null, null,
-                "ContractRegistry.sol", "byzantium"); // byzantium for most compatibility
+                "ContractRegistry.sol", true, "byzantium"); // byzantium for most compatibility
             Transaction tx = transactionService.waitForTx(txr, 200, TimeUnit.MILLISECONDS);
             if(tx.isSuccess()) {
                 this.contractRegistryAddress = tx.getContractAddress();

@@ -48,13 +48,14 @@ public interface ContractService {
 	 * @param privateFor   List of Base64-encoded public keys of recipients (optional)
 	 *
 	 * @param filename
+     * @param optimize
      * @param evmVersion
      * @return
 	 * @throws APIException
 	 */
 	public TransactionResult create(String from, String code, CodeType codeType, Object[] args,
         String binary, String privateFrom, List<String> privateFor, String filename,
-        String evmVersion) throws APIException;
+        Boolean optimize, String evmVersion) throws APIException;
 
 	/**
 	 * Delete the given contract. Not yet implemented.

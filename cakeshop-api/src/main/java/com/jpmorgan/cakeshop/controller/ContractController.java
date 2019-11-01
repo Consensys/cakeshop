@@ -127,7 +127,7 @@ public class ContractController extends BaseController {
         TransactionResult tx = contractService.create(jsonRequest.getFrom(), jsonRequest.getCode(),
                 CodeType.valueOf(jsonRequest.getCode_type()), jsonRequest.getArgs(), jsonRequest.getBinary(),
                 jsonRequest.getPrivateFrom(), jsonRequest.getPrivateFor(), jsonRequest.getFilename(),
-            jsonRequest.getEvmVersion());
+            jsonRequest.getOptimize(), jsonRequest.getEvmVersion());
 
         APIResponse res = new APIResponse();
 

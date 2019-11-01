@@ -187,10 +187,9 @@ public class ContractServiceImpl implements ContractService {
     @Override
     public TransactionResult create(String from, String code, CodeType codeType, Object[] args,
         String binary, String privateFrom, List<String> privateFor, String filename,
-        String evmVersion) throws APIException {
+        Boolean optimize, String evmVersion) throws APIException {
 
-        List<Contract> contracts = compile(code, codeType, true, filename,
-            evmVersion); // always deploy optimized contracts
+        List<Contract> contracts = compile(code, codeType, optimize, filename, evmVersion);
 
         Contract contract = null;
         if (binary != null && binary.length() > 0) {
