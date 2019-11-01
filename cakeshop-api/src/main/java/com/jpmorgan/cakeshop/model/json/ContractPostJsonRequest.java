@@ -12,8 +12,9 @@ import java.util.List;
 public class ContractPostJsonRequest {
 
     public static final String DEFAULT_CODE_TYPE = "solidity";
+    public static final String DEFAULT_EVM_VERSION = "byzantium";
 
-    private String from, code, code_type = DEFAULT_CODE_TYPE, binary, privateFrom, address, method, filename;
+    private String from, code, code_type = DEFAULT_CODE_TYPE, binary, privateFrom, address, method, filename, evmVersion = DEFAULT_EVM_VERSION;
     private Object args[];
     private Object blockNumber;
     private Boolean optimize;
@@ -171,6 +172,22 @@ public class ContractPostJsonRequest {
      */
     public void setOptimize(Boolean optimize) {
         this.optimize = optimize;
+    }
+
+    /**
+     * @param evmVersion version to set
+     * e.g. byzantium, constantinople, petersburg
+     */
+    public void setEvmVersion(String evmVersion) {
+        this.evmVersion = evmVersion;
+    }
+
+    /**
+     * @return the evmVersion
+     * e.g. byzantium, constantinople, petersburg
+     */
+    public String getEvmVersion() {
+        return evmVersion;
     }
 
     /**

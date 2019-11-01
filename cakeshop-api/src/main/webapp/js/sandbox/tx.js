@@ -381,9 +381,10 @@ import utils from "../utils"
 
         var editorSource = Contract.preprocess(Sandbox.getEditorSource());
         var optimize = document.querySelector('#optimize').checked;
+        var evmVersion = document.querySelector('#evmVersionSelector').value;
         var filename = Sandbox.Filer.getActiveFilename();
 
-        Contract.compile(editorSource, optimize, filename).then(
+        Contract.compile(editorSource, optimize, filename, evmVersion).then(
             function (compiler_output) {
                 var contract = _.find(compiler_output, function (c) {
                     return c.get("name") === sel;
@@ -406,7 +407,8 @@ import utils from "../utils"
                     contract.get("binary"),
                     "",
                     privateFor,
-                    filename
+                    filename,
+                    evmVersion
                 ).then(function (addr) {
 
                     addTx("Contract '" + contract.get("name") + "' deployed at "

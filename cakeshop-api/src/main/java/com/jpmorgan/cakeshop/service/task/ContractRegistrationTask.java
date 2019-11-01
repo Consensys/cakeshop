@@ -62,6 +62,11 @@ public class ContractRegistrationTask implements Runnable {
             }
         }
 
+        if(!tx.isSuccess()) {
+            LOG.error("Contract deployment was not successful: {}", tx.getId());
+            return;
+        }
+
         try {
             contract.setAddress(tx.getContractAddress());
             LOG.info("Registering newly mined contract at address " + contract.getAddress());

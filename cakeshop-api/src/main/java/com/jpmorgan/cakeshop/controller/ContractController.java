@@ -88,7 +88,8 @@ public class ContractController extends BaseController {
     public ResponseEntity<APIResponse> compile(@RequestBody ContractPostJsonRequest jsonRequest) throws APIException {
 
         List<Contract> contracts = contractService.compile(jsonRequest.getCode(),
-                CodeType.valueOf(jsonRequest.getCode_type()), jsonRequest.getOptimize(), jsonRequest.getFilename());
+                CodeType.valueOf(jsonRequest.getCode_type()), jsonRequest.getOptimize(), jsonRequest.getFilename(),
+            jsonRequest.getEvmVersion());
         APIResponse res = new APIResponse();
 
         if (contracts != null) {
@@ -109,7 +110,7 @@ public class ContractController extends BaseController {
         @ApiImplicitParam(name = "code_type", required = false, value = "Required. Only solidity is supported for now.", dataType = "java.lang.String", paramType = "body")
         ,
         @ApiImplicitParam(name = "from", required = false, value = "Required. Account from address", dataType = "java.lang.String", paramType = "body")
-        , 
+        ,
         @ApiImplicitParam(name = "args", required = false, value = "Required. Function arguments to pass", dataType = "java.util.Arrays", paramType = "body")
         ,
         @ApiImplicitParam(name = "binary", required = false, value = "Binary contract code.", dataType = "java.lang.String", paramType = "body")
@@ -125,7 +126,8 @@ public class ContractController extends BaseController {
 
         TransactionResult tx = contractService.create(jsonRequest.getFrom(), jsonRequest.getCode(),
                 CodeType.valueOf(jsonRequest.getCode_type()), jsonRequest.getArgs(), jsonRequest.getBinary(),
-                jsonRequest.getPrivateFrom(), jsonRequest.getPrivateFor(), jsonRequest.getFilename());
+                jsonRequest.getPrivateFrom(), jsonRequest.getPrivateFor(), jsonRequest.getFilename(),
+            jsonRequest.getEvmVersion());
 
         APIResponse res = new APIResponse();
 
@@ -178,7 +180,7 @@ public class ContractController extends BaseController {
 
     @ApiImplicitParams({
         @ApiImplicitParam(name = "from", required = false, value = "Required. Account from address", dataType = "java.lang.String", paramType = "body")
-        , 
+        ,
         @ApiImplicitParam(name = "address", required = false, value = "Required. Account address", dataType = "java.lang.String", paramType = "body")
         ,
         @ApiImplicitParam(name = "method", required = false, value = "Required. Contract method to execute.", dataType = "java.lang.String", paramType = "body")
@@ -240,7 +242,7 @@ public class ContractController extends BaseController {
 
     @ApiImplicitParams({
         @ApiImplicitParam(name = "from", required = false, value = "Required. Account from address", dataType = "java.lang.String", paramType = "body")
-        , 
+        ,
         @ApiImplicitParam(name = "address", required = false, value = "Required. Account address", dataType = "java.lang.String", paramType = "body")
         ,
         @ApiImplicitParam(name = "method", required = false, value = "Required. Contract method to execute.", dataType = "java.lang.String", paramType = "body")

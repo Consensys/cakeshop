@@ -7,9 +7,7 @@ import com.jpmorgan.cakeshop.config.AppStartup;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Transaction;
 import com.jpmorgan.cakeshop.model.TransactionResult;
-import com.jpmorgan.cakeshop.service.ContractRegistryService;
 import com.jpmorgan.cakeshop.service.ContractService;
-import com.jpmorgan.cakeshop.service.ContractService.CodeType;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.TransactionService;
 import com.jpmorgan.cakeshop.service.task.BlockchainInitializerTask;
@@ -192,7 +190,7 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
      */
     protected String createContract(String code, Object[] args, String filename) throws APIException, InterruptedException {
         TransactionResult result = contractService.create(null, code, ContractService.CodeType.solidity, args, null, null, null,
-            filename);
+            filename, "byzantium");
         assertNotNull(result);
         assertNotNull(result.getId());
         assertTrue(!result.getId().isEmpty());

@@ -349,4 +349,10 @@ public class Transaction implements Serializable {
         return (StringUtils.isNotBlank(v) && (v.equals(PRIVATE_TXN_V1) || v.equals(PRIVATE_TXN_V2)));
     }
 
+    @JsonIgnore
+    public boolean isSuccess() {
+        // status not included pre-byzantium, default to true
+        return StringUtils.isEmpty(returnCode) || returnCode.equals("0x1");
+    }
+
 }
