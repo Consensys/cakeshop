@@ -165,28 +165,24 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         System.out.println();
         System.out.println();
 
-        try {
-            System.out.println(FileUtils.readClasspathFile("banner.txt"));
-        } catch (IOException e) {
-        }
-
         System.out.println();
         System.out.println("          CAKESHOP");
         System.out.println("          version:     " + AppVersion.BUILD_VERSION);
         System.out.println("          build id:    " + AppVersion.BUILD_ID);
         System.out.println("          build date:  " + AppVersion.BUILD_DATE);
-        System.out.println("          Access the Cakeshop UI at: http://localhost:" + gethConfig.getCakeshopPort());
+        System.out.println(
+            "          Access the Cakeshop UI at: " + getSpringUrl(gethConfig.getCakeshopPort()));
     }
 
     // Try to determine listening URL
-    private String getSpringUrl(int port) {
+    private String getSpringUrl(String port) {
         String uri = "http://";
         try {
             uri = uri + EEUtils.getAllIPs().get(0).getAddr();
         } catch (APIException e) {
             uri = uri + "localhost";
         }
-        return uri + ":" + Integer.toString(port) + "/";
+        return uri + ":" + port + "/";
     }
 
     public String getDebugInfo(ServletContext servletContext) {
