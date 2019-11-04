@@ -160,11 +160,6 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         System.out.println();
         System.out.println();
 
-        try {
-            System.out.println(FileUtils.readClasspathFile("banner.txt"));
-        } catch (IOException e) {
-        }
-
         System.out.println();
         System.out.println("          CAKESHOP");
         System.out.println("          version:     " + AppVersion.BUILD_VERSION);
