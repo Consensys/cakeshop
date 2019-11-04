@@ -23,12 +23,12 @@ public class GethHttpServiceTest extends BaseGethRpcTest {
     @Test
     public void testReset() throws APIException {
         System.out.println("Running  GethHttpServiceTest.testReset-------------------------------------");
-        assertTrue(geth.isRunning());
+        assertTrue(geth.isConnected());
 
         String blockId = blockService.get(null, 1L, null).getId();
 
         assertTrue(geth.reset());
-        assertTrue(geth.isRunning());
+        assertTrue(geth.isConnected());
         initializeChain();
 
         assertNotEquals(blockService.get(null, 1L, null).getId(), blockId);

@@ -7,6 +7,7 @@ import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Block;
 import com.jpmorgan.cakeshop.model.Transaction;
 import com.jpmorgan.cakeshop.service.BlockService;
+import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.NodeService;
 import com.jpmorgan.cakeshop.service.TransactionService;
 import org.slf4j.Logger;
@@ -51,6 +52,9 @@ public class BlockScanner extends Thread {
 
     @Autowired
     private TransactionService txService;
+
+    @Autowired
+    private GethHttpService gethService;
 
     @Autowired
     private GethConfig gethConfig;
@@ -286,6 +290,12 @@ public class BlockScanner extends Thread {
                 return;
             }
 
+            if(!gethService.isConnected()) {
+                LOG.debug("Block scanner running but geth is not connected");
+                sleep(2);
+                continue;
+            }
+
             try {
                 Integer latestPeerCount = nodeService.peers().size();
                 if (previousPeerCount != null && latestPeerCount > previousPeerCount) {
@@ -324,8 +334,7 @@ public class BlockScanner extends Thread {
             if (!sleep(2)) {
                 return;
             }
-
-    }
+        }
     }
 
 

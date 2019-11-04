@@ -11,6 +11,14 @@ import com.quorum.tessera.config.SslAuthenticationMode;
 import com.quorum.tessera.config.SslTrustMode;
 import com.quorum.tessera.config.builder.ConfigBuilder;
 import com.quorum.tessera.config.builder.KeyDataBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -18,18 +26,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import javax.annotation.PostConstruct;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Component;
+import java.util.*;
 
 @Component
 public class GethConfig {
@@ -73,6 +70,7 @@ public class GethConfig {
     public static final String GETH_BOOTNODE_KEY = "geth.bootnode.key";
     public static final String GETH_BOOTNODES_LIST = "geth.bootnodes.list";
     public static final String CONTRACT_REGISTRY_ADDR = "contract.registry.addr";
+    public static final String CAKESHOP_SELECTED_NODE = "cakeshop.selected_node";
 
     // Binary download urls and binary names
     public static final String GETH_RELEASE_URL = "geth.release.url";
@@ -420,7 +418,7 @@ public class GethConfig {
     }
 
     public String getGethTransactionManagerUrl() {
-        return get(GETH_TRANSACTION_MANAGER_URL, "http://127.0.0.1:9000/");
+        return get(GETH_TRANSACTION_MANAGER_URL, "http://127.0.0.1:9102/");
     }
 
     public void setGethTransactionManagerUrl(String url) {
@@ -429,7 +427,7 @@ public class GethConfig {
 
     public List<String> getGethTransactionManagerPeers() {
         return Lists
-            .newArrayList(get(GETH_TRANSACTION_MANAGER_PEERS, "http://localhost:9000/").split(","));
+            .newArrayList(get(GETH_TRANSACTION_MANAGER_PEERS, "http://localhost:9102/").split(","));
     }
 
     public void setGethTransactionManagerPeers(List<String> peers) {
@@ -438,6 +436,14 @@ public class GethConfig {
 
     public TransactionManager.Type getTransactionManagerType() {
         return transactionManagerType;
+    }
+
+    public Long getSelectedNode() {
+        return Long.valueOf(props.getProperty(CAKESHOP_SELECTED_NODE, "1"));
+    }
+
+    public void setSelectedNode(Long nodeId) {
+        props.setProperty(CAKESHOP_SELECTED_NODE, String.valueOf(nodeId));
     }
 
     public String getCakeshopPort() {

@@ -1,15 +1,5 @@
 package com.jpmorgan.cakeshop.service.impl;
 
-import static com.jpmorgan.cakeshop.bean.TransactionManager.Type.TRANSACTION_MANAGER_KEY_NAME;
-import static com.jpmorgan.cakeshop.util.ProcessUtils.createProcessBuilder;
-import static com.jpmorgan.cakeshop.util.ProcessUtils.getProcessPid;
-import static com.jpmorgan.cakeshop.util.ProcessUtils.isProcessRunning;
-import static com.jpmorgan.cakeshop.util.ProcessUtils.killProcess;
-import static com.jpmorgan.cakeshop.util.ProcessUtils.readPidFromFile;
-import static com.jpmorgan.cakeshop.util.ProcessUtils.writePidToFile;
-import static org.springframework.http.HttpMethod.POST;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
@@ -19,20 +9,36 @@ import com.jpmorgan.cakeshop.bean.GethRunner;
 import com.jpmorgan.cakeshop.bean.TransactionManager;
 import com.jpmorgan.cakeshop.bean.TransactionManagerRunner;
 import com.jpmorgan.cakeshop.dao.BlockDAO;
+import com.jpmorgan.cakeshop.dao.NodeInfoDAO;
 import com.jpmorgan.cakeshop.dao.TransactionDAO;
 import com.jpmorgan.cakeshop.dao.WalletDAO;
 import com.jpmorgan.cakeshop.db.BlockScanner;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.error.ErrorLog;
 import com.jpmorgan.cakeshop.model.Account;
+import com.jpmorgan.cakeshop.model.NodeInfo;
 import com.jpmorgan.cakeshop.model.RequestModel;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.WalletService;
-import com.jpmorgan.cakeshop.service.task.InitializeNodesTask;
-import com.jpmorgan.cakeshop.service.task.LoadPeersTask;
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.ProcessUtils;
 import com.jpmorgan.cakeshop.util.StreamLogAdapter;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.context.ApplicationContext;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
+
+import javax.annotation.PreDestroy;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,22 +46,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.PreDestroy;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.context.ApplicationContext;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
+
+import static com.jpmorgan.cakeshop.bean.TransactionManager.Type.TRANSACTION_MANAGER_KEY_NAME;
+import static com.jpmorgan.cakeshop.util.ProcessUtils.*;
+import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 /**
  *
@@ -89,12 +84,11 @@ public class GethHttpServiceImpl implements GethHttpService {
     @Autowired(required = false)
     private WalletDAO walletDAO;
 
-    @Autowired
-    private ApplicationContext applicationContext;
+    @Autowired()
+    private NodeInfoDAO nodeInfoDao;
 
     @Autowired
-    @Qualifier("asyncExecutor")
-    private TaskExecutor executor;
+    private ApplicationContext applicationContext;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -104,7 +98,10 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     private BlockScanner blockScanner;
 
-    private Boolean running;
+    private boolean connected;
+
+    private String currentRpcUrl;
+    private String currentTransactionManagerUrl;
 
     private StreamLogAdapter stdoutLogger;
     private StreamLogAdapter stderrLogger;
@@ -113,7 +110,6 @@ public class GethHttpServiceImpl implements GethHttpService {
     private final HttpHeaders jsonContentHeaders;
 
     public GethHttpServiceImpl() {
-        this.running = false;
         this.startupErrors = new ArrayList<>();
 
         this.jsonContentHeaders = new HttpHeaders();
@@ -127,8 +123,12 @@ public class GethHttpServiceImpl implements GethHttpService {
                 LOG.debug("> " + json);
             }
 
+            if (StringUtils.isEmpty(currentRpcUrl)) {
+                throw new ResourceAccessException("Current RPC URL not set, skipping request");
+            }
+
             HttpEntity<String> httpEntity = new HttpEntity<>(json, jsonContentHeaders);
-            ResponseEntity<String> response = restTemplate.exchange(gethConfig.getRpcUrl(), POST, httpEntity, String.class);
+            ResponseEntity<String> response = restTemplate.exchange(currentRpcUrl, POST, httpEntity, String.class);
 
             String res = response.getBody();
 
@@ -313,13 +313,31 @@ public class GethHttpServiceImpl implements GethHttpService {
     }
 
     @Override
-    public Boolean isRunning() {
-        if (gethConfig.isAutoStart()) {
-            return running;
-        }
-        // always return true if we are not managing geth status
-        // TODO add a healthcheck for external geth
-        return true;
+    public void setConnected(boolean connected) {
+        this.connected = connected;
+    }
+
+    @Override
+    public String getCurrentRpcUrl() {
+        return currentRpcUrl;
+    }
+
+    @Override
+    public Boolean isConnected() {
+        return this.connected;
+    }
+
+    private void setCurrentRpcUrl(String rpcUrl) {
+        this.currentRpcUrl = rpcUrl;
+    }
+
+    @Override
+    public String getCurrentTransactionManagerUrl() {
+        return currentTransactionManagerUrl;
+    }
+
+    private void setCurrentTransactionManagerUrl(String transactionManagerUrl) {
+        this.currentTransactionManagerUrl = transactionManagerUrl;
     }
 
     @Override
@@ -339,11 +357,13 @@ public class GethHttpServiceImpl implements GethHttpService {
 
         if (isProcessRunning(readPidFromFile(gethRunner.getGethPidFilename()))) {
             LOG.info("Ethereum was already running; not starting again");
-            return this.running = true;
+            return true;
         }
 
         try {
             String dataDir = gethConfig.getGethDataDirPath();
+
+            gethRunner.downloadQuorumIfNeeded();
 
             // copy keystore if necessary
             File keystoreDir = new File(FileUtils.expandPath(dataDir, "keystore"));
@@ -362,14 +382,8 @@ public class GethHttpServiceImpl implements GethHttpService {
                 LOG.debug("Running geth init");
                 if (!initGeth()) {
                     logError("Geth datadir failed to initialize");
-                    return this.running = false;
+                    return false;
                 }
-            }
-
-            if(gethConfig.isRaft()) {
-                // there is an issue with raft where a single node network will never elect a leader
-                // when restarted. Just delete all raft state if there is only a single node
-                gethRunner.clearRaftStateIfSingleNode();
             }
 
             if (gethRunner.isEmbeddedQuorum()) {
@@ -412,33 +426,67 @@ public class GethHttpServiceImpl implements GethHttpService {
                 writePidToFile(pid, gethRunner.getGethPidFilename());
             }
 
+            setEmbeddedNodeAsCurrent();
+
             if (!(checkGethStarted() && checkWalletUnlocked())) {
                 logError("Ethereum failed to start");
-                return this.running = false;
+                return false;
             }
+
+            setConnected(true);
 
             // TODO add a watcher thread to make sure it doesn't die..
         } catch (IOException ex) {
             logError("Cannot start process: " + ex.getMessage());
-            return this.running = false;
+            return false;
         }
 
-        runPostStartupTasks();
-
         LOG.info("Ethereum started successfully");
-        return this.running = true;
+        return true;
+    }
+
+    private void setEmbeddedNodeAsCurrent() throws IOException {
+        // make sure the embedded node is in the NodeInfo database
+        String rpcUrl = gethConfig.getRpcUrl();
+        String transactionManagerUrl = gethConfig.getGethTransactionManagerUrl();
+        NodeInfo embeddedNodeInfo = nodeInfoDao
+            .getByUrls(rpcUrl, transactionManagerUrl);
+        if (embeddedNodeInfo == null) {
+            embeddedNodeInfo = new NodeInfo("Embedded Node", rpcUrl,
+                transactionManagerUrl);
+            LOG.info("Couldn't find node in db, adding, {}", embeddedNodeInfo.id);
+            nodeInfoDao.save(embeddedNodeInfo);
+            LOG.info("does it have an id now? {}", embeddedNodeInfo.id);
+        }
+        connectToNode(embeddedNodeInfo.id);
     }
 
     @Override
-    public void runPostStartupTasks() {
-        // Make sure initial nodes are in the DB if file provided
-        executor.execute(applicationContext.getBean(InitializeNodesTask.class));
+    public void connectToNode(Long nodeId) {
+        try {
+            NodeInfo node = nodeInfoDao.getById(nodeId);
+            if (node != null) {
+                setCurrentRpcUrl(node.rpcUrl);
+                setCurrentTransactionManagerUrl(node.transactionManagerUrl);
+                runPostConnectTasks();
+                gethConfig.setSelectedNode(nodeId);
+                gethConfig.save();
+            } else {
+                LOG.info("Node with id {} does not exist", nodeId);
+            }
+        } catch (IOException e) {
+            LOG.error("Could not connect to node with ID: {}", nodeId);
+        }
+    }
 
-        // Reconnect peers on startup
-        executor.execute(applicationContext.getBean(LoadPeersTask.class));
-
+    private void runPostConnectTasks() {
+        if(blockScanner != null) {
+            LOG.info("Shutting down BlockScanner");
+            blockScanner.shutdown();
+        }
         // run scanner thread
-        this.blockScanner = applicationContext.getBean(BlockScanner.class);
+        LOG.info("Starting new BlockScanner");
+        blockScanner = applicationContext.getBean(BlockScanner.class);
         blockScanner.start();
     }
 

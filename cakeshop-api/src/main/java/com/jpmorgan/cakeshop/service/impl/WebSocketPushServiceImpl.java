@@ -110,7 +110,7 @@ public class WebSocketPushServiceImpl implements WebSocketPushService {
             return;
         }
 
-        if (!geth.isRunning()) {
+        if (!geth.isConnected()) {
             // send back a node-down response
             Node node = new Node();
             node.setStatus(NodeService.NODE_NOT_RUNNING_STATUS);
@@ -134,7 +134,7 @@ public class WebSocketPushServiceImpl implements WebSocketPushService {
     @Override
     @Scheduled(fixedDelay = 5000)
     public void pushLatestBlocks() throws APIException {
-        if (openedSessions <= 0 || !geth.isRunning()) {
+        if (openedSessions <= 0 || !geth.isConnected()) {
             return;
         }
 
@@ -161,7 +161,7 @@ public class WebSocketPushServiceImpl implements WebSocketPushService {
     @Override
     @Scheduled(fixedDelay = 200)
     public void pushTransactions() throws APIException {
-        if (openedSessions <= 0 || transactionsMap.isEmpty() || !geth.isRunning()) {
+        if (openedSessions <= 0 || transactionsMap.isEmpty() || !geth.isConnected()) {
             return;
         }
 

@@ -1,14 +1,16 @@
 package com.jpmorgan.cakeshop.dao;
 
 import com.jpmorgan.cakeshop.model.NodeInfo;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
 import org.hibernate.Session;
+import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 @Repository
 public class NodeInfoDAO extends BaseDAO {
@@ -17,10 +19,23 @@ public class NodeInfoDAO extends BaseDAO {
 
 
     @Transactional
-    public NodeInfo getById(String id) throws IOException {
+    public NodeInfo getById(Long id) throws IOException {
         if (null != getCurrentSession()) {
             NodeInfo nodeInfo = getCurrentSession().get(NodeInfo.class, id);
             return nodeInfo;
+        }
+        return null;
+    }
+
+    @Transactional
+    public NodeInfo getByUrls(String rpcUrl, String transactionManagerUrl) throws IOException {
+        if (null != getCurrentSession()) {
+            List<NodeInfo> matches = (List<NodeInfo>) getCurrentSession().createCriteria(NodeInfo.class)
+                .add(Restrictions.eq("rpcUrl", rpcUrl))
+                .add(Restrictions.eq("transactionManagerUrl", transactionManagerUrl))
+                .list();
+
+            return matches.isEmpty() ? null : matches.get(0);
         }
         return null;
     }

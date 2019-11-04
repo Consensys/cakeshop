@@ -6,12 +6,21 @@ import com.jpmorgan.cakeshop.bean.GethRunner;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.error.ErrorLog;
 import com.jpmorgan.cakeshop.service.GethHttpService;
-import com.jpmorgan.cakeshop.util.EEUtils;
-import com.jpmorgan.cakeshop.util.FileUtils;
-import com.jpmorgan.cakeshop.util.MemoryUtils;
-import com.jpmorgan.cakeshop.util.ProcessUtils;
-import com.jpmorgan.cakeshop.util.StreamGobbler;
-import com.jpmorgan.cakeshop.util.StringUtils;
+import com.jpmorgan.cakeshop.service.task.InitializeNodesTask;
+import com.jpmorgan.cakeshop.util.*;
+import org.apache.commons.lang3.SystemUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.core.annotation.Order;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.stereotype.Service;
+
+import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -20,15 +29,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.servlet.ServletContext;
-import org.apache.commons.lang3.SystemUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Service;
 
 @Order(999999)
 @Service(value = "appStartup")
@@ -49,9 +49,16 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
     @Autowired
     private GethRunner gethRunner;
 
+    @Autowired
+    private ApplicationContext applicationContext;
+
+    @Autowired
+    @Qualifier("asyncExecutor")
+    private TaskExecutor executor;
+
     private boolean autoStartFired;
 
-    private boolean healthy;
+    private boolean healthy = true;
 
     private String solcVer;
 
@@ -74,12 +81,13 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
             return;
         }
         autoStartFired = true;
-
         healthy = testSystemHealth();
         if (healthy) {
-
             if (Boolean.valueOf(System.getProperty("geth.init.only"))) {
+                // init will generate the keys/enodeid with geth and print to console.
+                // use this to add the enode url to static_nodes/permissioned_nodes before running
                 try {
+                    gethRunner.downloadQuorumIfNeeded(); // generating enode url needs geth binary
                     String enodeURL = gethRunner.getEnodeURL();
                     System.err.println("Generated node keys and enode url:");
                     System.err.println(enodeURL);
@@ -95,7 +103,6 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
                 // Exit after all system initialization has completed
                 gethConfig.setAutoStart(false);
                 gethConfig.setAutoStop(false);
-                gethConfig.setRpcUrl("http://localhost:22000");
                 try {
                     gethConfig.save();
                 } catch (IOException e) {
@@ -112,11 +119,9 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
                 if (!healthy) {
                     addError("GETH FAILED TO START");
                 }
-
-            } else {
-                // run startup tasks only
-                geth.runPostStartupTasks();
             }
+            // Make sure initial nodes are in the DB if file provided
+            executor.execute(applicationContext.getBean(InitializeNodesTask.class));
         }
 
         if (!healthy) {
@@ -353,36 +358,6 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
             isHealthy = false;
         }
 
-        // test geth binary
-        System.out.println();
-        System.out.println("Testing geth server binary");
-        String gethOutput = testBinary(gethRunner.getGethPath(), "version");
-        if (gethOutput == null || !gethOutput.contains("Version:")) {
-            isHealthy = false;
-            System.out.println("FAILED");
-        } else {
-            Matcher matcher = Pattern.compile("^Version: (.*)", Pattern.MULTILINE).matcher(gethOutput);
-            if (matcher.find()) {
-                gethVer = matcher.group(1);
-            }
-            System.out.println("OK");
-        }
-
-        // test solc binary
-        System.out.println();
-        System.out.println("Testing solc compiler binary");
-        String solcOutput = testBinary(gethConfig.getNodeJsBinaryName(), gethRunner.getSolcPath(), "--version");
-        if (solcOutput == null || !solcOutput.contains("Version:")) {
-            isHealthy = false;
-            System.out.println("FAILED");
-        } else {
-            Matcher matcher = Pattern.compile("^Version: (.*)", Pattern.MULTILINE).matcher(solcOutput);
-            if (matcher.find()) {
-                solcVer = matcher.group(1);
-            }
-            System.out.println("OK");
-        }
-
         System.out.println();
         if (isHealthy) {
             System.out.println("ALL TESTS PASSED!");
@@ -401,6 +376,37 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         }
 
         return isHealthy;
+    }
+
+    private boolean testGethBinaries() {
+        // test geth binary
+        System.out.println();
+        System.out.println("Testing geth server binary");
+        String gethOutput = testBinary(gethRunner.getGethPath(), "version");
+        gethVer = checkVersionOutput(gethOutput, gethVer);
+
+        // test solc binary
+        System.out.println();
+        System.out.println("Testing solc compiler binary");
+        String solcOutput = testBinary(gethConfig.getNodeJsBinaryName(), gethRunner.getSolcPath(), "--version");
+        solcVer = checkVersionOutput(solcOutput, solcVer);
+
+        return StringUtils.isNotEmpty(gethVer) && StringUtils.isNotEmpty(solcVer);
+    }
+
+    private String checkVersionOutput(String consoleOutput, String version) {
+        if (consoleOutput == null || !consoleOutput.contains("Version:")) {
+            System.out.println("FAILED");
+            return "";
+        } else {
+            Matcher matcher = Pattern.compile("^Version: (.*)", Pattern.MULTILINE).matcher(consoleOutput);
+            if (matcher.find()) {
+                // not requiring explicit version yet
+                version = matcher.group(1);
+            }
+            System.out.println("OK");
+            return version;
+        }
     }
 
     private String testBinary(String... args) {
