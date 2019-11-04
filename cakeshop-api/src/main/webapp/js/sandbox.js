@@ -43,12 +43,13 @@
             return;
         }
       var optimize = document.querySelector('#optimize').checked;
+      var evmVersion = document.querySelector('#evmVersionSelector').value;
 
         // input = preprocess(input);
         // console.log(input);
 
         Sandbox.trigger("compile", input);
-        Contract.compile(input, optimize, Sandbox.Filer.getActiveFilename()).then(
+        Contract.compile(input, optimize, Sandbox.Filer.getActiveFilename(), evmVersion).then(
             function(data) {
                 Sandbox.trigger("compiled", data);
                 renderContracts(data, editorSource);

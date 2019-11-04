@@ -78,6 +78,8 @@ public class Transaction implements Serializable {
 
 	private Status status;
 
+	private String returnCode;
+
 	private String nonce;
 
 	private String blockId;
@@ -244,6 +246,14 @@ public class Transaction implements Serializable {
 		this.status = status;
 	}
 
+    public String getReturnCode() {
+        return returnCode;
+    }
+
+    public void setReturnCode(String returnCode) {
+        this.returnCode = returnCode;
+    }
+
 	public String getR() {
         return r;
     }
@@ -337,6 +347,12 @@ public class Transaction implements Serializable {
 
     public boolean isPrivate() {
         return (StringUtils.isNotBlank(v) && (v.equals(PRIVATE_TXN_V1) || v.equals(PRIVATE_TXN_V2)));
+    }
+
+    @JsonIgnore
+    public boolean isSuccess() {
+        // status not included pre-byzantium, default to true
+        return StringUtils.isEmpty(returnCode) || returnCode.equals("0x1");
     }
 
 }

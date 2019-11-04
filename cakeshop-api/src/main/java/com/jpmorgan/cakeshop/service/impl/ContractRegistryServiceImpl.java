@@ -1,6 +1,5 @@
 package com.jpmorgan.cakeshop.service.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ObjectArrays;
 import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.dao.ContractDAO;
@@ -65,23 +64,24 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
     }
 
     @Override
-    public boolean deploy() throws APIException {
-
+    public void deploy() throws APIException {
         try {
             String code = FileUtils.readClasspathFile("contracts/ContractRegistry.sol");
             TransactionResult txr = contractService.create(null, code, CodeType.solidity, null, null, null, null,
-                "ContractRegistry.sol");
+                "ContractRegistry.sol", true, "byzantium"); // byzantium for most compatibility
             Transaction tx = transactionService.waitForTx(txr, 200, TimeUnit.MILLISECONDS);
-            this.contractRegistryAddress = tx.getContractAddress();
-            saveContractRegistryAddress(this.contractRegistryAddress);
-            saveSharedNetworkConfig(this.contractRegistryAddress);
-            return true;
+            if(tx.isSuccess()) {
+                this.contractRegistryAddress = tx.getContractAddress();
+                saveContractRegistryAddress(this.contractRegistryAddress);
+                saveSharedNetworkConfig(this.contractRegistryAddress);
+            } else {
+                throw new APIException("Status code for deployment was 0x0, check the geth logs for EVM errors");
+            }
 
         } catch (IOException | InterruptedException e) {
-            LOG.error("Error deploying ContractRegistry to chain: " + e.getMessage(), e);
+            throw new APIException("Error deploying ContractRegistry to chain: " + e.getMessage(), e);
         }
 
-        return false;
     }
 
     private void saveContractRegistryAddress(String addr) throws APIException {
@@ -134,7 +134,7 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
     public TransactionResult register(String from, String id, String name, String abi, String code,
         CodeType codeType, Long createdDate, String privateFor) throws APIException {
 
-        if (StringUtils.isBlank(contractRegistryAddress)) {
+        if (noRegistryAddress()) {
             LOG.warn("Not going to register contract since ContractRegistry address is null");
             return null; // FIXME return silently because registry hasn't yet been registered
         }
@@ -169,6 +169,11 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
 
     @Override
     public Contract getById(String id) throws APIException {
+        if (noRegistryAddress()) {
+            LOG.debug("Skipping lookup because there is not contract registry yet");
+            return null;
+        }
+
         try {
             Contract contract = contractDAO.getById(id);
             if (contract != null) {
@@ -258,6 +263,9 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
     public boolean contractRegistryExists() {
         // test stored address
         loadContractRegistryAddress();
+        if(noRegistryAddress()) {
+            return false;
+        }
         LOG.info("Loaded contract registry address " + contractRegistryAddress);
         try {
             contractService.get(contractRegistryAddress);
@@ -266,6 +274,10 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
             LOG.warn("Contract registry contract doesn't exist at {}", contractRegistryAddress);
         }
         return false;
+    }
+
+    private boolean noRegistryAddress() {
+        return StringUtils.isEmpty(contractRegistryAddress);
     }
 
     @Override

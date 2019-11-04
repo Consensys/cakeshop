@@ -27,7 +27,7 @@ public class ContractDeserializer extends JsonDeserializer<ContractPostJsonReque
         if (null != node.get("privateFor")) {
             JsonNode privateForNode = node.get("privateFor");
             List<String> privateFor = null;
-            
+
             if (privateForNode.isArray()) {
                 privateFor = Lists.newArrayList();
                 for (Iterator<JsonNode> iter = privateForNode.elements(); iter.hasNext();) {
@@ -38,7 +38,7 @@ public class ContractDeserializer extends JsonDeserializer<ContractPostJsonReque
                     privateFor = Lists.newArrayList(node.get("privateFor").textValue());
                 }
             }
-            
+
             request.setPrivateFor(privateFor);
         }
 
@@ -49,11 +49,11 @@ public class ContractDeserializer extends JsonDeserializer<ContractPostJsonReque
         if (null != node.get("code_type")) {
             request.setCode_type(node.get("code_type").textValue());
         }
-        
+
         if (null != node.get("from")) {
             request.setFrom(node.get("from").textValue());
         }
-        
+
         if (null != node.get("binary")) {
             request.setBinary(node.get("binary").textValue());
         }
@@ -61,15 +61,15 @@ public class ContractDeserializer extends JsonDeserializer<ContractPostJsonReque
         if (null != node.get("privateFrom")) {
             request.setPrivateFrom(node.get("privateFrom").textValue());
         }
-        
+
         if (null != node.get("address")) {
             request.setAddress(node.get("address").textValue());
         }
-        
+
         if (null != node.get("method")) {
             request.setMethod(node.get("method").textValue());
         }
-        
+
         if (null != node.get("blockNumber")) {
             request.setBlockNumber(node.get("blockNumber").textValue());
         }
@@ -80,6 +80,10 @@ public class ContractDeserializer extends JsonDeserializer<ContractPostJsonReque
 
         if (null != node.get("filename")) {
             request.setFilename(node.get("filename").textValue());
+        }
+
+        if (null != node.get("evmVersion")) {
+            request.setEvmVersion(node.get("evmVersion").textValue());
         }
 
         if (null != node.get("args")) {

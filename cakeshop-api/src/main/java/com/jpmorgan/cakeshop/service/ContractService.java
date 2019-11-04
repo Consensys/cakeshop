@@ -29,11 +29,12 @@ public interface ContractService {
 	 * @param codeType
 	 * @param optimize
 	 * @param filename
+     * @param evmVersion
      * @return
 	 * @throws APIException
 	 */
 	public List<Contract> compile(String code, CodeType codeType, Boolean optimize,
-        String filename) throws APIException;
+        String filename, String evmVersion) throws APIException;
 
 	/**
 	 * Deploy the given contract onto the chain and add it to the Contract Registry
@@ -47,11 +48,14 @@ public interface ContractService {
 	 * @param privateFor   List of Base64-encoded public keys of recipients (optional)
 	 *
 	 * @param filename
+     * @param optimize
+     * @param evmVersion
      * @return
 	 * @throws APIException
 	 */
 	public TransactionResult create(String from, String code, CodeType codeType, Object[] args,
-        String binary, String privateFrom, List<String> privateFor, String filename) throws APIException;
+        String binary, String privateFrom, List<String> privateFor, String filename,
+        Boolean optimize, String evmVersion) throws APIException;
 
 	/**
 	 * Delete the given contract. Not yet implemented.

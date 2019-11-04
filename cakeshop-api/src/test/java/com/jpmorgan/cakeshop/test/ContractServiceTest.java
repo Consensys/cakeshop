@@ -48,7 +48,8 @@ public class ContractServiceTest extends BaseGethRpcTest {
         long time = System.currentTimeMillis() / 1000;
         String code = readTestFile("contracts/simplestorage.sol");
 
-        List<Contract> contracts = contractService.compile(code, CodeType.solidity, true, "simplestorage.sol");
+        List<Contract> contracts = contractService.compile(code, CodeType.solidity, true, "simplestorage.sol",
+            "byzantium");
         assertNotNull(contracts);
         assertEquals(1, contracts.size());
 
@@ -79,7 +80,7 @@ public class ContractServiceTest extends BaseGethRpcTest {
         String code = readTestFile("contracts/simplestorage.sol");
 
         TransactionResult result = contractService.create(null, code, ContractService.CodeType.solidity, new Object[] { 100 }, null, null, null,
-            "simplestorage.sol");
+            "simplestorage.sol", true, "byzantium");
         assertNotNull(result);
         assertNotNull(result.getId());
         assertTrue(!result.getId().isEmpty());
@@ -89,12 +90,13 @@ public class ContractServiceTest extends BaseGethRpcTest {
     @Test
     public void testCreateWithBinary() throws IOException {
         String code = readTestFile("contracts/simplestorage.sol");
-        List<Contract> contracts = contractService.compile(code, CodeType.solidity, true, "simplestorage.sol");
+        List<Contract> contracts = contractService.compile(code, CodeType.solidity, true, "simplestorage.sol",
+            "byzantium");
         Contract c = contracts.get(0);
         assertNotNull(c);
 
         TransactionResult result = contractService.create(null, code, CodeType.solidity, new Object[] { 100 }, c.getBinary(), null, null,
-            "simplestorage.sol");
+            "simplestorage.sol", true, "byzantium");
         assertNotNull(result);
         assertNotNull(result.getId());
         assertTrue(!result.getId().isEmpty());

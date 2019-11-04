@@ -86,7 +86,7 @@ public class ContractServiceImpl implements ContractService {
     @Override
     @SuppressWarnings("unchecked")
     public List<Contract> compile(String code, CodeType codeType, Boolean optimize,
-        String filename) throws APIException {
+        String filename, String evmVersion) throws APIException {
 
         if (codeType != CodeType.solidity) {
             throw new APIException("Only 'solidity' source is currently supported");
@@ -106,7 +106,7 @@ public class ContractServiceImpl implements ContractService {
                     gethRunner.getSolcPath(),
                     "--ipc",
                     "--evm-version",
-                    "constantinople",
+                    evmVersion,
                     "--filename",
                     filename);
 
@@ -186,10 +186,10 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     public TransactionResult create(String from, String code, CodeType codeType, Object[] args,
-        String binary,
-        String privateFrom, List<String> privateFor, String filename) throws APIException {
+        String binary, String privateFrom, List<String> privateFor, String filename,
+        Boolean optimize, String evmVersion) throws APIException {
 
-        List<Contract> contracts = compile(code, codeType, true, filename); // always deploy optimized contracts
+        List<Contract> contracts = compile(code, codeType, optimize, filename, evmVersion);
 
         Contract contract = null;
         if (binary != null && binary.length() > 0) {
