@@ -1,3 +1,5 @@
+import $ from 'jquery'
+
 export default {
 	load: function(opts) {
 		var config = {
@@ -138,6 +140,13 @@ export default {
         }
         // now that we're in millis, get user friendly time
         return Math.round(timestamp);
+    },
+
+    getPeerNumberText: function (status) {
+        const peers = status.peers ? status.peers : []
+        const connected = peers.filter(peer => peer.status === 'running').length
+        const total = peers.length
+        return connected < total ? `${connected}/${total}` : total
     }
 
 };

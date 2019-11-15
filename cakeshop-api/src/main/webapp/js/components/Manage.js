@@ -21,6 +21,10 @@ export default class Manage extends Component {
     }
 
     componentDidMount() {
+        this.fetchNodes()
+    }
+
+    fetchNodes () {
         let _this = this
 
         fetch('api/node/nodes', {
@@ -85,12 +89,7 @@ export default class Manage extends Component {
             console.log('add response:', response)
             if (response.status === 201) {
                 console.log('Success:', response.status, response.statusText)
-                this.setState((prevState) => {
-                    return {
-                        ...prevState,
-                        nodes: [...prevState.nodes, ...newNodes]
-                    }
-                })
+                this.fetchNodes()
             } else {
                 console.log('Error:', response.status, response.statusText)
             }
@@ -111,14 +110,7 @@ export default class Manage extends Component {
             body: JSON.stringify(newNode)
         })
         if (response.status === 201) {
-            this.setState((prevState) => {
-                const { nodes } = prevState
-                let newNodes = [...nodes, newNode]
-                return {
-                    ...prevState,
-                    nodes: newNodes
-                }
-            })
+            this.fetchNodes()
         } else {
             console.log('Error:', response.status, response.statusText)
         }
