@@ -68,7 +68,7 @@ window.Tower = {
 			 .addClass('fa-pause tower-txt-danger');
 		}
 
-        utils.prettyUpdate(Tower.status.peerCount, this.getPeerNumberText(status), $('#default-peers'));
+        utils.prettyUpdate(Tower.status.peerCount, utils.getPeerNumberText(status), $('#default-peers'));
 		utils.prettyUpdate(Tower.status.latestBlock, status.latestBlock, $('#default-blocks'));
 		utils.prettyUpdate(Tower.status.pendingTxn, status.pendingTxn, $('#default-txn'));
 
@@ -369,12 +369,6 @@ window.Tower = {
 		return typeof window !== 'undefined' && window !== null ? (_ref = window.console) !== null ? _ref.log(message) : void 0 : void 0;
 	},
 
-    getPeerNumberText: function (status) {
-        const peers = status.peers ? status.peers : []
-        const connected = peers.filter(peer => peer.status === 'running').length
-        const total = peers.length
-        return connected < total ? `${connected}/${total}` : total
-    },
 };
 
 $(function() {
