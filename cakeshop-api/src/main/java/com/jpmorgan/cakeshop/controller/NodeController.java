@@ -208,7 +208,7 @@ public class NodeController extends BaseController {
     @RequestMapping("/tm/peers")
     protected @ResponseBody
     ResponseEntity<APIResponse> getTransactionManagerPeers() throws APIException {
-        String transactionManagerUrl = gethConfig.getGethTransactionManagerUrl();
+        String transactionManagerUrl = gethService.getCurrentTransactionManagerUrl();
         HttpHeaders jsonContentHeaders = new HttpHeaders();
         jsonContentHeaders.setContentType(APPLICATION_JSON);
         HttpEntity<String> httpEntity = new HttpEntity<>(jsonContentHeaders);
