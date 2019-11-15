@@ -21,7 +21,7 @@ export const NodeGrid = ({list, onView, onDismiss}) => {
     return <Grid container spacing={2}>
         {list.map(node =>
             <Grid item
-                  key={node.rpcUrl} zeroMinWidth>
+                  key={node.id} zeroMinWidth>
                 <Card className={classes.card}>
                     <CardContent className={classes.cardContent}>
                         <Typography variant="h6" component="h3" gutterBottom>
