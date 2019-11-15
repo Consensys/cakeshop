@@ -35,8 +35,13 @@ public class SpringBootApplication {
     public static void main(String[] args) {
         // setup configs
         WebAppInit.setLoggingPath(true);
-        String configDir = FileUtils.expandPath(SystemUtils.USER_DIR, "data");
-        System.setProperty("eth.config.dir", configDir);
+
+        String configDir = System.getProperty("cakeshop.config.dir");
+        if (StringUtils.isBlank(configDir)) {
+            configDir = FileUtils.expandPath(SystemUtils.USER_DIR, "data");
+            LOG.info("No data directory provided, defaulting to {}", configDir);
+            System.setProperty("cakeshop.config.dir", configDir);
+        }
 
         // default to 'local' spring profile
         // this determines which application-${profile}.properties file to load

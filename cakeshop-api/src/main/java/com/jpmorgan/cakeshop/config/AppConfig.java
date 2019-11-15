@@ -45,14 +45,14 @@ public class AppConfig implements AsyncConfigurer {
     /**
      * Return the configured config location
      *
-     * Search order: - ETH_CONFIG environment variable - eth.config.dir system
-     * property (-Deth.config.dir param) - Detect tomcat (container) root
+     * Search order: - ETH_CONFIG environment variable - cakeshop.config.dir system
+     * property (-Dcakeshop.config.dir param) - Detect tomcat (container) root
      * relative to classpath
      *
      * @return
      */
     public static String getConfigPath() {
-        String configPath = getProp("ETH_CONFIG", "eth.config.dir");
+        String configPath = getProp("CAKESHOP_CONFIG", "cakeshop.config.dir");
         if (!StringUtils.isBlank(configPath)) {
             return FileUtils.expandPath(configPath, getEnv());
         }
@@ -104,7 +104,7 @@ public class AppConfig implements AsyncConfigurer {
             throw new IOException("System property 'spring.profiles.active' not set; unable to load config");
         }
 
-        LOG.info("eth.config.dir=" + configDir);
+        LOG.info("cakeshop.config.dir=" + configDir);
 
         File configPath = new File(configDir);
         File configFile = new File(configPath.getPath() + File.separator + CONFIG_FILE);
