@@ -13,7 +13,7 @@ export const AddNodeDialog = ({open, onSubmit, onCancel}) => {
 
     const [name, setName] = useState("");
     const [rpcUrl, setRpcUrl] = useState("http://localhost:22000");
-    const [transactionManagerUrl, setTransactionManagerUrl] = useState("http://localhost:9001");
+    const [transactionManagerUrl, setTransactionManagerUrl] = useState("http://localhost:9001/partyinfo");
     return (
         <Dialog open={open} onClose={onCancel}
                 aria-labelledby="form-dialog-title">
@@ -49,8 +49,8 @@ export const AddNodeDialog = ({open, onSubmit, onCancel}) => {
                     <TextField
                         margin="dense"
                         id="tessera"
-                        label="Tessera P2P Url (optional)"
-                        defaultValue="http://localhost:9001"
+                        label="Tessera Party Keys Url (optional)"
+                        value={transactionManagerUrl}
                         type="url"
                         fullWidth
                         onChange={(e) => setTransactionManagerUrl(e.target.value)}
