@@ -213,7 +213,7 @@ public class NodeController extends BaseController {
         jsonContentHeaders.setContentType(APPLICATION_JSON);
         HttpEntity<String> httpEntity = new HttpEntity<>(jsonContentHeaders);
         ResponseEntity<Map> exchange = restTemplate
-            .exchange(transactionManagerUrl + "/partyinfo", HttpMethod.GET, httpEntity, Map.class);
+            .exchange(transactionManagerUrl, HttpMethod.GET, httpEntity, Map.class);
         return new ResponseEntity<>(APIResponse.newSimpleResponse(exchange.getBody()), HttpStatus.OK);
     }
 

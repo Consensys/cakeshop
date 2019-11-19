@@ -1,5 +1,5 @@
-import React, {Component} from "react";
-import Creatable from "react-select/creatable";
+import React, { Component } from 'react'
+import Creatable from 'react-select/creatable'
 
 export class PrivateFor extends Component {
 
@@ -27,17 +27,13 @@ export class PrivateFor extends Component {
         Client.post('api/node/tm/peers')
         .then((response) => {
             const parties = response.data.attributes.result.keys;
-            Client.get('api/node/nodes')
-            .done(function (response) {
-                    let nodes = response.data.attributes.result;
-                _this.setOptionsAndsSelection(parties, nodes, initialPrivateFor);
-            })
+            _this.setOptionsAndsSelection(parties, initialPrivateFor);
         })
     }
 
-    setOptionsAndsSelection = (parties, nodes, initialPrivateFor) => {
+    setOptionsAndsSelection = (parties, initialPrivateFor) => {
         const options = parties
-            .map(party => this.createOption(party, nodes))
+            .map(party => this.createOption(party))
             .sort((a, b) => a.label.localeCompare(b.label));
 
         const initialSelection = options.filter(
@@ -50,22 +46,11 @@ export class PrivateFor extends Component {
         this.sendOptionsToParent(initialSelection);
     };
 
-    createOption(party, nodes) {
-        let option = {
+    createOption(party) {
+        return {
             value: party.key,
             label: party.key // default to just the key
         };
-        nodes.forEach((node) => {
-            // urls from tessera always have the trailing slash
-            if (!node.transactionManagerUrl.endsWith("/")) {
-                node.transactionManagerUrl += "/"
-            }
-
-            if (node.transactionManagerUrl === party.url) {
-                option.label = `${node.name} (${party.key})`
-            }
-        });
-        return option;
     }
 
     sendOptionsToParent(options) {
