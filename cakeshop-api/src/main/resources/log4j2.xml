@@ -8,21 +8,21 @@
                 </pattern>>
             </PatternLayout>
         </Console>
-        <File name="Cakeshop-Appender" fileName="${sys:logging.path}/cakeshop.log">
+        <File name="Cakeshop-Appender" fileName="${sys:logging.path:-logs}/cakeshop.log">
             <PatternLayout>
                 <pattern>
                     [%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n
                 </pattern>
             </PatternLayout>
         </File>
-        <File name="Geth-Appender" fileName="${sys:logging.path}/geth.log">
+        <File name="Geth-Appender" fileName="${sys:logging.path:-logs}/geth.log">
             <PatternLayout>
                 <pattern>
                     [%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n
                 </pattern>
             </PatternLayout>
         </File>
-        <File name="TM-Appender" fileName="${sys:logging.path}/tm.log">
+        <File name="TM-Appender" fileName="${sys:logging.path:-logs}/tm.log">
             <PatternLayout>
                 <pattern>
                     [%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n
@@ -59,7 +59,7 @@
             <AppenderRef ref="Cakeshop-Appender"/>
             <AppenderRef ref="Console-Appender"/>
         </Logger>
-         
+
         <Root>
             <AppenderRef ref="Console-Appender"/>
         </Root>
