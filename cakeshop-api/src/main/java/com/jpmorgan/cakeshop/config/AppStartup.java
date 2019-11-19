@@ -218,7 +218,7 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
 
         out.append("app.root: ").append(FileUtils.getClasspathPath("")).append("\n");
         out.append("eth.env: ").append(System.getProperty("eth.environment")).append("\n");
-        out.append("eth.config.dir: ").append(CONFIG_ROOT).append("\n");
+        out.append("cakeshop.config.dir: ").append(CONFIG_ROOT).append("\n");
         out.append("\n");
 
         out.append("geth.path: ").append(gethRunner.getGethPath()).append("\n");
