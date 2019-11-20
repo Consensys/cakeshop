@@ -65,7 +65,6 @@ public class GethRunner {
      * Reset back to vendored config file and re-init bean config
      */
     public void initFromVendorConfig() throws IOException {
-//        AppConfig.initVendorConfig(new File(configFile));
         initBean();
     }
 

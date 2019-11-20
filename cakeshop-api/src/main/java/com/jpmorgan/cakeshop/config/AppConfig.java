@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.SortedProperties;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
@@ -84,17 +83,26 @@ public class AppConfig implements AsyncConfigurer {
         return "config".concat(File.separator).concat("application-").concat(getEnv()).concat(".properties");
     }
 
-    public static void initVendorConfig(File configFile) throws IOException {
-        // copy default file
-        String path = FileUtils.getClasspathPath(getVendorEnvConfigFile()).toString();
-        LOG.info("Initializing new config from " + path);
+    public static void createConfigIfNecessary(String profileConfigPath) throws IOException {
+        File configPath = new File(profileConfigPath);
+        File configFile = new File(configPath.getPath(), CONFIG_FILE);
 
-        // defaults + env defaults
-        Properties mergedProps = new Properties();
-        mergedProps.load(FileUtils.getClasspathStream(getVendorConfigFile()));
-        mergedProps.load(FileUtils.getClasspathStream(getVendorEnvConfigFile()));
-        setSecurity(mergedProps);
-        SortedProperties.store(mergedProps, new FileOutputStream(configFile));
+        if (!configPath.exists() || !configFile.exists()) {
+
+            LOG.debug("Config dir does not exist, will init");
+
+            boolean success = configPath.mkdirs();
+            if (!success) {
+                throw new RuntimeException(
+                    "Unable to create config dir: " + configPath.getAbsolutePath());
+            }
+            LOG.info("Creating config file at {}", configFile.getPath());
+            Properties mergedProps = new Properties();
+            mergedProps.load(FileUtils.getClasspathStream(getVendorConfigFile()));
+            mergedProps.load(FileUtils.getClasspathStream(getVendorEnvConfigFile()));
+            setSecurity(mergedProps);
+            SortedProperties.store(mergedProps, new FileOutputStream(configFile));
+        }
     }
 
     public static PropertySourcesPlaceholderConfigurer createPropConfigurer(String configDir)
@@ -107,28 +115,8 @@ public class AppConfig implements AsyncConfigurer {
         LOG.info("cakeshop.config.dir=" + configDir);
 
         File configPath = new File(configDir);
-        File configFile = new File(configPath.getPath() + File.separator + CONFIG_FILE);
+        File configFile = new File(configPath.getPath(), CONFIG_FILE);
 
-        if (!configPath.exists() || !configFile.exists()) {
-
-            LOG.debug("Config dir does not exist, will init");
-
-            configPath.mkdirs();
-            if (!configPath.exists()) {
-                throw new IOException("Unable to create config dir: " + configPath.getAbsolutePath());
-            }
-
-            initVendorConfig(configFile);
-
-        } else {
-            Properties mergedProps = new Properties();
-            mergedProps.load(FileUtils.getClasspathStream(getVendorEnvConfigFile()));
-            mergedProps.load(new FileInputStream(configFile)); // overwrite vendor props with our configs
-            setSecurity(mergedProps);
-            SortedProperties.store(mergedProps, new FileOutputStream(configFile));
-        }
-
-        // Finally create the configurer and return it
         Properties localProps = new Properties();
         localProps.setProperty("config.path", configPath.getPath());
 
@@ -174,7 +162,7 @@ public class AppConfig implements AsyncConfigurer {
         return new SimpleAsyncUncaughtExceptionHandler();
     }
 
-    private static void setSecurity(Properties properties) {
+    public static void setSecurity(Properties properties) {
         Boolean securityEnabled
                 = StringUtils.isNotBlank(System.getProperty("cakeshop.security.enabled"))
                 ? Boolean.valueOf(System.getProperty("cakeshop.security.enabled"))

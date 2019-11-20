@@ -456,7 +456,6 @@ public class GethHttpServiceImpl implements GethHttpService {
                 transactionManagerUrl);
             LOG.info("Couldn't find node in db, adding, {}", embeddedNodeInfo.id);
             nodeInfoDao.save(embeddedNodeInfo);
-            LOG.info("does it have an id now? {}", embeddedNodeInfo.id);
         }
         connectToNode(embeddedNodeInfo.id);
     }
