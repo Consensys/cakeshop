@@ -11,7 +11,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SystemUtils;
 
 public class FileUtils extends org.apache.commons.io.FileUtils {
-    
+
 
     /**
      * Join the given paths and expand any relative locations (. or ..) to their full canonical form
@@ -143,7 +143,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
      */
     public static String getTempPath(String prefix) {
         try {
-            File temp = File.createTempFile("ee-", "");
+            File temp = File.createTempFile(prefix, "");
             temp.delete();
             return temp.getPath();
         } catch (IOException e) {

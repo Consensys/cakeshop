@@ -1,7 +1,16 @@
 package com.jpmorgan.cakeshop.config;
 
+import static com.jpmorgan.cakeshop.config.AppConfig.CONFIG_FILE;
+import static com.jpmorgan.cakeshop.config.AppConfig.getConfigPath;
+
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.StringUtils;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,13 +26,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Enumeration;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-
 @Configuration
 @EnableAutoConfiguration
 @ComponentScan(basePackages = "com.jpmorgan.cakeshop")
@@ -32,7 +34,7 @@ public class SpringBootApplication {
 
     private static final Logger LOG = LoggerFactory.getLogger(SpringBootApplication.class);
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         // setup configs
         WebAppInit.setLoggingPath(true);
 
@@ -42,6 +44,7 @@ public class SpringBootApplication {
             LOG.info("No data directory provided, defaulting to {}", configDir);
             System.setProperty("cakeshop.config.dir", configDir);
         }
+        LOG.info("cakeshop.config.dir=" + configDir);
 
         // default to 'local' spring profile
         // this determines which application-${profile}.properties file to load
@@ -50,9 +53,10 @@ public class SpringBootApplication {
             System.setProperty("spring.profiles.active", "local");
         }
 
-        if (StringUtils.isNotBlank(System.getProperty("spring.profiles.active"))) {
-            System.setProperty("spring.config.location", "file:" + FileUtils.expandPath(AppConfig.getConfigPath(), "application.properties"));
-        }
+        String profileConfigPath = getConfigPath();
+        AppConfig.createConfigIfNecessary(profileConfigPath);
+        System.setProperty("spring.config.location",
+            "file:" + FileUtils.expandPath(profileConfigPath, CONFIG_FILE));
 
         // extract binaries from WAR (if necessary)
         try {
