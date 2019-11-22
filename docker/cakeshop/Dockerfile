@@ -21,6 +21,8 @@ RUN set -x \
     && adduser --system --home "$CAKESHOP_HOME" --shell /sbin/nologin --ingroup ${group} ${user} \
     && apt-get update \
     && apt-get -y install curl \
+    && curl -sL https://deb.nodesource.com/setup_12.x | bash - \
+    && apt-get install -y nodejs \
     && curl -fsSL https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini-static -o /bin/tini && chmod +x /bin/tini \
     && echo "$TINI_SHA  /bin/tini" | sha256sum -c - \
     && apt-get install -y --no-install-recommends ca-certificates wget && rm -rf /var/lib/apt/lists/* \
