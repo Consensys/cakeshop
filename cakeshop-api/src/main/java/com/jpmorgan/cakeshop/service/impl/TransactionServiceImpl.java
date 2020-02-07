@@ -93,7 +93,7 @@ public class TransactionServiceImpl implements TransactionService {
 
         tx.setTransactionIndex(toBigInt("transactionIndex", txData));
         tx.setBlockNumber(toBigInt("blockNumber", txData));
-        tx.setValue(toBigInt("blockNumber", txData));
+        tx.setValue(toBigInt("value", txData));
         tx.setGas(toBigInt("gas", txData));
         tx.setCumulativeGasUsed(toBigInt("cumulativeGasUsed", txData));
         tx.setGasUsed(toBigInt("gasUsed", txData));
