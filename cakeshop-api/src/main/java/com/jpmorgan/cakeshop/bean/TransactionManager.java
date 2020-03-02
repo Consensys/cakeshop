@@ -8,7 +8,7 @@ import java.util.List;
 
 public class TransactionManager {
 
-    public static final String TESSERA_JAR = "tessera/tessera-app-0.9.2-app.jar";
+    public static final String TESSERA_JAR = "tessera/tessera-app-0.10.2-app.jar";
     public static final String CONSTELLATION_COMMAND =
         "constellation/" + ProcessUtils.getPlatformDirectory() + "/constellation-node";
     public static final String CONSTELLATION_KEYGEN_PARAMS_TEMPLATE = "--generatekeys=%s";
