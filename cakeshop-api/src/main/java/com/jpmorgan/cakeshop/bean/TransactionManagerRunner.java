@@ -6,7 +6,6 @@
 package com.jpmorgan.cakeshop.bean;
 
 import static com.jpmorgan.cakeshop.util.FileUtils.expandPath;
-import static com.jpmorgan.cakeshop.util.ProcessUtils.getProcessPid;
 import static com.jpmorgan.cakeshop.util.ProcessUtils.killProcess;
 import static com.jpmorgan.cakeshop.util.ProcessUtils.writePidToFile;
 
@@ -32,7 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
-import javax.xml.bind.JAXBException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -203,7 +201,7 @@ public class TransactionManagerRunner implements InitializingBean {
             MarshallerBuilder.create().build().marshal(config, fileOutputStream);
             fileOutputStream.flush();
             LOG.info("created tessera config at " + confFile.getPath());
-        } catch (IOException | JAXBException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -226,7 +224,7 @@ public class TransactionManagerRunner implements InitializingBean {
             Process process = builder.start();
             new StreamLogAdapter(TM_LOG, process.getInputStream()).startAsync();
             new StreamLogAdapter(TM_LOG, process.getErrorStream()).startAsync();
-            Integer constProcessId = getProcessPid(process);
+            Long constProcessId = process.pid();
             LOG.info("Transaction Manager started as " + String.join(" ", builder.command()));
             if (constProcessId == -1) {
                 throw new RuntimeException("Error starting transaction manager");
