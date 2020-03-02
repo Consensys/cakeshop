@@ -448,7 +448,7 @@ public class GethHttpServiceImpl implements GethHttpService {
     private void setEmbeddedNodeAsCurrent() throws IOException {
         // make sure the embedded node is in the NodeInfo database
         String rpcUrl = gethConfig.getRpcUrl();
-        String transactionManagerUrl = gethConfig.getGethTransactionManagerUrl();
+        String transactionManagerUrl = gethConfig.getGethTransactionManager3rdPartyUrl();
         NodeInfo embeddedNodeInfo = nodeInfoDao
             .getByUrls(rpcUrl, transactionManagerUrl);
         if (embeddedNodeInfo == null) {
