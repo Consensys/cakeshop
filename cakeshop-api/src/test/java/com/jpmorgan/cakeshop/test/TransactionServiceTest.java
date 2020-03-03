@@ -1,12 +1,5 @@
 package com.jpmorgan.cakeshop.test;
 
-import static java.lang.Thread.sleep;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertNull;
-import static org.testng.Assert.assertThrows;
-import static org.testng.Assert.assertTrue;
-
 import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.bean.GethRunner;
 import com.jpmorgan.cakeshop.error.APIException;
@@ -16,16 +9,20 @@ import com.jpmorgan.cakeshop.model.Transaction.Status;
 import com.jpmorgan.cakeshop.model.TransactionResult;
 import com.jpmorgan.cakeshop.service.ContractService;
 import com.jpmorgan.cakeshop.service.TransactionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.Assert.*;
+import org.testng.annotations.Test;
+import org.testng.collections.Lists;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.Assert.ThrowingRunnable;
-import org.testng.annotations.Test;
-import org.testng.collections.Lists;
+
+import static java.lang.Thread.sleep;
+import static org.testng.Assert.*;
 
 public class TransactionServiceTest extends BaseGethRpcTest {
 
@@ -107,7 +104,7 @@ public class TransactionServiceTest extends BaseGethRpcTest {
 
         // stop mining (vanilla geth and quorum+istanbul only) and submit tx
         // TODO this doesn't work with raft because (i think) you can't stop mining in a one node raft cluster
-        if (!gethConfig.shouldUseQuorum() || gethConfig.getConsensusMode().equals("istanbul")) {
+        if (gethConfig.getConsensusMode().equals("istanbul")) {
             Map<String, Object> res = geth.executeGethCall("miner_stop", new Object[]{});
             TransactionResult tr = contractService.transact(createTx.getContractAddress(), abi, null, "set", new Object[]{200});
 

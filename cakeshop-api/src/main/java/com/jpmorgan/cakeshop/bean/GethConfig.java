@@ -5,16 +5,17 @@ import com.jpmorgan.cakeshop.util.DownloadUtils;
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.SortedProperties;
 import com.jpmorgan.cakeshop.util.StringUtils;
-import com.quorum.tessera.config.AppType;
-import com.quorum.tessera.config.CommunicationType;
-import com.quorum.tessera.config.Config;
-import com.quorum.tessera.config.CrossDomainConfig;
-import com.quorum.tessera.config.JdbcConfig;
-import com.quorum.tessera.config.ServerConfig;
-import com.quorum.tessera.config.SslAuthenticationMode;
-import com.quorum.tessera.config.SslTrustMode;
+import com.quorum.tessera.config.*;
 import com.quorum.tessera.config.builder.ConfigBuilder;
 import com.quorum.tessera.config.builder.KeyDataBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -22,19 +23,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import javax.annotation.PostConstruct;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Component;
+import java.util.*;
 
 @Component
 public class GethConfig {
@@ -149,7 +138,7 @@ public class GethConfig {
             setGethTransactionManagerUrl(System.getProperty(GethConfig.GETH_TRANSACTION_MANAGER_URL));
             saveGethConfig = true;
         }
-        
+
         if (StringUtils.isNotBlank(System.getProperty(GethConfig.GETH_TRANSACTION_MANAGER_3RD_PARTY_URL))) {
             setGethTransactionManager3rdPartyUrl(System.getProperty(GethConfig.GETH_TRANSACTION_MANAGER_3RD_PARTY_URL));
             saveGethConfig = true;
@@ -171,10 +160,6 @@ public class GethConfig {
 
     public String getDataDirectory() {
         return dataDirectory;
-    }
-
-    public boolean shouldUseQuorum() {
-        return StringUtils.isBlank(EMBEDDED_NODE) || EMBEDDED_NODE.equalsIgnoreCase("quorum");
     }
 
     public String getGethDataDirPath() {
@@ -314,7 +299,7 @@ public class GethConfig {
     public void setNetworkId(Long networkId) {
         props.setProperty(GETH_NETWORK_ID, networkId.toString());
     }
-    
+
     public Boolean getCorsEnabled() {
         return Boolean.valueOf(get(GETH_CORS, "false"));
     }

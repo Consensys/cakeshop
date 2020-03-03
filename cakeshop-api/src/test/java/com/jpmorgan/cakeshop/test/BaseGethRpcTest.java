@@ -126,7 +126,6 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
     private boolean _startGeth() throws IOException {
         gethRunner.setGenesisBlockFilename(FileUtils.getClasspathPath("genesis_block.json").toAbsolutePath().toString());
         gethRunner.setKeystorePath(FileUtils.getClasspathPath("keystore").toAbsolutePath().toString());
-        gethRunner.setIsEmbeddedQuorum(false);
         return geth.start();
     }
 
@@ -143,7 +142,6 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
     }
 
     private void _stopGeth() {
-        gethRunner.setIsEmbeddedQuorum(false);
         geth.stop();
         try {
             FileUtils.deleteDirectory(new File(ethDataDir));
@@ -195,7 +193,7 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
         assertNotNull(result.getId());
         assertTrue(!result.getId().isEmpty());
 
-        if (!gethConfig.shouldUseQuorum() || gethConfig.getConsensusMode().equals("istanbul")) {
+        if (gethConfig.getConsensusMode().equals("istanbul")) {
             Map<String, Object> res = geth.executeGethCall("miner_start", new Object[]{});
         }
 

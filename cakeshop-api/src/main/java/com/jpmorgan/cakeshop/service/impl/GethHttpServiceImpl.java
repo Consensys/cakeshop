@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.bean.GethRunner;
-import com.jpmorgan.cakeshop.bean.TransactionManager;
 import com.jpmorgan.cakeshop.bean.TransactionManagerRunner;
 import com.jpmorgan.cakeshop.dao.BlockDAO;
 import com.jpmorgan.cakeshop.dao.NodeInfoDAO;
@@ -232,7 +231,7 @@ public class GethHttpServiceImpl implements GethHttpService {
         LOG.info("Stopping geth");
 
         try {
-            if (gethRunner.isEmbeddedQuorum()) {
+            if (gethConfig.isTransactionManagerEnabled()) {
                 if (!stopTransactionManager()) {
                     LOG.error("Could not stop constellation");
                 }
@@ -385,36 +384,31 @@ public class GethHttpServiceImpl implements GethHttpService {
                     return false;
                 }
             }
+            additionalParams = setAdditionalParams(additionalParams).toArray(new String[setAdditionalParams(additionalParams).size()]);
+            LOG.info("Embedded quorum, additional params: {}", (Object) additionalParams);
 
-            if (gethRunner.isEmbeddedQuorum()) {
-                additionalParams = setAdditionalParams(additionalParams).toArray(new String[setAdditionalParams(additionalParams).size()]);
-                LOG.info("Embedded quorum, additional params: {}", (Object) additionalParams);
 
-                if (gethConfig.isTransactionManagerEnabled() && !isProcessRunning(
-                    readPidFromFile(transactionManagerRunner.getPidFilePath())) && gethConfig
-                    .shouldUseQuorum()) {
-                    LOG.info("Transaction Manager enabled");
-                    startTransactionManager();
-                }
+            if (gethConfig.isTransactionManagerEnabled() && !isProcessRunning(
+                readPidFromFile(transactionManagerRunner.getPidFilePath()))) {
+                LOG.info("Transaction Manager enabled");
+                startTransactionManager();
             }
 
             ProcessBuilder builder = createProcessBuilder(gethRunner, createGethCommand(additionalParams));
             final Map<String, String> env = builder.environment();
 
-            if (gethRunner.isEmbeddedQuorum() && gethConfig.shouldUseQuorum()) {
-                String transactionManagerIpcPath;
-                if (gethConfig.getTransactionManagerType() == TransactionManager.Type.none) {
-                    transactionManagerIpcPath = "ignore";
-                } else {
-                    transactionManagerIpcPath = FileUtils
-                        .expandPath(gethConfig.getTransactionManagerDataPath(),
-                            TRANSACTION_MANAGER_KEY_NAME + ".ipc");
-                    LOG.info("Waiting for tm ipc file to be created: {}", transactionManagerIpcPath);
-                    FileUtils.waitFor(new File(transactionManagerIpcPath), 20);
-                }
-                LOG.info("Setting env variable PRIVATE_CONFIG to: {}", transactionManagerIpcPath);
-                env.put("PRIVATE_CONFIG", transactionManagerIpcPath);
+            String transactionManagerIpcPath = "ignore";
+
+            if (gethConfig.isTransactionManagerEnabled()) {
+                transactionManagerIpcPath = FileUtils
+                    .expandPath(gethConfig.getTransactionManagerDataPath(),
+                        TRANSACTION_MANAGER_KEY_NAME + ".ipc");
+                LOG.info("Waiting for tm ipc file to be created: {}", transactionManagerIpcPath);
+                FileUtils.waitFor(new File(transactionManagerIpcPath), 20);
             }
+
+            LOG.info("Setting env variable PRIVATE_CONFIG to: {}", transactionManagerIpcPath);
+            env.put("PRIVATE_CONFIG", transactionManagerIpcPath);
 
             LOG.info("geth command: " +  String.join(" ", builder.command()));
             Process process = builder.start();
@@ -608,10 +602,6 @@ public class GethHttpServiceImpl implements GethHttpService {
 
         if (null != additionalParams && additionalParams.length > 0) {
             commands.addAll(Lists.newArrayList(additionalParams));
-        }
-
-        if (!gethRunner.isEmbeddedQuorum()) {
-            commands.add("--ipcdisable");
         }
 
         commands.add("--networkid");
