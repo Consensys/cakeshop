@@ -545,14 +545,10 @@ public class GethConfig {
             .sslClientTrustMode(SslTrustMode.TOFU)
             .build();
         List<ServerConfig> serverConfigs = new ArrayList<>(config.getServerConfigs());
-        ServerConfig thirdPartyConfig = new ServerConfig(
-            AppType.THIRD_PARTY,
-            true,
-            getGethTransactionManager3rdPartyUrl(),
-            CommunicationType.REST,
-            null,
-            null,
-            null);
+        ServerConfig thirdPartyConfig = new ServerConfig();
+        thirdPartyConfig.setApp(AppType.THIRD_PARTY);
+        thirdPartyConfig.setServerAddress(getGethTransactionManager3rdPartyUrl());
+        thirdPartyConfig.setCommunicationType(CommunicationType.REST);
         if(getCorsEnabled()) {
             CrossDomainConfig corsConfig = new CrossDomainConfig();
             corsConfig.setAllowedOrigins(Collections.singletonList(getCorsUrl()));

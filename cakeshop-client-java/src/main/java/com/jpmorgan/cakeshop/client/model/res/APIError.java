@@ -1,19 +1,16 @@
 package com.jpmorgan.cakeshop.client.model.res;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.util.Objects;
-
+import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import io.swagger.annotations.ApiModelProperty;
+import java.util.Objects;
 
 
 
 
 
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2016-05-26T13:00:18.987-04:00")
 public class APIError   {
 
     private String id = null;

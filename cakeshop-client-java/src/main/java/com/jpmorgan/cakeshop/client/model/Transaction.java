@@ -5,12 +5,10 @@ import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import javax.annotation.Generated;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-@Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2016-05-26T17:07:52.216-04:00")
 public class Transaction {
 
     private String id = null;

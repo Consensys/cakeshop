@@ -1,19 +1,16 @@
 package com.jpmorgan.cakeshop.client.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.util.Objects;
-
+import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import io.swagger.annotations.ApiModelProperty;
+import java.util.Objects;
 
 
 
 
 
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2016-05-26T17:07:52.216-04:00")
 public class Event   {
 
     private String id = null;
