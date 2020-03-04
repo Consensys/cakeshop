@@ -5,10 +5,7 @@ import com.jpmorgan.cakeshop.util.DownloadUtils;
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.SortedProperties;
 import com.jpmorgan.cakeshop.util.StringUtils;
-import com.quorum.tessera.config.Config;
-import com.quorum.tessera.config.JdbcConfig;
-import com.quorum.tessera.config.SslAuthenticationMode;
-import com.quorum.tessera.config.SslTrustMode;
+import com.quorum.tessera.config.*;
 import com.quorum.tessera.config.builder.ConfigBuilder;
 import com.quorum.tessera.config.builder.KeyDataBuilder;
 import org.slf4j.Logger;
@@ -54,6 +51,8 @@ public class GethConfig {
     public static final String GETH_MINING = "geth.mining";
     public static final String GETH_IDENTITY = "geth.identity";
     public static final String GETH_EXTRA_PARAMS = "geth.params.extra";
+    public static final String GETH_CORS = "geth.cors.enabled";
+    public static final String GETH_CORS_URL = "geth.cors.url";
     // Quorum specific settings
     public static final String GETH_PERMISSIONED = "geth.permissioned";
     public static final String GETH_RAFT_PORT = "geth.raft.port";
@@ -64,6 +63,7 @@ public class GethConfig {
 
     public static final String GETH_TRANSACTION_MANAGER_TYPE = "geth.transaction_manager.type";
     public static final String GETH_TRANSACTION_MANAGER_URL = "geth.transaction_manager.url";
+    public static final String GETH_TRANSACTION_MANAGER_3RD_PARTY_URL = "geth.transaction_manager.third_party_url";
     public static final String GETH_TRANSACTION_MANAGER_PEERS = "geth.transaction_manager.peers";
     public static final String GETH_BOOT_NODE = "geth.boot.node";
     public static final String GETH_BOOTNODE_ADDRESS = "geth.bootnode.address";
@@ -139,6 +139,11 @@ public class GethConfig {
             saveGethConfig = true;
         }
 
+        if (StringUtils.isNotBlank(System.getProperty(GethConfig.GETH_TRANSACTION_MANAGER_3RD_PARTY_URL))) {
+            setGethTransactionManager3rdPartyUrl(System.getProperty(GethConfig.GETH_TRANSACTION_MANAGER_3RD_PARTY_URL));
+            saveGethConfig = true;
+        }
+
         if (StringUtils.isNotBlank(System.getProperty(GethConfig.GETH_TRANSACTION_MANAGER_TYPE))) {
             setGethTransactionManagerUrl(System.getProperty(GethConfig.GETH_TRANSACTION_MANAGER_TYPE));
             saveGethConfig = true;
@@ -155,10 +160,6 @@ public class GethConfig {
 
     public String getDataDirectory() {
         return dataDirectory;
-    }
-
-    public boolean shouldUseQuorum() {
-        return StringUtils.isBlank(EMBEDDED_NODE) || EMBEDDED_NODE.equalsIgnoreCase("quorum");
     }
 
     public String getGethDataDirPath() {
@@ -299,6 +300,22 @@ public class GethConfig {
         props.setProperty(GETH_NETWORK_ID, networkId.toString());
     }
 
+    public Boolean getCorsEnabled() {
+        return Boolean.valueOf(get(GETH_CORS, "false"));
+    }
+
+    public void setCorsEnabled(Boolean enabled) {
+        props.setProperty(GETH_CORS, enabled.toString());
+    }
+
+    public String getCorsUrl() {
+        return get(GETH_CORS_URL, "");
+    }
+
+    public void setCorsUrl(String corsUrl) {
+        props.setProperty(GETH_CORS_URL, corsUrl);
+    }
+
     public Integer getVerbosity() {
         return Integer.valueOf(get(GETH_VERBOSITY, "3"));
     }
@@ -425,6 +442,14 @@ public class GethConfig {
         props.setProperty(GETH_TRANSACTION_MANAGER_URL, url);
     }
 
+    public String getGethTransactionManager3rdPartyUrl() {
+        return get(GETH_TRANSACTION_MANAGER_3RD_PARTY_URL, "http://127.0.0.1:9202/");
+    }
+
+    public void setGethTransactionManager3rdPartyUrl(String url) {
+        props.setProperty(GETH_TRANSACTION_MANAGER_URL, url);
+    }
+
     public List<String> getGethTransactionManagerPeers() {
         return Lists
             .newArrayList(get(GETH_TRANSACTION_MANAGER_PEERS, "http://localhost:9102/").split(","));
@@ -502,7 +527,7 @@ public class GethConfig {
         URL url = new URL(getGethTransactionManagerUrl());
         JdbcConfig jdbcConfig = new JdbcConfig("", "", "jdbc:h2:mem:tessera");
         jdbcConfig.setAutoCreateTables(true);
-        return ConfigBuilder.create()
+        Config config = ConfigBuilder.create()
             .unixSocketFile(prefix + ".ipc")
             .useWhiteList(false)
             .jdbcConfig(jdbcConfig)
@@ -519,6 +544,24 @@ public class GethConfig {
             .sslClientTrustMode(SslTrustMode.TOFU)
             .sslClientTrustMode(SslTrustMode.TOFU)
             .build();
+        List<ServerConfig> serverConfigs = new ArrayList<>(config.getServerConfigs());
+        ServerConfig thirdPartyConfig = new ServerConfig(
+            AppType.THIRD_PARTY,
+            true,
+            getGethTransactionManager3rdPartyUrl(),
+            CommunicationType.REST,
+            null,
+            null,
+            null);
+        if(getCorsEnabled()) {
+            CrossDomainConfig corsConfig = new CrossDomainConfig();
+            corsConfig.setAllowedOrigins(Collections.singletonList(getCorsUrl()));
+            corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
+            thirdPartyConfig.setCrossDomainConfig(corsConfig);
+        }
+        serverConfigs.add(thirdPartyConfig);
+        config.setServerConfigs(serverConfigs);
+        return config;
     }
 
     public boolean isRaft() {

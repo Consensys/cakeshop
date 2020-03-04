@@ -2,36 +2,36 @@
   {
     "name": "node1",
     "rpcUrl": "http://localhost:22000",
-    "transactionManagerUrl": "http://localhost:9001/partyinfo"
+    "transactionManagerUrl": "http://localhost:9081"
   },
   {
     "name": "node2",
     "rpcUrl": "http://localhost:22001",
-    "transactionManagerUrl": "http://localhost:9002/partyinfo"
+    "transactionManagerUrl": "http://localhost:9082"
   },
   {
     "name": "node3",
     "rpcUrl": "http://localhost:22002",
-    "transactionManagerUrl": "http://localhost:9003/partyinfo"
+    "transactionManagerUrl": "http://localhost:9083"
   },
   {
     "name": "node4",
     "rpcUrl": "http://localhost:22003",
-    "transactionManagerUrl": "http://localhost:9004/partyinfo"
+    "transactionManagerUrl": "http://localhost:9084"
   },
   {
     "name": "node5",
     "rpcUrl": "http://localhost:22004",
-    "transactionManagerUrl": "http://localhost:9005/partyinfo"
+    "transactionManagerUrl": "http://localhost:9085"
   },
   {
     "name": "node6",
     "rpcUrl": "http://localhost:22005",
-    "transactionManagerUrl": "http://localhost:9006/partyinfo"
+    "transactionManagerUrl": "http://localhost:9086"
   },
   {
     "name": "node7",
     "rpcUrl": "http://localhost:22006",
-    "transactionManagerUrl": "http://localhost:9007/partyinfo"
+    "transactionManagerUrl": "http://localhost:9087"
   }
 ]

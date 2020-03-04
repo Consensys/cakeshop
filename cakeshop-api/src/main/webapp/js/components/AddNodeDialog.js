@@ -13,7 +13,7 @@ export const AddNodeDialog = ({open, onSubmit, onCancel}) => {
 
     const [name, setName] = useState("");
     const [rpcUrl, setRpcUrl] = useState("http://localhost:22000");
-    const [transactionManagerUrl, setTransactionManagerUrl] = useState("http://localhost:9001/partyinfo");
+    const [transactionManagerUrl, setTransactionManagerUrl] = useState("http://localhost:9081");
     return (
         <Dialog open={open} onClose={onCancel}
                 aria-labelledby="form-dialog-title">
@@ -24,8 +24,8 @@ export const AddNodeDialog = ({open, onSubmit, onCancel}) => {
             }}>
                 <DialogContent>
                     <DialogContentText>
-                        To attach to a node, add the geth node's RPC url and the
-                        Tessera P2P url, if using.
+                        To attach to a node, add the Quorum node's RPC url and the
+                        Tessera 3rd Party url, if using.
                     </DialogContentText>
                     <TextField
                         autoFocus
@@ -49,7 +49,7 @@ export const AddNodeDialog = ({open, onSubmit, onCancel}) => {
                     <TextField
                         margin="dense"
                         id="tessera"
-                        label="Tessera Party Keys Url (optional)"
+                        label="Tessera 3rd Party Url (optional)"
                         value={transactionManagerUrl}
                         type="url"
                         fullWidth

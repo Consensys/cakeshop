@@ -123,12 +123,8 @@ public class GethRunner {
         if (LOG.isDebugEnabled()) {
             LOG.debug(StringUtils.toString(this));
         }
-
-        if (gethConfig.shouldUseQuorum()) {
-            setIsEmbeddedQuorum(true);
-        }
-
     }
+
     public void initializeConsensusMode() throws IOException {
         addToEnodesConfig(getEnodeURL(), STATIC_NODES_JSON);
         if (gethConfig.getConsensusMode().equalsIgnoreCase("istanbul")) {
@@ -206,20 +202,6 @@ public class GethRunner {
 
     public void setGenesisBlock(String genesisBlock) throws IOException {
         FileUtils.writeStringToFile(new File(genesisBlockFilename), genesisBlock);
-    }
-
-    /**
-     * @return the isEmbeddedQuorum
-     */
-    public Boolean isEmbeddedQuorum() {
-        return isEmbeddedQuorum;
-    }
-
-    /**
-     * @param isEmbeddedQuorum the isEmbeddedQuorum to set
-     */
-    public void setIsEmbeddedQuorum(boolean isEmbeddedQuorum) {
-        this.isEmbeddedQuorum = isEmbeddedQuorum;
     }
 
     /**
@@ -455,9 +437,7 @@ public class GethRunner {
                 "reinit",
                 "--nodekey",
                 FileUtils.readFileToString(verifyNodeKey().toFile(), Charset.defaultCharset()));
-        if (gethConfig.shouldUseQuorum()) {
-            istanbulCommand.add("--quorum");
-        }
+        istanbulCommand.add("--quorum");
         ProcessBuilder builder = new ProcessBuilder(istanbulCommand);
         LOG.info(
             "generating instanbul genesis_block.json as " + String.join(" ", builder.command()));

@@ -33,9 +33,9 @@ public class DownloadUtils {
     public static String getDefaultQuorumReleaseUrl() {
         switch (ProcessUtils.getPlatformDirectory()) {
             case "mac":
-                return "https://bintray.com/quorumengineering/quorum/download_file?file_path=v2.3.0%2Fgeth_v2.3.0_darwin_amd64.tar.gz";
+                return "https://bintray.com/quorumengineering/quorum/download_file?file_path=v2.5.0%2Fgeth_v2.5.0_darwin_amd64.tar.gz";
             case "linux":
-                return "https://bintray.com/quorumengineering/quorum/download_file?file_path=v2.3.0%2Fgeth_v2.3.0_linux_amd64.tar.gz";
+                return "https://bintray.com/quorumengineering/quorum/download_file?file_path=v2.5.0%2Fgeth_v2.5.0_linux_amd64.tar.gz";
             case "windows":
             default:
                 throw new RuntimeException("Your OS is not currently supported");
