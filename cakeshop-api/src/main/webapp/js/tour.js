@@ -1,14 +1,21 @@
-import 'jif-dashboard/dashboard-core';
-import 'jif-dashboard/dashboard-util';
-import 'jif-dashboard/dashboard-template';
+import 'jif-dashboard/dashboard-core'
+import 'jif-dashboard/dashboard-util'
+import 'jif-dashboard/dashboard-template'
 
 (function () {
   var tour = new Tour({
+    framework: 'bootstrap3',
     debug: false,
-    //storage: false,
+    showProgressBar: false,
+    showProgressText: false,
     backdrop: true,
     container: "body",
     backdropContainer: "body",
+    backdropOptions: {
+        highlightOpacity: 0.8,
+        highlightColor: '#FFF',
+        backdropSibling: false,
+    },
     onEnd: function() {
       //for autostart
     	window.localStorage.setItem('tour_end', true);
@@ -21,6 +28,7 @@ import 'jif-dashboard/dashboard-template';
         title: "Welcome to the Cakeshop!",
         content: "Let's start with a brief tour",
         container: ".tower-navigation",
+        backdrop: false,
         backdropContainer: ".tower-navigation",
         onShow: function() { },
       },
@@ -28,11 +36,10 @@ import 'jif-dashboard/dashboard-template';
         element: ".tower-sidebar ul",
         content: "This is the main navigation menu, where you can access the other parts of the tool",
         backdropContainer: ".tower-sidebar",
+          backdrop: false,
         onShow: function() {
-          $(".tower-navigation").css({"z-index": 1100});
         },
         onHide: function() {
-          $(".tower-navigation").css({"z-index": 10000});
         },
       },
     ])
@@ -44,6 +51,7 @@ import 'jif-dashboard/dashboard-template';
             title: "Console",
             content: "You're currently looking at the console, which gives you an overview of the blockchain node running on the local system",
             backdropContainer: ".tower-sidebar",
+            backdrop: false,
             onShow: showMenuStep("#console"),
             onHide: hideMenuStep,
         },
@@ -91,6 +99,7 @@ import 'jif-dashboard/dashboard-template';
         title: "Managed Node",
         content: "The managed node tab gives the ability to have cakeshop run its own local Quorum node",
         backdropContainer: ".tower-sidebar",
+          backdrop: false,
         onShow: showMenuStep("#managed"),
         onHide: hideMenuStep,
       },
@@ -124,6 +133,7 @@ import 'jif-dashboard/dashboard-template';
         title: "Contracts",
         content: "The contracts tab gives you a high-level contract-oriented view of the data on the chain",
         backdropContainer: ".tower-sidebar",
+          backdrop: false,
         onShow: showMenuStep("#contracts"),
         onHide: hideMenuStep,
       },
@@ -164,6 +174,7 @@ import 'jif-dashboard/dashboard-template';
         title: "Chain Explorer",
         content: "This is the chain explorer, a low-level view of the data stored on the blockchain shown in terms of raw blocks and transactions",
         backdropContainer: ".tower-sidebar",
+          backdrop: false,
         onShow: showMenuStep("#explorer"),
         onHide: hideMenuStep,
       },
@@ -197,6 +208,7 @@ import 'jif-dashboard/dashboard-template';
         title: "Wallet",
         content: "The wallet view shows a list of available accounts on the node and their associated balances. You can also create new accounts for testing purposes.",
         backdropContainer: ".tower-sidebar",
+          backdrop: false,
         onShow: showMenuStep("#wallet"),
         onHide: hideMenuStep,
       },
@@ -209,6 +221,7 @@ import 'jif-dashboard/dashboard-template';
         title: "Peers",
         content: "The peers section makes it easy to create and manage local blockchain clusters for testing purposes",
         backdropContainer: ".tower-sidebar",
+          backdrop: false,
         onShow: showMenuStep("#peers"),
         onHide: hideMenuStep,
       },
@@ -274,21 +287,13 @@ import 'jif-dashboard/dashboard-template';
         if (!$(id).hasClass("active")) {
           $(id).click();
         }
-        $(".tower-navigation").css({"z-index": 1100});
-        $(".tower-sidebar").css({"z-index": 1100});
         resolve();
       });
     };
   }
 
   function hideMenuStep() {
-    $(".tower-navigation").css({"z-index": 10000});
-    $(".tower-sidebar").css({"z-index": 9999});
   }
-
-  // Initialize the tour
-  tour.init();
-
 
   var loaded = false;
  // $(document).on("WidgetInternalEvent", function(e, action) {

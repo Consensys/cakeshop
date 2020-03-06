@@ -1,26 +1,26 @@
-import $ from 'jquery';
+import $ from 'jquery'
 
-import 'bootstrap';
-import 'd3';
-import 'bootstrap-tour';
+import 'bootstrap'
+import 'd3'
+import 'bootstrap-tourist'
 // importing here to be used by metrix widgets
-import 'epoch-charting-ie-patched';
+import 'epoch-charting-ie-patched'
 
-import moment from 'moment';
+import moment from 'moment'
 
-import './vendor/stomp.min';
-import './vendor/cakeshop';
-import utils from './utils';
-import './tour';
+import './vendor/stomp.min'
+import './vendor/cakeshop'
+import utils from './utils'
+import './tour'
 
-import 'jif-dashboard/dashboard-core';
-import 'jif-dashboard/dashboard-util';
-import 'jif-dashboard/dashboard-template';
+import 'jif-dashboard/dashboard-core'
+import 'jif-dashboard/dashboard-util'
+import 'jif-dashboard/dashboard-template'
 // import this first because it sets a global all the rest of the widgets need
-import './widgets/widget-root';
-import NodeChooser from "./components/NodeChooser";
-import React from "react";
-import ReactDOM from "react-dom";
+import './widgets/widget-root'
+import NodeChooser from './components/NodeChooser'
+import React from 'react'
+import ReactDOM from 'react-dom'
 
 // HACK(joel): workaround since some templates require utils and moment globals
 window.utils = utils;
@@ -100,7 +100,7 @@ window.Tower = {
 		if (window.localStorage.getItem('tour_end') === null) {
 			//first time, activate tour automatically
 			$(document).trigger('StartTour');
-			Tower.tour.start(true);
+			Tower.tour.start();
 		}
 
 		return true;
@@ -414,7 +414,7 @@ $(function() {
 			return;
 		} else if (id === 'help') {
 			$(document).trigger('StartTour');
-			Tower.tour.start(true);
+			Tower.tour.restart();
 
 			return;
 		}
