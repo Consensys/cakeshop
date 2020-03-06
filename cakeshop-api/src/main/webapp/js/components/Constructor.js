@@ -1,10 +1,20 @@
-import React, {useState} from "react";
-import {PrivateFor} from "./PrivateFor";
-import {Method} from "./Transact";
+import React, { useState } from 'react'
+import { PrivateFor } from './PrivateFor'
+import { Method } from './Transact'
 
-export const Constructor = ({method, onDeploy}) => {
+// for when there is no constructor provided
+const DEFAULT_CONSTRUCTOR = {
+    name: '',
+    inputs: Array(0),
+    type: 'constructor',
+    payable: false,
+    stateMutability: 'nonpayable'
+}
+
+export const Constructor = ({ method = DEFAULT_CONSTRUCTOR, onDeploy }) => {
 
     const [privateFor, setPrivateFor] = useState([]);
+    console.log('constructor', method)
 
     return (
         <tbody>
