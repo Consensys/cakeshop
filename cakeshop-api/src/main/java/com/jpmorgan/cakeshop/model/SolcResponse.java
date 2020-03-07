@@ -17,9 +17,13 @@ public class SolcResponse {
 
     public static class Evm {
 
+        public String assembly;
+        public Object legacyAssembly;
         public Bytecode bytecode;
+        public Bytecode deployedBytecode;
         public GasEstimates gasEstimates;
         public Map<String, String> methodIdentifiers;
+        public Map<String, String> ewasm;
 
     }
 
@@ -35,5 +39,6 @@ public class SolcResponse {
 
         public Map<String, String> creation;
         public Map<String, String> external;
+        public Map<String, String> internal;
     }
 }
