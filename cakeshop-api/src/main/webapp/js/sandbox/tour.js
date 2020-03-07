@@ -4,6 +4,9 @@
   var Sandbox = window.Sandbox = window.Sandbox || {};
 
   Sandbox.tour = new Tour({
+    framework: 'bootstrap3',
+    showProgressBar: false,
+    showProgressText: false,
     debug: false,
     backdrop: true,
     onEnd: function() {
@@ -131,16 +134,16 @@
         }
       }
     ]
-  }).init();
+  });
 
   if (!window.localStorage.getItem('tour_end')) {
-    Sandbox.tour.start(true);
+    Sandbox.tour.start();
   }
 
   $('#help').click(function() {
     window.localStorage.removeItem('tour_current_step');
     window.localStorage.removeItem('tour_end');
-    Sandbox.tour.start(true);
+    Sandbox.tour.restart();
   });
 
 })();
