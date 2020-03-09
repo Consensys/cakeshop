@@ -1,4 +1,4 @@
-FROM openjdk:8-jdk
+FROM openjdk:11-jdk
 
 # Cakeshop is run with user `cakeshop`, uid = 1000
 ARG user=cakeshop
