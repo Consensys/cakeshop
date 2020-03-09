@@ -140,90 +140,6 @@ public class ProcessUtils {
         return true;
     }
 
-    public static Integer getProcessPid(Process process) {
-        if (SystemUtils.IS_OS_WINDOWS) {
-            return getWinPID(process);
-        }
-        return getUnixPID(process);
-    }
-
-    public static Integer getUnixPID(Process process) {
-        if (process.getClass().getName().equals("java.lang.UNIXProcess")) {
-            try {
-                Class<? extends Process> cl = process.getClass();
-                Field field = cl.getDeclaredField("pid");
-                field.setAccessible(true);
-                Object pidObject = field.get(process);
-                return (Integer) pidObject;
-
-            } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ex) {
-                LOG.error("Cannot get UNIX pid: " + ex.getMessage());
-            }
-        }
-
-        return null;
-    }
-
-    public static String getUnixPidByName(String processName) {
-        String[] command = new String[]{"/bin/sh", "-c",
-            " ps -ef | grep ".concat(processName)};
-        ProcessBuilder builder = new ProcessBuilder(command);
-        try {
-            Process process = builder.start();
-            try (InputStream input = process.getInputStream()) {
-                byte[] b = new byte[16];
-                input.read(b, 0, b.length);
-                String[] commandLineresult = new String(b).split("\\s+");
-                if (SystemUtils.IS_OS_MAC_OSX || SystemUtils.IS_OS_MAC) {
-                    return commandLineresult[2];
-                } else if (SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_UNIX) {
-                    return commandLineresult[1];
-                }
-            }
-        } catch (IOException ex) {
-            LOG.error(ex.getMessage());
-        }
-        return null;
-    }
-
-    //TODO: Test on Windows
-    public static String getWinPidByName(String processName) {
-        String[] command = new String[]{"TASKLIST /FI \"USERNAME ne NT AUTHORITY\\SYSTEM\" | findstr ".concat(processName)};
-        ProcessBuilder builder = new ProcessBuilder(command);
-        try {
-            Process process = builder.start();
-            try (InputStream input = process.getInputStream()) {
-                byte[] b = new byte[16];
-                input.read(b, 0, b.length);
-                return new String(b).split("\\s+")[1];
-            }
-        } catch (IOException ex) {
-            LOG.error(ex.getMessage());
-        }
-        return null;
-    }
-
-    public static Integer getWinPID(Process proc) {
-        if (proc.getClass().getName().equals("java.lang.Win32Process")
-                || proc.getClass().getName().equals("java.lang.ProcessImpl")) {
-
-            try {
-                Field f = proc.getClass().getDeclaredField("handle");
-                f.setAccessible(true);
-                long handl = f.getLong(proc);
-                Kernel32 kernel = Kernel32.INSTANCE;
-                WinNT.HANDLE handle = new WinNT.HANDLE();
-                handle.setPointer(Pointer.createConstant(handl));
-                return kernel.GetProcessId(handle);
-
-            } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-                LOG.error("Cannot get Windows pid: " + e.getMessage());
-            }
-        }
-
-        return null;
-    }
-
     public static String readPidFromFile(String pidFilename) {
         File pidFile = new File(pidFilename);
         if (!pidFile.exists()) {
@@ -238,7 +154,7 @@ public class ProcessUtils {
         return pid;
     }
 
-    public static void writePidToFile(Integer pid, String pidFilename) throws IOException {
+    public static void writePidToFile(Long pid, String pidFilename) throws IOException {
         LOG.info("Creating pid file: " + pidFilename);
         File pidFile = new File(pidFilename);
         if (!pidFile.exists()) {

@@ -415,10 +415,8 @@ public class GethHttpServiceImpl implements GethHttpService {
             this.stdoutLogger = (StreamLogAdapter) new StreamLogAdapter(GETH_LOG, process.getInputStream()).startAsync();
             this.stderrLogger = (StreamLogAdapter) new StreamLogAdapter(GETH_LOG, process.getErrorStream()).startAsync();
 
-            Integer pid = getProcessPid(process);
-            if (pid != null) {
-                writePidToFile(pid, gethRunner.getGethPidFilename());
-            }
+            Long pid = process.pid();
+            writePidToFile(pid, gethRunner.getGethPidFilename());
 
             setEmbeddedNodeAsCurrent();
 

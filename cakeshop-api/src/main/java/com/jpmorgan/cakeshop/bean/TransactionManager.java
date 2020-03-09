@@ -1,14 +1,15 @@
 package com.jpmorgan.cakeshop.bean;
 
-import static com.jpmorgan.cakeshop.util.FileUtils.expandPath;
-
 import com.jpmorgan.cakeshop.util.ProcessUtils;
+
 import java.util.Arrays;
 import java.util.List;
 
+import static com.jpmorgan.cakeshop.util.FileUtils.expandPath;
+
 public class TransactionManager {
 
-    public static final String TESSERA_JAR = "tessera/tessera-app-0.10.2-app.jar";
+    public static final String TESSERA_JAR = "tessera/tessera-app-0.10.4-app.jar";
     public static final String CONSTELLATION_COMMAND =
         "constellation/" + ProcessUtils.getPlatformDirectory() + "/constellation-node";
     public static final String CONSTELLATION_KEYGEN_PARAMS_TEMPLATE = "--generatekeys=%s";

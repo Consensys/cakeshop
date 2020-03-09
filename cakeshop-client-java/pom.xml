@@ -108,7 +108,7 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.3.2</version>
+      <version>3.8.1</version>
     </dependency>
 
     <dependency>
@@ -188,7 +188,14 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <executions>
+          <dependencies>
+              <dependency>
+                  <groupId>org.apache.commons</groupId>
+                  <artifactId>commons-lang3</artifactId>
+                  <version>3.8.1</version>
+              </dependency>
+          </dependencies>
+          <executions>
           <execution>
             <id>attach-javadocs</id>
             <goals>
@@ -211,7 +218,7 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.7.5.201505241946</version>
+        <version>0.8.5</version>
         <executions>
           <execution>
             <goals>
