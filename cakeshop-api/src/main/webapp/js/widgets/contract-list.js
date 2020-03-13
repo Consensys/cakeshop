@@ -125,7 +125,7 @@ module.exports = function() {
                     utils.load({url: 'api/contract/registry/deploy', data: {}})
                 ).fail(function (res) {
                     console.log("Failed to deploy contract registry", res);
-                    alert(res)
+                    alert("Failed to deploy contract registry. Please try again or check the logs to see what went wrong.")
                     _this.updateView(res);
                 }).done(function (res) {
                     _this.updateView(res);
