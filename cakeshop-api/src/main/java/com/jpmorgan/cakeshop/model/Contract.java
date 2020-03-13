@@ -3,9 +3,10 @@ package com.jpmorgan.cakeshop.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jpmorgan.cakeshop.model.SolcResponse.GasEstimates;
 import com.jpmorgan.cakeshop.service.ContractService.CodeType;
-import java.util.Map;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+
+import java.util.Map;
 
 public class Contract {
 
@@ -55,11 +56,6 @@ public class Contract {
      * Gas estimates for each method
      */
     private GasEstimates gasEstimates;
-
-    /**
-     * Contract interface in solidity code
-     */
-    private String solidityInterface;
 
     /**
      * Hash of each method signaature (required for making EVM calls)
@@ -166,14 +162,6 @@ public class Contract {
 
     public void setGasEstimates(GasEstimates gasEstimates) {
         this.gasEstimates = gasEstimates;
-    }
-
-    public String getSolidityInterface() {
-        return solidityInterface;
-    }
-
-    public void setSolidityInterface(String solidityInterface) {
-        this.solidityInterface = solidityInterface;
     }
 
     public Map<String, String> getFunctionHashes() {
