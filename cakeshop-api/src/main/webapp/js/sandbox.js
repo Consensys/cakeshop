@@ -268,7 +268,6 @@
     var getDetails = function(contract, source, contractName) {
         // solidity interface
       var details = $('<div class="contractDetails"/>')
-        .append(textRow('Solidity Interface', contract.get("solidityInterface")));
 
         // function hashes
       var funHashes = '';
@@ -288,7 +287,7 @@
       var gasToText = function(g) { return g === null ? 'unknown' : g; };
       var text = '';
       if ('creation' in data)
-        text += 'Creation: ' + gasToText(data.creation[0]) + ' + ' + gasToText(data.creation[1]) + '\n';
+        text += 'Creation: ' + gasToText(data.creation.codeDepositCost) + ' + ' + gasToText(data.creation.executionCost) + '\n';
       text += 'External:\n';
       for (var fun in data.external) {
         text += '  ' + fun + ': ' + gasToText(data.external[fun]) + '\n';
