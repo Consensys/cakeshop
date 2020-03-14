@@ -1,17 +1,10 @@
 package com.jpmorgan.cakeshop.controller;
 
 import com.jpmorgan.cakeshop.error.APIException;
-import com.jpmorgan.cakeshop.model.APIData;
-import com.jpmorgan.cakeshop.model.APIError;
-import com.jpmorgan.cakeshop.model.APIResponse;
-import com.jpmorgan.cakeshop.model.Contract;
-import com.jpmorgan.cakeshop.model.ContractABI;
+import com.jpmorgan.cakeshop.model.*;
 import com.jpmorgan.cakeshop.model.ContractABI.Entry.Param;
 import com.jpmorgan.cakeshop.model.ContractABI.Function;
 import com.jpmorgan.cakeshop.model.SolidityType.Bytes32Type;
-import com.jpmorgan.cakeshop.model.Transaction;
-import com.jpmorgan.cakeshop.model.TransactionRequest;
-import com.jpmorgan.cakeshop.model.TransactionResult;
 import com.jpmorgan.cakeshop.model.json.ContractPostJsonRequest;
 import com.jpmorgan.cakeshop.service.ContractRegistryService;
 import com.jpmorgan.cakeshop.service.ContractService;
@@ -19,23 +12,19 @@ import com.jpmorgan.cakeshop.service.ContractService.CodeType;
 import com.jpmorgan.cakeshop.service.task.BlockchainInitializerTask;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
 import org.bouncycastle.util.encoders.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.WebAsyncTask;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
 
 @RestController
 @RequestMapping(value = "/api/contract",
@@ -156,8 +145,13 @@ public class ContractController extends BaseController {
 
     @PostMapping("/registry/use")
     public ResponseEntity<APIResponse> useRegistry(@RequestBody Map<String, String> body) throws APIException {
-        contractRegistryService.updateRegistryAddress(body.get("address"));
-        return registry();
+        String contractRegistryAddress = body.get("address");
+        contractRegistryService.updateRegistryAddress(contractRegistryAddress);
+        if(!contractRegistryService.contractRegistryExists()) {
+            return new ResponseEntity<>(APIResponse.newSimpleResponse("No registry at address " + contractRegistryAddress), HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(
+            APIResponse.newSimpleResponse(contractRegistryAddress), HttpStatus.OK);
     }
 
     @PostMapping("/registry/deploy")
