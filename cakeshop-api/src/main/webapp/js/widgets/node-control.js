@@ -1,4 +1,4 @@
-import utils from '../utils';
+import utils from '../utils'
 
 module.exports = function() {
 	var extended = {
@@ -69,11 +69,12 @@ module.exports = function() {
 				utils.load({ url: widget.url.nodeControl + '/' + action })
 			).done(function() {
 				_this.removeAttr('disabled');
-				if(action === 'start') {
+				if(action !== 'stop') {
 				    window.location.reload()
                 }
 			}).fail(function() {
-				// TODO: fill in
+                _this.removeAttr('disabled');
+			    alert("Action failed, please check the logs or try again.")
 			});
 		}
 	};
