@@ -131,8 +131,16 @@
         },
         onShow: function() {
           $('.sidenav .settingsView').css({'z-index': '10000'});
-        }
-      }
+        },
+        onNext: function() {
+          // for some reason clicking the disabled next button closes but doesn't end the tour.
+          // End it, reset z-indexes, and go to first tab
+          $('#tx-icon a').click();
+          $('.sidenav .settingsView').css({'z-index': '100'});
+          $('.sidenav li').css({'z-index': '100'});
+          Sandbox.tour.end()
+        },
+      },
     ]
   });
 

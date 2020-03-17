@@ -12,7 +12,7 @@ import 'jif-dashboard/dashboard-template'
     container: "body",
     backdropContainer: "body",
     backdropOptions: {
-        highlightOpacity: 0.8,
+        highlightOpacity: 0.0, // hightlight animation calulations are off, not needed anyway
         highlightColor: '#FFF',
         backdropSibling: false,
     },
@@ -139,30 +139,9 @@ import 'jif-dashboard/dashboard-template'
       },
       {
         element: ".widget-shell.contract-list",
-        content: "Here we have a list of contracts deployed on the chain (via the Cakeshop APIs)",
+        content: "Here we have the contract registry, which tracks the contracts deployed on the chain",
         placement: "top",
         onShow: showMenuStep("#contracts"),
-        onHide: hideMenuStep,
-      },
-      {
-        element: ".widget-shell.contract-detail",
-        content: "Metadata for the selected contract, such as the ABI and the original source code",
-        placement: "top",
-        onShow: loadWidget("#contracts", "contract-detail", ".widget-shell.contract-list tbody tr:first button.deets"),
-        onHide: hideMenuStep,
-      },
-      {
-        element: ".widget-shell.contract-paper-tape",
-        content: "The paper tape shows the transaction history for the selected contract",
-        placement: "top",
-        onShow: loadWidget("#contracts", "contract-paper-tape", ".widget-shell.contract-list tbody tr:first button.tape"),
-        onHide: hideMenuStep,
-      },
-      {
-        element: ".widget-shell.contract-current-state",
-        content: "Here we can see the current state of the contract, as read from any exposed public variables (methods marked 'constant' in solidity)",
-        placement: "top",
-        onShow: loadWidget("#contracts", "contract-current-state", ".widget-shell.contract-list tbody tr:first button.state"),
         onHide: hideMenuStep,
       },
     ])
@@ -247,19 +226,23 @@ import 'jif-dashboard/dashboard-template'
         onHide: hideMenuStep,
       },
     ])
-    // .concat([
-      //------------------------------------------------------------------------
-      // API DOCS
-      // {
-      //   element: "#api",
-      //   title: "API Documentation",
-      //   content: "This dashboard and all related tools are built using a set of RESTful APIs. These APIs provide a friendly interface for interacting with the blockchain and abstract away some of the complexity",
-      //   backdropContainer: ".tower-sidebar",
-      //   onShow: showMenuStep("#api"),
-      //   onHide: hideMenuStep,
-      // },
-    // ])
-
+    .concat([
+      // ------------------------------------------------------------------------
+      // Version info
+      {
+        element: ".tower-sidebar .version-info:first-of-type",
+        title: "Thanks for using Cakeshop!",
+        content: "Here you can see the current version of Cakeshop along with the build hash that matches the git commit the produced this build. Please reach out to us with any feedback or support requests.",
+        backdrop: false,
+        backdropContainer: ".tower-sidebar",
+        onShow: () => {
+        },
+        onHide: () => {
+            // for some reason clicking the disabled next button ends the tour but doesn't set the flag. Set it
+            window.localStorage.setItem('tour_end', true);
+        },
+      },
+    ])
   });
 
   function loadWidget(tab, widget, click_sel) {
