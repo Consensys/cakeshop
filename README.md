@@ -126,3 +126,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 See the [LICENSE](LICENSE) and [THIRD_PARTY](THIRD_PARTY) files for additional license information.
+
+# Getting Help
+Stuck at some step? Please join our <a href="https://www.goquorum.com/slack-inviter" target="_blank" rel="noopener">slack community</a> for support.
