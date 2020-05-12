@@ -1,13 +1,5 @@
 package com.jpmorgan.cakeshop.test;
 
-import static com.jpmorgan.cakeshop.test.Assert.assertNotEmptyString;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotEquals;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertNull;
-import static org.testng.Assert.assertThrows;
-import static org.testng.Assert.assertTrue;
-
 import com.jpmorgan.cakeshop.db.BlockScanner;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Contract;
@@ -20,14 +12,19 @@ import com.jpmorgan.cakeshop.service.ContractService;
 import com.jpmorgan.cakeshop.service.ContractService.CodeType;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.TransactionService;
+import com.jpmorgan.cakeshop.service.WalletService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.Assert.*;
+import org.testng.annotations.Test;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.Assert.ThrowingRunnable;
-import org.testng.annotations.Test;
+
+import static com.jpmorgan.cakeshop.test.Assert.assertNotEmptyString;
+import static org.testng.Assert.*;
 
 public class ContractServiceTest extends BaseGethRpcTest {
 
@@ -42,6 +39,9 @@ public class ContractServiceTest extends BaseGethRpcTest {
 
     @Autowired
     private BlockScanner blockScanner;
+
+    @Autowired
+    private WalletService walletService;
 
     @Test
     public void testCompile() throws IOException {
@@ -162,7 +162,7 @@ public class ContractServiceTest extends BaseGethRpcTest {
         assertEquals(val.intValue(), 500);
 
         String owner = (String) contractService.read(contractAddress, abi, null, "owner", null, null)[0];
-        assertEquals(owner, "0x2e219248f44546d966808cdd20cb6c36df6efa82");
+        assertEquals(owner, walletService.list().get(0).getAddress());
     }
 
     @Test

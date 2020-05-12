@@ -4,12 +4,16 @@ import com.google.common.collect.Lists;
 import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.bean.GethRunner;
 import com.jpmorgan.cakeshop.config.AppStartup;
+import com.jpmorgan.cakeshop.dao.NodeInfoDAO;
 import com.jpmorgan.cakeshop.error.APIException;
+import com.jpmorgan.cakeshop.model.NodeInfo;
 import com.jpmorgan.cakeshop.model.Transaction;
 import com.jpmorgan.cakeshop.model.TransactionResult;
+import com.jpmorgan.cakeshop.model.json.WalletPostJsonRequest;
 import com.jpmorgan.cakeshop.service.ContractService;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.TransactionService;
+import com.jpmorgan.cakeshop.service.WalletService;
 import com.jpmorgan.cakeshop.service.task.BlockchainInitializerTask;
 import com.jpmorgan.cakeshop.test.config.TempFileManager;
 import com.jpmorgan.cakeshop.test.config.TestAppConfig;
@@ -75,18 +79,27 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
     private GethRunner gethRunner;
 
     @Autowired
+    private NodeInfoDAO nodeInfoDAO;
+
+    @Autowired
+    private GethHttpService gethHttpService;
+
+    @Autowired
     private GethConfig gethConfig;
 
     @Autowired
     @Qualifier("hsql")
     private DataSource embeddedDb;
 
+    @Autowired
+    private WalletService walletService;
+
     public BaseGethRpcTest() {
         super();
     }
 
     public boolean runGeth() {
-        return true;
+        return false;
     }
 
     @AfterSuite(alwaysRun = true)
@@ -114,6 +127,16 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
     @BeforeClass
     public void startGeth() throws IOException {
         if (!runGeth()) {
+            NodeInfo testNode = nodeInfoDAO.getByUrls("http://localhost:22000", "http://localhost:9081");
+            if(testNode == null) {
+                testNode = new NodeInfo("test", "http://localhost:22000", "http://localhost:9081");
+                nodeInfoDAO.save(testNode);
+                LOG.debug("Created node Id {}", testNode.id);
+            }
+            if(!gethHttpService.isConnected()) {
+                gethHttpService.connectToNode(testNode.id);
+                initializeChain();
+            }
             return;
         }
 
@@ -203,6 +226,20 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
 
 
     void initializeChain() throws APIException {
+        walletService.list()
+            .forEach(account -> {
+            if(account.isUnlocked()) {
+                return;
+            }
+            try {
+                WalletPostJsonRequest request = new WalletPostJsonRequest();
+                request.setAccount(account.getAddress());
+                request.setAccountPassword("");
+                walletService.unlockAccount(request);
+            } catch (APIException e) {
+                e.printStackTrace();
+            }
+        });
         BlockchainInitializerTask chainInitTask =
             applicationContext.getBean(BlockchainInitializerTask.class);
         chainInitTask.run(); // run in same thread

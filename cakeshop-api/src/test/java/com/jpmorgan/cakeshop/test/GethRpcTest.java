@@ -1,19 +1,19 @@
 package com.jpmorgan.cakeshop.test;
 
-import static org.testng.Assert.*;
-
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.RequestModel;
+import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.testng.annotations.Test;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 
 public class GethRpcTest extends BaseGethRpcTest {
 
-    private final String expectedHash = "0x8c6ef2122440fcbfc13be7c24d16e8154cd063414625c0b39de1031616514364";
+    private final String expectedHash = "0xb89f8664868b71eee61daf6eb8f709e3800b77501172430cb3167cd6692a878e";
 
     @Test
     public void testExecWithParams() throws APIException {

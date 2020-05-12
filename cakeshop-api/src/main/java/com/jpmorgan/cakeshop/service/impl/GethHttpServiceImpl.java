@@ -169,7 +169,7 @@ public class GethHttpServiceImpl implements GethHttpService {
         try {
             return processResponse(jsonMapper.readValue(response, Map.class));
         } catch (APIException e) {
-            LOG.error("RPC request for " + requestToJson(request) + " failed with " + e.getMessage());
+            LOG.error("RPC request failed", e);
             throw e;
         } catch (IOException e) {
             throw new APIException("RPC call failed", e);
