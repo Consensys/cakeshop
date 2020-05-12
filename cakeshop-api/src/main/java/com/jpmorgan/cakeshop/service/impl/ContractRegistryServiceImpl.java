@@ -15,6 +15,12 @@ import com.jpmorgan.cakeshop.service.TransactionService;
 import com.jpmorgan.cakeshop.util.CakeshopUtils;
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -25,11 +31,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.lang3.ArrayUtils;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 @Service
 public class ContractRegistryServiceImpl implements ContractRegistryService {
@@ -134,19 +135,19 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
     public TransactionResult register(String from, String id, String name, String abi, String code,
         CodeType codeType, Long createdDate, String privateFor) throws APIException {
 
-        if (noRegistryAddress()) {
-            LOG.warn("Not going to register contract since ContractRegistry address is null");
-            return null; // FIXME return silently because registry hasn't yet been registered
-        }
-
-        LOG.info("Registering contract {} with address {}", name, id);
-
-        if (name.equalsIgnoreCase("ContractRegistry") || contractRegistryAddress.equals(id)) {
+        if (name.equalsIgnoreCase("ContractRegistry") || id.equals(contractRegistryAddress)) {
             // Solidity compiler now prefixes contract names with ':'
             // In the future it will be "{filename}:{Contractname}"
             LOG.info("Skipping registration for ContractRegistry");
             return null;
         }
+
+        if (noRegistryAddress()) {
+            LOG.warn("Not going to register contract since ContractRegistry address is null");
+            return null;
+        }
+
+        LOG.info("Registering contract {} with address {}", name, id);
 
         if (StringUtils.isNotBlank(privateFor)) {
             LOG.info("Registering in private local ContractRegistry");
