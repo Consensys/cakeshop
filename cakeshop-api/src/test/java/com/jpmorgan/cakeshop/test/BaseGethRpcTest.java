@@ -2,7 +2,6 @@ package com.jpmorgan.cakeshop.test;
 
 import com.google.common.collect.Lists;
 import com.jpmorgan.cakeshop.bean.GethConfig;
-import com.jpmorgan.cakeshop.bean.GethRunner;
 import com.jpmorgan.cakeshop.config.AppStartup;
 import com.jpmorgan.cakeshop.dao.NodeInfoDAO;
 import com.jpmorgan.cakeshop.error.APIException;
@@ -17,6 +16,7 @@ import com.jpmorgan.cakeshop.service.WalletService;
 import com.jpmorgan.cakeshop.service.task.BlockchainInitializerTask;
 import com.jpmorgan.cakeshop.test.config.TempFileManager;
 import com.jpmorgan.cakeshop.test.config.TestAppConfig;
+import com.jpmorgan.cakeshop.util.CakeshopUtils;
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.ProcessUtils;
 import org.slf4j.Logger;
@@ -38,7 +38,6 @@ import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static org.testng.Assert.assertNotNull;
@@ -76,9 +75,6 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
     private String CONFIG_ROOT;
 
     @Autowired
-    private GethRunner gethRunner;
-
-    @Autowired
     private NodeInfoDAO nodeInfoDAO;
 
     @Autowired
@@ -106,10 +102,10 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
     public void stopSolc() throws IOException {
         List<String> args = Lists.newArrayList(
                 gethConfig.getNodeJsBinaryName(),
-                gethRunner.getSolcPath(),
+                CakeshopUtils.getSolcPath(),
                 "--stop-ipc");
 
-        ProcessBuilder builder = ProcessUtils.createProcessBuilder(gethRunner, args);
+        ProcessBuilder builder = ProcessUtils.createProcessBuilder(args);
         builder.start();
     }
 
@@ -126,7 +122,6 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
 
     @BeforeClass
     public void startGeth() throws IOException {
-        if (!runGeth()) {
             NodeInfo testNode = nodeInfoDAO.getByUrls("http://localhost:22000", "http://localhost:9081");
             if(testNode == null) {
                 testNode = new NodeInfo("test", "http://localhost:22000", "http://localhost:9081");
@@ -137,19 +132,6 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
                 gethHttpService.connectToNode(testNode.id);
                 initializeChain();
             }
-            return;
-        }
-
-        assertTrue(appStartup.isHealthy(), "Healthcheck should pass");
-        LOG.info("Starting Ethereum at test startup");
-        assertTrue(_startGeth());
-        initializeChain();
-    }
-
-    private boolean _startGeth() throws IOException {
-        gethRunner.setGenesisBlockFilename(FileUtils.getClasspathPath("genesis_block.json").toAbsolutePath().toString());
-        gethRunner.setKeystorePath(FileUtils.getClasspathPath("keystore").toAbsolutePath().toString());
-        return geth.start();
     }
 
     /**
@@ -157,20 +139,6 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
      */
     @AfterClass(alwaysRun = true)
     public void stopGeth() {
-        if (!runGeth()) {
-            return;
-        }
-        LOG.info("Stopping Ethereum at test teardown");
-        _stopGeth();
-    }
-
-    private void _stopGeth() {
-        geth.stop();
-        try {
-            FileUtils.deleteDirectory(new File(ethDataDir));
-        } catch (IOException e) {
-            logger.warn(e);
-        }
         String db = System.getProperty("cakeshop.database.vendor");
         if (db.equalsIgnoreCase("hsqldb")) {
             ((EmbeddedDatabase) embeddedDb).shutdown();
@@ -215,10 +183,6 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
         assertNotNull(result);
         assertNotNull(result.getId());
         assertTrue(!result.getId().isEmpty());
-
-        if (gethConfig.getConsensusMode().equals("istanbul")) {
-            Map<String, Object> res = geth.executeGethCall("miner_start", new Object[]{});
-        }
 
         Transaction tx = transactionService.waitForTx(result, 50, TimeUnit.MILLISECONDS);
         return tx.getContractAddress();

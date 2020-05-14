@@ -134,15 +134,10 @@ window.Tower = {
 			'metrix-blocks-min'      : require('./widgets/metrix-blocks-min'),
 			'metrix-txn-min'         : require('./widgets/metrix-txn-min'),
 			// 'metrix-txn-sec'         : require('./widgets/metrix-txn-sec'),
-			'node-control'           : require('./widgets/node-control'),
 			'node-info'              : require('./widgets/node-info'),
-			'node-settings'          : require('./widgets/node-settings'),
 			'peers-add'              : require('./widgets/peers-add'),
 			'peers-list'             : require('./widgets/peers-list'),
-            // TODO turn this back on after fixing nodeIP issue
-			// 'peers-neighborhood'     : require('./widgets/peers-neighborhood'),
 			'txn-detail'             : require('./widgets/txn-detail'),
-            'transaction-manager'    : require('./widgets/transaction-manager')
 		});
 
 		Dashboard.init();
@@ -325,16 +320,6 @@ window.Tower = {
         //
 		// 	Dashboard.showSection('api', widgets);
 		// },
-
-        'managed': function() {
-            var widgets = [
-                { widgetId: 'node-control' },
-                { widgetId: 'node-settings' },
-                { widgetId: 'node-log' },
-            ];
-
-            Dashboard.showSection('managed', widgets);
-        },
 
 		'contracts': function() {
 			var widgets = [

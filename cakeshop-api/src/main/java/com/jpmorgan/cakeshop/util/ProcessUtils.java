@@ -1,59 +1,27 @@
 package com.jpmorgan.cakeshop.util;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
-import com.jpmorgan.cakeshop.bean.GethRunner;
-import com.sun.jna.Pointer;
-import com.sun.jna.platform.win32.Kernel32;
-import com.sun.jna.platform.win32.WinNT;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.lang.reflect.Field;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class ProcessUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProcessUtils.class);
 
-    public static ProcessBuilder createProcessBuilder(GethRunner gethRunner, String... commands) {
-        return createProcessBuilder(gethRunner, Lists.newArrayList(commands));
-    }
-
-    public static ProcessBuilder createProcessBuilder(GethRunner gethRunner, List<String> commands) {
+    public static ProcessBuilder createProcessBuilder(List<String> commands) {
         ProcessBuilder builder = new ProcessBuilder(commands);
-
-        // need to modify PATH so it can locate compilers correctly
-        String gethDir = new File(gethRunner.getGethPath()).getParent();
-        final Map<String, String> env = builder.environment();
-        env.put("PATH", prefixPathStr(gethDir + File.pathSeparator, env.get("PATH")));
 
         if (LOG.isDebugEnabled()) {
             LOG.debug(Joiner.on(" ").join(builder.command()));
         }
 
-        // libgmp is no longer used, but keep this in place anyway, just in case
-        // we need to add some other dynamic libs later
-        if (SystemUtils.IS_OS_MAC_OSX) {
-            // we ship the gmp lib at this location, make sure its accessible
-            env.put("DYLD_LIBRARY_PATH", prefixPathStr(gethDir, env.get("DYLD_LIBRARY_PATH")));
-        } else if (SystemUtils.IS_OS_LINUX) {
-            env.put("LD_LIBRARY_PATH", prefixPathStr(gethDir, env.get("LD_LIBRARY_PATH")));
-        }
-
         return builder;
-    }
-
-    private static String prefixPathStr(String newPath, String currPath) {
-        if (currPath != null && !currPath.trim().isEmpty()) {
-            newPath = newPath + File.pathSeparator + currPath.trim();
-        }
-        return newPath;
     }
 
     /**
