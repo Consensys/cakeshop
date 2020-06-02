@@ -26,14 +26,40 @@ module.exports = function() {
 			var _this = this;
 
 			$.when(
-				utils.load({ url: this.url, data: { number: parseInt(_this.blockNumber, 10) } })
+			    function () {
+			        // check if reporting engine is used
+                    if (window.reportingEndpoint) {
+                        console.log("reporting engine fetch: " + window.reportingEndpoint)
+                        return utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting_getBlock","params":[parseInt(_this.blockNumber, 10)],"id":99} })
+                    } else {
+                        console.log("default fetch")
+                        return utils.load({ url: _this.url, data: { number: parseInt(_this.blockNumber, 10) } })
+                    }
+                }()
 			).fail(function(res) {
+                // console.log("res: " + JSON.stringify(res))
 				$('#widget-' + _this.shell.id).html( '<h3 style="text-align: center;margin-top: 70px;">Unable to load block</h3>' );
 
 				$('#widget-shell-' + _this.shell.id + ' .panel-title span').html('Block Detail');
 
 				_this.postFetch();
 			}).done(function(res) {
+                if (window.reportingEndpoint) {
+                    if (res.error) {
+                        $('#widget-' + _this.shell.id).html( '<h3 style="text-align: center;margin-top: 70px;">Unable to load block</h3>' );
+                        $('#widget-shell-' + _this.shell.id + ' .panel-title span').html('Block Detail');
+                        return
+                    }
+                    // reformat response data
+                    res = {
+                        data: {
+                            id: res.result.hash,
+                            type: "block",
+                            attributes: res.result
+                        }
+                    }
+                }
+                // console.log("res: " + JSON.stringify(res))
 				var rows = [],
 				 keys = _.sortBy(_.keys(res.data.attributes), function(key) {
 					// custom reorder of the returned keys

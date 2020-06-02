@@ -383,8 +383,24 @@ $(function() {
 	});
 
 	$('#reset-all').on('click', function() {
-		Dashboard.reset();
+        window.reportingEndpoint = "";
+        Dashboard.reset();
 	});
+
+	var reporting = $('#start-reporting');
+    reporting.on('click', function() {
+        if (reporting.html() === "Connect to Reporting") {
+            reporting.html("Disconnect Reporting Engine")
+            window.reportingEndpoint = "http://localhost:4000"
+            console.log("connect to default reporting engine endpoint http://localhost:4000")
+            alert("Connect to default reporting engine endpoint http://localhost:4000")
+        } else {
+            reporting.html("Connect to Reporting Engine")
+            window.reportingEndpoint = ""
+            console.log("disconnect default reporting engine endpoint http://localhost:4000")
+            alert("Disconnect reporting engine")
+        }
+    });
 
 	// Navigation menu handler
 	$('.tower-sidebar li').click(function(e) {

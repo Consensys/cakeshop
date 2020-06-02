@@ -23,7 +23,16 @@ module.exports = function() {
 			var _this = this;
 
 			$.when(
-				utils.load({ url: this.url, data: { id: _this.txnAddy } })
+                function () {
+                    // check if reporting engine is used
+                    if (window.reportingEndpoint) {
+                        console.log("reporting engine fetch: " + window.reportingEndpoint)
+                        return utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting_getTransaction","params":[_this.txnAddy],"id":99} })
+                    } else {
+                        console.log("default fetch")
+                        return utils.load({ url: _this.url, data: { id: _this.txnAddy } })
+                    }
+                }()
 			).fail(function(res) {
 				$('#widget-' + _this.shell.id).html( '<h3 style="text-align: center;margin-top: 70px;">Unable to load transaction</h3>' );
 
@@ -31,10 +40,36 @@ module.exports = function() {
 
 				_this.postFetch();
 			}).done(function(res) {
+                if (window.reportingEndpoint) {
+                    if (res.error) {
+                        $('#widget-' + _this.shell.id).html( '<h3 style="text-align: center;margin-top: 70px;">Unable to load transaction</h3>' );
+                        $('#widget-shell-' + _this.shell.id + ' .panel-title span').html('Transaction Detail');
+                        return
+                    }
+                    // reformat response data
+                    res = {
+                        data: {
+                            id: res.result.rawTransaction.hash,
+                            type: "transaction",
+                            attributes: _.extend(res.result.rawTransaction, {
+                                txSig: res.result.txSig,
+                                func4Bytes: res.result.func4Bytes,
+                                parsedData: JSON.stringify(res.result.parsedData),
+                                parsedEvents: JSON.stringify(res.result.parsedEvents.map( e => ({eventSig: e.eventSig, parsedData: e.parsedData}))),
+                                blockId: res.result.rawTransaction.blockHash,
+                                contractAddress: res.result.rawTransaction.createdContract,
+                                transactionIndex: res.result.rawTransaction.index,
+                            })
+                        }
+                    }
+                }
+                // console.log("res: " + JSON.stringify(res))
 				var mainTable = ['id', 'status', 'blockId', 'blockNumber', 'contractAddress', 'transactionIndex', 'gasUsed', 'cumulativeGasUsed'],
+                reportingTable = ['txSig', 'func4Bytes', 'parsedData', 'parsedEvents'],
 				secTable = ['from', 'to', 'value', 'input', 'decodedInput', 'logs', 'gas', 'gasPrice', 'nonce'],
 				keyOrder = _.reduce(mainTable.concat(secTable), function(m, v, i) { m[v] = i; return m; }, {}),
 				mainRows = [],
+                reportingRow = [],
 				secRows = [],
 				keys = _.keys(res.data.attributes).sort(function(a, b) {
 					// custom reorder of the returned keys
@@ -67,15 +102,24 @@ module.exports = function() {
 
 					if (_.contains(mainTable, val)) {
 						mainRows.push( template );
-					} else {
+					} else if (_.contains(reportingTable, val)) {
+                        reportingRow.push( template );
+                    } else {
 						secRows.push( template );
 					}
 				});
 
-				$('#widget-' + _this.shell.id).html( _this.template({ rows: mainRows.join('') }) +
-					'<h3 style="margin-top: 30px;margin-left: 8px;">Transaction inputs &amp; parameters</h3>' +
-					_this.template({ rows: secRows.join('') }) );
-
+				if (window.reportingEndpoint) {
+                    $('#widget-' + _this.shell.id).html( _this.template({ rows: mainRows.join('') }) +
+                        '<h3 style="margin-top: 30px;margin-left: 8px;">Reporting Engine Parsed Data</h3>' +
+                        _this.template({ rows: reportingRow.join('') }) +
+                        '<h3 style="margin-top: 30px;margin-left: 8px;">Other Transaction Inputs &amp; Parameters</h3>' +
+                        _this.template({ rows: secRows.join('') }) );
+                } else {
+                    $('#widget-' + _this.shell.id).html( _this.template({ rows: mainRows.join('') }) +
+                        '<h3 style="margin-top: 30px;margin-left: 8px;">Transaction Inputs &amp; Parameters</h3>' +
+                        _this.template({ rows: secRows.join('') }) );
+                }
 
 				$('#widget-shell-' + _this.shell.id + ' .panel-title span').html(_this.title);
 
