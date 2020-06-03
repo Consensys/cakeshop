@@ -29,10 +29,10 @@ module.exports = function() {
 			    function () {
 			        // check if reporting engine is used
                     if (window.reportingEndpoint) {
-                        console.log("reporting engine fetch: " + window.reportingEndpoint)
+                        console.log("reporting engine fetch: " + window.reportingEndpoint);
                         return utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting_getBlock","params":[parseInt(_this.blockNumber, 10)],"id":99} })
                     } else {
-                        console.log("default fetch")
+                        console.log("default fetch");
                         return utils.load({ url: _this.url, data: { number: parseInt(_this.blockNumber, 10) } })
                     }
                 }()
@@ -46,6 +46,7 @@ module.exports = function() {
 			}).done(function(res) {
                 if (window.reportingEndpoint) {
                     if (res.error) {
+                        console.log(res.error);
                         $('#widget-' + _this.shell.id).html( '<h3 style="text-align: center;margin-top: 70px;">Unable to load block</h3>' );
                         $('#widget-shell-' + _this.shell.id + ' .panel-title span').html('Block Detail');
                         return

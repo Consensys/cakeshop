@@ -138,6 +138,10 @@ window.Tower = {
 			'peers-add'              : require('./widgets/peers-add'),
 			'peers-list'             : require('./widgets/peers-list'),
 			'txn-detail'             : require('./widgets/txn-detail'),
+            // reporting
+            'reporting-contract-list': require('./widgets/reporting-contract-list'),
+            'reporting-report': require('./widgets/reporting-report'),
+            'reporting-query-result': require('./widgets/reporting-query-result')
 		});
 
 		Dashboard.init();
@@ -339,6 +343,14 @@ window.Tower = {
 			Dashboard.showSection('explorer', widgets);
 		},
 
+        'reporting': function() {
+			var widgets = [
+				{ widgetId: 'reporting-contract-list' }
+			];
+
+			Dashboard.showSection('reporting', widgets);
+		},
+
 		'wallet': function() {
 			var widgets = [
 				{ widgetId: 'accounts' },
@@ -389,15 +401,15 @@ $(function() {
 
 	var reporting = $('#start-reporting');
     reporting.on('click', function() {
-        if (reporting.html() === "Connect to Reporting") {
-            reporting.html("Disconnect Reporting Engine")
-            window.reportingEndpoint = "http://localhost:4000"
-            console.log("connect to default reporting engine endpoint http://localhost:4000")
+        if (reporting.html() === "Connect to Reporting Engine") {
+            reporting.html("Disconnect Reporting Engine");
+            window.reportingEndpoint = "http://localhost:4000";
+            console.log("connect to default reporting engine endpoint http://localhost:4000");
             alert("Connect to default reporting engine endpoint http://localhost:4000")
         } else {
-            reporting.html("Connect to Reporting Engine")
-            window.reportingEndpoint = ""
-            console.log("disconnect default reporting engine endpoint http://localhost:4000")
+            reporting.html("Connect to Reporting Engine");
+            window.reportingEndpoint = "";
+            console.log("disconnect default reporting engine endpoint http://localhost:4000");
             alert("Disconnect reporting engine")
         }
     });
