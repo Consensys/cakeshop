@@ -39,7 +39,7 @@ module.exports = function() {
                     return
                 }
                 // console.log(JSON.stringify(res));
-                if (res.result === "" || res.result.length === 0) {
+                if (res.result === "" || _this.query !== "query-contract-creation" && res.result.transactions.length === 0) {
                     $('#widget-' + _this.shell.id).html( '<h3 style="text-align: center;margin-top: 70px;">No Result</h3>' );
                     return
                 }
@@ -47,7 +47,7 @@ module.exports = function() {
                     $('#widget-' + _this.shell.id).html( _this.template({ rows: '<tr><td style="width: 100px;"><a href="#">' + res.result  + '</a></td></tr>' }) );
                 } else {
                     var rows = []
-                    _.each(res.result, function(txHash) {
+                    _.each(res.result.transactions, function(txHash) {
                         rows.push('<a href="#">' + txHash  + '</a>')
                     });
                     $('#widget-' + _this.shell.id).html( _this.template({ rows: _this.templateTxnRow({ value: rows.join('<br/>') }) }) );
