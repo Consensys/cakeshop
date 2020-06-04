@@ -3,13 +3,9 @@ package com.jpmorgan.cakeshop.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.jpmorgan.cakeshop.util.StringUtils;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
 import org.apache.commons.lang3.builder.EqualsBuilder;
+
+import javax.persistence.*;
 
 @Entity
 @Table(name = "NODE_INFO")
@@ -25,6 +21,8 @@ public class NodeInfo {
 
     public String transactionManagerUrl;
 
+    public String reportingUrl;
+
     @JsonInclude()
     @Transient
     public boolean isSelected = false;
@@ -32,15 +30,16 @@ public class NodeInfo {
     public NodeInfo() {
     }
 
-    public NodeInfo(String name, String rpcUrl, String transactionManagerUrl) {
-        this(null, name, rpcUrl, transactionManagerUrl);
+    public NodeInfo(String name, String rpcUrl, String transactionManagerUrl, String reportingUrl) {
+        this(null, name, rpcUrl, transactionManagerUrl, reportingUrl);
     }
 
-    public NodeInfo(Long id, String name, String rpcUrl, String transactionManagerUrl) {
+    public NodeInfo(Long id, String name, String rpcUrl, String transactionManagerUrl, String reportingUrl) {
         this.id = id;
         this.name = name;
         this.rpcUrl = rpcUrl;
         this.transactionManagerUrl = transactionManagerUrl;
+        this.reportingUrl = reportingUrl;
     }
 
     @Override

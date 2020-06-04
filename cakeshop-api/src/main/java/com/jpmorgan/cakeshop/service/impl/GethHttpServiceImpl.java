@@ -83,6 +83,7 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     private String currentRpcUrl;
     private String currentTransactionManagerUrl;
+    private String currentReportingUrl;
 
     private StreamLogAdapter stdoutLogger;
     private StreamLogAdapter stderrLogger;
@@ -252,6 +253,13 @@ public class GethHttpServiceImpl implements GethHttpService {
         this.currentTransactionManagerUrl = transactionManagerUrl;
     }
 
+    public String getCurrentReportingUrl() {
+        return currentReportingUrl;
+    }
+
+    public void setCurrentReportingUrl(String currentReportingUrl) {
+        this.currentReportingUrl = currentReportingUrl;
+    }
 
     @Override
     public void connectToNode(Long nodeId) {
@@ -260,6 +268,7 @@ public class GethHttpServiceImpl implements GethHttpService {
             if (node != null) {
                 setCurrentRpcUrl(node.rpcUrl);
                 setCurrentTransactionManagerUrl(node.transactionManagerUrl);
+                setCurrentReportingUrl(node.reportingUrl);
                 runPostConnectTasks();
                 gethConfig.setSelectedNode(nodeId);
                 gethConfig.save();
