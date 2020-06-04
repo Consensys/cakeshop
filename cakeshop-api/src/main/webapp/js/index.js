@@ -395,7 +395,6 @@ $(function() {
 	});
 
 	$('#reset-all').on('click', function() {
-        window.reportingEndpoint = "";
         Dashboard.reset();
 	});
 
@@ -403,16 +402,30 @@ $(function() {
     reporting.on('click', function() {
         if (reporting.html() === "Connect to Reporting Engine") {
             reporting.html("Disconnect Reporting Engine");
-            window.reportingEndpoint = "http://localhost:4000";
-            console.log("connect to default reporting engine endpoint http://localhost:4000");
-            alert("Connect to default reporting engine endpoint http://localhost:4000")
+            if (window.reportingEndpointReady) {
+                window.reportingEndpoint = window.reportingEndpointReady;
+            } else {
+                window.reportingEndpoint = "http://localhost:4000";
+            }
+            console.log("connect to reporting engine endpoint at:" + window.reportingEndpoint);
+            alert("Connect to reporting engine endpoint at" + window.reportingEndpoint);
         } else {
             reporting.html("Connect to Reporting Engine");
+            window.reportingEndpointReady = window.reportingEndpoint;
             window.reportingEndpoint = "";
-            console.log("disconnect default reporting engine endpoint http://localhost:4000");
+            console.log("disconnect reporting engine");
             alert("Disconnect reporting engine")
         }
     });
+    // Update current reporting URL
+    Client.get('api/node/currentReportingUrl')
+        .done(function (response) {
+            let currentReportingURL = response.data.attributes.result;
+            window.reportingEndpoint = currentReportingURL;
+            if (currentReportingURL) {
+                reporting.html("Disconnect Reporting Engine");
+            }
+        })
 
 	// Navigation menu handler
 	$('.tower-sidebar li').click(function(e) {

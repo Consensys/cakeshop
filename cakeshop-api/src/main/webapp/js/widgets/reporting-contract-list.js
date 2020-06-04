@@ -14,7 +14,7 @@ module.exports = function() {
             + '<tbody><%= rows %></tbody></table>'),
 
         templateUninitialized: _.template(
-            '<div><button class="btn btn-lg btn-primary" id="start-reporting-button">Connect to Reporting Engine</button></div>'
+            '<div><h3 style="text-align: center;margin-top: 70px;">No Connection to Reporting Engine</h3></div>'
         ),
 
         templateRow: _.template('<tr>'
@@ -33,7 +33,6 @@ module.exports = function() {
 
         updateView: function (res) {
             if (!window.reportingEndpoint) {
-                this.setTitle("Connect to Reporting Engine");
                 $('#widget-' + this.shell.id).html(this.templateUninitialized());
                 return
             }
@@ -79,19 +78,12 @@ module.exports = function() {
 
         _handleButton: function(e) {
             e.preventDefault();
-
-            if (e.target.id === "start-reporting-button") {
-                $(e.target).attr('disabled', 'disabled');
-                $('#start-reporting').click();
-                this.fetch();
-            } else {
-                Dashboard.show({
-                    widgetId: $(e.target).data('widget'),
-                    section: 'reporting',
-                    data: _.extend({id: $(e.target).parent().data('id')}, $(e.target).data()),
-                    refetch: true
-                });
-            }
+            Dashboard.show({
+                widgetId: $(e.target).data('widget'),
+                section: 'reporting',
+                data: _.extend({id: $(e.target).parent().data('id')}, $(e.target).data()),
+                refetch: true
+            });
         }
     };
 

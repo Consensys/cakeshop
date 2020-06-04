@@ -169,6 +169,13 @@ public class NodeController extends BaseController {
             HttpStatus.OK);
     }
 
+    @GetMapping(path = "/currentReportingUrl")
+    protected @ResponseBody
+    ResponseEntity<APIResponse> getReportingUrl() throws APIException {
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(gethService.getCurrentReportingUrl()),
+            HttpStatus.OK);
+    }
+
     @PostMapping(path = "/url")
     protected @ResponseBody
     ResponseEntity<APIResponse> setNodeUrls(@RequestBody NodeInfo nodeInfo)
