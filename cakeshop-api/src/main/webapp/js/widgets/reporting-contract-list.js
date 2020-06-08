@@ -1,5 +1,8 @@
 import utils from '../utils'
 import $ from "jquery";
+import ReactDOM from "react-dom";
+import { RegisterContractContainer } from "../components/RegisterContractContainer";
+import React from "react";
 
 module.exports = function() {
     var extended = {
@@ -9,12 +12,18 @@ module.exports = function() {
 
         hideLink: true,
 
-        template: _.template('<table style="width: 100%; table-layout: fixed;" class="table table-striped">' +
-            '<thead style="font-weight: bold;"><tr><td style="width: 300px;">Contract</td><td style="width: 250px;">Actions</td></tr></thead>'
-            + '<tbody><%= rows %></tbody></table>'),
+        template: _.template('<div>'
+            + '<table style="width: 100%; table-layout: fixed;" class="table table-striped">'
+            + '<thead style="font-weight: bold;"><tr><td style="width: 300px;">Contract</td><td style="width: 250px;">Actions</td></tr></thead>'
+            + '<tbody><%= rows %></tbody></table>'
+            + '<div id="register-dialog" style="width: 100%;"/>'
+            + '</div>'
+        ),
 
         templateUninitialized: _.template(
-            '<div><h3 style="text-align: center;margin-top: 70px;">No Connection to Reporting Engine</h3></div>'
+            '<div>'
+            + '<h3 style="text-align: center;margin-top: 70px;">No Connection to Reporting Engine</h3>'
+            + '</div>'
         ),
 
         templateRow: _.template('<tr>'
@@ -24,7 +33,8 @@ module.exports = function() {
             + '<button class="btn btn-primary btn-xs" data-query="query-tx-to" data-widget="reporting-query-result">TX To</button>'
             + '<button class="btn btn-primary btn-xs" data-query="query-tx-internal-to" data-widget="reporting-query-result">TX Internal To</button>'
             + '<button class="btn btn-primary btn-xs" data-widget="reporting-report">Report</button>'
-            + '</td></tr>'),
+            + '</td></tr>'
+        ),
 
         setTitle: function (title) {
             $('#widget-shell-' + this.shell.id + ' .panel-title span').html(
@@ -57,7 +67,34 @@ module.exports = function() {
             $('#widget-' + _this.shell.id).html(
                 _this.template({rows: rowsOut.join('')}));
 
+            ReactDOM.render(<RegisterContractContainer addContract={this.addContract} />, document.getElementById('register-dialog'));
             _this.postFetch();
+        },
+
+        addContract: function(newContract) {
+            var _this = this;
+            $.when(
+                utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting_addAddress","params":[newContract.address],"id":100} })
+            ).fail(function (res) {
+                console.log("Failed to register new contract: ", res);
+            }).done(function (res) {
+                console.log("Successfully register new contract: ", newContract.address);
+                $.when(
+                    utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting_addABI","params":[newContract.address, newContract.abi],"id":101} })
+                ).fail(function (res) {
+                    console.log("Failed to register new contract abi: ", res);
+                }).done(function (res) {
+                    console.log("Successfully register new contract abi: ", newContract.abi);
+                });
+                $.when(
+                    utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting_addStorageABI","params":[newContract.address, newContract.template],"id":102} })
+                ).fail(function (res) {
+                    console.log("Failed to register new contract storage template: ", res);
+                }).done(function (res) {
+                    console.log("Successfully register new contract storage template: ", newContract.template);
+                });
+                this.fetch()
+            });
         },
 
         fetch: function () {
@@ -65,7 +102,7 @@ module.exports = function() {
             $.when(
                 utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting_getAddresses","params":[],"id":99} })
             ).fail(function (res) {
-                console.log("Failed to load reporting registered addresses", res);
+                console.log("Failed to load reporting registered addresses: ", res);
             }).done(function (res) {
                 _this.updateView(res);
             });
