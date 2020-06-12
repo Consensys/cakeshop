@@ -3,35 +3,11 @@ package com.jpmorgan.cakeshop.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-
 import static com.jpmorgan.cakeshop.util.FileUtils.expandPath;
 
 public class CakeshopUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(CakeshopUtils.class);
-
-    /**
-     * Get the location of the shared configuration file, if available
-     * @return File
-     */
-    public static File getSharedNetworkConfigFile() {
-
-        String sharedConfig = System.getenv("CAKESHOP_SHARED_CONFIG");
-        if (StringUtils.isBlank(sharedConfig)) {
-            LOG.debug("CAKESHOP_SHARED_CONFIG not set");
-            return null;
-        }
-
-        File fSharedConfig;
-        if (sharedConfig.endsWith(".properties")) {
-            fSharedConfig = new File(FileUtils.expandPath(sharedConfig));
-        } else {
-            fSharedConfig = new File(FileUtils.expandPath(sharedConfig, "shared.properties"));
-        }
-
-        return fSharedConfig;
-    }
 
     public static String formatEnodeUrl(String address, String ip, String port, String raftPort) {
         String enodeurl = String.format("enode://%s@%s:%s", address, ip, port);

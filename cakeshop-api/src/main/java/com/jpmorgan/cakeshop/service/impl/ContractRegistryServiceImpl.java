@@ -12,7 +12,6 @@ import com.jpmorgan.cakeshop.service.ContractRegistryService;
 import com.jpmorgan.cakeshop.service.ContractService;
 import com.jpmorgan.cakeshop.service.ContractService.CodeType;
 import com.jpmorgan.cakeshop.service.TransactionService;
-import com.jpmorgan.cakeshop.util.CakeshopUtils;
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -22,14 +21,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -74,7 +70,6 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
             if(tx.isSuccess()) {
                 this.contractRegistryAddress = tx.getContractAddress();
                 saveContractRegistryAddress(this.contractRegistryAddress);
-                saveSharedNetworkConfig(this.contractRegistryAddress);
             } else {
                 throw new APIException("Status code for deployment was 0x0, check the geth logs for EVM errors");
             }
@@ -96,39 +91,10 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
         }
     }
 
-    /**
-     * Update the shared network config with the given ContractRegistry address
-     *
-     * @param addr
-     */
-    private void saveSharedNetworkConfig(String addr) {
-
-        // TODO this is a temp solution to the problem of sharing the ContractRegistry
-        // address among multiple Cakeshop nodes running on the same machine.
-
-        File fSharedConfig = CakeshopUtils.getSharedNetworkConfigFile();
-        if (fSharedConfig == null) {
-            return;
-        }
-
-        fSharedConfig.getParentFile().mkdirs();
-        Properties props = new Properties();
-        props.put("contract.registry.addr", addr);
-        try {
-            props.store(new FileOutputStream(fSharedConfig), null);
-            LOG.info("Wrote ContractRegistry address to shared location " + fSharedConfig.toString());
-        } catch (IOException e) {
-            LOG.warn("Error writing to shared config file at " + fSharedConfig.toString() + ": " + e.getMessage(), e);
-        }
-
-    }
-
     @Override
     public void updateRegistryAddress(String addr) throws APIException {
-        // TODO this is a temp solution to the problem of sharing the ContractRegistry
-        // address among multiple Cakeshop nodes running on the same machine.
         this.contractRegistryAddress = addr;
-        // TODO save?
+        saveContractRegistryAddress(addr);
     }
 
     @Override
@@ -263,7 +229,6 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
     @Override
     public boolean contractRegistryExists() {
         // test stored address
-        loadContractRegistryAddress();
         if(noRegistryAddress()) {
             return false;
         }
@@ -284,55 +249,5 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
     @Override
     public String getAddress() {
         return contractRegistryAddress;
-    }
-
-    private void loadContractRegistryAddress() {
-        String regAddr = getSharedNetworkConfig();
-        if (StringUtils.isNotBlank(regAddr)) {
-            LOG.info("Overriding contract registry address from shared config " + regAddr);
-            contractRegistryAddress = regAddr;
-        }
-
-        // Read from env
-        regAddr = System.getenv("CAKESHOP_REGISTRY_ADDR");
-        if (StringUtils.isNotBlank(regAddr)) {
-            LOG.info("Overriding contract registry address with " + regAddr);
-            contractRegistryAddress = regAddr;
-        }
-    }
-
-    /**
-     * Get the shared contract registry address, if configured
-     *
-     * @return String shared registry address
-     */
-    private String getSharedNetworkConfig() {
-
-        // TODO this is a temp solution to the problem of sharing the ContractRegistry
-        // address among multiple Cakeshop nodes running on the same machine.
-        File fSharedConfig = CakeshopUtils.getSharedNetworkConfigFile();
-        if (fSharedConfig == null) {
-            return null;
-        }
-
-        if (!fSharedConfig.exists()) {
-            LOG.debug("CAKESHOP_SHARED_CONFIG file not found: " + fSharedConfig.toString());
-            return null; // not found, skip it
-        }
-
-        Properties props = new Properties();
-        try {
-            props.load(new FileInputStream(fSharedConfig));
-        } catch (IOException e) {
-            LOG.warn("Error loading CAKESHOP_SHARED_CONFIG at " + fSharedConfig.toString() + ": " + e.getMessage(), e);
-            return null;
-        }
-
-        String addr = (String) props.get("contract.registry.addr");
-        if (StringUtils.isNotBlank(addr)) {
-            return addr;
-        }
-
-        return null;
     }
 }

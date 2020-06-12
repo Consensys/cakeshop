@@ -68,9 +68,6 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
     @Autowired
     protected GethHttpService geth;
 
-    @Value("${geth.datadir}")
-    private String ethDataDir;
-
     @Value("${config.path}")
     private String CONFIG_ROOT;
 
