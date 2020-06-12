@@ -16,8 +16,8 @@ export const Report = (props) => {
                 <Table size="small" aria-label="collapsible table">
                     <TableHead>
                         <TableRow>
-                            <TableCell width="10%"><strong>Block Number</strong></TableCell>
-                            <TableCell width="90%"><strong>State</strong></TableCell>
+                            <TableCell width="20%" style={{fontSize: "14px"}}><strong>Block Number</strong></TableCell>
+                            <TableCell width="80%" style={{fontSize: "14px"}}><strong>State</strong></TableCell>
                         </TableRow>
                     </TableHead>
                     { !props.isLoading &&
@@ -25,24 +25,17 @@ export const Report = (props) => {
                             {
                                 props.parsedStorage.map((s, i) => (
                                     <TableRow key={i}>
-                                        <TableCell>{s.blockNumber}</TableCell>
+                                        <TableCell style={{fontSize: "14px"}}>{s.blockNumber}</TableCell>
                                         <TableCell>
                                             <Table size="small" aria-label="collapsible table">
-                                                <TableHead>
-                                                    <TableRow>
-                                                        <TableCell width="20%"><strong>Name</strong></TableCell>
-                                                        <TableCell width="30%"><strong>Type</strong></TableCell>
-                                                        <TableCell width="50%"><strong>Value</strong></TableCell>
-                                                    </TableRow>
-                                                </TableHead>
                                                 <TableBody>
                                                     {
                                                         s.historicStorage.map((v, i) => (
                                                             v.changed?
-                                                                <TableRow key={i} style={{backgroundColor:'#88aaff'}}>
-                                                                    <TableCell><div>{v.name}</div></TableCell>
-                                                                    <TableCell><div>{v.type}</div></TableCell>
-                                                                    <TableCell>
+                                                                <TableRow key={i} style={{backgroundColor:'#F0F0F0'}}>
+                                                                    <TableCell width="20%" style={{fontSize: "14px"}}><div>{v.name}</div></TableCell>
+                                                                    <TableCell width="20%" style={{fontSize: "14px"}}><div>{v.type}</div></TableCell>
+                                                                    <TableCell width="60%" style={{fontSize: "14px"}}>
                                                                         <div style={{maxWidth: "300px"}}>
                                                                             {
                                                                                 v.type === "string" ?
@@ -51,7 +44,7 @@ export const Report = (props) => {
                                                                                         rowsMax={4}
                                                                                         rowsMin={2}
                                                                                         aria-label="maximum height"
-                                                                                        style={{fontSize: "18px", width: "300px"}}
+                                                                                        style={{fontSize: "16px", width: "300px"}}
                                                                                         defaultValue={"\""+v.value+"\""}
                                                                                     /> : v.value.toString()
                                                                             }
@@ -59,9 +52,9 @@ export const Report = (props) => {
                                                                     </TableCell>
                                                                 </TableRow> :
                                                                 <TableRow key={i}>
-                                                                    <TableCell><div>{v.name}</div></TableCell>
-                                                                    <TableCell><div>{v.type}</div></TableCell>
-                                                                    <TableCell>
+                                                                    <TableCell width="20%" style={{fontSize: "14px"}}><div>{v.name}</div></TableCell>
+                                                                    <TableCell width="20%" style={{fontSize: "14px"}}><div>{v.type}</div></TableCell>
+                                                                    <TableCell width="60%" style={{fontSize: "14px"}}>
                                                                         <div style={{maxWidth: "300px"}}>
                                                                             {
                                                                                 v.type === "string" ?
@@ -70,7 +63,7 @@ export const Report = (props) => {
                                                                                         rowsMax={4}
                                                                                         rowsMin={2}
                                                                                         aria-label="maximum height"
-                                                                                        style={{fontSize: "18px", width: "300px"}}
+                                                                                        style={{fontSize: "16px", width: "300px"}}
                                                                                         defaultValue={"\""+v.value+"\""}
                                                                                     /> : v.value.toString()
                                                                             }

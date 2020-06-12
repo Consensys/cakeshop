@@ -29,9 +29,9 @@ module.exports = function() {
         templateRow: _.template('<tr>'
             + '<td><%= contract %></td>'
             + '<td data-id="<%= contract %>">'
-            + '<button class="btn btn-primary btn-xs" data-query="query-contract-creation" data-widget="reporting-query-result">Contract Creation</button>'
-            + '<button class="btn btn-primary btn-xs" data-query="query-tx-to" data-widget="reporting-query-result">TX To</button>'
-            + '<button class="btn btn-primary btn-xs" data-query="query-tx-internal-to" data-widget="reporting-query-result">TX Internal To</button>'
+            + '<button class="btn btn-primary btn-xs" data-query="query-contract-creation" data-widget="reporting-query-result">Creation Tx</button>'
+            + '<button class="btn btn-primary btn-xs" data-query="query-tx-to" data-widget="reporting-query-result">To Tx</button>'
+            + '<button class="btn btn-primary btn-xs" data-query="query-tx-internal-to" data-widget="reporting-query-result">Internal To Tx</button>'
             + '<button class="btn btn-primary btn-xs" data-widget="reporting-report">Report</button>'
             + '</td></tr>'
         ),
