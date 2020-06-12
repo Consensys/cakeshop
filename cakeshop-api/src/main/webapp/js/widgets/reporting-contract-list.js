@@ -67,7 +67,7 @@ module.exports = function() {
             $('#widget-' + _this.shell.id).html(
                 _this.template({rows: rowsOut.join('')}));
 
-            ReactDOM.render(<RegisterContractContainer addContract={this.addContract} />, document.getElementById('register-dialog'));
+            ReactDOM.render(<RegisterContractContainer addContract={this.addContract} addTemplate={this.addTemplate} />, document.getElementById('register-dialog'));
             _this.postFetch();
         },
 
@@ -80,19 +80,24 @@ module.exports = function() {
             }).done(function (res) {
                 console.log("Successfully register new contract: ", newContract.address);
                 $.when(
-                    utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting_addABI","params":[newContract.address, newContract.abi],"id":101} })
+                    utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting_assignTemplate","params":[newContract.address, newContract.name],"id":101} })
                 ).fail(function (res) {
                     console.log("Failed to register new contract abi: ", res);
                 }).done(function (res) {
-                    console.log("Successfully register new contract abi: ", newContract.abi);
+                    console.log("Successfully assign template name: ", newContract.name);
                 });
-                $.when(
-                    utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting_addStorageABI","params":[newContract.address, newContract.template],"id":102} })
-                ).fail(function (res) {
-                    console.log("Failed to register new contract storage template: ", res);
-                }).done(function (res) {
-                    console.log("Successfully register new contract storage template: ", newContract.template);
-                });
+                this.fetch()
+            });
+        },
+
+        addTemplate: function(newTemplate) {
+            var _this = this;
+            $.when(
+                utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting_addTemplate","params":[newTemplate.name, newTemplate.abi, newTemplate.storage],"id":100} })
+            ).fail(function (res) {
+                console.log("Failed to add new contract template: ", res);
+            }).done(function (res) {
+                console.log("Successfully add new contract template: ", newTemplate);
                 this.fetch()
             });
         },

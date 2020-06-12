@@ -1,29 +1,39 @@
 import React from 'react';
-import IconButton from '@material-ui/core/IconButton';
-import AddIcon from '@material-ui/icons/Add';
+import Button from "@material-ui/core/Button";
 import { RegisterContractDialog } from './RegisterContractDialog';
+import { AddTemplateDialog } from "./AddTemplateDialog";
 
 export class RegisterContractContainer extends React.Component {
 
     constructor(props) {
         super(props);
         this.state = {
-            formIsOpen: false,
+            contractFormIsOpen: false,
+            templateFormIsOpen: false,
             newContract: {
                 address: "",
-                abi: "",
-                template: "",
+                name: "",
             },
+            newTemplate: {
+                name: "",
+                abi: "",
+                storage: "",
+            },
+            templates: [],
             errorMessage: "",
         }
     }
 
-    handleOpenSetting = () => {
-        this.setState({ formIsOpen: true })
+    handleTemplateOpenSetting = () => {
+        this.setState({ templateFormIsOpen: true, contractFormIsOpen: false, errorMessage: "" })
+    };
+
+    handleContractOpenSetting = () => {
+        this.setState({ templateFormIsOpen: false, contractFormIsOpen: true, errorMessage: "" })
     };
 
     handleCloseSetting = () => {
-        this.setState({ formIsOpen: false })
+        this.setState({ templateFormIsOpen: false, contractFormIsOpen: false })
     };
 
     handleNewContractAddressChange = (e) => {
@@ -36,24 +46,67 @@ export class RegisterContractContainer extends React.Component {
         })
     };
 
-    handleNewContractABIChange = (e) => {
+    handleNewContractNameChange = (e) => {
         this.setState({
             newContract: {
                 ...this.state.newContract,
+                name: e.target.value,
+            },
+            errorMessage: "",
+        })
+    };
+
+    handleNewTemplateNameChange = (e) => {
+        this.setState({
+            newTemplate: {
+                ...this.state.newTemplate,
+                name: e.target.value,
+            },
+            errorMessage: "",
+        })
+    };
+
+    handleNewTemplateABIChange = (e) => {
+        this.setState({
+            newTemplate: {
+                ...this.state.newTemplate,
                 abi: e.target.value,
             },
             errorMessage: "",
         })
     };
 
-    handleNewContractTemplateChange = (e) => {
+    handleNewTemplateStorageChange = (e) => {
         this.setState({
-            newContract: {
-                ...this.state.newContract,
-                template: e.target.value,
+            newTemplate: {
+                ...this.state.newTemplate,
+                storage: e.target.value,
             },
             errorMessage: "",
         })
+    };
+
+    handleAddNewTemplate = () => {
+        if (this.state.newTemplate.name === ""){
+            this.setState({
+                errorMessage: "template name must not be empty",
+            });
+            return
+        }
+        if (this.state.newTemplate.abi === ""){
+            this.setState({
+                errorMessage: "abi must not be empty",
+            });
+            return
+        }
+        if (this.state.newTemplate.storage === "") {
+            this.setState({
+                errorMessage: "storage layout must not be empty",
+            });
+            return
+        }
+        this.props.addTemplate(this.state.newTemplate);
+        this.handleCloseSetting();
     };
 
     handleRegisterNewContract = () => {
@@ -63,37 +116,38 @@ export class RegisterContractContainer extends React.Component {
             });
             return
         }
-        if (this.state.newContract.abi === ""){
-            this.setState({
-                errorMessage: "abi must not be empty",
-            });
-            return
-        }
-        if (this.state.newContract.template === "") {
-            this.setState({
-                errorMessage: "template must not be empty",
-            });
-            return
-        }
+        // newContract.name is optional
         this.props.addContract(this.state.newContract);
-        this.setState({ formIsOpen: false })
+        this.handleCloseSetting();
     };
 
     render(){
         return (
             <div>
-                <IconButton color="primary" variant="h4" onClick={this.handleOpenSetting}>
-                    <AddIcon />
-                </IconButton>
+                <Button variant="contained" size="small" style={{backgroundColor: "#337AB7", color: "white"}} onClick={this.handleTemplateOpenSetting}>
+                    Add Template
+                </Button>
+                <Button variant="contained" size="small" style={{backgroundColor: "#337AB7", color: "white"}} onClick={this.handleContractOpenSetting}>
+                    Register Contract
+                </Button>
                 <br/>
                 <RegisterContractDialog
-                    isOpen={this.state.formIsOpen}
+                    isOpen={this.state.contractFormIsOpen}
                     handleCloseSetting={this.handleCloseSetting}
                     handleNewContractAddressChange={this.handleNewContractAddressChange}
-                    handleNewContractABIChange={this.handleNewContractABIChange}
-                    handleNewContractTemplateChange={this.handleNewContractTemplateChange}
+                    handleNewContractNameChange={this.handleNewContractNameChange}
                     handleRegisterNewContract={this.handleRegisterNewContract}
                     newContract={this.state.newContract}
+                    errorMessage={this.state.errorMessage}
+                />
+                <AddTemplateDialog
+                    isOpen={this.state.templateFormIsOpen}
+                    handleCloseSetting={this.handleCloseSetting}
+                    handleNewTemplateNameChange={this.handleNewTemplateNameChange}
+                    handleNewTemplateABIChange={this.handleNewTemplateABIChange}
+                    handleNewTemplateStorageChange={this.handleNewTemplateStorageChange}
+                    handleAddNewTemplate={this.handleAddNewTemplate}
+                    newTemplate={this.state.newTemplate}
                     errorMessage={this.state.errorMessage}
                 />
             </div>

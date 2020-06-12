@@ -8,7 +8,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Alert from '@material-ui/lab/Alert';
 
-export const RegisterContractDialog = (props) => {
+export const AddTemplateDialog = (props) => {
 
     const handleKeyPress = (e) => {
         if (e.key === 'Enter') {
@@ -18,25 +18,34 @@ export const RegisterContractDialog = (props) => {
 
     return (
         <Dialog open={props.isOpen} onClose={props.handleCloseSetting} aria-labelledby="form-dialog-title" maximumwidth="400" fullWidth>
-            <DialogTitle id="form-dialog-title">Register new contract</DialogTitle>
+            <DialogTitle id="form-dialog-title">Add new Template</DialogTitle>
             <DialogContent>
                 <DialogContentText>
-                    Register a new contract for reporting.
+                    Add contract template with ABI & Storage information
                 </DialogContentText>
                 <br/>
                 <TextField
-                    label="Contract Address"
-                    value={props.newContract.address}
-                    onChange={props.handleNewContractAddressChange}
+                    label="Contract Template Name"
+                    value={props.newTemplate.name}
+                    onChange={props.handleNewTemplateNameChange}
                     onKeyPress={handleKeyPress}
                     margin="dense"
                     fullWidth
                     autoFocus
                 />
                 <TextField
-                    label="Contract Template Name"
-                    value={props.newContract.name}
-                    onChange={props.handleNewContractNameChange}
+                    label="Contract Template ABI"
+                    value={props.newTemplate.abi}
+                    onChange={props.handleNewTemplateABIChange}
+                    onKeyPress={handleKeyPress}
+                    margin="dense"
+                    fullWidth
+                    multiline
+                />
+                <TextField
+                    label="Contract Template Storage Template"
+                    value={props.newTemplate.storage}
+                    onChange={props.handleNewTemplateStorageChange}
                     onKeyPress={handleKeyPress}
                     margin="dense"
                     fullWidth
@@ -54,8 +63,8 @@ export const RegisterContractDialog = (props) => {
                 <Button onClick={props.handleCloseSetting} color="primary">
                     Cancel
                 </Button>
-                <Button onClick={props.handleRegisterNewContract} color="primary">
-                    Register
+                <Button onClick={props.handleAddNewTemplate} color="primary">
+                    Add
                 </Button>
             </DialogActions>
         </Dialog>
