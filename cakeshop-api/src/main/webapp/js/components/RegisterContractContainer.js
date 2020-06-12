@@ -124,7 +124,7 @@ export class RegisterContractContainer extends React.Component {
     render(){
         return (
             <div>
-                <Button variant="contained" size="small" style={{backgroundColor: "#337AB7", color: "white"}} onClick={this.handleTemplateOpenSetting}>
+                <Button variant="contained" size="small" style={{backgroundColor: "#337AB7", color: "white", marginRight: "5px"}} onClick={this.handleTemplateOpenSetting}>
                     Add Template
                 </Button>
                 <Button variant="contained" size="small" style={{backgroundColor: "#337AB7", color: "white"}} onClick={this.handleContractOpenSetting}>
