@@ -29,6 +29,9 @@ export class RegisterContractContainer extends React.Component {
     };
 
     handleContractOpenSetting = () => {
+        this.props.getTemplates( (templates) => {
+            this.setState({ templates })
+        });
         this.setState({ templateFormIsOpen: false, contractFormIsOpen: true, errorMessage: "" })
     };
 
@@ -138,6 +141,7 @@ export class RegisterContractContainer extends React.Component {
                     handleNewContractNameChange={this.handleNewContractNameChange}
                     handleRegisterNewContract={this.handleRegisterNewContract}
                     newContract={this.state.newContract}
+                    templates={this.state.templates}
                     errorMessage={this.state.errorMessage}
                 />
                 <AddTemplateDialog

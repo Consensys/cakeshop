@@ -7,6 +7,10 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Alert from '@material-ui/lab/Alert';
+import InputLabel from "@material-ui/core/InputLabel";
+import Select from "@material-ui/core/Select";
+import MenuItem from "@material-ui/core/MenuItem";
+import FormControl from "@material-ui/core/FormControl";
 
 export const RegisterContractDialog = (props) => {
 
@@ -33,15 +37,17 @@ export const RegisterContractDialog = (props) => {
                     fullWidth
                     autoFocus
                 />
-                <TextField
-                    label="Contract Template Name"
-                    value={props.newContract.name}
-                    onChange={props.handleNewContractNameChange}
-                    onKeyPress={handleKeyPress}
-                    margin="dense"
-                    fullWidth
-                    multiline
-                />
+                <FormControl margin="dense" fullWidth>
+                    <InputLabel>Contract Template Name</InputLabel>
+                    <Select
+                        value={props.newContract.name}
+                        onChange={props.handleNewContractNameChange}
+                    >
+                        {props.templates.map( c => (
+                            <MenuItem key={c} value={c}>{c}</MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
             </DialogContent>
             {
                 props.errorMessage &&

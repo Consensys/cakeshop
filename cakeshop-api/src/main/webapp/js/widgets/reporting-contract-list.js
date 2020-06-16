@@ -67,7 +67,7 @@ module.exports = function() {
             $('#widget-' + _this.shell.id).html(
                 _this.template({rows: rowsOut.join('')}));
 
-            ReactDOM.render(<RegisterContractContainer addContract={this.addContract} addTemplate={this.addTemplate} />, document.getElementById('register-dialog'));
+            ReactDOM.render(<RegisterContractContainer addContract={this.addContract} addTemplate={this.addTemplate} getTemplates={this.getTemplates} />, document.getElementById('register-dialog'));
             _this.postFetch();
         },
 
@@ -78,13 +78,15 @@ module.exports = function() {
             ).fail(function (res) {
                 console.log("Failed to register new contract: ", res);
             }).done(function (res) {
-                console.log("Successfully register new contract: ", newContract.address);
+                console.log("Successfully register new contract: ", res);
+                console.log("New contract address: ", newContract.address);
                 $.when(
                     utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting_assignTemplate","params":[newContract.address, newContract.name],"id":101} })
                 ).fail(function (res) {
                     console.log("Failed to register new contract abi: ", res);
                 }).done(function (res) {
-                    console.log("Successfully assign template name: ", newContract.name);
+                    console.log("Successfully assign template name: ", res);
+                    console.log("Assigned template name: ", newContract.name);
                 });
                 this.fetch()
             });
@@ -97,8 +99,21 @@ module.exports = function() {
             ).fail(function (res) {
                 console.log("Failed to add new contract template: ", res);
             }).done(function (res) {
-                console.log("Successfully add new contract template: ", newTemplate);
+                console.log("Successfully add new contract template: ", res);
+                console.log("New contract template: ", newTemplate);
                 this.fetch()
+            });
+        },
+
+        getTemplates: function(cb) {
+            var _this = this;
+            $.when(
+                utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting_getTemplates","params":[],"id":99} })
+            ).fail(function (res) {
+                console.log("Failed to get templates: ", res);
+            }).done(function (res) {
+                console.log(res);
+                cb(res.result)
             });
         },
 
