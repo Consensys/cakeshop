@@ -13,6 +13,7 @@ import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.error.ErrorLog;
 import com.jpmorgan.cakeshop.model.NodeInfo;
 import com.jpmorgan.cakeshop.model.RequestModel;
+import com.jpmorgan.cakeshop.model.Web3DefaultResponseType;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.util.CakeshopUtils;
 import com.jpmorgan.cakeshop.util.ProcessUtils;
@@ -23,23 +24,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.web3j.protocol.Web3jService;
+import org.web3j.protocol.core.Request;
+import org.web3j.protocol.http.HttpService;
 import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.springframework.http.HttpMethod.POST;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 /**
  *
@@ -72,9 +69,6 @@ public class GethHttpServiceImpl implements GethHttpService {
     private ApplicationContext applicationContext;
 
     @Autowired
-    private RestTemplate restTemplate;
-
-    @Autowired
     private ObjectMapper jsonMapper;
 
     private BlockScanner blockScanner;
@@ -88,41 +82,21 @@ public class GethHttpServiceImpl implements GethHttpService {
     private StreamLogAdapter stderrLogger;
 
     private final List<ErrorLog> startupErrors;
-    private final HttpHeaders jsonContentHeaders;
+
+    private Web3jService cakeshopService;
 
     public GethHttpServiceImpl() {
         this.startupErrors = new ArrayList<>();
-
-        this.jsonContentHeaders = new HttpHeaders();
-        this.jsonContentHeaders.setContentType(APPLICATION_JSON);
     }
 
-    private String executeGethCallInternal(String json) throws APIException {
-        try {
-
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("> " + json);
-            }
-
-            if (StringUtils.isEmpty(currentRpcUrl)) {
-                throw new ResourceAccessException("Current RPC URL not set, skipping request");
-            }
-
-            HttpEntity<String> httpEntity = new HttpEntity<>(json, jsonContentHeaders);
-            ResponseEntity<String> response = restTemplate.exchange(currentRpcUrl, POST, httpEntity, String.class);
-
-            String res = response.getBody();
-
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("< " + res.trim());
-            }
-
-            return res;
-
-        } catch (RestClientException e) {
-            LOG.error("RPC call failed - " + ExceptionUtils.getRootCauseMessage(e));
-            throw new APIException("RPC call failed", e);
+    private Web3jService getCakeshopService() throws APIException {
+      if (cakeshopService == null) {
+        if (StringUtils.isEmpty(currentRpcUrl)) {
+          throw new ResourceAccessException("Current RPC URL not set, skipping request");
         }
+        cakeshopService = new HttpService(currentRpcUrl);
+      }
+      return cakeshopService;
     }
 
     private String requestToJson(Object request) throws APIException {
@@ -133,23 +107,21 @@ public class GethHttpServiceImpl implements GethHttpService {
         }
     }
 
+    private Request<?, Web3DefaultResponseType> defaultResponseType(String funcName, Object... args) throws APIException{
+    	return new Request<>(funcName, Arrays.asList(args), getCakeshopService(), Web3DefaultResponseType.class);
+    }
+
     @Override
     public Map<String, Object> executeGethCall(String funcName, Object... args) throws APIException {
         LOG.info("Geth call: " + funcName);
-        return executeGethCall(new RequestModel(funcName, args, GETH_API_VERSION, GETH_REQUEST_ID));
+        return executeGethCall(defaultResponseType(funcName, args));
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public Map<String, Object> executeGethCall(RequestModel request) throws APIException {
-        String response = executeGethCallInternal(requestToJson(request));
-
-        if (StringUtils.isEmpty(response)) {
-            throw new APIException("Received empty reply from server");
-        }
-
+    public Map<String, Object> executeGethCall(Request<?, Web3DefaultResponseType> request) throws APIException {
         try {
-            return processResponse(jsonMapper.readValue(response, Map.class));
+            return request.send().getResponse();
         } catch (APIException e) {
             throw e;
         } catch (IOException e) {
@@ -157,54 +129,29 @@ public class GethHttpServiceImpl implements GethHttpService {
         }
     }
 
+    private List<Request> processBatchRequests(List<RequestModel> requests) throws APIException {
+    	List<Request> reqs = new ArrayList<Request>();
+    	for (RequestModel request : requests) {
+    		reqs.add(new Request<>(request.getMethod(), Arrays.asList(request.getParams()), getCakeshopService(), Web3DefaultResponseType.class));
+    	}
+    	return reqs;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public List<Map<String, Object>> batchExecuteGethCall(List<RequestModel> requests) throws APIException {
         String json = requestToJson(requests);
-        String response = executeGethCallInternal(json);
 
-        List<Map<String, Object>> responses;
+        List<Map<String, Object>> responses = new ArrayList<Map<String,Object>>();
+        List<Request> reqs = processBatchRequests(requests);
         try {
-            responses = jsonMapper.readValue(response, List.class);
-
-            List<Map<String, Object>> results = new ArrayList<>(responses.size());
-            for (Map<String, Object> data : responses) {
-                results.add(processResponse(data));
-            }
-            return results;
-
+          for(Request r : reqs) {
+            responses.add(getCakeshopService().send(r, Web3DefaultResponseType.class).getResponse());
+          }
+          return responses;
         } catch (IOException e) {
             throw new APIException("RPC call failed for " + json, e);
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> processResponse(Map<String, Object> data) throws APIException {
-
-        if (data.containsKey("error") && data.get("error") != null) {
-            String message;
-            Map<String, String> error = (Map<String, String>) data.get("error");
-            if (error.containsKey("message")) {
-                message = error.get("message");
-            } else {
-                message = "RPC call failed";
-            }
-            throw new APIException("RPC request failed: " + message);
-        }
-
-        Object result = data.get("result");
-        if (result == null) {
-            return null;
-        }
-
-        if (!(result instanceof Map)) {
-            // Handle case where a simple value is returned instead of a map (int, bool, or string)
-            Map<String, Object> res = new HashMap<>();
-            res.put(SIMPLE_RESULT, data.get("result"));
-            return res;
-        }
-
-        return (Map<String, Object>) data.get("result");
     }
 
     @PreDestroy
