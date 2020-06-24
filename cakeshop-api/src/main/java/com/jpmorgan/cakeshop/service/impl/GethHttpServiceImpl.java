@@ -29,6 +29,7 @@ import org.web3j.protocol.Web3jService;
 import org.web3j.protocol.core.Request;
 import org.web3j.protocol.http.HttpService;
 import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestClientException;
 
 import javax.annotation.PreDestroy;
 import java.io.IOException;
@@ -90,13 +91,23 @@ public class GethHttpServiceImpl implements GethHttpService {
     }
 
     private Web3jService getCakeshopService() throws APIException {
-      if (cakeshopService == null) {
-        if (StringUtils.isEmpty(currentRpcUrl)) {
-          throw new ResourceAccessException("Current RPC URL not set, skipping request");
+      try {
+        if (cakeshopService == null) {
+          if (StringUtils.isEmpty(currentRpcUrl)) {
+            throw new ResourceAccessException("Current RPC URL not set, skipping request");
+          }
+          cakeshopService = new HttpService(currentRpcUrl);
+          LOG.info("New httpService connected to " + currentRpcUrl);
         }
-        cakeshopService = new HttpService(currentRpcUrl);
+        return cakeshopService;
+      } catch (RestClientException e) {
+          LOG.error("RPC call failed - " + ExceptionUtils.getRootCauseMessage(e));
+          throw new APIException("RPC call failed", e);
       }
-      return cakeshopService;
+    }
+
+    private void resetCakeshopService() {
+      cakeshopService = null;
     }
 
     private String requestToJson(Object request) throws APIException {
@@ -207,6 +218,7 @@ public class GethHttpServiceImpl implements GethHttpService {
             if (node != null) {
                 setCurrentRpcUrl(node.rpcUrl);
                 setCurrentTransactionManagerUrl(node.transactionManagerUrl);
+                resetCakeshopService();
                 runPostConnectTasks();
                 gethConfig.setSelectedNode(nodeId);
                 gethConfig.save();
