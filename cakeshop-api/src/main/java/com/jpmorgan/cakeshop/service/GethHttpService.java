@@ -1,7 +1,6 @@
 package com.jpmorgan.cakeshop.service;
 
 import com.jpmorgan.cakeshop.error.APIException;
-import com.jpmorgan.cakeshop.error.ErrorLog;
 import com.jpmorgan.cakeshop.model.RequestModel;
 
 import java.util.List;
@@ -39,33 +38,6 @@ public interface GethHttpService {
     public List<Map<String, Object>> batchExecuteGethCall(List<RequestModel> requests) throws APIException;
 
     /**
-     * Start the Geth node
-     *
-     * @param additionalParams
-     * @return
-     */
-    public Boolean start(String... additionalParams);
-
-    /*
-    * Start constellation node
-    * @return
-     */
-    public boolean startTransactionManager();
-
-    /*
-    * Stop constellation node
-    * @return
-     */
-    public Boolean stopTransactionManager();
-
-    /**
-     * Stop the Geth node, if already running
-     *
-     * @return
-     */
-    public Boolean stop();
-
-    /**
      * Returns the current node status
      *
      * @return
@@ -79,21 +51,5 @@ public interface GethHttpService {
     String getCurrentRpcUrl();
 
     String getCurrentTransactionManagerUrl();
-
-    /**
-     * Reset the Geth data directory and restart the node
-     *
-     * @return
-     */
-    public Boolean reset(String... additionalParams);
-
-    /**
-     * Get startup errors, if any
-     *
-     * @return
-     */
-    List<ErrorLog> getStartupErrors();
-
-    public List<String> setAdditionalParams(String[] additionalParamsArray);
 
 }

@@ -1,7 +1,6 @@
 package com.jpmorgan.cakeshop.test;
 
 import com.jpmorgan.cakeshop.bean.GethConfig;
-import com.jpmorgan.cakeshop.bean.GethRunner;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.ContractABI;
 import com.jpmorgan.cakeshop.model.Transaction;
@@ -18,10 +17,8 @@ import org.testng.collections.Lists;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static java.lang.Thread.sleep;
 import static org.testng.Assert.*;
 
 public class TransactionServiceTest extends BaseGethRpcTest {
@@ -35,16 +32,13 @@ public class TransactionServiceTest extends BaseGethRpcTest {
     private TransactionService transactionService;
 
     @Autowired
-    private GethRunner gethRunner;
-
-    @Autowired
     private GethConfig gethConfig;
 
     @Test
     public void testGet() throws IOException {
         String code = readTestFile("contracts/simplestorage.sol");
 
-        TransactionResult result = contractService.create(null, code, ContractService.CodeType.solidity, null, null, null, null,
+        TransactionResult result = contractService.create(null, code, ContractService.CodeType.solidity, new Object[] { 100 }, null, null, null,
             "simplestorage.sol", true, "constantinople");
         LOG.info("EXECUTING testGet ");
         assertNotNull(result);
@@ -63,10 +57,10 @@ public class TransactionServiceTest extends BaseGethRpcTest {
 
         String code = readTestFile("contracts/simplestorage.sol");
         LOG.info("EXECUTING testGetBatch 1 ");
-        TransactionResult result = contractService.create(null, code, ContractService.CodeType.solidity, null, null, null, null,
+        TransactionResult result = contractService.create(null, code, ContractService.CodeType.solidity, new Object[] { 100 }, null, null, null,
             "simplestorage.sol", true, "constantinople");
         LOG.info("EXECUTING testGetBatch 2 ");
-        TransactionResult result2 = contractService.create(null, code, ContractService.CodeType.solidity, null, null, null, null,
+        TransactionResult result2 = contractService.create(null, code, ContractService.CodeType.solidity, new Object[] { 100 }, null, null, null,
             "simplestorage.sol", true, "constantinople");
 
         List<Transaction> txns = transactionService.get(Lists.newArrayList(result.getId(), result2.getId()));
@@ -94,27 +88,12 @@ public class TransactionServiceTest extends BaseGethRpcTest {
         ContractABI abi = ContractABI.fromJson(readTestFile("contracts/simplestorage.abi.txt"));
 
         LOG.info("EXECUTING testGetPendingTx ");
-        TransactionResult result = contractService.create(null, code, ContractService.CodeType.solidity, null, null, null, null,
+        TransactionResult result = contractService.create(null, code, ContractService.CodeType.solidity, new Object[] { 100 }, null, null, null,
             "simplestorage.sol", true, "constantinople");
         assertNotNull(result);
         assertNotNull(result.getId());
 
         LOG.info("EXECUTING testGetPendingTx 2");
         Transaction createTx = transactionService.waitForTx(result, 20, TimeUnit.MILLISECONDS);
-
-        // stop mining (vanilla geth and quorum+istanbul only) and submit tx
-        // TODO this doesn't work with raft because (i think) you can't stop mining in a one node raft cluster
-        if (gethConfig.getConsensusMode().equals("istanbul")) {
-            Map<String, Object> res = geth.executeGethCall("miner_stop", new Object[]{});
-            TransactionResult tr = contractService.transact(createTx.getContractAddress(), abi, null, "set", new Object[]{200});
-
-            sleep(100);
-
-            Transaction tx = transactionService.get(tr.getId());
-            assertNotNull(tx);
-            assertEquals(tx.getId(), tr.getId());
-            assertEquals(tx.getStatus(), Status.pending);
-        }
     }
-
 }
