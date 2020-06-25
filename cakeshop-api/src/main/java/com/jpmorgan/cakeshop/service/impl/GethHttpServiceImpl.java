@@ -12,7 +12,6 @@ import com.jpmorgan.cakeshop.db.BlockScanner;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.error.ErrorLog;
 import com.jpmorgan.cakeshop.model.NodeInfo;
-import com.jpmorgan.cakeshop.model.RequestModel;
 import com.jpmorgan.cakeshop.model.Web3DefaultResponseType;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.util.CakeshopUtils;
@@ -118,14 +117,15 @@ public class GethHttpServiceImpl implements GethHttpService {
         }
     }
 
-    private Request<?, Web3DefaultResponseType> defaultResponseType(String funcName, Object... args) throws APIException{
+    @Override
+    public Request<?, Web3DefaultResponseType> createHttpRequestType(String funcName, Object... args) throws APIException{
     	return new Request<>(funcName, Arrays.asList(args), getCakeshopService(), Web3DefaultResponseType.class);
     }
 
     @Override
     public Map<String, Object> executeGethCall(String funcName, Object... args) throws APIException {
         LOG.info("Geth call: " + funcName);
-        return executeGethCall(defaultResponseType(funcName, args));
+        return executeGethCall(createHttpRequestType(funcName, args));
     }
 
     @SuppressWarnings("unchecked")
@@ -140,28 +140,18 @@ public class GethHttpServiceImpl implements GethHttpService {
         }
     }
 
-    private List<Request> processBatchRequests(List<RequestModel> requests) throws APIException {
-    	List<Request> reqs = new ArrayList<Request>();
-    	for (RequestModel request : requests) {
-    		reqs.add(new Request<>(request.getMethod(), Arrays.asList(request.getParams()), getCakeshopService(), Web3DefaultResponseType.class));
-    	}
-    	return reqs;
-    }
-
     @SuppressWarnings("unchecked")
     @Override
-    public List<Map<String, Object>> batchExecuteGethCall(List<RequestModel> requests) throws APIException {
-        String json = requestToJson(requests);
-
+    public List<Map<String, Object>> batchExecuteGethCall(List<Request<?, Web3DefaultResponseType>> requests) throws APIException {
+        LOG.info("batch call");
         List<Map<String, Object>> responses = new ArrayList<Map<String,Object>>();
-        List<Request> reqs = processBatchRequests(requests);
         try {
-          for(Request r : reqs) {
-            responses.add(getCakeshopService().send(r, Web3DefaultResponseType.class).getResponse());
+          for(Request<?, Web3DefaultResponseType> r : requests) {
+            responses.add(r.send().getResponse());
           }
           return responses;
         } catch (IOException e) {
-            throw new APIException("RPC call failed for " + json, e);
+            throw new APIException("RPC call failed", e);
         }
     }
 

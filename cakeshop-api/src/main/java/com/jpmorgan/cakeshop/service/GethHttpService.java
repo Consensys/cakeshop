@@ -1,7 +1,6 @@
 package com.jpmorgan.cakeshop.service;
 
 import com.jpmorgan.cakeshop.error.APIException;
-import com.jpmorgan.cakeshop.model.RequestModel;
 import com.jpmorgan.cakeshop.model.Web3DefaultResponseType;
 
 import org.web3j.protocol.core.Request;
@@ -38,7 +37,9 @@ public interface GethHttpService {
      */
     public Map<String, Object> executeGethCall(Request<?, Web3DefaultResponseType> request) throws APIException;
 
-    public List<Map<String, Object>> batchExecuteGethCall(List<RequestModel> requests) throws APIException;
+    public List<Map<String, Object>> batchExecuteGethCall(List<Request<?, Web3DefaultResponseType>> requests) throws APIException;
+
+    public Request<?, Web3DefaultResponseType> createHttpRequestType(String funcName, Object... args) throws APIException;
 
     /**
      * Returns the current node status
