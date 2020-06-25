@@ -109,14 +109,6 @@ public class GethHttpServiceImpl implements GethHttpService {
       cakeshopService = null;
     }
 
-    private String requestToJson(Object request) throws APIException {
-        try {
-            return jsonMapper.writeValueAsString(request);
-        } catch (JsonProcessingException e) {
-            throw new APIException("Failed to serialize request(s)", e);
-        }
-    }
-
     @Override
     public Request<?, Web3DefaultResponseType> createHttpRequestType(String funcName, Object... args) throws APIException{
     	return new Request<>(funcName, Arrays.asList(args), getCakeshopService(), Web3DefaultResponseType.class);
@@ -143,7 +135,6 @@ public class GethHttpServiceImpl implements GethHttpService {
     @SuppressWarnings("unchecked")
     @Override
     public List<Map<String, Object>> batchExecuteGethCall(List<Request<?, Web3DefaultResponseType>> requests) throws APIException {
-        LOG.info("batch call");
         List<Map<String, Object>> responses = new ArrayList<Map<String,Object>>();
         try {
           for(Request<?, Web3DefaultResponseType> r : requests) {
