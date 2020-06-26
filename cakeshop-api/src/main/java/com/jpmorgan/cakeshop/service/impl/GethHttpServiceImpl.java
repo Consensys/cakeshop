@@ -91,10 +91,10 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     private Web3jService getCakeshopService() throws APIException {
       try {
+        if (StringUtils.isEmpty(currentRpcUrl)) {
+          throw new ResourceAccessException("Current RPC URL not set, skipping request");
+        }
         if (cakeshopService == null) {
-          if (StringUtils.isEmpty(currentRpcUrl)) {
-            throw new ResourceAccessException("Current RPC URL not set, skipping request");
-          }
           cakeshopService = new HttpService(currentRpcUrl);
           LOG.info("New httpService connected to " + currentRpcUrl);
         }
