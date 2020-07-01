@@ -28,10 +28,10 @@ module.exports = function() {
          ),
 
 		templateRow: _.template('<tr>'
-		    + '<td>#<a href="#"><%= block.num %></a></td>
-		    + '<td><%= block.age === 0 ? "Genesis" : moment(block.age).fromNow() %></td>
-		    + '<td <% if (block.txnCount == 0) { %>style="opacity: 0.2;"<% } %>><%= block.txnCount %></td>
-		    + '<td>#<a href="#"><%= block.num %></a></td>
+		    + '<td>#<a href="#"><%= block.num %></a></td>'
+		    + '<td><%= block.age === 0 ? "Genesis" : moment(block.age).fromNow() %></td>'
+		    + '<td <% if (block.txnCount == 0) { %>style="opacity: 0.2;"<% } %>><%= block.txnCount %></td>'
+		    + '<td>#<a href="#"><%= block.num %></a></td>'
 		    + '</tr>'
 		),
 
