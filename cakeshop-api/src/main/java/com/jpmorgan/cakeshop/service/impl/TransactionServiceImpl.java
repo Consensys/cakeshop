@@ -7,7 +7,7 @@ import com.jpmorgan.cakeshop.model.Contract;
 import com.jpmorgan.cakeshop.model.ContractABI;
 import com.jpmorgan.cakeshop.model.DirectTransactionRequest;
 import com.jpmorgan.cakeshop.model.Event;
-import com.jpmorgan.cakeshop.model.RequestModel;
+import com.jpmorgan.cakeshop.model.Web3DefaultResponseType;
 import com.jpmorgan.cakeshop.model.Transaction;
 import com.jpmorgan.cakeshop.model.Transaction.Status;
 import com.jpmorgan.cakeshop.model.TransactionResult;
@@ -17,6 +17,7 @@ import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.TransactionService;
 import com.jpmorgan.cakeshop.service.WalletService;
 import com.jpmorgan.cakeshop.util.StringUtils;
+import org.web3j.protocol.core.Request;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,9 +52,9 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public Transaction get(String id) throws APIException {
-        List<RequestModel> reqs = new ArrayList<>();
-        reqs.add(new RequestModel("eth_getTransactionByHash", new Object[]{id}, 1L));
-        reqs.add(new RequestModel("eth_getTransactionReceipt", new Object[]{id}, 2L));
+        List<Request<?, Web3DefaultResponseType>> reqs = new ArrayList<>();
+        reqs.add(geth.createHttpRequestType("eth_getTransactionByHash", new Object[]{id}));
+        reqs.add(geth.createHttpRequestType("eth_getTransactionReceipt", new Object[]{id}));
         List<Map<String, Object>> batchRes = geth.batchExecuteGethCall(reqs);
 
         if (batchRes.isEmpty() || batchRes.get(0) == null) {
@@ -168,10 +169,10 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public List<Transaction> get(List<String> ids) throws APIException {
 
-        List<RequestModel> reqs = new ArrayList<>();
+        List<Request<?, Web3DefaultResponseType>> reqs = new ArrayList<>();
         for (String id : ids) {
-            reqs.add(new RequestModel("eth_getTransactionByHash", new Object[]{id}, 1L));
-            reqs.add(new RequestModel("eth_getTransactionReceipt", new Object[]{id}, 2L));
+            reqs.add(geth.createHttpRequestType("eth_getTransactionByHash", new Object[]{id}));
+            reqs.add(geth.createHttpRequestType("eth_getTransactionReceipt", new Object[]{id}));
         }
         List<Map<String, Object>> batchRes = geth.batchExecuteGethCall(reqs);
 
