@@ -134,6 +134,7 @@ window.Tower = {
 			'metrix-blocks-min'      : require('./widgets/metrix-blocks-min'),
 			'metrix-txn-min'         : require('./widgets/metrix-txn-min'),
 			// 'metrix-txn-sec'         : require('./widgets/metrix-txn-sec'),
+			'permissions-list'       : require('./widgets/permissions-list'),
 			'node-info'              : require('./widgets/node-info'),
 			'peers-add'              : require('./widgets/peers-add'),
 			'peers-list'             : require('./widgets/peers-list'),
@@ -337,6 +338,14 @@ window.Tower = {
 			];
 
 			Dashboard.showSection('explorer', widgets);
+		},
+
+		'permissioning': function() {
+			var widgets = [
+				{ widgetId: 'permissions-list' }
+			];
+
+			Dashboard.showSection('permissioning', widgets);
 		},
 
 		'wallet': function() {
