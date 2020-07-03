@@ -22,12 +22,12 @@ module.exports = function() {
                 function () {
                     if (_this.query === "query-tx-to") {
                         // display latest 100 max for now
-                        return utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting_getAllTransactionsToAddress","params":[_this.contractAddress, {pageSize: 100}],"id":99} })
+                        return utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting.GetAllTransactionsToAddress","params":[{address: _this.contractAddress, options: {pageSize: 100}}],"id":99} })
                     } else if (_this.query === "query-tx-internal-to") {
                         // display latest 100 max for now
-                        return utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting_getAllTransactionsInternalToAddress","params":[_this.contractAddress, {pageSize: 100}],"id":99} })
+                        return utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting.GetAllTransactionsInternalToAddress","params":[{address: _this.contractAddress, options: {pageSize: 100}}],"id":99} })
                     } else {
-                        return utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting_getContractCreationTransaction","params":[_this.contractAddress],"id":99} })
+                        return utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting.GetContractCreationTransaction","params":[_this.contractAddress],"id":99} })
                     }
                 }()
             ).fail(function(res) {

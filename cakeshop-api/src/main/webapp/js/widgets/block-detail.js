@@ -30,7 +30,7 @@ module.exports = function() {
 			        // check if reporting engine is used
                     if (window.reportingEndpoint) {
                         console.log("reporting engine fetch: " + window.reportingEndpoint);
-                        return utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting_getBlock","params":[parseInt(_this.blockNumber, 10)],"id":99} })
+                        return utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting.GetBlock","params":[parseInt(_this.blockNumber, 10)],"id":99} })
                     } else {
                         console.log("default fetch");
                         return utils.load({ url: _this.url, data: { number: parseInt(_this.blockNumber, 10) } })

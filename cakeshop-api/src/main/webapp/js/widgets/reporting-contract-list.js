@@ -74,14 +74,14 @@ module.exports = function() {
         addContract: function(newContract) {
             var _this = this;
             $.when(
-                utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting_addAddress","params":[newContract.address],"id":100} })
+                utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting.AddAddress","params":[{address: newContract.address}],"id":100} })
             ).fail(function (res) {
                 console.log("Failed to register new contract: ", res);
             }).done(function (res) {
                 console.log("Successfully register new contract: ", res);
                 console.log("New contract address: ", newContract.address);
                 $.when(
-                    utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting_assignTemplate","params":[newContract.address, newContract.name],"id":101} })
+                    utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting.AssignTemplate","params":[{address: newContract.address, data: newContract.name}],"id":101} })
                 ).fail(function (res) {
                     console.log("Failed to register new contract abi: ", res);
                 }).done(function (res) {
@@ -95,7 +95,7 @@ module.exports = function() {
         addTemplate: function(newTemplate) {
             var _this = this;
             $.when(
-                utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting_addTemplate","params":[newTemplate.name, newTemplate.abi, newTemplate.storage],"id":100} })
+                utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting.AddTemplate","params":[{name: newTemplate.name, abi: newTemplate.abi, storageLayout: newTemplate.storage}],"id":100} })
             ).fail(function (res) {
                 console.log("Failed to add new contract template: ", res);
             }).done(function (res) {
@@ -108,7 +108,7 @@ module.exports = function() {
         getTemplates: function(cb) {
             var _this = this;
             $.when(
-                utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting_getTemplates","params":[],"id":99} })
+                utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting.GetTemplates","params":[],"id":99} })
             ).fail(function (res) {
                 console.log("Failed to get templates: ", res);
             }).done(function (res) {
@@ -120,7 +120,7 @@ module.exports = function() {
         fetch: function () {
             var _this = this;
             $.when(
-                utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting_getAddresses","params":[],"id":99} })
+                utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting.GetAddresses","params":[],"id":99} })
             ).fail(function (res) {
                 console.log("Failed to load reporting registered addresses: ", res);
             }).done(function (res) {

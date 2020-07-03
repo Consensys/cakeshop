@@ -34,7 +34,7 @@ module.exports = function() {
             ReactDOM.render(<Report isLoading={true} />, document.getElementById('report-container'));
             // fetch last persisted block number
             $.when(
-                utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting_getLastPersistedBlockNumber","params":[],"id":99} })
+                utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting.GetLastPersistedBlockNumber","params":[],"id":99} })
             ).fail(function(res) {
                 $('#widget-' + _this.shell.id).html( '<h3 style="text-align: center;margin-top: 70px;">Report Generation Failed</h3>' );
             }).done(function(res) {
@@ -45,7 +45,7 @@ module.exports = function() {
                 }
                 // generate report for whole history
                 $.when(
-                    utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting_getStorageHistory","params":[_this.contractAddress, 1, res.result],"id":99} })
+                    utils.load({ url: window.reportingEndpoint, data: {"jsonrpc":"2.0","method":"reporting.GetStorageHistory","params":[{address: _this.contractAddress, startBlockNumber: 1, endBlockNumber: res.result}],"id":99} })
                 ).fail(function(res) {
                     $('#widget-' + _this.shell.id).html( '<h3 style="text-align: center;margin-top: 70px;">Report Generation Failed</h3>' );
                 }).done(function(res) {
