@@ -1,15 +1,22 @@
 package com.jpmorgan.cakeshop.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class PermissionsAccountInfo {
 
+    @JsonProperty("acctId")
     private String acctId;
 
+    @JsonProperty("isOrgAdmin")
     private boolean isOrgAdmin;
 
+    @JsonProperty("orgId")
     private String orgId;
 
+    @JsonProperty("roleId")
     private String roleId;
 
+    @JsonProperty("status")
     private int status;
 
     public String getAcctId() {

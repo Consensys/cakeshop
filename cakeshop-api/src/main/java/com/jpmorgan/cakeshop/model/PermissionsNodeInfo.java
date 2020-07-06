@@ -1,11 +1,16 @@
 package com.jpmorgan.cakeshop.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class PermissionsNodeInfo {
 
+    @JsonProperty("orgId")
     private String orgId;
 
+    @JsonProperty("status")
     private int status;
 
+    @JsonProperty("url")
     private String url;
 
     public String getOrgId() {

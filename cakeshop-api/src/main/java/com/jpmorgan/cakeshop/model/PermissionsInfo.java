@@ -1,21 +1,30 @@
 package com.jpmorgan.cakeshop.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
 public class PermissionsInfo {
 
+    @JsonProperty("fullOrgId")
     private String fullOrgId;
 
+    @JsonProperty("level")
     private int level;
 
+    @JsonProperty("orgId")
     private String orgId;
 
+    @JsonProperty("parentOrgId")
     private String parentOrgId;
 
+    @JsonProperty("status")
     private int status;
 
+    @JsonProperty("subOrgList")
     private List<String> subOrgList;
 
+    @JsonProperty("ultimateParent")
     private String ultimateParent;
 
     public String getFullOrgId() {
