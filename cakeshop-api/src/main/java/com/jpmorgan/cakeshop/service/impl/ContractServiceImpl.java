@@ -229,7 +229,7 @@ public class ContractServiceImpl implements ContractService {
         Map<String, Object> contractRes = geth.executeGethCall("eth_sendTransaction", new Object[]{contractArgs});
 
         TransactionResult tr = new TransactionResult();
-        tr.setId((String) contractRes.get("_result"));
+        tr.setId((String) contractRes.get(CakeshopUtils.SIMPLE_RESULT));
 
         // defer contract registration
         executor.execute(appContext.getBean(ContractRegistrationTask.class, contract, tr));
@@ -253,7 +253,7 @@ public class ContractServiceImpl implements ContractService {
 
         Map<String, Object> contractRes = geth.executeGethCall("eth_getCode", new Object[]{address, "latest"});
 
-        String bin = (String) contractRes.get("_result");
+        String bin = (String) contractRes.get(CakeshopUtils.SIMPLE_RESULT);
         if (bin.contentEquals("0x")) {
             throw new APIException("Contract does not exist at " + address);
         }
@@ -304,7 +304,7 @@ public class ContractServiceImpl implements ContractService {
         request.setFromAddress(getAddress(request.getFromAddress())); // make sure we have a non-null from address
 
         Map<String, Object> readRes = geth.executeGethCall("eth_call", request.toGethArgs());
-        String res = (String) readRes.get("_result");
+        String res = (String) readRes.get(CakeshopUtils.SIMPLE_RESULT);
         if (StringUtils.isNotBlank(res) && res.length() == 2 && res.contentEquals("0x")) {
             throw new APIException("eth_call failed (returned 0 bytes)");
         }
@@ -329,7 +329,7 @@ public class ContractServiceImpl implements ContractService {
     public TransactionResult transact(TransactionRequest request) throws APIException {
         request.setFromAddress(getAddress(request.getFromAddress())); // make sure we have a non-null from address
         Map<String, Object> readRes = geth.executeGethCall("eth_sendTransaction", request.toGethArgs());
-        return new TransactionResult((String) readRes.get("_result"));
+        return new TransactionResult((String) readRes.get(CakeshopUtils.SIMPLE_RESULT));
     }
 
     @Override

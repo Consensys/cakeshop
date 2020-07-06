@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.jpmorgan.cakeshop.util.CakeshopUtils;
 import org.bouncycastle.util.encoders.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +61,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<Event> listForBlock(Long blockNumber) throws APIException {
         Map<String, Object> res = gethService.executeGethCall("eth_getLogs", new Object[] { new BlockRangeFilter(blockNumber, blockNumber) });
-        List<Map<String, Object>> results = (List<Map<String, Object>>) res.get("_result");
+        List<Map<String, Object>> results = (List<Map<String, Object>>) res.get(CakeshopUtils.SIMPLE_RESULT);
         return processEvents(results);
     }
 
