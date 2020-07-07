@@ -16,7 +16,7 @@ import java.util.Map;
 @Service
 public class PermissionsServiceImpl implements PermissionsService {
 
-    static final Logger LOG = LoggerFactory.getLogger(com.jpmorgan.cakeshop.service.impl.BlockServiceImpl.class);
+    static final Logger LOG = LoggerFactory.getLogger(com.jpmorgan.cakeshop.service.impl.PermissionsServiceImpl.class);
 
     @Autowired
     private GethHttpService gethService;
@@ -26,28 +26,12 @@ public class PermissionsServiceImpl implements PermissionsService {
 
         Map<String, Object> permissionData = gethService.executeGethCall("quorumPermission_getOrgDetails", new Object[]{id});
 
-        LOG.info("permission {}", permissionData);
-
         PermissionsOrgDetails details = null;
 
         try {
 
             details = CakeshopUtils.convertToObject(permissionData, PermissionsOrgDetails.class);
 
-            LOG.info("hello");
-
-            LOG.info("all details {}", details);
-
-            LOG.info("rolelist {}", details.getRoleList().get(0).getRoleId());
-
-            Map<String, Object> pInfo = gethService.executeGethCall("quorumPermission_orgList");
-
-            LOG.info("pp {}", pInfo);
-            PermissionsDetails info = CakeshopUtils.convertToObject(pInfo, PermissionsDetails.class);
-
-            LOG.info("pinfo {}", info);
-
-            LOG.info("id {}", info.getOrgList().get(0).getFullOrgId());
         } catch (Exception e) {
             LOG.error(e.getMessage());
         }
@@ -64,12 +48,8 @@ public class PermissionsServiceImpl implements PermissionsService {
 
             Map<String, Object> pInfo = gethService.executeGethCall("quorumPermission_orgList");
 
-            LOG.info("pp {}", pInfo);
             details = CakeshopUtils.convertToObject(pInfo, PermissionsDetails.class);
 
-            LOG.info("pinfo {}", details);
-
-            LOG.info("id {}", details.getOrgList().get(0).getFullOrgId());
         } catch (Exception e) {
             LOG.error(e.getMessage());
         }

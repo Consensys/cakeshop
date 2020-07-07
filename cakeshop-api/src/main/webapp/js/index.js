@@ -135,6 +135,7 @@ window.Tower = {
 			'metrix-txn-min'         : require('./widgets/metrix-txn-min'),
 			// 'metrix-txn-sec'         : require('./widgets/metrix-txn-sec'),
 			'permissions-list'       : require('./widgets/permissions-list'),
+			'permissions-detail'       : require('./widgets/permissions-detail'),
 			'node-info'              : require('./widgets/node-info'),
 			'peers-add'              : require('./widgets/peers-add'),
 			'peers-list'             : require('./widgets/peers-list'),
@@ -342,7 +343,8 @@ window.Tower = {
 
 		'permissioning': function() {
 			var widgets = [
-				{ widgetId: 'permissions-list' }
+				{ widgetId: 'permissions-list' },
+				{ widgetId: 'permissions-detail'}
 			];
 
 			Dashboard.showSection('permissioning', widgets);

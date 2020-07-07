@@ -6,18 +6,23 @@ module.exports = function() {
 		title: 'Permissions List',
 		size: 'medium',
 
-		url: 'api/block/get',
+		url: 'api/permissions/getList',
 		topic: '/topic/block',
 
 		hideLink: true,
 
-		lastBlockNum: null,
-
 		template: _.template('<div>'
 		    + '<table style="width: 100%; table-layout: fixed;" class="table table-striped">'
-		    + '<thead style="font-weight: bold;"><tr><td style="width:60px;">OrgId</td><td style="width:60px;">Status</td><td style="width:60px;">parentOrgId</td><td style="width:60px;">ultimateParent</td></tr></thead>'
-		    + '<tbody><%= rows %></tbody></table>'
-		    //+ '<div id="register-dialog" style="width: 100%;"/>'
+		    + ' <thead style="font-weight: bold;">'
+		    + '     <tr>'
+		    + '         <td style="width:50px;">OrgId</td>'
+		    + '         <td style="width:20px;">Status</td>'
+		    + '         <td style="width:50px;">parentOrgId</td>'
+		    + '         <td style="width:50px;">ultimateParent</td>'
+		    + '     </tr>'
+		    + ' </thead>'
+		    + '<tbody><%= rows %></tbody>'
+		    + '</table>'
 		    + '</div>'
 		),
 
@@ -28,91 +33,41 @@ module.exports = function() {
          ),
 
 		templateRow: _.template('<tr>'
-		    + '<td>#<a href="#"><%= block.num %></a></td>'
-		    + '<td><%= block.age === 0 ? "Genesis" : moment(block.age).fromNow() %></td>'
-		    + '<td <% if (block.txnCount == 0) { %>style="opacity: 0.2;"<% } %>><%= block.txnCount %></td>'
-		    + '<td>#<a href="#"><%= block.num %></a></td>'
+		    + '<td>#<a href="#"><%= o.fullOrgId %></a></td>'
+		    + '<td><%= o.status %></td>'
+		    + '<td <%= o.parentOrgId %></td>'
+		    + '<td><%= o.ultimateParent %></td>'
 		    + '</tr>'
 		),
 
-		setData: function(data) {
-			this.data = data;
+        fetch: function () {
+			var _this = this;
 
-			this.lastBlockNum = data;
-		},
+			$.when(
+				utils.load({ url: this.url })
+			).done(function(info) {
+			    console.log(info)
+				var rows = [];
+				this.numPeers = info.data.length;
 
-		subscribe: function(data) {
-			// subscribe to get new blocks
-			utils.subscribe(this.topic, this.onNewBlock);
-		},
+				if (info.data.length > 0) {
+					_.each(info.data, function(peer) {
+						rows.push( _this.templateRow({ o: peer.attributes }) );
+					});
 
-		onNewBlock: function(data) {
-			data = data.data.attributes;
 
-			var b = {
-				num: data.number,
-				age: utils.convertTimestampToMillis(data.timestamp),
-				txnCount: data.transactions.length,
-			};
-
-			$('#widget-' + widget.shell.id + ' > table > tbody').prepend( widget.templateRow({ block: b }) );
-		},
-
-		BLOCKS_TO_SHOW: 100,
-		fetch: function() {
-			try {
-				if (this.lastBlockNum != Tower.status.latestBlock) {
-					this.lastBlockNum = Tower.status.latestBlock;
+                    $('#widget-' + _this.shell.id).html( _this.template({ rows: rows.join('') }) );
 				}
-			} catch (e) {}
 
-			var displayLimit, promizes = [], rows = [], _this = this;
+				$('#widget-' + _this.shell.id + ' a').click(function(e) {
+					e.preventDefault();
+					console.log($(this).text())
 
-			if ( (this.lastBlockNum < this.BLOCKS_TO_SHOW) && (this.lastBlockNum >= 0) ) {
-				displayLimit = this.lastBlockNum + 1;
-			} else {
-				displayLimit = this.BLOCKS_TO_SHOW;
-			}
-
-			_.times(displayLimit,
-				function(n) {
-					promizes.push(
-						utils.load({
-							url: _this.url,
-							data: { number: _this.lastBlockNum - n },
-							complete: function(res) {
-								rows.push( {
-									num: res.responseJSON.data.attributes.number,
-									age: utils.convertTimestampToMillis(res.responseJSON.data.attributes.timestamp),
-									txnCount: res.responseJSON.data.attributes.transactions.length,
-								} );
-							}
-						})
-					);
-			 	});
-
-			Promise.all(promizes).then(function() {
-				var rowsOut = [];
-				rows = _.sortBy(rows, function(o) { return o.num; }).reverse();
-
-				_.each(rows, function(b, index) {
-					rowsOut.push( _this.templateRow({ block: b }) );
+					Dashboard.show({ widgetId: 'permissions-detail', section: 'permissions', data: $(this).text(), refetch: true });
 				});
 
-				$('#widget-' + _this.shell.id).html( _this.template({ rows: rowsOut.join('') }) );
-
 				_this.postFetch();
-			});
-		},
-
-		postRender: function() {
-			$('#widget-' + this.shell.id).on('click', 'a', this.showBlock);
-		},
-
-		showBlock: function(e) {
-			e.preventDefault();
-
-			Dashboard.show({ widgetId: 'block-detail', section: 'explorer', data: $(this).text(), refetch: true });
+			}.bind(this));
 		}
 	};
 
