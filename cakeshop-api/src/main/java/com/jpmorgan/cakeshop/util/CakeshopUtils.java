@@ -33,13 +33,13 @@ public class CakeshopUtils {
     }
 
     @SuppressWarnings("unchecked")
-	   public static Map<String, Object> processWeb3Response(Object data) {
-       if (!(data instanceof Map)) {
-         // Handle case where a simple value is returned instead of a map (int, bool, or string)
-         Map<String, Object> res = new HashMap<>();
-         res.put(SIMPLE_RESULT, data);
-         return res;
-       }
-       return (Map<String, Object>) data;
-	    }
+    public static Map<String, Object> processWeb3Response(Object data) {
+        if (!(data instanceof Map)) {
+            // Handle case where a simple value is returned instead of a map (int, bool, or string)
+            Map<String, Object> res = new HashMap<>();
+            res.put(SIMPLE_RESULT, data);
+            return res;
+        }
+        return (Map<String, Object>) data;
+    }
 }
