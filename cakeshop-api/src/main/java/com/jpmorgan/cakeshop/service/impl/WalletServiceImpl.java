@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.jpmorgan.cakeshop.util.CakeshopUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,14 +48,14 @@ public class WalletServiceImpl implements WalletService, GethRpcConstants {
 
         Map<String, Object> data = gethService.executeGethCall(PERSONAL_LIST_ACCOUNTS, new Object[]{});
 
-        if (data != null && data.containsKey("_result")) {
-            accountList = (List<String>) data.get("_result");
+        if (data != null && data.containsKey(CakeshopUtils.SIMPLE_RESULT)) {
+            accountList = (List<String>) data.get(CakeshopUtils.SIMPLE_RESULT);
             if (accountList != null) {
                 accounts = new ArrayList<>();
                 for (String address : accountList) {
                     Map<String, Object> accountData = gethService.executeGethCall(
                             PERSONAL_GET_ACCOUNT_BALANCE, new Object[]{address, "latest"});
-                    String strBal = (String) accountData.get("_result");
+                    String strBal = (String) accountData.get(CakeshopUtils.SIMPLE_RESULT);
                     BigInteger bal = AbiUtils.hexToBigInteger(strBal);
                     account = new Account();
                     account.setAddress(address);
@@ -72,7 +73,7 @@ public class WalletServiceImpl implements WalletService, GethRpcConstants {
     @Override
     public Account create() throws APIException {
         Map<String, Object> result = gethService.executeGethCall("personal_newAccount", new Object[]{""});
-        String newAddress = (String) result.get("_result");
+        String newAddress = (String) result.get(CakeshopUtils.SIMPLE_RESULT);
 
         Account account = new Account();
         account.setAddress(newAddress);
@@ -85,7 +86,7 @@ public class WalletServiceImpl implements WalletService, GethRpcConstants {
     public Boolean unlockAccount(WalletPostJsonRequest request) throws APIException {
         try {
             Map<String, Object> result = gethService.executeGethCall("personal_unlockAccount", new Object[]{request.getAccount(), request.getAccountPassword()});
-            String response = result.get("_result").toString();
+            String response = result.get(CakeshopUtils.SIMPLE_RESULT).toString();
             if (StringUtils.isNotBlank(response) && Boolean.valueOf(response)) {
                 return true;
             }
@@ -99,7 +100,7 @@ public class WalletServiceImpl implements WalletService, GethRpcConstants {
     public Boolean lockAccount(WalletPostJsonRequest request) throws APIException {
         try {
             Map<String, Object> result = gethService.executeGethCall("personal_lockAccount", new Object[]{request.getAccount()});
-            String response = result.get("_result").toString();
+            String response = result.get(CakeshopUtils.SIMPLE_RESULT).toString();
             if (StringUtils.isNotBlank(response) && Boolean.valueOf(response)) {
                 return Boolean.TRUE;
             }
@@ -123,7 +124,7 @@ public class WalletServiceImpl implements WalletService, GethRpcConstants {
             fundArgs.put("value", AbiUtils.toHexWithNoLeadingZeros(request.getNewBalance()));
             
             Map<String, Object> result = gethService.executeGethCall("eth_sendTransaction", new Object[]{fundArgs});
-            String response = result.get("_result").toString();
+            String response = result.get(CakeshopUtils.SIMPLE_RESULT).toString();
             if (StringUtils.isNotBlank(response)) {
                 return Boolean.TRUE;
             }
@@ -138,7 +139,7 @@ public class WalletServiceImpl implements WalletService, GethRpcConstants {
     public boolean isUnlocked(String address) throws APIException {
         try {
             Map<String, Object> result = gethService.executeGethCall("eth_sign", new Object[]{address, "0x" + DUMMY_PAYLOAD_HASH});
-            if (StringUtils.isNotBlank((String) result.get("_result"))) {
+            if (StringUtils.isNotBlank((String) result.get(CakeshopUtils.SIMPLE_RESULT))) {
                 return true;
             }
         } catch (APIException e) {
