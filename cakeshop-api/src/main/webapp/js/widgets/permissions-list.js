@@ -4,9 +4,15 @@ module.exports = function() {
 	var extended = {
 		name: 'permissions-list',
 		title: 'Permissions List',
-		size: 'medium',
+		size: 'large',
 
-		url: 'api/permissions/getList',
+		url_list: 'api/permissions/getList',
+		url_add: 'api/permissions/addOrg',
+		url_approve: 'api/permissions/approveOrg',
+		url_update_status: 'api/permissions/updateOrgStatus',
+		url_approve_status: 'api/permissions/approveOrgStatus',
+		url_subOrg: 'api/permissions/addSubOrg',
+
 		topic: '/topic/block',
 
 		hideLink: true,
@@ -15,15 +21,22 @@ module.exports = function() {
 		    + '<table style="width: 100%; table-layout: fixed;" class="table table-striped">'
 		    + ' <thead style="font-weight: bold;">'
 		    + '     <tr>'
-		    + '         <td style="width:50px;">OrgId</td>'
-		    + '         <td style="width:20px;">Status</td>'
-		    + '         <td style="width:50px;">parentOrgId</td>'
-		    + '         <td style="width:50px;">ultimateParent</td>'
+			+ '			<td class="org-id">OrgId</td>'
+			+ '         <td class="org-status">Status</td>'
+		    + '         <td class="update-status-col"></td>'
+		    + '         <td class="approve-status-col"></td>'
+            + '         <td class="parent-id">ParentOrgId</td>'
+            + '         <td class="ultimate-parent">UltimateParent</td>'
+            + '         <td class="approve-col"></td>'
 		    + '     </tr>'
 		    + ' </thead>'
 		    + '<tbody><%= rows %></tbody>'
 		    + '</table>'
 		    + '</div>'
+            + '<div class="form-group pull-right">'
+			+ '	<button class="btn btn-primary add-org">Add New Org</button>'
+			+ ' <button class="btn btn-primary add-subOrg">Add New SubOrg</button>'
+			+ '</div>'
 		),
 
 		 templateUninitialized: _.template(
@@ -33,18 +46,91 @@ module.exports = function() {
          ),
 
 		templateRow: _.template('<tr>'
-		    + '<td>#<a href="#"><%= o.fullOrgId %></a></td>'
-		    + '<td><%= o.status %></td>'
-		    + '<td <%= o.parentOrgId %></td>'
-		    + '<td><%= o.ultimateParent %></td>'
+		    + '<td class="value org-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap;">#<a href="#"><%= o.fullOrgId %></a></td>'
+		    + '<td class="value org-status" contentEditable="false" style="width:20px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= o.status %></td>'
+		    + '<td data-orgid="<%= o.fullOrgId %>" class="update-status-col">'
+            +   '<button class="btn btn-default update-btn">Update Status</button>'
+            + '</td>'
+            + '<td class="approve-status-col">'
+            +   '<button class="btn btn-default approve-status-btn">Approve Status</button>'
+            + '</td>'
+            + '<td class="value parent-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= o.parentOrgId %></td>'
+            + '<td class="value ultimate-parent" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= o.ultimateParent %></td>'
+		    + '<td data-orgid="<%= o.fullOrgId %>" class="approve-col">'
+            +   '<button class="btn btn-default approve-btn">Approve Org</button>'
+            + '</td>'
 		    + '</tr>'
 		),
+
+		modalOrgTemplate: _.template( '<div class="modal-header">' +
+			'	<%=addOrg%>' +
+			'</div>' +
+			'<div class="modal-body">' +
+			'	<div class="form-group add-org-form">' +
+			'		<label for="org-label">Org Name</label>' +
+			'		<input type="text" class="form-control" id="org-label" placeholder="<%=orgId%>">' +
+			'		<label for="enode-id">Enode id</label>' +
+			'		<input type="text" class="form-control" id="enode-id">' +
+			'		<label for="account-admin">Account Admin</label>' +
+            '		<input type="text" class="form-control" id="account-admin">' +
+            '		<label for="from-account">From Account</label>' +
+            '		<input type="text" class="form-control" id="from-account">' +
+			'	</div>' +
+			'</div>' +
+			'<div class="modal-footer">' +
+			'	<button type="button" id="addOrg-btn-final" class="btn btn-primary">Yes, <%=addOrg%>.</button>' +
+			'</div>'),
+
+		modalSubOrgTemplate: _.template( '<div class="modal-header">' +
+			'	<%=addOrg%>' +
+			'</div>' +
+			'<div class="modal-body">' +
+			'	<div class="form-group add-org-form">' +
+			'		<label for="org-label">Org Name</label>' +
+			'		<input type="text" class="form-control" id="org-label">' +
+			'		<label for="parent-label">Parent Org</label>' +
+            '		<input type="text" class="form-control" id="parent-label">' +
+			'		<label for="enode-id">Enode id</label>' +
+			'		<input type="text" class="form-control" id="enode-id">' +
+            '		<label for="from-account">From Account</label>' +
+            '		<input type="text" class="form-control" id="from-account">' +
+			'	</div>' +
+			'</div>' +
+			'<div class="modal-footer">' +
+			'	<button type="button" id="addSubOrg-btn-final" class="btn btn-primary">Yes, <%=addOrg%>.</button>' +
+			'</div>'),
+
+		modalStatusTemplate: _.template( '<div class="modal-header">' +
+			'	<%=addOrg%>' +
+			'</div>' +
+			'<div class="modal-body">' +
+			'	<div class="form-group add-org-form">' +
+			'		<label for="status">Status</label>' +
+			'		<input type="text" class="form-control" id="status">' +
+            '		<label for="from-account">From Account</label>' +
+            '		<input type="text" class="form-control" id="from-account">' +
+			'	</div>' +
+			'</div>' +
+			'<div class="modal-footer">' +
+			'	<button type="button" id="changeStatus-btn-final" class="btn btn-primary">Yes, <%=addOrg%>.</button>' +
+			'</div>'),
+
+
+        modalConfirmation: _.template('<div class="modal-body"><%=message%></div>'),
+
+		subscribe: function() {
+			Dashboard.Utils.on(function(e, action) {
+				if (action[0] == 'orgUpdate') {
+					this.fetch();
+				}
+			}.bind(this));
+		},
 
         fetch: function () {
 			var _this = this;
 
 			$.when(
-				utils.load({ url: this.url })
+				utils.load({ url: this.url_list })
 			).done(function(info) {
 			    console.log(info)
 				var rows = [];
@@ -68,6 +154,225 @@ module.exports = function() {
 
 				_this.postFetch();
 			}.bind(this));
+		},
+
+		postRender: function() {
+			var _this = this;
+            $('#widget-' + _this.shell.id).on('click', '.add-org', function(e) {
+
+				// set the modal text
+				$('#myModal .modal-content').html(_this.modalTemplate({
+				    addOrg: "addOrg",
+				    orgId: "",
+
+				}) );
+
+				//open modal
+				$('#myModal').modal('show');
+
+
+                $('#addOrg-btn-final').click( function() {
+					var orgName = $('#org-label').val();
+					var enodeId = $('#enode-id').val();
+					var acctAdmin = $('#account-admin').val();
+					var fromAcct = $('#from-account').val();
+
+					$.when(
+						utils.load({
+							url: _this.url_add,
+							data: {
+								"id": orgName,
+								"enodeId": enodeId,
+								"accountId": acctAdmin,
+								"f": {"from": fromAcct}
+							}
+						})
+					).done(function () {
+						$('#myModal').modal('hide');
+
+						Dashboard.Utils.emit(['orgUpdate'], true)
+						_this.fetch();
+
+					}).fail(function() {
+						$('#myModal .modal-content').html(_this.modalConfirmation({
+							message: 'Sorry, Please try again.'
+						}) );
+					});
+				});
+
+			});
+
+            $('#widget-' + _this.shell.id).on('click', '.approve-btn', function(e) {
+
+ 		        console.log('parentel');
+ 			    console.log($(e.target.parentElement).data);
+
+ 			    var orgName = $(e.target.parentElement).data("orgid")
+
+				// set the modal text
+				$('#myModal .modal-content').html(_this.modalOrgTemplate({
+				    addOrg: "approveOrg",
+				    orgId: orgName
+				}) );
+
+				//open modal
+				$('#myModal').modal('show');
+
+
+                $('#addOrg-btn-final').click( function() {
+					var orgName = $('#org-label').val();
+					var enodeId = $('#enode-id').val();
+					var acctAdmin = $('#account-admin').val();
+					var fromAcct = $('#from-account').val();
+
+					$.when(
+						utils.load({
+							url: _this.url_approve,
+							data: {
+								"id": orgName,
+								"enodeId": enodeId,
+								"accountId": acctAdmin,
+								"f": {"from": fromAcct}
+							}
+						})
+					).done(function () {
+						$('#myModal').modal('hide');
+
+						Dashboard.Utils.emit(['orgUpdate'], true)
+						_this.fetch();
+
+					}).fail(function() {
+						$('#myModal .modal-content').html(_this.modalConfirmation({
+							message: 'Sorry, Please try again.'
+						}) );
+					});
+				});
+
+			});
+
+         $('#widget-' + _this.shell.id).on('click', '.update-btn', function(e) {
+
+				var orgId = $(e.target.parentElement).data("orgid");
+				var fromAcct = $('#from-account').val();
+
+				// set the modal text
+				$('#myModal .modal-content').html(_this.modalStatusTemplate({
+				    addOrg: "changeStatus"
+				}) );
+
+				//open modal
+				$('#myModal').modal('show');
+
+
+                $('#changeStatus-btn-final').click( function() {
+					var status = $('#status').val();
+
+					$.when(
+						utils.load({
+							url: _this.url_update_status,
+							data: {
+								"id": orgId,
+								"action": status,
+								"f": {"from": fromAcct}
+							}
+						})
+					).done(function () {
+						$('#myModal').modal('hide');
+
+						Dashboard.Utils.emit(['orgDetailUpdate'], true)
+						_this.fetch();
+
+					}).fail(function() {
+						$('#myModal .modal-content').html(_this.modalConfirmation({
+							message: 'Sorry, Please try again.'
+						}) );
+					});
+				});
+
+			});
+
+         $('#widget-' + _this.shell.id).on('click', '.approve-status-btn', function(e) {
+
+				var orgId = $(e.target.parentElement).data("orgid");
+				var fromAcct = $('#from-account').val();
+
+				// set the modal text
+				$('#myModal .modal-content').html(_this.modalStatusTemplate({
+				    addOrg: "approveStatus"
+				}) );
+
+				//open modal
+				$('#myModal').modal('show');
+
+
+                $('#changeStatus-btn-final').click( function() {
+					var status = $('#status').val();
+
+					$.when(
+						utils.load({
+							url: _this.url_approve_status,
+							data: {
+								"id": orgId,
+								"action": status,
+								"f": {"from": fromAcct}
+							}
+						})
+					).done(function () {
+						$('#myModal').modal('hide');
+
+						Dashboard.Utils.emit(['orgDetailUpdate'], true)
+						_this.fetch();
+
+					}).fail(function() {
+						$('#myModal .modal-content').html(_this.modalConfirmation({
+							message: 'Sorry, Please try again.'
+						}) );
+					});
+				});
+
+			});
+
+            $('#widget-' + _this.shell.id).on('click', '.add-subOrg', function(e) {
+
+				// set the modal text
+				$('#myModal .modal-content').html(_this.modalSubOrgTemplate({
+				    addOrg: "addSubOrg"
+				}) );
+
+				//open modal
+				$('#myModal').modal('show');
+
+
+                $('#addSubOrg-btn-final').click( function() {
+					var orgName = $('#org-label').val();
+					var parentOrg = $('#parent-label').val();
+					var enodeId = $('#enode-id').val();
+					var fromAcct = $('#from-account').val();
+
+					$.when(
+						utils.load({
+							url: _this.url_subOrg,
+							data: {
+								"id": orgName,
+								"parentId": parentOrg,
+								"enodeId": enodeId,
+								"f": {"from": fromAcct}
+							}
+						})
+					).done(function () {
+						$('#myModal').modal('hide');
+
+						Dashboard.Utils.emit(['orgUpdate'], true)
+						_this.fetch();
+
+					}).fail(function() {
+						$('#myModal .modal-content').html(_this.modalConfirmation({
+							message: 'Sorry, Please try again.'
+						}) );
+					});
+				});
+
+			});
 		}
 	};
 

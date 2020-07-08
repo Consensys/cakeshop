@@ -109,6 +109,8 @@ module.exports = function() {
 			});
 
 			$('#widget-' + _this.shell.id).on('click', '.locking-btn', function(e) {
+			    console.log('parentel');
+			    console.log($(e.target.parentElement).data);
 				var account = $(e.target.parentElement).data("account"),
 				 url = _this.url_lock,
 				 lock = 'lock';
