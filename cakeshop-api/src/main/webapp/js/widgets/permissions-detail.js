@@ -27,6 +27,12 @@ module.exports = function() {
 			this.title = 'Org #' + this.orgDet;
 		},
 
+		templateFrom: _.template('<div class="form-group pull-right">'
+            + '	<label for="fr-account">From Account</label>'
+            + '	<select id="fr-account" class="form-control" style="transition: none;"> </select>' +
+            + '</div>'
+        ),
+
 		templateNode: _.template('<div>'
             + '<table style="width: 100%; table-layout: fixed;" class="table table-striped">'
 		 	+ '	<thead style="font-weight: bold;">'
@@ -105,7 +111,7 @@ module.exports = function() {
             + '<td class="value org-admin" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= a.orgAdmin %></a></td>'
 		    + '<td class="value role-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= a.roleId %></td>'
 		    + '<td data-orgid="<%= a.orgId %>" class="change-role-col">'
-            +   '<button class="btn btn-default change-role-btn">Change Role</button>'
+            +   '<button class="btn btn-default change-role-btn">Change</button>'
             + '</td>'
 		    + '<td class="value status" contentEditable="false" style=" text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= a.status %></td>'
 		    + '<td data-orgid="<%= a.orgId %>" data-acctid="<%= a.acctId %>"class="update-acct-col">'
@@ -141,7 +147,7 @@ module.exports = function() {
 			'		<label for="status">Status</label>' +
 			'		<input type="text" class="form-control" id="status">' +
             '		<label for="from-account">From Account</label>' +
-            '		<input type="text" class="form-control" id="from-account">' +
+            '		<input type="text" class="form-control" id="from-account" placeholder="<%=fromAccount%>">' +
 			'	</div>' +
 			'</div>' +
 			'<div class="modal-footer">' +
@@ -154,7 +160,7 @@ module.exports = function() {
 			'<div class="modal-body">' +
 			'	<div class="form-group add-org-form">' +
             '		<label for="from-account">From Account</label>' +
-            '		<input type="text" class="form-control" id="from-account">' +
+            '		<input type="text" class="form-control" id="from-account" placeholder="<%=fromAccount%>">' +
 			'	</div>' +
 			'</div>' +
 			'<div class="modal-footer">' +
@@ -176,6 +182,8 @@ module.exports = function() {
             '		<input type="text" class="form-control" id="voter">' +
             '		<label for="admin">Is Admin</label>' +
             '		<input type="text" class="form-control" id="admin">' +
+            '		<label for="from-account">From Account</label>' +
+            '		<input type="text" class="form-control" id="from-account" placeholder="<%=fromAccount%>">' +
 			'	</div>' +
 			'</div>' +
 			'<div class="modal-footer">' +
@@ -192,7 +200,7 @@ module.exports = function() {
             '		<label for="enode-id">Enode Id</label>' +
             '		<input type="text" class="form-control" id="enode-id">' +
             '		<label for="from-account">From Account</label>' +
-            '		<input type="text" class="form-control" id="from-account">' +
+            '		<input type="text" class="form-control" id="from-account" placeholder="<%=fromAccount%>">' +
 			'	</div>' +
 			'</div>' +
 			'<div class="modal-footer">' +
@@ -211,7 +219,7 @@ module.exports = function() {
             '		<label for="role-id">Role Id</label>' +
             '		<input type="text" class="form-control" id="role-id">' +
             '		<label for="from-account">From Account</label>' +
-            '		<input type="text" class="form-control" id="from-account">' +
+            '		<input type="text" class="form-control" id="from-account" placeholder="<%=fromAccount%>">' +
 			'	</div>' +
 			'</div>' +
 			'<div class="modal-footer">' +
@@ -251,7 +259,8 @@ module.exports = function() {
 					roleRows.push(_this.templateRowRole({r: role}));
 			    })
 
-				$('#widget-' + _this.shell.id).html('<h3 style="margin-top: 30px;margin-left: 8px;">Node List</h3>' +
+				$('#widget-' + _this.shell.id).html(_this.templateFrom({}) +
+				    '<h3 style="margin-top: 30px;margin-left: 8px;">Node List</h3>' +
 				    _this.templateNode({ nodeRows: nodeRows.join(''), orgId: _this.orgDet }) +
 					'<h3 style="margin-top: 30px;margin-left: 8px;">Account List</h3>' +
 					_this.templateAcct({ acctRows: acctRows.join(''), orgId: _this.orgDet }) +
@@ -260,6 +269,23 @@ module.exports = function() {
 
 			    $('#widget-shell-' + _this.shell.id + ' .panel-title span').html(_this.title);
             });
+
+            Account.list().then(function(accounts) {
+				var rows = ['<option>Choose Account</option>'];
+
+				accounts.forEach(function(acct) {
+					if (acct.get('unlocked')) {
+						//only add unlocked accounts
+						rows.push( '<option>' + acct.get('address') + '</option>' );
+					}
+				});
+
+				console.log('rows')
+				console.log(rows)
+
+				this._$('#fr-account')
+					.html( rows.join('') );
+			}.bind(this));
 		},
 
         postRender: function() {
@@ -267,12 +293,14 @@ module.exports = function() {
 
             $('#widget-' + _this.shell.id).on('click', '.update-node-btn', function(e) {
 
+                var from = $('#widget-' + _this.shell.id + ' #fr-account').val();
 				var orgId = $(e.target.parentElement).data("orgid");
 				var url = $(e.target.parentElement).data("url");
 
 				// set the modal text
 				$('#myModal .modal-content').html(_this.modalStatusTemplate({
-				    addOrg: "changeStatus"
+				    addOrg: "changeStatus",
+				    fromAccount: from
 				}) );
 
 				//open modal
@@ -310,13 +338,15 @@ module.exports = function() {
 
          $('#widget-' + _this.shell.id).on('click', '.update-acct-btn', function(e) {
 
+                var from = $('#widget-' + _this.shell.id + ' #fr-account').val();
 				var orgId = $(e.target.parentElement).data("orgid");
 				var acctId = $(e.target.parentElement).data("acctid");
 
 
 				// set the modal text
 				$('#myModal .modal-content').html(_this.modalStatusTemplate({
-				    addOrg: "changeStatus"
+				    addOrg: "changeStatus",
+				    fromAccount: from
 				}) );
 
 				//open modal
@@ -355,11 +385,12 @@ module.exports = function() {
          $('#widget-' + _this.shell.id).on('click', '.change-role-btn', function(e) {
 
 				var orgId = $(e.target.parentElement).data("orgid");
-
+                var from = $('#widget-' + _this.shell.id + ' #fr-account').val();
 
 				// set the modal text
 				$('#myModal .modal-content').html(_this.modalStatusTemplate({
-				    addOrg: "changeStatus"
+				    addOrg: "changeStatus",
+				    fromAccount: from
 				}) );
 
 				//open modal
@@ -398,10 +429,12 @@ module.exports = function() {
 
                 var orgId = $(e.target.parentElement).data("orgid");
          		var roleId = $(e.target.parentElement).data("roleid");
+         		var from = $('#widget-' + _this.shell.id + ' #fr-account').val();
 
 				// set the modal text
 				$('#myModal .modal-content').html(_this.modalFromTemplate({
-				    addOrg: "changeStatus"
+				    addOrg: "changeStatus",
+				    fromAccount: from
 				}) );
 
 				//open modal
@@ -437,12 +470,14 @@ module.exports = function() {
 
          $('#widget-' + _this.shell.id).on('click', '.add-role', function(e) {
                 var orgId = $(e.target.parentElement).data("orgid");
+                var from = $('#widget-' + _this.shell.id + ' #fr-account').val();
                 console.log(orgId)
 
 				// set the modal text
 				$('#myModal .modal-content').html(_this.modalRoleTemplate({
 				    addOrg: "addRole",
-				    orgId: orgId
+				    orgId: orgId,
+				    fromAccount: from
 				}) );
 
 				//open modal
@@ -486,12 +521,14 @@ module.exports = function() {
 
          $('#widget-' + _this.shell.id).on('click', '.add-node', function(e) {
                 var orgId = $(e.target.parentElement).data("orgid");
+                var from = $('#widget-' + _this.shell.id + ' #fr-account').val();
                 console.log(orgId)
 
 				// set the modal text
 				$('#myModal .modal-content').html(_this.modalNodeTemplate({
 				    addOrg: "addNode",
-				    orgId: orgId
+				    orgId: orgId,
+				    fromAccount: from
 				}) );
 
 				//open modal
@@ -529,12 +566,14 @@ module.exports = function() {
 
          $('#widget-' + _this.shell.id).on('click', '.add-acct', function(e) {
                 var orgId = $(e.target.parentElement).data("orgid");
+                var from = $('#widget-' + _this.shell.id + ' #fr-account').val();
                 console.log(orgId)
 
 				// set the modal text
 				$('#myModal .modal-content').html(_this.modalAcctTemplate({
 				    addOrg: "addAcct",
-				    orgId: orgId
+				    orgId: orgId,
+				    fromAccount: from
 				}) );
 
 				//open modal
@@ -574,12 +613,14 @@ module.exports = function() {
 
         $('#widget-' + _this.shell.id).on('click', '.assign-role-btn', function(e) {
                 var orgId = $(e.target.parentElement).data("orgid");
+                var from = $('#widget-' + _this.shell.id + ' #fr-account').val();
                 console.log(orgId)
 
 				// set the modal text
 				$('#myModal .modal-content').html(_this.modalAcctTemplate({
 				    addOrg: "assignAdmin",
-				    orgId: orgId
+				    orgId: orgId,
+				    fromAccount: from
 				}) );
 
 				//open modal
@@ -619,12 +660,14 @@ module.exports = function() {
 
         $('#widget-' + _this.shell.id).on('click', '.approve-role-btn', function(e) {
                 var orgId = $(e.target.parentElement).data("orgid");
+                var from = $('#widget-' + _this.shell.id + ' #fr-account').val();
                 console.log(orgId)
 
 				// set the modal text
 				$('#myModal .modal-content').html(_this.modalAcctTemplate({
 				    addOrg: "approveAdmin",
-				    orgId: orgId
+				    orgId: orgId,
+				    fromAccount: from
 				}) );
 
 				//open modal
