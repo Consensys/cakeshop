@@ -24,7 +24,7 @@ module.exports = function() {
 			this.data = data;
 			this.orgDet = data;
 
-			this.title = 'Org #' + this.orgDet;
+			this.title = 'Org: ' + this.orgDet;
 		},
 
 		populateFrom: function() {
@@ -134,6 +134,18 @@ module.exports = function() {
 			+ '</div>'
 		),
 
+		templateSubs: _.template('<div>'
+            + '<table style="width: 100%; table-layout: fixed;" class="table table-striped">'
+		 	+ '	<thead style="font-weight: bold;">'
+			+ '		<tr>'
+			+ '			<td class="subOrg">SubOrg</td>'
+			+ '		</tr>'
+			+ '	</thead>'
+		 	+ '	<tbody> <%= subRows %> </tbody>'
+		 	+ '</table>'
+		    + '</div>'
+		),
+
 		templateRowNode: _.template('<tr>'
             + '<td class="value org-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= n.orgId %></a></td>'
             + '<td class="value org-url" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= n.url %></td>'
@@ -172,6 +184,11 @@ module.exports = function() {
 		    + '<td data-orgid="<%= r.orgId %>" data-roleid="<%= r.roleId %>" class="remove-role-col">'
             +   '<button class="btn btn-default remove-role-btn">Remove Role</button>'
             + '</td>'
+		    + '</tr>'
+		),
+
+		templateRowSubs: _.template('<tr>'
+		    + '<td class="value subOrg" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">Subs</td>'
 		    + '</tr>'
 		),
 
@@ -316,6 +333,7 @@ module.exports = function() {
 				var nodeRows = [];
 				var acctRows = [];
 				var roleRows = [];
+				var subRows = [];
 				console.log(res);
 				_.each(res.data.attributes.nodeList, function(node) {
 			        nodeRows.push(_this.templateRowNode({n: node}));
@@ -326,13 +344,19 @@ module.exports = function() {
 			    _.each(res.data.attributes.roleList, function(role) {
 					roleRows.push(_this.templateRowRole({r: role}));
 			    })
+			    _.each(res.data.attributes.subOrgList, function(subOrg) {
+					subRows.push(_this.templateRowSubs({s: subOrg}));
+			    })
 
 				$('#widget-' + _this.shell.id).html('<h3 style="margin-top: 30px;margin-left: 8px;">Node List</h3>' +
 				    _this.templateNode({ nodeRows: nodeRows.join(''), orgId: _this.orgDet }) +
 					'<h3 style="margin-top: 30px;margin-left: 8px;">Account List</h3>' +
 					_this.templateAcct({ acctRows: acctRows.join(''), orgId: _this.orgDet }) +
 					'<h3 style="margin-top: 30px;margin-left: 8px;">Role List</h3>' +
-					_this.templateRole({ roleRows: roleRows.join(''), orgId: _this.orgDet }));
+					_this.templateRole({ roleRows: roleRows.join(''), orgId: _this.orgDet }) +
+					'<h3 style="margin-top: 30px;margin-left: 8px;">SubOrg List</h3>' +
+					_this.templateSubs({ subRows: subRows.join('')})
+			    );
 
 			    $('#widget-shell-' + _this.shell.id + ' .panel-title span').html(_this.title);
             });
