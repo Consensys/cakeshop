@@ -38,4 +38,8 @@ public interface PermissionsService {
 
     String updateNode(String id, String enodeId, int action, Object f) throws APIException;
 
+    String recoverAcct(String id, String accountId, Object f) throws APIException;
+
+    String approveRecover(String id, String accountId, Object f) throws APIException;
+
 }

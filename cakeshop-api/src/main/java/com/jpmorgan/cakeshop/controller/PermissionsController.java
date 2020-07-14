@@ -84,8 +84,6 @@ public class PermissionsController extends BaseController {
     @RequestMapping("/addOrg")
     public ResponseEntity<APIResponse> addPermissionsOrg(@RequestBody PermissionsPostJsonRequest jsonRequest) throws APIException {
 
-        LOG.info("ADDIN PERMISSION ORGS");
-
         if (StringUtils.isBlank(jsonRequest.getId())) {
             return new ResponseEntity<>(new APIResponse().error(new APIError().title("Missing param 'id'")),
                 HttpStatus.BAD_REQUEST);
@@ -107,15 +105,13 @@ public class PermissionsController extends BaseController {
 
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "id", required = false, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "enodeId", required = false, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "accountId", required = false, value = "acct that will be org admin acct", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "f", required = false, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
+        @ApiImplicitParam(name = "id", required = true, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "enodeId", required = true, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "accountId", required = true, value = "acct that will be org admin acct", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "f", required = true, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
     })
     @RequestMapping("/approveOrg")
     public ResponseEntity<APIResponse> approvePermissionsOrg(@RequestBody PermissionsPostJsonRequest jsonRequest) throws APIException {
-
-        LOG.info("ADDIN PERMISSION ORGS");
 
         if (StringUtils.isBlank(jsonRequest.getId())) {
             return new ResponseEntity<>(new APIResponse().error(new APIError().title("Missing param 'id'")),
@@ -129,6 +125,10 @@ public class PermissionsController extends BaseController {
             return new ResponseEntity<>(new APIResponse().error(new APIError().title("Missing param 'accountId'")),
                 HttpStatus.BAD_REQUEST);
         }
+        if (jsonRequest.getF() == null) {
+            return new ResponseEntity<>(new APIResponse().error(new APIError().title("Missing param 'f'")),
+                HttpStatus.BAD_REQUEST);
+        }
 
         LOG.info("from {}", jsonRequest.getF());
 
@@ -137,17 +137,19 @@ public class PermissionsController extends BaseController {
     }
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "id", required = false, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "action", required = false, value = "complete enode id", dataType = "java.lang.Integer", paramType = "body"),
-        @ApiImplicitParam(name = "f", required = false, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
+        @ApiImplicitParam(name = "id", required = true, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "action", required = true, value = "complete enode id", dataType = "java.lang.Integer", paramType = "body"),
+        @ApiImplicitParam(name = "f", required = true, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
     })
     @RequestMapping("/updateOrgStatus")
     public ResponseEntity<APIResponse> updatePermissionsOrgStatus(@RequestBody PermissionsPostJsonRequest jsonRequest) throws APIException {
 
-        LOG.info("ADDIN PERMISSION ORGS");
-
         if (StringUtils.isBlank(jsonRequest.getId())) {
             return new ResponseEntity<>(new APIResponse().error(new APIError().title("Missing param 'id'")),
+                HttpStatus.BAD_REQUEST);
+        }
+        if (jsonRequest.getF() == null) {
+            return new ResponseEntity<>(new APIResponse().error(new APIError().title("Missing param 'f'")),
                 HttpStatus.BAD_REQUEST);
         }
 
@@ -158,14 +160,12 @@ public class PermissionsController extends BaseController {
     }
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "id", required = false, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "action", required = false, value = "complete enode id", dataType = "java.lang.Integer", paramType = "body"),
-        @ApiImplicitParam(name = "f", required = false, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
+        @ApiImplicitParam(name = "id", required = true, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "action", required = true, value = "complete enode id", dataType = "java.lang.Integer", paramType = "body"),
+        @ApiImplicitParam(name = "f", required = true, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
     })
     @RequestMapping("/approveOrgStatus")
     public ResponseEntity<APIResponse> approvePermissionsOrgStatus(@RequestBody PermissionsPostJsonRequest jsonRequest) throws APIException {
-
-        LOG.info("ADDIN PERMISSION ORGS");
 
         if (StringUtils.isBlank(jsonRequest.getId())) {
             return new ResponseEntity<>(new APIResponse().error(new APIError().title("Missing param 'id'")),
@@ -179,15 +179,13 @@ public class PermissionsController extends BaseController {
     }
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "id", required = false, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "parentId", required = false, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "enodeId", required = false, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "f", required = false, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
+        @ApiImplicitParam(name = "id", required = true, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "parentId", required = true, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "enodeId", required = true, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "f", required = true, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
     })
     @RequestMapping("/addSubOrg")
     public ResponseEntity<APIResponse> addSubOrg(@RequestBody PermissionsPostJsonRequest jsonRequest) throws APIException {
-
-        LOG.info("ADDIN PERMISSION ORGS");
 
         if (StringUtils.isBlank(jsonRequest.getId())) {
             return new ResponseEntity<>(new APIResponse().error(new APIError().title("Missing param 'id'")),
@@ -201,17 +199,15 @@ public class PermissionsController extends BaseController {
     }
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "id", required = false, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "roleId", required = false, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "access", required = false, value = "complete enode id", dataType = "java.lang.Integer", paramType = "body"),
-        @ApiImplicitParam(name = "isVoter", required = false, value = "complete enode id", dataType = "java.lang.Boolean", paramType = "body"),
-        @ApiImplicitParam(name = "isAdmin", required = false, value = "complete enode id", dataType = "java.lang.Boolean", paramType = "body"),
-        @ApiImplicitParam(name = "f", required = false, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
+        @ApiImplicitParam(name = "id", required = true, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "roleId", required = true, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "access", required = true, value = "complete enode id", dataType = "java.lang.Integer", paramType = "body"),
+        @ApiImplicitParam(name = "isVoter", required = true, value = "complete enode id", dataType = "java.lang.Boolean", paramType = "body"),
+        @ApiImplicitParam(name = "isAdmin", required = true, value = "complete enode id", dataType = "java.lang.Boolean", paramType = "body"),
+        @ApiImplicitParam(name = "f", required = true, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
     })
     @RequestMapping("/addNewRole")
     public ResponseEntity<APIResponse> addNewRole(@RequestBody PermissionsPostJsonRequest jsonRequest) throws APIException {
-
-        LOG.info("ADDIN PERMISSION ORGS");
 
         if (StringUtils.isBlank(jsonRequest.getId())) {
             return new ResponseEntity<>(new APIResponse().error(new APIError().title("Missing param 'id'")),
@@ -225,14 +221,12 @@ public class PermissionsController extends BaseController {
     }
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "id", required = false, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "roleId", required = false, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "f", required = false, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
+        @ApiImplicitParam(name = "id", required = true, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "roleId", required = true, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "f", required = true, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
     })
     @RequestMapping("/removeRole")
     public ResponseEntity<APIResponse> removeRole(@RequestBody PermissionsPostJsonRequest jsonRequest) throws APIException {
-
-        LOG.info("ADDIN PERMISSION ORGS");
 
         if (StringUtils.isBlank(jsonRequest.getId())) {
             return new ResponseEntity<>(new APIResponse().error(new APIError().title("Missing param 'id'")),
@@ -246,15 +240,13 @@ public class PermissionsController extends BaseController {
     }
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "id", required = false, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "accountId", required = false, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "roleId", required = false, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "f", required = false, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
+        @ApiImplicitParam(name = "id", required = true, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "accountId", required = true, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "roleId", required = true, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "f", required = true, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
     })
     @RequestMapping("/addAccount")
     public ResponseEntity<APIResponse> addAccount(@RequestBody PermissionsPostJsonRequest jsonRequest) throws APIException {
-
-        LOG.info("ADDIN PERMISSION ORGS");
 
         if (StringUtils.isBlank(jsonRequest.getId())) {
             return new ResponseEntity<>(new APIResponse().error(new APIError().title("Missing param 'id'")),
@@ -268,18 +260,13 @@ public class PermissionsController extends BaseController {
     }
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "id", required = false, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "accountId", required = false, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "roleId", required = false, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "f", required = false, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
+        @ApiImplicitParam(name = "id", required = true, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "accountId", required = true, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "roleId", required = true, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "f", required = true, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
     })
     @RequestMapping("/changeAccount")
     public ResponseEntity<APIResponse> changeAccountRole(@RequestBody PermissionsPostJsonRequest jsonRequest) throws APIException {
-
-        LOG.info("ADDIN PERMISSION ORGS");
-        LOG.info(jsonRequest.getId());
-        LOG.info(jsonRequest.getRoleId());
-        LOG.info(jsonRequest.getAccountId());
 
         if (StringUtils.isBlank(jsonRequest.getId())) {
             return new ResponseEntity<>(new APIResponse().error(new APIError().title("Missing param 'id'")),
@@ -293,16 +280,13 @@ public class PermissionsController extends BaseController {
     }
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "id", required = false, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "accountId", required = false, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "action", required = false, value = "complete enode id", dataType = "java.lang.Integer", paramType = "body"),
-        @ApiImplicitParam(name = "f", required = false, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
+        @ApiImplicitParam(name = "id", required = true, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "accountId", required = true, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "action", required = true, value = "complete enode id", dataType = "java.lang.Integer", paramType = "body"),
+        @ApiImplicitParam(name = "f", required = true, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
     })
     @RequestMapping("/updateAccount")
     public ResponseEntity<APIResponse> updateAccount(@RequestBody PermissionsPostJsonRequest jsonRequest) throws APIException {
-
-        LOG.info("ADDIN PERMISSION ORGS");
-
 
         if (StringUtils.isBlank(jsonRequest.getId())) {
             return new ResponseEntity<>(new APIResponse().error(new APIError().title("Missing param 'id'")),
@@ -316,18 +300,13 @@ public class PermissionsController extends BaseController {
     }
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "id", required = false, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "accountId", required = false, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "roleId", required = false, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "f", required = false, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
+        @ApiImplicitParam(name = "id", required = true, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "accountId", required = true, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "roleId", required = true, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "f", required = true, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
     })
     @RequestMapping("/assignAdmin")
     public ResponseEntity<APIResponse> assignAdmin(@RequestBody PermissionsPostJsonRequest jsonRequest) throws APIException {
-
-        LOG.info("ADDIN PERMISSION ORGS");
-        LOG.info(jsonRequest.getId());
-        LOG.info(jsonRequest.getRoleId());
-        LOG.info(jsonRequest.getAccountId());
 
         if (StringUtils.isBlank(jsonRequest.getId())) {
             return new ResponseEntity<>(new APIResponse().error(new APIError().title("Missing param 'id'")),
@@ -341,17 +320,12 @@ public class PermissionsController extends BaseController {
     }
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "id", required = false, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "accountId", required = false, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "f", required = false, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
+        @ApiImplicitParam(name = "id", required = true, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "accountId", required = true, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "f", required = true, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
     })
     @RequestMapping("/approveAdmin")
     public ResponseEntity<APIResponse> approveAdmin(@RequestBody PermissionsPostJsonRequest jsonRequest) throws APIException {
-
-        LOG.info("ADDIN PERMISSION ORGS");
-        LOG.info(jsonRequest.getId());
-        LOG.info(jsonRequest.getRoleId());
-        LOG.info(jsonRequest.getAccountId());
 
         if (StringUtils.isBlank(jsonRequest.getId())) {
             return new ResponseEntity<>(new APIResponse().error(new APIError().title("Missing param 'id'")),
@@ -365,14 +339,12 @@ public class PermissionsController extends BaseController {
     }
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "id", required = false, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "enodeId", required = false, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "f", required = false, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
+        @ApiImplicitParam(name = "id", required = true, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "enodeId", required = true, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "f", required = true, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
     })
     @RequestMapping("/addNode")
     public ResponseEntity<APIResponse> addNode(@RequestBody PermissionsPostJsonRequest jsonRequest) throws APIException {
-
-        LOG.info("ADDIN PERMISSION ORGS");
 
         if (StringUtils.isBlank(jsonRequest.getId())) {
             return new ResponseEntity<>(new APIResponse().error(new APIError().title("Missing param 'id'")),
@@ -386,15 +358,13 @@ public class PermissionsController extends BaseController {
     }
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "id", required = false, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "enodeId", required = false, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "action", required = false, value = "complete enode id", dataType = "java.lang.Integer", paramType = "body"),
-        @ApiImplicitParam(name = "f", required = false, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
+        @ApiImplicitParam(name = "id", required = true, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "enodeId", required = true, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "action", required = true, value = "complete enode id", dataType = "java.lang.Integer", paramType = "body"),
+        @ApiImplicitParam(name = "f", required = true, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
     })
     @RequestMapping("/updateNode")
     public ResponseEntity<APIResponse> updateNode(@RequestBody PermissionsPostJsonRequest jsonRequest) throws APIException {
-
-        LOG.info("ADDIN PERMISSION ORGS");
 
         if (StringUtils.isBlank(jsonRequest.getId())) {
             return new ResponseEntity<>(new APIResponse().error(new APIError().title("Missing param 'id'")),
@@ -404,6 +374,46 @@ public class PermissionsController extends BaseController {
         LOG.info("from {}", jsonRequest.getF());
 
         String added = permissionsService.updateNode(jsonRequest.getId(), jsonRequest.getEnodeId(), jsonRequest.getAction(), jsonRequest.getF());
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(added), HttpStatus.OK);
+    }
+
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "id", required = true, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "accountId", required = true, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "f", required = true, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
+    })
+    @RequestMapping("/recoverAcct")
+    public ResponseEntity<APIResponse> recoverAcct(@RequestBody PermissionsPostJsonRequest jsonRequest) throws APIException {
+
+        if (StringUtils.isBlank(jsonRequest.getId())) {
+            return new ResponseEntity<>(new APIResponse().error(new APIError().title("Missing param 'id'")),
+                HttpStatus.BAD_REQUEST);
+        }
+
+        LOG.info("from {}", jsonRequest.getF());
+
+        String added = permissionsService.recoverAcct(jsonRequest.getId(), jsonRequest.getAccountId(), jsonRequest.getF());
+        LOG.info(added);
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(added), HttpStatus.OK);
+    }
+
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "id", required = true, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "accountId", required = true, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "f", required = true, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
+    })
+    @RequestMapping("/approveRecover")
+    public ResponseEntity<APIResponse> approveRecover(@RequestBody PermissionsPostJsonRequest jsonRequest) throws APIException {
+
+        if (StringUtils.isBlank(jsonRequest.getId())) {
+            return new ResponseEntity<>(new APIResponse().error(new APIError().title("Missing param 'id'")),
+                HttpStatus.BAD_REQUEST);
+        }
+
+        LOG.info("from {}", jsonRequest.getF());
+
+        String added = permissionsService.approveRecover(jsonRequest.getId(), jsonRequest.getAccountId(), jsonRequest.getF());
+
         return new ResponseEntity<>(APIResponse.newSimpleResponse(added), HttpStatus.OK);
     }
 

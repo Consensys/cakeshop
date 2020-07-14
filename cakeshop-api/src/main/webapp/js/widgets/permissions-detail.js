@@ -16,6 +16,8 @@ module.exports = function() {
 		url_approveAdmin: 'api/permissions/approveAdmin',
 		url_addNode: 'api/permissions/addNode',
 		url_updateNode: 'api/permissions/updateNode',
+		url_recoverAcct: 'api/permissions/recoverAcct',
+		url_approveRecover: 'api/permissions/approveRecover',
 
 
 		hideLink: true,
@@ -102,7 +104,7 @@ module.exports = function() {
 			+ '			<td class="role-id">RoleId</td>'
 //			+ '         <td class="change-role-col"></td>'
 			+ '			<td class="status">Status</td>'
-//			+ '         <td class="update-acct-col"></td>'
+			+ '         <td class="recover-acct-col"></td>'
 			+ '		</tr>'
 			+ '	</thead>'
 		 	+ '	<tbody> <%= acctRows %> </tbody>'
@@ -170,6 +172,9 @@ module.exports = function() {
 //		    + '<td class="value status" contentEditable="false" style=" text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= a.status %></td>'
 		    + '<td data-orgid="<%= a.orgId %>" data-acctid="<%= a.acctId %>"class="status">'
             +   '<button class="btn btn-default update-acct-btn"><%= a.status %></button>'
+            + '</td>'
+		    + '<td data-orgid="<%= a.orgId %>" data-acctid="<%= a.acctId %>"class="recover-acct-col">'
+            +   '<button class="btn btn-default recover-acct-btn">Recover</button>'
             + '</td>'
 		    + '</tr>'
 		),
@@ -311,6 +316,32 @@ module.exports = function() {
 			'	<button type="button" id="admin-btn-final" class="btn btn-primary">Yes, <%=addOrg%>.</button>' +
 			'</div>'),
 
+		modalRecoverTemplate: _.template( '<div class="modal-header">' +
+			'	<%=addOrg%>' +
+			'</div>' +
+			'</div>' +
+			'<div class="modal-body">' +
+            '  <div class="radio">' +
+			'    <label>' +
+			'      <input type="radio" id="action" name="action" value="recover" checked="checked"/>' +
+			'      Recover' +
+			'    </label>' +
+			'  </div>' +
+			'  <div class="radio">' +
+			'    <label>' +
+			'      <input type="radio" id="action" name="action" value="approve"/>' +
+			'      Approve' +
+			'    </label>' +
+			'  </div>' +
+			'	<div class="form-group recover-form">' +
+		    '	    <label for="from-account">From Account</label>' +
+            '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
+			'	</div>' +
+			'</div>' +
+			'<div class="modal-footer">' +
+			'	<button type="button" id="admin-btn-final" class="btn btn-primary">Yes, <%=addOrg%>.</button>' +
+			'</div>'),
+
         modalConfirmation: _.template('<div class="modal-body"><%=message%></div>'),
 
 		subscribe: function() {
@@ -403,7 +434,8 @@ module.exports = function() {
 						Dashboard.Utils.emit(['orgDetailUpdate'], true)
 						_this.fetch();
 
-					}).fail(function() {
+					}).fail(function(err) {
+					    console.log(err)
 						$('#myModal .modal-content').html(_this.modalConfirmation({
 							message: 'Sorry, Please try again.'
 						}) );
@@ -450,7 +482,7 @@ module.exports = function() {
 						Dashboard.Utils.emit(['orgDetailUpdate'], true)
 						_this.fetch();
 
-					}).fail(function() {
+					}).fail(function(err) {
 						$('#myModal .modal-content').html(_this.modalConfirmation({
 							message: 'Sorry, Please try again.'
 						}) );
@@ -502,7 +534,8 @@ module.exports = function() {
 						Dashboard.Utils.emit(['orgDetailUpdate'], true)
 						_this.fetch();
 
-					}).fail(function() {
+					}).fail(function(err) {
+					    console.log(err)
 						$('#myModal .modal-content').html(_this.modalConfirmation({
 							message: 'Sorry, Please try again.'
 						}) );
@@ -544,7 +577,8 @@ module.exports = function() {
 						Dashboard.Utils.emit(['orgDetailUpdate'], true)
 						_this.fetch();
 
-					}).fail(function() {
+					}).fail(function(err) {
+					    console.log(err)
 						$('#myModal .modal-content').html(_this.modalConfirmation({
 							message: 'Sorry, Please try again.'
 						}) );
@@ -596,7 +630,8 @@ module.exports = function() {
 						Dashboard.Utils.emit(['orgDetailUpdate'], true)
 						_this.fetch();
 
-					}).fail(function() {
+					}).fail(function(err) {
+					    console.log(err)
 						$('#myModal .modal-content').html(_this.modalConfirmation({
 							message: 'Sorry, Please try again.'
 						}) );
@@ -639,7 +674,8 @@ module.exports = function() {
 						Dashboard.Utils.emit(['orgDetailUpdate'], true)
 						_this.fetch();
 
-					}).fail(function() {
+					}).fail(function(err) {
+					    console.log(err)
 						$('#myModal .modal-content').html(_this.modalConfirmation({
 							message: 'Sorry, Please try again.'
 						}) );
@@ -685,7 +721,8 @@ module.exports = function() {
 						Dashboard.Utils.emit(['orgDetailUpdate'], true)
 						_this.fetch();
 
-					}).fail(function() {
+					}).fail(function(err) {
+					    console.log(err)
 						$('#myModal .modal-content').html(_this.modalConfirmation({
 							message: 'Sorry, Please try again.'
 						}) );
@@ -719,11 +756,6 @@ module.exports = function() {
 
                 var urlAdmin = type == "assign" ? _this.url_assignAdmin : _this.url_approveAdmin
 
-                console.log(orgId)
-                console.log(acctId)
-                console.log(roleId)
-                console.log(fromAcct)
-
 					$.when(
 						utils.load({
 							url: urlAdmin,
@@ -740,7 +772,54 @@ module.exports = function() {
 						Dashboard.Utils.emit(['orgDetailUpdate'], true)
 						_this.fetch();
 
-					}).fail(function() {
+					}).fail(function(err) {
+                        console.log(err)
+						$('#myModal .modal-content').html(_this.modalConfirmation({
+							message: 'Sorry, Please try again.'
+						}) );
+					});
+				});
+
+			});
+
+        $('#widget-' + _this.shell.id).on('click', '.recover-acct-btn', function(e) {
+                var orgId = $(e.target.parentElement).data("orgid");
+                var acctId = $(e.target.parentElement).data("acctid");
+                _this.populateFrom();
+
+				// set the modal text
+				$('#myModal .modal-content').html(_this.modalRecoverTemplate({
+				    addOrg: "recover"
+				}) );
+
+				//open modal
+				$('#myModal').modal('show');
+
+
+                $('#admin-btn-final').click( function() {
+                var fromAcct = $('#from-account').val();
+                var type = $('#action:checked').val();
+
+                var urlAdmin = type == "recover" ? _this.url_recoverAcct : _this.url_approveRecover
+
+					$.when(
+						utils.load({
+							url: urlAdmin,
+							data: {
+								"id": orgId,
+								"accountId": acctId,
+								"f": {"from": fromAcct}
+							}
+						})
+					).done(function () {
+						$('#myModal').modal('hide');
+
+						Dashboard.Utils.emit(['orgDetailUpdate'], true)
+						_this.fetch();
+
+					}).fail(function(err) {
+					    console.log(err)
+					    console.log(err.responseJSON.errors.map((error) => error.detail))
 						$('#myModal .modal-content').html(_this.modalConfirmation({
 							message: 'Sorry, Please try again.'
 						}) );

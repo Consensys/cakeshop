@@ -65,7 +65,7 @@ public class PermissionsServiceImpl implements PermissionsService {
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_addOrg", new Object[]{id, enodeId, accountId, f});
 
         LOG.info("addorg {}", res);
-        if (res == null) {
+        if (res == null || res.get(SIMPLE_RESULT) == null) {
             throw new APIException("Could not add org: " + id);
         }
 
@@ -78,7 +78,7 @@ public class PermissionsServiceImpl implements PermissionsService {
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_approveOrg", new Object[]{id, enodeId, accountId, f});
 
         LOG.info("approve {}", res);
-        if (res == null) {
+        if (res == null || res.get(SIMPLE_RESULT) == null) {
             throw new APIException("Could not approve org: " + id);
         }
 
@@ -91,7 +91,7 @@ public class PermissionsServiceImpl implements PermissionsService {
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_updateOrgStatus", new Object[]{id, action, f});
 
         LOG.info("update org status {}", res);
-        if (res == null) {
+        if (res == null || res.get(SIMPLE_RESULT) == null) {
             throw new APIException("Could not update org status: " + id);
         }
 
@@ -104,7 +104,7 @@ public class PermissionsServiceImpl implements PermissionsService {
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_approveOrgStatus", new Object[]{id, action, f});
 
         LOG.info("approve org status {}", res);
-        if (res == null) {
+        if (res == null || res.get(SIMPLE_RESULT) == null) {
             throw new APIException("Could not approve org status: " + id);
         }
 
@@ -117,8 +117,8 @@ public class PermissionsServiceImpl implements PermissionsService {
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_addSubOrg", new Object[]{parentId, id, enodeId, f});
 
         LOG.info("approve org status {}", res);
-        if (res == null) {
-            throw new APIException("Could not approve org status: " + id);
+        if (res == null || res.get(SIMPLE_RESULT) == null) {
+            throw new APIException("Could not add sub org: " + id);
         }
 
         return (String) res.get(SIMPLE_RESULT);
@@ -132,8 +132,8 @@ public class PermissionsServiceImpl implements PermissionsService {
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_addNewRole", new Object[]{id, roleId, access, isVoter, isAdmin, f});
 
         LOG.info("add new role {}", res);
-        if (res == null) {
-            throw new APIException("Could not add new role: " + id);
+        if (res == null || res.get(SIMPLE_RESULT) == null) {
+            throw new APIException("Could not add new role: " + roleId);
         }
 
         return (String) res.get(SIMPLE_RESULT);
@@ -145,8 +145,8 @@ public class PermissionsServiceImpl implements PermissionsService {
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_removeRole", new Object[]{id, roleId, f});
 
         LOG.info("remove new role {}", res);
-        if (res == null) {
-            throw new APIException("Could not remove role: " + id);
+        if (res == null || res.get(SIMPLE_RESULT) == null) {
+            throw new APIException("Could not remove role: " + roleId);
         }
 
         return (String) res.get(SIMPLE_RESULT);
@@ -158,8 +158,8 @@ public class PermissionsServiceImpl implements PermissionsService {
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_addAccountToOrg", new Object[]{acctId, id, roleId, f});
 
         LOG.info("add account {}", res);
-        if (res == null) {
-            throw new APIException("Could not add account: " + id);
+        if (res == null || res.get(SIMPLE_RESULT) == null) {
+            throw new APIException("Could not add account: " + acctId);
         }
 
         return (String) res.get(SIMPLE_RESULT);
@@ -171,8 +171,8 @@ public class PermissionsServiceImpl implements PermissionsService {
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_changeAccountRole", new Object[]{acctId, id, roleId, f});
 
         LOG.info("change account {}", res);
-        if (res == null) {
-            throw new APIException("Could not change account: " + id);
+        if (res == null || res.get(SIMPLE_RESULT) == null) {
+            throw new APIException("Could not change account: " + acctId);
         }
 
         return (String) res.get(SIMPLE_RESULT);
@@ -184,8 +184,8 @@ public class PermissionsServiceImpl implements PermissionsService {
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_updateAccountStatus", new Object[]{acctId, id, action, f});
 
         LOG.info("update account {}", res);
-        if (res == null) {
-            throw new APIException("Could not update account: " + id);
+        if (res == null || res.get(SIMPLE_RESULT) == null) {
+            throw new APIException("Could not update account: " + acctId);
         }
 
         return (String) res.get(SIMPLE_RESULT);
@@ -197,8 +197,8 @@ public class PermissionsServiceImpl implements PermissionsService {
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_assignAdminRole", new Object[]{id, acctId, roleId, f});
 
         LOG.info("assign admin {}", res);
-        if (res == null) {
-            throw new APIException("Could not assign admin: " + id);
+        if (res == null || res.get(SIMPLE_RESULT) == null) {
+            throw new APIException("Could not assign admin: " + acctId);
         }
 
         return (String) res.get(SIMPLE_RESULT);
@@ -210,8 +210,8 @@ public class PermissionsServiceImpl implements PermissionsService {
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_approveAdminRole", new Object[]{id, acctId, f});
 
         LOG.info("approve admin {}", res);
-        if (res == null) {
-            throw new APIException("Could not approve admin: " + id);
+        if (res == null || res.get(SIMPLE_RESULT) == null) {
+            throw new APIException("Could not approve admin: " + acctId);
         }
 
         return (String) res.get(SIMPLE_RESULT);
@@ -223,8 +223,8 @@ public class PermissionsServiceImpl implements PermissionsService {
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_addNode", new Object[]{id, enodeId, f});
 
         LOG.info("add node {}", res);
-        if (res == null) {
-            throw new APIException("Could not add node: " + id);
+        if (res == null || res.get(SIMPLE_RESULT) == null) {
+            throw new APIException("Could not add node: " + enodeId);
         }
 
         return (String) res.get(SIMPLE_RESULT);
@@ -236,8 +236,34 @@ public class PermissionsServiceImpl implements PermissionsService {
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_updateNodeStatus", new Object[]{id, enodeId, action, f});
 
         LOG.info("update node {}", res);
-        if (res == null) {
-            throw new APIException("Could not update node: " + id);
+        if (res == null || res.get(SIMPLE_RESULT) == null) {
+            throw new APIException("Could not update node: " + enodeId);
+        }
+
+        return (String) res.get(SIMPLE_RESULT);
+    }
+
+    @Override
+    public String recoverAcct(String id, String accountId, Object f) throws APIException {
+
+        Map<String, Object> res = gethService.executeGethCall("quorumPermission_recoverBlackListedAccount", new Object[]{id, accountId, f});
+
+        LOG.info("update node {}", res);
+        if (res == null || res.get(SIMPLE_RESULT) == null) {
+            throw new APIException("Could not recover acct: " + accountId);
+        }
+
+        return (String) res.get(SIMPLE_RESULT);
+    }
+
+    @Override
+    public String approveRecover(String id, String accountId, Object f) throws APIException {
+
+        Map<String, Object> res = gethService.executeGethCall("quorumPermission_approveBlackListedAccountRecovery", new Object[]{id, accountId, f});
+
+        LOG.info("update node {}", res);
+        if (res == null || res.get(SIMPLE_RESULT) == null) {
+            throw new APIException("Could not approve recover of acct: " + accountId);
         }
 
         return (String) res.get(SIMPLE_RESULT);
