@@ -127,6 +127,8 @@ public class PermissionsServiceImpl implements PermissionsService {
     @Override
     public String addNewRole(String id, String roleId, int access, boolean isVoter, boolean isAdmin, Object f) throws APIException {
 
+        LOG.info("addingnew role");
+
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_addNewRole", new Object[]{id, roleId, access, isVoter, isAdmin, f});
 
         LOG.info("add new role {}", res);
