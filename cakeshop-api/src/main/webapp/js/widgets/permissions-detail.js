@@ -386,9 +386,9 @@ module.exports = function() {
 			$.when(
 				utils.load({ url: this.url_details, data: { id: _this.orgDet } })
 			).fail(function(res) {
-                $('#widget-' + _this.shell.id).html( '<h3 style="text-align: center;margin-top: 70px;">Unable to load transaction</h3>' );
+                $('#widget-' + _this.shell.id).html( '<h3 style="text-align: center;margin-top: 70px;">No Org Selected</h3>' );
 
-             	$('#widget-shell-' + _this.shell.id + ' .panel-title span').html('Transaction Detail');
+             	$('#widget-shell-' + _this.shell.id + ' .panel-title span').html('Permission Org Detail');
             }).done(function(res) {
 				var nodeRows = [];
 				var acctRows = [];

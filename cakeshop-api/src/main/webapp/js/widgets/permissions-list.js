@@ -170,7 +170,11 @@ module.exports = function() {
 
 			$.when(
 				utils.load({ url: this.url_list })
-			).done(function(info) {
+			).fail(function(res) {
+                console.log("failingin heree")
+                $('#widget-' + _this.shell.id).html(
+                    _this.templateUninitialized());
+            }).done(function(info) {
 			    console.log(info)
 				var rows = [];
 
