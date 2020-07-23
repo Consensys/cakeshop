@@ -351,7 +351,7 @@ public class PermissionsController extends BaseController {
 
         LOG.info("from {}", jsonRequest.getF());
 
-        String added = permissionsService.approveAdmin(jsonRequest.getId(), jsonRequest.getEnodeId(), jsonRequest.getF());
+        String added = permissionsService.addNode(jsonRequest.getId(), jsonRequest.getEnodeId(), jsonRequest.getF());
         return new ResponseEntity<>(APIResponse.newSimpleResponse(added), HttpStatus.OK);
     }
 

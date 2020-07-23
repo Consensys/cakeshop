@@ -466,8 +466,8 @@ module.exports = function() {
 
 					}).fail(function(err) {
 					    console.log(err)
-						$('#myModal .modal-content').html(_this.modalConfirmation({
-							message: 'Sorry, Please try again.'
+						$('#myModal .modal-content').addClass('text-danger').html(_this.modalConfirmation({
+							message: err.responseJSON.errors.map((error) => error.detail)
 						}) );
 					});
 				});
@@ -513,8 +513,8 @@ module.exports = function() {
 						_this.fetch();
 
 					}).fail(function(err) {
-						$('#myModal .modal-content').html(_this.modalConfirmation({
-							message: 'Sorry, Please try again.'
+						$('#myModal .modal-content').addClass('text-danger').html(_this.modalConfirmation({
+							message: err.responseJSON.errors.map((error) => error.detail)
 						}) );
 					});
 				});
@@ -566,8 +566,8 @@ module.exports = function() {
 
 					}).fail(function(err) {
 					    console.log(err)
-						$('#myModal .modal-content').html(_this.modalConfirmation({
-							message: 'Sorry, Please try again.'
+						$('#myModal .modal-content').addClass('text-danger').html(_this.modalConfirmation({
+							message: err.responseJSON.errors.map((error) => error.detail)
 						}) );
 					});
 				});
@@ -609,8 +609,8 @@ module.exports = function() {
 
 					}).fail(function(err) {
 					    console.log(err)
-						$('#myModal .modal-content').html(_this.modalConfirmation({
-							message: 'Sorry, Please try again.'
+						$('#myModal .modal-content').addClass('text-danger').html(_this.modalConfirmation({
+							message: err.responseJSON.errors.map((error) => error.detail)
 						}) );
 					});
 				});
@@ -663,8 +663,8 @@ module.exports = function() {
 
 					}).fail(function(err) {
 					    console.log(err)
-						$('#myModal .modal-content').html(_this.modalConfirmation({
-							message: 'Sorry, Please try again.'
+						$('#myModal .modal-content').addClass('text-danger').html(_this.modalConfirmation({
+							message: err.responseJSON.errors.map((error) => error.detail)
 						}) );
 					});
 				});
@@ -707,8 +707,8 @@ module.exports = function() {
 
 					}).fail(function(err) {
 					    console.log(err)
-						$('#myModal .modal-content').html(_this.modalConfirmation({
-							message: 'Sorry, Please try again.'
+						$('#myModal .modal-content').addClass('text-danger').html(_this.modalConfirmation({
+							message: err.responseJSON.errors.map((error) => error.detail)
 						}) );
 					});
 				});
@@ -754,8 +754,8 @@ module.exports = function() {
 
 					}).fail(function(err) {
 					    console.log(err)
-						$('#myModal .modal-content').html(_this.modalConfirmation({
-							message: 'Sorry, Please try again.'
+						$('#myModal .modal-content').addClass('text-danger').html(_this.modalConfirmation({
+							message: err.responseJSON.errors.map((error) => error.detail)
 						}) );
 					});
 				});
@@ -805,8 +805,8 @@ module.exports = function() {
 
 					}).fail(function(err) {
                         console.log(err)
-						$('#myModal .modal-content').html(_this.modalConfirmation({
-							message: 'Sorry, Please try again.'
+						$('#myModal .modal-content').addClass('text-danger').html(_this.modalConfirmation({
+							message: err.responseJSON.errors.map((error) => error.detail)
 						}) );
 					});
 				});
@@ -850,9 +850,8 @@ module.exports = function() {
 
 					}).fail(function(err) {
 					    console.log(err)
-					    console.log(err.responseJSON.errors.map((error) => error.detail))
-						$('#myModal .modal-content').html(_this.modalConfirmation({
-							message: 'Sorry, Please try again.'
+						$('#myModal .modal-content').addClass('text-danger').html(_this.modalConfirmation({
+							message: err.responseJSON.errors.map((error) => error.detail)
 						}) );
 					});
 				});
@@ -895,9 +894,8 @@ module.exports = function() {
 
 					}).fail(function(err) {
 					    console.log(err)
-					    console.log(err.responseJSON.errors.map((error) => error.detail))
-						$('#myModal .modal-content').html(_this.modalConfirmation({
-							message: 'Sorry, Please try again.'
+						$('#myModal .modal-content').addClass('text-danger').html(_this.modalConfirmation({
+							message: err.responseJSON.errors.map((error) => error.detail)
 						}) );
 					});
 				});
