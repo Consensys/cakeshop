@@ -202,8 +202,8 @@ public class PermissionsController extends BaseController {
         @ApiImplicitParam(name = "id", required = true, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
         @ApiImplicitParam(name = "roleId", required = true, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
         @ApiImplicitParam(name = "access", required = true, value = "complete enode id", dataType = "java.lang.Integer", paramType = "body"),
-        @ApiImplicitParam(name = "isVoter", required = true, value = "complete enode id", dataType = "java.lang.Boolean", paramType = "body"),
-        @ApiImplicitParam(name = "isAdmin", required = true, value = "complete enode id", dataType = "java.lang.Boolean", paramType = "body"),
+        @ApiImplicitParam(name = "voter", required = true, value = "complete enode id", dataType = "boolean", paramType = "body"),
+        @ApiImplicitParam(name = "admin", required = true, value = "complete enode id", dataType = "boolean", paramType = "body"),
         @ApiImplicitParam(name = "f", required = true, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
     })
     @RequestMapping("/addNewRole")
@@ -214,9 +214,7 @@ public class PermissionsController extends BaseController {
                 HttpStatus.BAD_REQUEST);
         }
 
-        LOG.info("from {}", jsonRequest.getF());
-
-        String added = permissionsService.addNewRole(jsonRequest.getId(), jsonRequest.getRoleId(), jsonRequest.getAccess(), jsonRequest.isVoter(), jsonRequest.isAdmin(), jsonRequest.getF());
+        String added = permissionsService.addNewRole(jsonRequest.getId(), jsonRequest.getRoleId(), jsonRequest.getAccess(), jsonRequest.getVoter(), jsonRequest.getAdmin(), jsonRequest.getF());
         return new ResponseEntity<>(APIResponse.newSimpleResponse(added), HttpStatus.OK);
     }
 
@@ -412,7 +410,47 @@ public class PermissionsController extends BaseController {
 
         LOG.info("from {}", jsonRequest.getF());
 
-        String added = permissionsService.approveRecover(jsonRequest.getId(), jsonRequest.getAccountId(), jsonRequest.getF());
+        String added = permissionsService.approveAcct(jsonRequest.getId(), jsonRequest.getAccountId(), jsonRequest.getF());
+
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(added), HttpStatus.OK);
+    }
+
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "id", required = true, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "enodeId", required = true, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "f", required = true, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
+    })
+    @RequestMapping("/recoverNode")
+    public ResponseEntity<APIResponse> recoverNode(@RequestBody PermissionsPostJsonRequest jsonRequest) throws APIException {
+
+        if (StringUtils.isBlank(jsonRequest.getId())) {
+            return new ResponseEntity<>(new APIResponse().error(new APIError().title("Missing param 'id'")),
+                HttpStatus.BAD_REQUEST);
+        }
+
+        LOG.info("from {}", jsonRequest.getF());
+
+        String added = permissionsService.recoverNode(jsonRequest.getId(), jsonRequest.getEnodeId(), jsonRequest.getF());
+        LOG.info(added);
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(added), HttpStatus.OK);
+    }
+
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "id", required = true, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "enodeId", required = true, value = "complete enode id", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "f", required = true, value = "acct that will be org admin acct", dataType = "java.lang.Object", paramType = "body")
+    })
+    @RequestMapping("/approveNode")
+    public ResponseEntity<APIResponse> approveNode(@RequestBody PermissionsPostJsonRequest jsonRequest) throws APIException {
+
+        if (StringUtils.isBlank(jsonRequest.getId())) {
+            return new ResponseEntity<>(new APIResponse().error(new APIError().title("Missing param 'id'")),
+                HttpStatus.BAD_REQUEST);
+        }
+
+        LOG.info("from {}", jsonRequest.getF());
+
+        String added = permissionsService.approveNode(jsonRequest.getId(), jsonRequest.getEnodeId(), jsonRequest.getF());
 
         return new ResponseEntity<>(APIResponse.newSimpleResponse(added), HttpStatus.OK);
     }

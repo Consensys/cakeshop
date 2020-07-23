@@ -40,6 +40,10 @@ public interface PermissionsService {
 
     String recoverAcct(String id, String accountId, Object f) throws APIException;
 
-    String approveRecover(String id, String accountId, Object f) throws APIException;
+    String approveAcct(String id, String accountId, Object f) throws APIException;
+
+    String recoverNode(String id, String enodeId, Object f) throws APIException;
+
+    String approveNode(String id, String enodeId, Object f) throws APIException;
 
 }

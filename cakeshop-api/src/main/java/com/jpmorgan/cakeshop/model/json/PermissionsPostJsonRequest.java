@@ -5,7 +5,7 @@ public class PermissionsPostJsonRequest {
     private String id, enodeId, accountId, parentId, roleId;
     private Object f;
     private int action, access;
-    private boolean isVoter, isAdmin;
+    private Boolean voter, admin;
 
     /**
      * @return the id
@@ -77,19 +77,19 @@ public class PermissionsPostJsonRequest {
         this.access = access;
     }
 
-    public boolean isVoter() {
-        return isVoter;
+    public boolean getVoter() {
+        return voter;
     }
 
     public void setVoter(boolean voter) {
-        isVoter = voter;
+        this.voter = voter;
     }
 
-    public boolean isAdmin() {
-        return isAdmin;
+    public boolean getAdmin() {
+        return admin;
     }
 
     public void setAdmin(boolean admin) {
-        isAdmin = admin;
+        this.admin = admin;
     }
 }

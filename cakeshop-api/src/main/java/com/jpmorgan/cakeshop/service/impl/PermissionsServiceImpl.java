@@ -257,13 +257,39 @@ public class PermissionsServiceImpl implements PermissionsService {
     }
 
     @Override
-    public String approveRecover(String id, String accountId, Object f) throws APIException {
+    public String approveAcct(String id, String accountId, Object f) throws APIException {
 
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_approveBlackListedAccountRecovery", new Object[]{id, accountId, f});
 
         LOG.info("update node {}", res);
         if (res == null || res.get(SIMPLE_RESULT) == null) {
             throw new APIException("Could not approve recover of acct: " + accountId);
+        }
+
+        return (String) res.get(SIMPLE_RESULT);
+    }
+
+    @Override
+    public String recoverNode(String id, String enodeId, Object f) throws APIException {
+
+        Map<String, Object> res = gethService.executeGethCall("quorumPermission_recoverBlackListedNode", new Object[]{id, enodeId, f});
+
+        LOG.info("update node {}", res);
+        if (res == null || res.get(SIMPLE_RESULT) == null) {
+            throw new APIException("Could not recover acct: " + enodeId);
+        }
+
+        return (String) res.get(SIMPLE_RESULT);
+    }
+
+    @Override
+    public String approveNode(String id, String enodeId, Object f) throws APIException {
+
+        Map<String, Object> res = gethService.executeGethCall("quorumPermission_approveBlackListedNodeRecovery", new Object[]{id, enodeId, f});
+
+        LOG.info("update node {}", res);
+        if (res == null || res.get(SIMPLE_RESULT) == null) {
+            throw new APIException("Could not approve recover of acct: " + enodeId);
         }
 
         return (String) res.get(SIMPLE_RESULT);
