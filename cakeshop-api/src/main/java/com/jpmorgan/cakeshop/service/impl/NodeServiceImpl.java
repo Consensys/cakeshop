@@ -106,29 +106,69 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
                 }
             }
 
-            data = gethService.executeGethCall(ADMIN_MINER_MINING);
-            Boolean mining = (Boolean) data.get(SIMPLE_RESULT);
-            node.setMining(mining == null ? false : mining);
+            try {
+                data = gethService.executeGethCall(ADMIN_MINER_MINING);
+                Boolean mining = (Boolean) data.get(SIMPLE_RESULT);
+                node.setMining(mining == null ? false : mining);
+            } catch (APIException ex) {
+                // allow other calls to carry on and collect partial state such
+                // as in cases when some RPC calls aren't supported
+                if (ex.getCause() != null) {
+                    throw ex;
+                }
+            }
 
-            // peer count
-            data = gethService.executeGethCall(ADMIN_NET_PEER_COUNT);
-            String peerCount = (String) data.get(SIMPLE_RESULT);
-            node.setPeerCount(peerCount == null ? 0 : Integer.decode(peerCount));
+            try {
+                // peer count
+                data = gethService.executeGethCall(ADMIN_NET_PEER_COUNT);
+                String peerCount = (String) data.get(SIMPLE_RESULT);
+                node.setPeerCount(peerCount == null ? 0 : Integer.decode(peerCount));
+            } catch (APIException ex) {
+                // allow other calls to carry on and collect partial state such
+                // as in cases when some RPC calls aren't supported
+                if (ex.getCause() != null) {
+                    throw ex;
+                }
+            }
 
-            // get last block number
-            data = gethService.executeGethCall(ADMIN_ETH_BLOCK_NUMBER);
-            String blockNumber = (String) data.get(SIMPLE_RESULT);
-            node.setLatestBlock(blockNumber == null ? 0 : Integer.decode(blockNumber));
+            try {
+                // get last block number
+                data = gethService.executeGethCall(ADMIN_ETH_BLOCK_NUMBER);
+                String blockNumber = (String) data.get(SIMPLE_RESULT);
+                node.setLatestBlock(blockNumber == null ? 0 : Integer.decode(blockNumber));
+            } catch (APIException ex) {
+                // allow other calls to carry on and collect partial state such
+                // as in cases when some RPC calls aren't supported
+                if (ex.getCause() != null) {
+                    throw ex;
+                }
+            }
 
-            // get pending transactions
-            data = gethService.executeGethCall(ADMIN_TXPOOL_STATUS);
-            Integer pending = AbiUtils.hexToBigInteger((String) data.get("pending")).intValue();
-            node.setPendingTxn(pending == null ? 0 : pending);
+            try {
+                // get pending transactions
+                data = gethService.executeGethCall(ADMIN_TXPOOL_STATUS);
+                Integer pending = AbiUtils.hexToBigInteger((String) data.get("pending")).intValue();
+                node.setPendingTxn(pending == null ? 0 : pending);
+            } catch (APIException ex) {
+                // allow other calls to carry on and collect partial state such
+                // as in cases when some RPC calls aren't supported
+                if (ex.getCause() != null) {
+                    throw ex;
+                }
+            }
 
             if (isRaft()) {
-                // get raft role
-                data = gethService.executeGethCall(RAFT_ROLE);
-                node.setRole((String) data.get(SIMPLE_RESULT));
+                try {
+                    // get raft role
+                    data = gethService.executeGethCall(RAFT_ROLE);
+                    node.setRole((String) data.get(SIMPLE_RESULT));
+                } catch (APIException ex) {
+                    // allow other calls to carry on and collect partial state such
+                    // as in cases when some RPC calls aren't supported
+                    if (ex.getCause() != null) {
+                        throw ex;
+                    }
+                }
             }
 
             if(gethConfig.isAutoStart()) {
@@ -139,7 +179,15 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
                 }
             }
 
-            node.setPeers(peers());
+            try {
+                node.setPeers(peers());
+            } catch (APIException ex) {
+                // allow other calls to carry on and collect partial state such
+                // as in cases when some RPC calls aren't supported
+                if (ex.getCause() != null) {
+                    throw ex;
+                }
+            }
 
         } catch (APIException ex) {
             gethService.setConnected(false);
