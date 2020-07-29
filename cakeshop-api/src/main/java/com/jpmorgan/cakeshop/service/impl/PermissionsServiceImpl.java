@@ -181,7 +181,7 @@ public class PermissionsServiceImpl implements PermissionsService {
     @Override
     public String updateAccount(String acctId, String id, int action, Object f) throws APIException {
 
-        Map<String, Object> res = gethService.executeGethCall("quorumPermission_updateAccountStatus", new Object[]{acctId, id, action, f});
+        Map<String, Object> res = gethService.executeGethCall("quorumPermission_updateAccountStatus", new Object[]{id, acctId, action, f});
 
         LOG.info("update account {}", res);
         if (res == null || res.get(SIMPLE_RESULT) == null) {

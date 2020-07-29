@@ -7,6 +7,7 @@ module.exports = function() {
 		size: 'large',
 
 		url_list: 'api/permissions/getList',
+		url_details: 'api/permissions/getDetails',
 		url_add: 'api/permissions/addOrg',
 		url_approve: 'api/permissions/approveOrg',
 		url_update_status: 'api/permissions/updateOrgStatus',
@@ -21,7 +22,7 @@ module.exports = function() {
 		    + ' <thead style="font-weight: bold;">'
 		    + '     <tr>'
 			+ '			<td class="org-id">OrgId</td>'
-			+ '         <td class="org-status">Status</td>'
+			+ '         <td class="org-status" title=" 0-NotInList&#010 1-Proposed&#010 2-Approved&#010 3-PendingSuspension&#010 4-Suspended&#010 5-Recovery initiated">Status</td>'
             + '         <td class="parent-id" style="width:90px;">ParentOrgId</td>'
             + '         <td class="ultimate-parent" style="width:110px;">UltimateParent</td>'
             + '         <td class="approve-col"></td>'
@@ -44,8 +45,7 @@ module.exports = function() {
 
 		templateRow: _.template('<tr>'
 		    + '<td class="value org-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap;"><a href="#"><%= o.fullOrgId %></a></td>'
-//		    + '<td class="value org-status" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= o.status %></td>'
-		    + '<td data-orgid="<%= o.fullOrgId %>" class="org-status">'
+		    + '<td data-orgid="<%= o.fullOrgId %>" class="org-status" title=" 0-NotInList&#010 1-Proposed&#010 2-Approved&#010 3-PendingSuspension&#010 4-Suspended&#010 5-Recovery initiated">'
             +   '<button class="btn btn-default status-btn"><%= o.status %></button>'
             + '</td>'
             + '<td class="value parent-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><a href="#"><%= o.parentOrgId %></a></td>'
@@ -67,6 +67,25 @@ module.exports = function() {
 			'		<input type="text" class="form-control" id="enode-id">' +
 			'		<label for="account-admin">Account Admin</label>' +
             '		<input type="text" class="form-control" id="account-admin">' +
+		    '	    <label for="from-account">From Account</label>' +
+            '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
+			'	</div>' +
+			'</div>' +
+			'<div class="modal-footer">' +
+			'	<button type="button" id="addOrg-btn-final" class="btn btn-primary">Yes, <%=addOrg%>.</button>' +
+			'</div>'),
+
+		modalOrgApproveTemplate: _.template( '<div class="modal-header">' +
+			'	<%=addOrg%>' +
+			'</div>' +
+			'<div class="modal-body">' +
+			'	<div class="form-group add-org-form">' +
+			'		<label for="org-label">Org Name</label>' +
+			'		<input type="text" class="form-control" id="org-label" value="<%=orgId%>">' +
+		    '	    <label for="enode-id">Enode id</label>' +
+            '	    <select id="enode-id" class="form-control" style="transition: none;"> </select>' +
+		    '	    <label for="account-admin">Account Admin</label>' +
+            '	    <select id="account-admin" class="form-control" style="transition: none;"> </select>' +
 		    '	    <label for="from-account">From Account</label>' +
             '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
 			'	</div>' +
@@ -165,6 +184,27 @@ module.exports = function() {
 
 		},
 
+		populateEnode: function(orgId) {
+		    $.when(
+		        utils.load({ url: this.url_details, data: { id: orgId } })
+		    ).done(function(list) {
+		        console.log(list)
+		        var nodes = ['<option> Select enodeId </option>'];
+		        var accts = ['<option> Select Admin Account </option>'];
+
+		        _.each(list.data.attributes.nodeList, function(node) {
+                    nodes.push('<option>' + node.url + '</option>');
+                })
+		        _.each(list.data.attributes.acctList, function(acct) {
+                    accts.push('<option>' + acct.acctId + '</option>');
+                })
+
+                $('#enode-id').html(nodes.join(''));
+                $('#account-admin').html(accts.join(''));
+		    }.bind(this));
+
+		},
+
         fetch: function () {
 			var _this = this;
 
@@ -250,15 +290,17 @@ module.exports = function() {
 
             $('#widget-' + _this.shell.id).on('click', '.approve-btn', function(e) {
 
+ 			    var orgName = $(e.target.parentElement).data("orgid")
                 _this.populateFrom();
+                _this.populateEnode(orgName);
 
  		        console.log('parentel');
  			    console.log($(e.target.parentElement).data);
 
- 			    var orgName = $(e.target.parentElement).data("orgid")
+
 
 				// set the modal text
-				$('#myModal .modal-content').html(_this.modalOrgTemplate({
+				$('#myModal .modal-content').html(_this.modalOrgApproveTemplate({
 				    addOrg: "approveOrg",
 				    orgId: orgName,
 				}) );

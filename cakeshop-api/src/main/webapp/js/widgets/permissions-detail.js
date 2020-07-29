@@ -42,9 +42,6 @@ module.exports = function() {
                     }
 				});
 
-                console.log('rows')
-                console.log(rows)
-
                 $('#from-account').html( rows.join('') );
 
 			}.bind(this));
@@ -52,7 +49,6 @@ module.exports = function() {
 		},
 
 		roleAccessOptions: function() {
-		   //var rows = ['<option>1-Suspend</option>', '<option>2-Activate</option>'];
 
             Account.list().then(function(accounts) {
 		        var rows = ['<option>0-ReadOnly</option>', '<option>1-Transact</option>', '<option>2-ContractDeploy</option>', '<option>3-FullAccess</option>'];
@@ -65,10 +61,9 @@ module.exports = function() {
         },
 
 		statusOptions: function() {
-		   //var rows = ['<option>1-Suspend</option>', '<option>2-Activate</option>'];
 
             Account.list().then(function(accounts) {
-		        var rows = ['<option>1-Deactivate</option>', '<option>2-Activate</option>', '<option>3-Suspend</option>'];
+		        var rows = ['<option>1-Suspend</option>', '<option>2-Activate</option>', '<option>3-Blacklist</option>'];
 
                 console.log('rows')
                 console.log(rows)
@@ -81,10 +76,9 @@ module.exports = function() {
             + '<table style="width: 100%; table-layout: fixed;" class="table table-striped">'
 		 	+ '	<thead style="font-weight: bold;">'
 			+ '		<tr>'
-			+ '           <td class="org-id">OrgId</td>'
 			+ '           <td class="url">Url</td>'
-			+ '           <td class="org-status">Status</td>'
-//			+ '           <td class="update-node-col"></td>'
+			+ '           <td class="org-status" title=" 0-NotInList&#010 1-PendingApproval&#010 2-Approved&#010 3-Deactivated&#010 4-Blacklisted&#010 5-Recovery initiated">Status</td>'
+			+ '           <td class="org-id">OrgId</td>'
 			+ '		</tr>'
 			+ '	</thead>'
 		 	+ '	<tbody> <%= nodeRows %> </tbody>'
@@ -100,12 +94,10 @@ module.exports = function() {
 		 	+ '	<thead style="font-weight: bold;">'
 			+ '		<tr>'
 			+ '			<td class="acct-id">Account Id</td>'
+			+ '			<td class="role-id">RoleId</td>'
+			+ '			<td class="status" title=" 0-NotInList&#010 1-PendingApproval&#010 2-Active&#010 4-Suspended&#010 5-Blacklisted&#010 6-Revoked&#010 7-Recovery initiated">Status</td>'
 			+ '			<td class="org-id">OrgId</td>'
 			+ '			<td class="org-admin">OrgAdmin</td>'
-//			+ '         <td class="admin-col"></td>'
-			+ '			<td class="role-id">RoleId</td>'
-//			+ '         <td class="change-role-col"></td>'
-			+ '			<td class="status">Status</td>'
 			+ '         <td class="recover-acct-col"></td>'
 			+ '		</tr>'
 			+ '	</thead>'
@@ -122,10 +114,10 @@ module.exports = function() {
 		 	+ '	<thead style="font-weight: bold;">'
 			+ '		<tr>'
 			+ '			<td class="role-id">RoleId</td>'
+			+ '			<td class="active">Active</td>'
+			+ '			<td class="access" title=" 0-ReadOnly&#010 1-Tranasct&#010 2-ContractDeploy&#010 3-FullAccess">Access</td>'
 			+ '			<td class="org-id">OrgId</td>'
 			+ '			<td class="voter">Voter</td>'
-			+ '			<td class="access">Access</td>'
-			+ '			<td class="active">Active</td>'
 			+ '			<td class="admin">Admin</td>'
 			+ '         <td class="remove-role-col"></td>'
 			+ '		</tr>'
@@ -151,12 +143,11 @@ module.exports = function() {
 		),
 
 		templateRowNode: _.template('<tr>'
-            + '<td class="value org-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= n.orgId %></a></td>'
             + '<td class="value org-url" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= n.url %></td>'
-//		    + '<td class="value org-status" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= n.status %></td>'
-		    + '<td data-orgid="<%= n.orgId %>" data-url="<%= n.url %>" class="org-status">'
+            + '<td data-orgid="<%= n.orgId %>" data-url="<%= n.url %>" class="org-status" title=" 0-NotInList&#010 1-PendingApproval&#010 2-Approved&#010 3-Deactivated&#010 4-Blacklisted&#010 5-Recovery initiated">'
             +   '<button class="btn btn-default update-node-btn"><%= n.status %></button>'
             + '</td>'
+            + '<td class="value org-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= n.orgId %></a></td>'
 		    + '<td data-orgid="<%= n.orgId %>" data-enodeid="<%= n.url %>"class="recover-node-col">'
             +   '<button class="btn btn-default recover-node-btn">Recover</button>'
             + '</td>'
@@ -165,18 +156,15 @@ module.exports = function() {
 
 		templateRowAcct: _.template('<tr>'
 		    + '<td class="value acct-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= a.acctId %></td>'
-            + '<td class="value org-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= a.orgId %></td>'
-//            + '<td class="value org-admin" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= a.orgAdmin %></a></td>'
-		    + '<td data-orgid="<%= a.orgId %>" data-acctid="<%= a.acctId %>" class="org-admin">'
-            +   '<button class="btn btn-default admin-btn"><%= a.orgAdmin %></button>'
-            + '</td>'
-//		    + '<td class="value role-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= a.roleId %></td>'
 		    + '<td data-orgid="<%= a.orgId %>" data-acctid="<%= a.acctId %>" class="role-id">'
             +   '<button class="btn btn-default change-role-btn"><%= a.roleId %></button>'
             + '</td>'
-//		    + '<td class="value status" contentEditable="false" style=" text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= a.status %></td>'
-		    + '<td data-orgid="<%= a.orgId %>" data-acctid="<%= a.acctId %>"class="status">'
+		    + '<td data-orgid="<%= a.orgId %>" data-acctid="<%= a.acctId %>"class="status" title=" 0-NotInList&#010 1-PendingApproval&#010 2-Active&#010 4-Suspended&#010 5-Blacklisted&#010 6-Revoked&#010 7-Recovery initiated">'
             +   '<button class="btn btn-default update-acct-btn"><%= a.status %></button>'
+            + '</td>'
+            + '<td class="value org-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= a.orgId %></td>'
+		    + '<td data-orgid="<%= a.orgId %>" data-acctid="<%= a.acctId %>" class="org-admin">'
+            +   '<button class="btn btn-default admin-btn"><%= a.orgAdmin %></button>'
             + '</td>'
 		    + '<td data-orgid="<%= a.orgId %>" data-acctid="<%= a.acctId %>"class="recover-acct-col">'
             +   '<button class="btn btn-default recover-acct-btn">Recover</button>'
@@ -186,10 +174,10 @@ module.exports = function() {
 
 		templateRowRole: _.template('<tr>'
 		    + '<td class="value role-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= r.roleId %></td>'
+		    + '<td class="value active" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= r.active %></td>'
+            + '<td class="value access" contentEditable="false" title=" 0-ReadOnly&#010 1-Tranasct&#010 2-ContractDeploy&#010 3-FullAccess" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= r.access %></td>'
 		    + '<td class="value org-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= r.orgId %></td>'
 		    + '<td class="value voter" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= r.isVoter %></td>'
-            + '<td class="value access" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= r.access %></td>'
-		    + '<td class="value active" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= r.active %></td>'
 		    + '<td class="value admin" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= r.isAdmin %></a></td>'
 		    + '<td data-orgid="<%= r.orgId %>" data-roleid="<%= r.roleId %>" class="remove-role-col">'
             +   '<button class="btn btn-default remove-role-btn">Remove Role</button>'
@@ -481,6 +469,9 @@ module.exports = function() {
 
 				var orgId = $(e.target.parentElement).data("orgid");
 				var acctId = $(e.target.parentElement).data("acctid");
+
+                console.log('acctid')
+				console.log(acctId);
 
 
 				// set the modal text
