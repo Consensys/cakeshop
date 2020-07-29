@@ -163,9 +163,7 @@ module.exports = function() {
             +   '<button class="btn btn-default update-acct-btn"><%= a.status %></button>'
             + '</td>'
             + '<td class="value org-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= a.orgId %></td>'
-		    + '<td data-orgid="<%= a.orgId %>" data-acctid="<%= a.acctId %>" class="org-admin">'
-            +   '<button class="btn btn-default admin-btn"><%= a.orgAdmin %></button>'
-            + '</td>'
+            + '<td class="value org-admin" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= a.orgAdmin %></td>'
 		    + '<td data-orgid="<%= a.orgId %>" data-acctid="<%= a.acctId %>"class="recover-acct-col">'
             +   '<button class="btn btn-default recover-acct-btn">Recover</button>'
             + '</td>'
@@ -282,7 +280,13 @@ module.exports = function() {
 			'<div class="modal-body">' +
             '  <div class="radio">' +
 			'    <label>' +
-			'      <input type="radio" id="action" name="action" value="assign" checked="checked"/>' +
+			'      <input type="radio" id="action" name="action" value="change" checked="checked"/>' +
+			'      Change Role' +
+			'    </label>' +
+			'  </div>' +
+            '  <div class="radio">' +
+			'    <label>' +
+			'      <input type="radio" id="action" name="action" value="assign"/>' +
 			'      Assign Admin Role' +
 			'    </label>' +
 			'  </div>' +
@@ -454,7 +458,7 @@ module.exports = function() {
 
 					}).fail(function(err) {
 					    console.log(err)
-						$('#myModal .modal-content').addClass('text-danger').html(_this.modalConfirmation({
+						$('#myModal .modal-content').html(_this.modalConfirmation({
 							message: err.responseJSON.errors.map((error) => error.detail)
 						}) );
 					});
@@ -504,7 +508,7 @@ module.exports = function() {
 						_this.fetch();
 
 					}).fail(function(err) {
-						$('#myModal .modal-content').addClass('text-danger').html(_this.modalConfirmation({
+						$('#myModal .modal-content').html(_this.modalConfirmation({
 							message: err.responseJSON.errors.map((error) => error.detail)
 						}) );
 					});
@@ -519,8 +523,8 @@ module.exports = function() {
                 _this.populateFrom();
 
 				// set the modal text
-				$('#myModal .modal-content').html(_this.modalAcctTemplate({
-				    addOrg: "changeRole",
+				$('#myModal .modal-content').html(_this.modalAdminTemplate({
+				    addOrg: "changeRole/assignAdmin",
 				    orgId: orgId,
 				    acctId: acctId
 				}) );
@@ -529,19 +533,37 @@ module.exports = function() {
 				$('#myModal').modal('show');
 
 
-                $('#newAcct-btn-final').click( function() {
+                $('#admin-btn-final').click( function() {
                     var orgId = $('#org-id').val();
 					var role = $('#role-id').val();
 					var acctId = $('#acct-id').val();
 					var fromAcct = $('#from-account').val();
 
+					var type = $('#action:checked').val();
+
+                    var urlAdmin;
+                    switch(type) {
+                        case "change":
+                            urlAdmin = _this.url_changeAcct
+                            break;
+                        case "assign":
+                            urlAdmin = _this.url_assignAdmin
+                             break;
+                        case "approve":
+                            urlAdmin = _this.url_approveAdmin
+                            break;
+                        default:
+                            urlAdmin = ""
+                    }
+
 				    console.log(orgId);
 				    console.log(role);
 				    console.log(fromAcct);
+				    console.log(urlAdmin);
 
 					$.when(
 						utils.load({
-							url: _this.url_changeAcct,
+							url: urlAdmin,
 							data: {
 								"id": orgId,
 								"roleId": role,
@@ -557,7 +579,7 @@ module.exports = function() {
 
 					}).fail(function(err) {
 					    console.log(err)
-						$('#myModal .modal-content').addClass('text-danger').html(_this.modalConfirmation({
+						$('#myModal .modal-content').html(_this.modalConfirmation({
 							message: err.responseJSON.errors.map((error) => error.detail)
 						}) );
 					});
@@ -600,7 +622,7 @@ module.exports = function() {
 
 					}).fail(function(err) {
 					    console.log(err)
-						$('#myModal .modal-content').addClass('text-danger').html(_this.modalConfirmation({
+						$('#myModal .modal-content').html(_this.modalConfirmation({
 							message: err.responseJSON.errors.map((error) => error.detail)
 						}) );
 					});
@@ -654,7 +676,7 @@ module.exports = function() {
 
 					}).fail(function(err) {
 					    console.log(err)
-						$('#myModal .modal-content').addClass('text-danger').html(_this.modalConfirmation({
+						$('#myModal .modal-content').html(_this.modalConfirmation({
 							message: err.responseJSON.errors.map((error) => error.detail)
 						}) );
 					});
@@ -698,7 +720,7 @@ module.exports = function() {
 
 					}).fail(function(err) {
 					    console.log(err)
-						$('#myModal .modal-content').addClass('text-danger').html(_this.modalConfirmation({
+						$('#myModal .modal-content').html(_this.modalConfirmation({
 							message: err.responseJSON.errors.map((error) => error.detail)
 						}) );
 					});
@@ -745,58 +767,7 @@ module.exports = function() {
 
 					}).fail(function(err) {
 					    console.log(err)
-						$('#myModal .modal-content').addClass('text-danger').html(_this.modalConfirmation({
-							message: err.responseJSON.errors.map((error) => error.detail)
-						}) );
-					});
-				});
-
-			});
-
-        $('#widget-' + _this.shell.id).on('click', '.admin-btn', function(e) {
-                var orgId = $(e.target.parentElement).data("orgid");
-                var acctId = $(e.target.parentElement).data("acctid");
-                _this.populateFrom();
-
-				// set the modal text
-				$('#myModal .modal-content').html(_this.modalAdminTemplate({
-				    addOrg: "updateAdmin",
-				    orgId: orgId,
-				    acctId: acctId
-				}) );
-
-				//open modal
-				$('#myModal').modal('show');
-
-
-                $('#admin-btn-final').click( function() {
-                var orgId = $('#org-id').val();
-                var acctId = $('#acct-id').val();
-                var roleId = $('#role-id').val();
-                var fromAcct = $('#from-account').val();
-                var type = $('#action:checked').val();
-
-                var urlAdmin = type == "assign" ? _this.url_assignAdmin : _this.url_approveAdmin
-
-					$.when(
-						utils.load({
-							url: urlAdmin,
-							data: {
-								"id": orgId,
-								"accountId": acctId,
-								"roleId": roleId,
-								"f": {"from": fromAcct}
-							}
-						})
-					).done(function () {
-						$('#myModal').modal('hide');
-
-						Dashboard.Utils.emit(['orgDetailUpdate'], true)
-						_this.fetch();
-
-					}).fail(function(err) {
-                        console.log(err)
-						$('#myModal .modal-content').addClass('text-danger').html(_this.modalConfirmation({
+						$('#myModal .modal-content').html(_this.modalConfirmation({
 							message: err.responseJSON.errors.map((error) => error.detail)
 						}) );
 					});
@@ -841,7 +812,7 @@ module.exports = function() {
 
 					}).fail(function(err) {
 					    console.log(err)
-						$('#myModal .modal-content').addClass('text-danger').html(_this.modalConfirmation({
+						$('#myModal .modal-content').html(_this.modalConfirmation({
 							message: err.responseJSON.errors.map((error) => error.detail)
 						}) );
 					});
@@ -885,7 +856,7 @@ module.exports = function() {
 
 					}).fail(function(err) {
 					    console.log(err)
-						$('#myModal .modal-content').addClass('text-danger').html(_this.modalConfirmation({
+						$('#myModal .modal-content').html(_this.modalConfirmation({
 							message: err.responseJSON.errors.map((error) => error.detail)
 						}) );
 					});
