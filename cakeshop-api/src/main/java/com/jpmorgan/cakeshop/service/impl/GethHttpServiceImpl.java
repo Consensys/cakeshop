@@ -116,7 +116,7 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     @Override
     public Map<String, Object> executeGethCall(String funcName, Object... args) throws APIException {
-        LOG.info("Geth call: " + funcName);
+        LOG.debug("Geth call: " + funcName);
         return executeGethCall(createHttpRequestType(funcName, args));
     }
 
