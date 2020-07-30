@@ -1,4 +1,7 @@
-package com.codahale.metrics;
+package com.jpmorgan.cakeshop.metrics;
+
+
+import java.util.concurrent.atomic.LongAdder;
 
 public class SimpleMovingAverage {
 

@@ -1,6 +1,8 @@
-package com.codahale.metrics;
+package com.jpmorgan.cakeshop.metrics;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+
+import java.util.concurrent.atomic.LongAdder;
 
 public class SimpleRollingAverage {
 
@@ -10,7 +12,6 @@ public class SimpleRollingAverage {
     /**
      * Create a new SimpleMovingAverage
      *
-     * @param interval     the expected tick interval, in seconds
      */
     public SimpleRollingAverage() {
     }
