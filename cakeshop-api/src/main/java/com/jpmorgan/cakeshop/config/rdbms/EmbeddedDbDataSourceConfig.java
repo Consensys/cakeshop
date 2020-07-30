@@ -40,7 +40,7 @@ public class EmbeddedDbDataSourceConfig implements ApplicationContextAware {
 
     protected static final org.slf4j.Logger LOG = LoggerFactory.getLogger(EmbeddedDbDataSourceConfig.class);
 
-    @Value("${config.path}")
+    @Value("${cakeshop.config.dir}")
     private String CONFIG_ROOT;
 
     @Value("${cakeshop.hibernate.hbm2ddl.auto:update}")

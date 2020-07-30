@@ -1,7 +1,6 @@
 package com.jpmorgan.cakeshop.db;
 
 import com.google.common.collect.Lists;
-import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.dao.BlockDAO;
 import com.jpmorgan.cakeshop.dao.TransactionDAO;
 import com.jpmorgan.cakeshop.error.APIException;
@@ -64,9 +63,6 @@ public class SavingBlockListener implements BlockListener {
 
     @Autowired
     private TransactionService txService;
-
-    @Autowired
-    private GethConfig gethConfig;
 
     private final ArrayBlockingQueue<Block> blockQueue;
 

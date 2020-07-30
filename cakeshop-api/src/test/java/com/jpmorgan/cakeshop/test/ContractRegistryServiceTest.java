@@ -38,19 +38,13 @@ public class ContractRegistryServiceTest extends BaseGethRpcTest {
 	@Test
 	public void testRegisterAndGet() throws IOException, InterruptedException {
 
-	    String addr = createContract();
-	    String abi = readTestFile("contracts/simplestorage.abi.txt");
-	    String code = readTestFile("contracts/simplestorage.sol");
-
 	    Long createdDate = (System.currentTimeMillis() / 1000);
+        String addr = createContract();
 
-	    registerContract(addr, abi, code, createdDate);
 
 	    Contract contract = contractRegistry.getById(addr);
 	    assertNotNull(contract);
 	    assertEquals(contract.getAddress(), addr);
-	    assertEquals(contract.getABI(), abi);
-	    assertEquals(contract.getCode(), code);
 	    assertEquals(contract.getCodeType(), CodeType.solidity);
 	    assertNotNull(contract.getCreatedDate());
 	    assertTrue(contract.getCreatedDate() >= createdDate);
@@ -68,6 +62,7 @@ public class ContractRegistryServiceTest extends BaseGethRpcTest {
 
     private void registerContract(String addr, String abi, String code, Long createdDate)
             throws APIException, InterruptedException {
+	    LOG.info("Registering {} {} ", addr, "SimpleStorage");
         TransactionResult tr = contractRegistry.register(null, addr, "SimpleStorage", abi, code, CodeType.solidity, createdDate,
             "");
 	    assertNotNull(tr);
@@ -84,27 +79,14 @@ public class ContractRegistryServiceTest extends BaseGethRpcTest {
 	    Long createdDate = (System.currentTimeMillis() / 1000);
 
 	    String addr = createContract();
-	    String abi = readTestFile("contracts/simplestorage.abi.txt");
-	    String code = readTestFile("contracts/simplestorage.sol");
-
-	    registerContract(addr, abi, code, createdDate);
-	    registerContract(addr, abi, code, createdDate);
+        String addr2 = createContract();
 
 	    List<Contract> list = contractRegistry.list();
 
 	    assertNotNull(list);
 	    assertTrue(!list.isEmpty());
-	    assertTrue(list.size() > 0);
-
-	    for (Contract c : list) {
-	        if (c.getAddress().equalsIgnoreCase(addr)) {
-                assertEquals(c.getAddress(), addr);
-                assertEquals(c.getABI(), abi);
-                assertEquals(c.getCode(), code);
-                assertTrue(c.getCreatedDate() >= createdDate);
-	        }
-        }
-
+	    assertTrue(list.stream().anyMatch(contract -> contract.getAddress().equals(addr)));
+        assertTrue(list.stream().anyMatch(contract -> contract.getAddress().equals(addr2)));
 	}
 
 }
