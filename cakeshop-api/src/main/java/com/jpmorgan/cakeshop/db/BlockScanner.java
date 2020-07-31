@@ -171,18 +171,17 @@ public class BlockScanner extends Thread {
 
         // fill
         LOG.info("Backfilling blocks with new chain");
-        Long maxBlock = backfillBlocks();
-        Block latest = blockDAO.getLatest();
-        if (latest != null && maxBlock >= 0) {
-            Long maxDBBlock = latest.getNumber().longValue();
-            while (maxDBBlock < maxBlock) {
-                maxDBBlock = blockDAO.getLatest().getNumber().longValue();
-                LOG.debug("Wait to sync up with database");
-                try {
-                    TimeUnit.MILLISECONDS.sleep(100);
-                } catch (InterruptedException ex) {
-                    LOG.info(ex.getMessage());
-                }
+        long maxBlock = backfillBlocks();
+        long maxDBBlock = 0L;
+
+        while (maxDBBlock < maxBlock) {
+            Block latest = blockDAO.getLatest();
+            maxDBBlock = latest == null ? 0 : latest.getNumber().longValue();
+            LOG.debug("Wait to sync up with database");
+            try {
+                TimeUnit.MILLISECONDS.sleep(100);
+            } catch (InterruptedException ex) {
+                LOG.info(ex.getMessage());
             }
         }
     }
