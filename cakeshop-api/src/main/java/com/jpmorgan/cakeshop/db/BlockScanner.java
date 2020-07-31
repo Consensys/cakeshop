@@ -193,7 +193,7 @@ public class BlockScanner extends Thread {
                 || (firstChainBlock == null && firstKnownBlock != null)) {
 
             // if block #1 changed, we have a reorg
-            LOG.warn("Detected chain reorganization do to new peer connection!");
+            LOG.warn("Detected chain reorganization due to new peer connection!");
             handleChainReorg();
             previousBlock = null;
         }
