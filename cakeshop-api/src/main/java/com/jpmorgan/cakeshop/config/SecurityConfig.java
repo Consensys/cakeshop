@@ -22,10 +22,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SecurityConfig.class);
 
-    @Value("${geth.cors.enabled}")
+    @Value("${cakeshop.cors.enabled}")
     boolean corsEnabled;
 
-    @Value("${geth.cors.url}")
+    @Value("${cakeshop.cors.url}")
     String corsUrl;
 
     @Autowired

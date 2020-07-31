@@ -2,18 +2,15 @@ package com.jpmorgan.cakeshop.service.impl;
 
 import com.google.common.base.Joiner;
 import com.jpmorgan.cakeshop.bean.GethConfig;
-import com.jpmorgan.cakeshop.bean.GethRunner;
-import com.jpmorgan.cakeshop.bean.TransactionManagerRunner;
 import com.jpmorgan.cakeshop.dao.PeerDAO;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Node;
-import com.jpmorgan.cakeshop.model.NodeConfig;
-import com.jpmorgan.cakeshop.model.NodeSettings;
 import com.jpmorgan.cakeshop.model.Peer;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.GethRpcConstants;
 import com.jpmorgan.cakeshop.service.NodeService;
 import com.jpmorgan.cakeshop.util.AbiUtils;
+import com.jpmorgan.cakeshop.util.CakeshopUtils;
 import com.jpmorgan.cakeshop.util.EEUtils;
 import com.jpmorgan.cakeshop.util.EEUtils.IP;
 import org.apache.commons.lang3.StringUtils;
@@ -22,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -41,12 +37,6 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
 
     @Autowired
     private GethConfig gethConfig;
-
-    @Autowired
-    private GethRunner gethRunner;
-
-    @Autowired
-    private TransactionManagerRunner transactionManagerRunner;
 
     @Autowired
     private PeerDAO peerDAO;
@@ -69,7 +59,6 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
             lastNodeInfo = data;
 
             node.setRpcUrl(gethService.getCurrentRpcUrl());
-            node.setDataDirectory(gethConfig.getGethDataDirPath());
 
             node.setId((String) data.get("id"));
             node.setStatus(StringUtils.isEmpty((String) data.get("id")) ? NODE_NOT_RUNNING_STATUS : NODE_RUNNING_STATUS);
@@ -131,14 +120,6 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
                 node.setRole((String) data.get(SIMPLE_RESULT));
             }
 
-            if(gethConfig.isAutoStart()) {
-                try {
-                    node.setConfig(createNodeConfig());
-                } catch (IOException e) {
-                    throw new APIException("Failed to read genesis block file", e);
-                }
-            }
-
             node.setPeers(peers());
 
         } catch (APIException ex) {
@@ -160,104 +141,6 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
         return node;
     }
 
-    private NodeConfig createNodeConfig() throws IOException {
-        return new NodeConfig(gethConfig.getIdentity(), gethConfig.isMining(), gethConfig.getNetworkId(),
-                gethConfig.getVerbosity(), gethRunner.getGenesisBlock(), gethConfig.getExtraParams());
-    }
-
-    @Override
-    public NodeConfig update(NodeSettings settings) throws APIException {
-
-        boolean restart = false;
-        boolean reset = false;
-
-        if (null != settings) {
-            if (settings.getNetworkId() != null && !settings.getNetworkId().equals(gethConfig.getNetworkId())) {
-                gethConfig.setNetworkId(settings.getNetworkId());
-                restart = true;
-            }
-
-            if (StringUtils.isNotEmpty(settings.getIdentity()) && !settings.getIdentity().contentEquals(gethConfig.getIdentity())) {
-                gethConfig.setIdentity(settings.getIdentity());
-                restart = true;
-            }
-
-            if (settings.getLogLevel() != null && !settings.getLogLevel().equals(gethConfig.getVerbosity())) {
-                gethConfig.setVerbosity(settings.getLogLevel());
-                if (!restart) {
-                    // make it live immediately
-                    gethService.executeGethCall(ADMIN_VERBOSITY, settings.getLogLevel());
-                }
-            }
-
-            String currExtraParams = gethConfig.getExtraParams();
-            // TODO currently no way to erase all the extra params because an empty string is
-            // TODO assumed to be no update to the setting
-            if (StringUtils.isNotBlank(settings.getExtraParams()) && (currExtraParams == null || !settings.getExtraParams().contentEquals(currExtraParams))) {
-                gethConfig.setExtraParams(settings.getExtraParams());
-                restart = true;
-            }
-
-            try {
-                if (StringUtils.isNotBlank(settings.getGenesisBlock()) && !settings.getGenesisBlock().contentEquals(gethRunner.getGenesisBlock())) {
-                    gethRunner.setGenesisBlock(settings.getGenesisBlock());
-                    reset = true;
-                }
-            } catch (IOException e) {
-                throw new APIException("Failed to update genesis block", e);
-            }
-
-            if (settings.isMining() != null && !settings.isMining().equals(gethConfig.isMining())) {
-                gethConfig.setMining(settings.isMining());
-
-                if (!restart) {
-                    // make it live immediately
-                    if (settings.isMining()) {
-                        gethService.executeGethCall(ADMIN_MINER_START, 1);
-                    } else {
-                        gethService.executeGethCall(ADMIN_MINER_STOP);
-                    }
-                }
-            }
-
-        }
-
-        NodeConfig nodeInfo;
-        try {
-            gethConfig.save();
-            nodeInfo = createNodeConfig();
-        } catch (IOException e) {
-            LOG.error("Error saving config", e);
-            throw new APIException("Error saving config", e);
-        }
-
-        // TODO reset/restart in background?
-        if (reset) {
-            gethService.reset();
-        } else if (restart) {
-            restart();
-        }
-
-        return nodeInfo;
-    }
-
-    @Override
-    public Boolean reset() {
-        try {
-            gethRunner.initFromVendorConfig();
-        } catch (IOException e) {
-            LOG.warn("Failed to reset config file", e);
-            return false;
-        }
-
-        restart();
-        return true;
-    }
-
-    private void restart() {
-        gethService.stop();
-        gethService.start();
-    }
 
     @SuppressWarnings("unchecked")
     @Override
@@ -297,7 +180,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
                     peer.setId(id);
                     peer.setRaftId(String.valueOf(raftPeer.get("raftId")));
                     peer.setLeader(id.equalsIgnoreCase(raftLeader));
-                    String nodeUrl = gethRunner.formatEnodeUrl(id,
+                    String nodeUrl = CakeshopUtils.formatEnodeUrl(id,
                         (String) raftPeer.get("ip"),
                         String.valueOf(raftPeer.get("p2pPort")),
                         String.valueOf(raftPeer.get("raftPort")));
@@ -337,15 +220,6 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
         boolean added = (boolean) res.get(SIMPLE_RESULT);
 
         if (added) {
-            try {
-                gethRunner.addToEnodesConfig(uri.toString(), STATIC_NODES_JSON);
-                if (gethConfig.isPermissionedNode()) {
-                    gethRunner.addToEnodesConfig(address, PERMISSIONED_NODES_JSON);
-                }
-
-            } catch (IOException e) {
-                LOG.error("Error updating static-nodes.json and permissioned-nodes.json", e);
-            }
 
             Peer peer = new Peer();
             peer.setId(uri.getUserInfo());
@@ -392,16 +266,6 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
         boolean removed = (boolean) res.get(SIMPLE_RESULT);
 
         if (removed) {
-            try {
-                gethRunner.removeFromEnodesConfig(uri.toString(), STATIC_NODES_JSON);
-                if (gethConfig.isPermissionedNode()) {
-                    gethRunner.removeFromEnodesConfig(address, PERMISSIONED_NODES_JSON);
-                }
-
-            } catch (IOException e) {
-                LOG.error("Error updating static-nodes.json", e);
-            }
-
             Peer peerInDb = peerDAO.getById(uri.getUserInfo());
             if (peerInDb != null) {
                 peerDAO.delete(peerInDb);
@@ -410,55 +274,6 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
         }
 
         return removed;
-    }
-
-
-    @Override
-    public Map<String, Object> getTransactionManagerNodes() {
-        Map<String, Object> nodeMap = new LinkedHashMap<>();
-        nodeMap.put("local", gethConfig.getGethTransactionManagerUrl());
-        nodeMap.put("remote", gethConfig.getGethTransactionManagerPeers());
-        return nodeMap;
-    }
-
-    @Override
-    public NodeConfig addTransactionManagerNode(String node) throws APIException {
-        NodeConfig nodeInfo;
-        try {
-            List<String> nodes = gethConfig.getGethTransactionManagerPeers();
-            nodes.add(node);
-            gethConfig.setGethTransactionManagerPeers(nodes);
-            gethConfig.save();
-            transactionManagerRunner.writeTransactionManagerConfig();
-            nodeInfo = createNodeConfig();
-            restart();
-            return nodeInfo;
-        } catch (IOException e) {
-            LOG.error("Error saving transaction manager config", e);
-            throw new APIException("Error saving transaction manager config", e);
-        }
-    }
-
-    @Override
-    public NodeConfig removeTransactionManagerNode(String transactionManagerNode)
-        throws APIException {
-        NodeConfig nodeInfo;
-        try {
-            List<String> nodes = gethConfig.getGethTransactionManagerPeers();
-            boolean wasInList = nodes.remove(transactionManagerNode);
-            if (!wasInList) {
-                throw new IOException("Peer node was not in list");
-            }
-            gethConfig.setGethTransactionManagerPeers(nodes);
-            gethConfig.save();
-            transactionManagerRunner.writeTransactionManagerConfig();
-            restart();
-            nodeInfo = createNodeConfig();
-            return nodeInfo;
-        } catch (IOException e) {
-            LOG.error("Error saving transaction manager config", e);
-            throw new APIException("Error saving transaction manager config", e);
-        }
     }
 
     @SuppressWarnings("unchecked")

@@ -1,37 +1,18 @@
 package com.jpmorgan.cakeshop.service.impl;
 
-import static org.apache.commons.io.FileUtils.forceDelete;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.jpmorgan.cakeshop.bean.GethConfig;
-import com.jpmorgan.cakeshop.bean.GethRunner;
 import com.jpmorgan.cakeshop.dao.TransactionDAO;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.error.CompilerException;
-import com.jpmorgan.cakeshop.model.Contract;
-import com.jpmorgan.cakeshop.model.ContractABI;
+import com.jpmorgan.cakeshop.model.*;
 import com.jpmorgan.cakeshop.model.ContractABI.Constructor;
-import com.jpmorgan.cakeshop.model.SolcResponse;
-import com.jpmorgan.cakeshop.model.Transaction;
-import com.jpmorgan.cakeshop.model.TransactionRequest;
-import com.jpmorgan.cakeshop.model.TransactionResult;
-import com.jpmorgan.cakeshop.service.ContractRegistryService;
-import com.jpmorgan.cakeshop.service.ContractService;
-import com.jpmorgan.cakeshop.service.GethHttpService;
-import com.jpmorgan.cakeshop.service.TransactionService;
-import com.jpmorgan.cakeshop.service.WalletService;
+import com.jpmorgan.cakeshop.service.*;
 import com.jpmorgan.cakeshop.service.task.ContractRegistrationTask;
+import com.jpmorgan.cakeshop.util.CakeshopUtils;
 import com.jpmorgan.cakeshop.util.ProcessUtils;
 import com.jpmorgan.cakeshop.util.StreamGobbler;
-import java.io.File;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.util.encoders.Hex;
@@ -45,6 +26,17 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.apache.commons.io.FileUtils.forceDelete;
+
 @Service
 public class ContractServiceImpl implements ContractService {
 
@@ -52,9 +44,6 @@ public class ContractServiceImpl implements ContractService {
 
     @Value("${contract.poll.delay.millis}")
     Long pollDelayMillis;
-
-    @Autowired
-    private GethRunner gethRunner;
 
     @Autowired
     private GethConfig gethConfig;
@@ -103,14 +92,14 @@ public class ContractServiceImpl implements ContractService {
         try {
             List<String> args = Lists.newArrayList(
                     gethConfig.getNodeJsBinaryName(),
-                    gethRunner.getSolcPath(),
+                    CakeshopUtils.getSolcPath(),
                     "--ipc",
                     "--evm-version",
                     evmVersion,
                     "--filename",
                     filename);
 
-            ProcessBuilder builder = ProcessUtils.createProcessBuilder(gethRunner, args);
+            ProcessBuilder builder = ProcessUtils.createProcessBuilder(args);
             File tempFile = new File("temp-contract.json");
             tempFile.createNewFile();
             builder.redirectOutput(tempFile);
@@ -240,7 +229,7 @@ public class ContractServiceImpl implements ContractService {
         Map<String, Object> contractRes = geth.executeGethCall("eth_sendTransaction", new Object[]{contractArgs});
 
         TransactionResult tr = new TransactionResult();
-        tr.setId((String) contractRes.get("_result"));
+        tr.setId((String) contractRes.get(CakeshopUtils.SIMPLE_RESULT));
 
         // defer contract registration
         executor.execute(appContext.getBean(ContractRegistrationTask.class, contract, tr));
@@ -264,7 +253,7 @@ public class ContractServiceImpl implements ContractService {
 
         Map<String, Object> contractRes = geth.executeGethCall("eth_getCode", new Object[]{address, "latest"});
 
-        String bin = (String) contractRes.get("_result");
+        String bin = (String) contractRes.get(CakeshopUtils.SIMPLE_RESULT);
         if (bin.contentEquals("0x")) {
             throw new APIException("Contract does not exist at " + address);
         }
@@ -315,7 +304,7 @@ public class ContractServiceImpl implements ContractService {
         request.setFromAddress(getAddress(request.getFromAddress())); // make sure we have a non-null from address
 
         Map<String, Object> readRes = geth.executeGethCall("eth_call", request.toGethArgs());
-        String res = (String) readRes.get("_result");
+        String res = (String) readRes.get(CakeshopUtils.SIMPLE_RESULT);
         if (StringUtils.isNotBlank(res) && res.length() == 2 && res.contentEquals("0x")) {
             throw new APIException("eth_call failed (returned 0 bytes)");
         }
@@ -340,7 +329,7 @@ public class ContractServiceImpl implements ContractService {
     public TransactionResult transact(TransactionRequest request) throws APIException {
         request.setFromAddress(getAddress(request.getFromAddress())); // make sure we have a non-null from address
         Map<String, Object> readRes = geth.executeGethCall("eth_sendTransaction", request.toGethArgs());
-        return new TransactionResult((String) readRes.get("_result"));
+        return new TransactionResult((String) readRes.get(CakeshopUtils.SIMPLE_RESULT));
     }
 
     @Override

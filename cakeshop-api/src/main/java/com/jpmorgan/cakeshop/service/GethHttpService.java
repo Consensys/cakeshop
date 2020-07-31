@@ -1,8 +1,9 @@
 package com.jpmorgan.cakeshop.service;
 
 import com.jpmorgan.cakeshop.error.APIException;
-import com.jpmorgan.cakeshop.error.ErrorLog;
-import com.jpmorgan.cakeshop.model.RequestModel;
+import com.jpmorgan.cakeshop.model.Web3DefaultResponseType;
+
+import org.web3j.protocol.core.Request;
 
 import java.util.List;
 import java.util.Map;
@@ -34,36 +35,11 @@ public interface GethHttpService {
      * @return
      * @throws APIException
      */
-    public Map<String, Object> executeGethCall(RequestModel request) throws APIException;
+    public Map<String, Object> executeGethCall(Request<?, Web3DefaultResponseType> request) throws APIException;
 
-    public List<Map<String, Object>> batchExecuteGethCall(List<RequestModel> requests) throws APIException;
+    public List<Map<String, Object>> batchExecuteGethCall(List<Request<?, Web3DefaultResponseType>> requests) throws APIException;
 
-    /**
-     * Start the Geth node
-     *
-     * @param additionalParams
-     * @return
-     */
-    public Boolean start(String... additionalParams);
-
-    /*
-    * Start constellation node
-    * @return
-     */
-    public boolean startTransactionManager();
-
-    /*
-    * Stop constellation node
-    * @return
-     */
-    public Boolean stopTransactionManager();
-
-    /**
-     * Stop the Geth node, if already running
-     *
-     * @return
-     */
-    public Boolean stop();
+    public Request<?, Web3DefaultResponseType> createHttpRequestType(String funcName, Object... args) throws APIException;
 
     /**
      * Returns the current node status
@@ -79,21 +55,5 @@ public interface GethHttpService {
     String getCurrentRpcUrl();
 
     String getCurrentTransactionManagerUrl();
-
-    /**
-     * Reset the Geth data directory and restart the node
-     *
-     * @return
-     */
-    public Boolean reset(String... additionalParams);
-
-    /**
-     * Get startup errors, if any
-     *
-     * @return
-     */
-    List<ErrorLog> getStartupErrors();
-
-    public List<String> setAdditionalParams(String[] additionalParamsArray);
 
 }

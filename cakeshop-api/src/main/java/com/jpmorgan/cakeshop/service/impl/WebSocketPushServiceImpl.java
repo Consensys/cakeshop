@@ -6,19 +6,8 @@ import com.jpmorgan.cakeshop.model.APIData;
 import com.jpmorgan.cakeshop.model.APIResponse;
 import com.jpmorgan.cakeshop.model.Block;
 import com.jpmorgan.cakeshop.model.Node;
-import com.jpmorgan.cakeshop.service.BlockService;
-import com.jpmorgan.cakeshop.service.GethHttpService;
-import com.jpmorgan.cakeshop.service.NodeService;
-import com.jpmorgan.cakeshop.service.WebSocketAsyncPushService;
-import com.jpmorgan.cakeshop.service.WebSocketPushService;
-import java.io.File;
-
-import java.util.List;
-import java.util.Map;
-import javax.annotation.PreDestroy;
-
+import com.jpmorgan.cakeshop.service.*;
 import org.apache.commons.collections4.map.LRUMap;
-import org.apache.commons.io.input.Tailer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +21,9 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  *
  * @author Michael Kazansky
@@ -40,10 +32,8 @@ import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 public class WebSocketPushServiceImpl implements WebSocketPushService {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(WebSocketPushServiceImpl.class);
-    private final String GETH_LOG_PATH = StringUtils.isNotBlank(System.getProperty("logging.path")) ? System.getProperty("logging.path").concat("/").concat("geth.log")
-            : "/geth.log";
 
-    private Integer openedSessions = 0, gethLogSessions = 0;
+    private Integer openedSessions = 0;
 
     /**
      * Transaction ID -> # of subscribers
@@ -67,11 +57,6 @@ public class WebSocketPushServiceImpl implements WebSocketPushService {
 
     @Autowired
     private MetricsBlockListener metricsBlockListener;
-
-    @Autowired
-    private LogTailerListener logListener;
-
-    private Tailer tailer;
 
     // For tracking status changes
     private Node previousNodeStatus;
@@ -183,13 +168,6 @@ public class WebSocketPushServiceImpl implements WebSocketPushService {
                 transactionsMap.clear();
             }
         }
-        if (gethLogSessions > 0) {
-            gethLogSessions--;
-            if (gethLogSessions <= 0) {
-                LOG.info("Stopping  Tailer");
-                tailer.stop();
-            }
-        }
     }
 
     @EventListener
@@ -227,16 +205,7 @@ public class WebSocketPushServiceImpl implements WebSocketPushService {
 
         LOG.debug("Subscribed: " + dest);
 
-        if (dest.startsWith(GETH_LOG_TOPIC)) {
-            gethLogSessions++;
-            if (gethLogSessions == 1) {
-                LOG.info("Starting  Tailier");
-                tailer = Tailer.create(new File(GETH_LOG_PATH), logListener, 500);
-            }
-            if (openedSessions > 1) {
-                openedSessions--;
-            }
-        } else if (dest.startsWith(TRANSACTION_TOPIC)) {
+        if (dest.startsWith(TRANSACTION_TOPIC)) {
             String transactionKey = dest.substring(dest.lastIndexOf("/") + 1);
             if (transactionKey.contentEquals("all")) {
                 return; // special topic
@@ -259,14 +228,6 @@ public class WebSocketPushServiceImpl implements WebSocketPushService {
                 } catch (APIException e) {
                 }
             }
-        }
-
-    }
-
-    @PreDestroy
-    protected void destroyTailer() {
-        if (null != tailer) {
-            tailer.stop();
         }
     }
 }

@@ -27,10 +27,10 @@ public class AuthenticationService implements AuthenticationProvider {
     @Autowired
     private UserDAO userDao;
 
-    @Value("${geth.cred1:\"\"}")
+    @Value("${cakeshop.cred1:\"\"}")
     private String cred1;
 
-    @Value("${geth.cred2:\"\"}")
+    @Value("${cakeshop.cred2:\"\"}")
     private String cred2;
 
     @Override

@@ -4,26 +4,16 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jpmorgan.cakeshop.model.ContractABI.Function;
 import com.jpmorgan.cakeshop.util.StringUtils;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.math.BigInteger;
-import java.util.List;
-
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Lob;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-
 import org.apache.commons.collections4.Predicate;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.bouncycastle.util.encoders.Hex;
+
+import javax.persistence.*;
+import java.io.IOException;
+import java.io.Serializable;
+import java.math.BigInteger;
+import java.util.List;
 
 @Entity
 @Table(
@@ -92,7 +82,7 @@ public class Transaction implements Serializable {
 	private String from;
     @Column(name = "to_address")
 	private String to;
-    @Column(name = "trans_value")
+    @Column(name = "trans_value", precision = 27)
 	private BigInteger value;
 	private BigInteger gas;
 	private BigInteger gasPrice;
