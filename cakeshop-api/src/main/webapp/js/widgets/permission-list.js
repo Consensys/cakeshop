@@ -46,7 +46,7 @@ module.exports = function() {
 		templateRow: _.template('<tr>'
 		    + '<td class="value org-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap;"><a href="#"><%= o.fullOrgId %></a></td>'
             + '<td class="value org-status" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap;"><%= status %></td>'
-            + '<td class="value parent-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><a href="#"><%= parentUlt %></a><a href="#"><%= parentDirect %></a></td>'
+            + '<td class="value parent-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><a href="#"><%= parentUlt %></a><%= separator %><a href="#"><%= parentDirect %></a></td>'
 		    + '<td data-orgid="<%= o.fullOrgId %>" class="status-col">'
             +   '<button class="btn btn-default status-btn">Change Status</button>'
             + '</td>'
@@ -190,10 +190,6 @@ module.exports = function() {
 		    $.when(
 		        utils.load({ url: this.url_details, data: { id: orgId } })
 		    ).done(function(list) {
-		        console.log(list.data.attributes.nodeList)
-		        console.log(list.data.attributes.nodeList.length)
-		        console.log(list.data.attributes.acctList)
-		        console.log(list.data.attributes.acctList.length)
 		        var nodes = list.data.attributes.nodeList.length > 1 ? ['<option> Select enodeId </option>'] : [];
 		        var accts = list.data.attributes.acctList.length > 1 ? ['<option> Select Admin Account </option>'] : [];
 
@@ -228,10 +224,11 @@ module.exports = function() {
 					    var status = statuses[peer.attributes.status]
 					    var orgId = peer.attributes.fullOrgId
 					    var parentUlt = orgId != peer.attributes.ultimateParent ? peer.attributes.ultimateParent : ''
-					    var parentDirect = parentUlt != peer.attributes.parentOrgId ? '/' + peer.attributes.parentOrgId : ''
+					    var parentDirect = parentUlt != peer.attributes.parentOrgId ? peer.attributes.parentOrgId : ''
+					    var separator = parentDirect == '' || parentUlt == '' ? '' : '/'
 					    var disabled = peer.attributes.status == 2 ? 'disabled' : ''
 					    console.log(disabled)
-						rows.push( _this.templateRow({ o: peer.attributes, status: status, parentUlt: parentUlt, parentDirect: parentDirect, disabled: disabled }) );
+						rows.push( _this.templateRow({ o: peer.attributes, status: status, parentUlt: parentUlt, parentDirect: parentDirect, disabled: disabled, separator: separator }) );
 					});
 
 

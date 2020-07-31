@@ -33,7 +33,7 @@ module.exports = function() {
 
 		populateFrom: function() {
             Account.list().then(function(accounts) {
-		        var rows = ['<option>Choose Account</option>'];
+		        var rows = [];
 
 				accounts.forEach(function(acct) {
                     if (acct.get('unlocked')) {
@@ -74,16 +74,14 @@ module.exports = function() {
 		 	+ '	<thead style="font-weight: bold;">'
 			+ '		<tr>'
 			+ '           <td class="url">Url</td>'
-			+ '           <td class="org-status" title=" 0-NotInList&#010 1-PendingApproval&#010 2-Approved&#010 3-Deactivated&#010 4-Blacklisted&#010 5-Recovery initiated">Status</td>'
-			+ '           <td class="org-id">OrgId</td>'
+			+ '           <td class="status">Status</td>'
+			+ '           <td class="status-col"></td>'
+			+ '           <td class="recover-col"></td>'
 			+ '		</tr>'
 			+ '	</thead>'
 		 	+ '	<tbody> <%= nodeRows %> </tbody>'
 		 	+ '</table>'
 		    + '</div>'
-            + '<div data-orgid="<%= orgId %>" class="form-group pull-right">'
-			+ '	<button class="btn btn-primary add-node">Add New Node</button>'
-			+ '</div>'
 		),
 
 		templateAcct: _.template('<div>'
@@ -92,18 +90,16 @@ module.exports = function() {
 			+ '		<tr>'
 			+ '			<td class="acct-id">Account Id</td>'
 			+ '			<td class="role-id">RoleId</td>'
-			+ '			<td class="status" title=" 0-NotInList&#010 1-PendingApproval&#010 2-Active&#010 4-Suspended&#010 5-Blacklisted&#010 6-Revoked&#010 7-Recovery initiated">Status</td>'
-			+ '			<td class="org-id">OrgId</td>'
+			+ '			<td class="status">Status</td>'
 			+ '			<td class="org-admin">OrgAdmin</td>'
+			+ '         <td class="role-col"></td>'
+			+ '         <td class="status-col"></td>'
 			+ '         <td class="recover-acct-col"></td>'
 			+ '		</tr>'
 			+ '	</thead>'
 		 	+ '	<tbody> <%= acctRows %> </tbody>'
 		 	+ '</table>'
 		    + '</div>'
-            + '<div data-orgid="<%= orgId %>" class="form-group pull-right">'
-			+ '	<button class="btn btn-primary add-acct">Add New Account</button>'
-			+ '</div>'
 		),
 
 		templateRole: _.template('<div>'
@@ -112,8 +108,7 @@ module.exports = function() {
 			+ '		<tr>'
 			+ '			<td class="role-id">RoleId</td>'
 			+ '			<td class="active">Active</td>'
-			+ '			<td class="access" title=" 0-ReadOnly&#010 1-Tranasct&#010 2-ContractDeploy&#010 3-FullAccess">Access</td>'
-			+ '			<td class="org-id">OrgId</td>'
+			+ '			<td class="access">Access</td>'
 			+ '			<td class="voter">Voter</td>'
 			+ '			<td class="admin">Admin</td>'
 			+ '         <td class="remove-role-col"></td>'
@@ -122,10 +117,8 @@ module.exports = function() {
 		 	+ '	<tbody> <%= roleRows %> </tbody>'
 		 	+ '</table>'
 		    + '</div>'
-            + '<div data-orgid="<%= orgId %>"class="form-group pull-right">'
-			+ '	<button class="btn btn-primary add-role">Add New Role</button>'
-			+ '</div>'
 		),
+
 
 		templateSubs: _.template('<div>'
             + '<table style="width: 100%; table-layout: fixed;" class="table table-striped">'
@@ -139,30 +132,38 @@ module.exports = function() {
 		    + '</div>'
 		),
 
+		templateButtons: _.template('<div data-orgid="<%= orgId %>"class="form-group pull-right">'
+            + '	<button class="btn btn-primary add-acct">Add New Account</button>'
+			+ '	<button class="btn btn-primary add-role">Add New Role</button>'
+			+ '	<button class="btn btn-primary add-node">Add New Node</button>'
+			+ '</div>'
+		),
+
 		templateRowNode: _.template('<tr>'
             + '<td class="value org-url" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= n.url %></td>'
-            + '<td data-orgid="<%= n.orgId %>" data-url="<%= n.url %>" class="org-status" title=" 0-NotInList&#010 1-PendingApproval&#010 2-Approved&#010 3-Deactivated&#010 4-Blacklisted&#010 5-Recovery initiated">'
-            +   '<button class="btn btn-default update-node-btn"><%= n.status %></button>'
+            + '<td class="value status" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= status %></td>'
+            + '<td data-orgid="<%= n.orgId %>" data-url="<%= n.url %>" class="status-col">'
+            +   '<button class="btn btn-default update-node-btn">Change Status</button>'
             + '</td>'
-            + '<td class="value org-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= n.orgId %></a></td>'
-		    + '<td data-orgid="<%= n.orgId %>" data-enodeid="<%= n.url %>"class="recover-node-col">'
-            +   '<button class="btn btn-default recover-node-btn">Recover</button>'
+		    + '<td data-orgid="<%= n.orgId %>" data-enodeid="<%= n.url %>"class="recover-col">'
+            +   '<button class="btn btn-default recover-node-btn" <%= disabled %>>Recover</button>'
             + '</td>'
 		    + '</tr>'
 		),
 
 		templateRowAcct: _.template('<tr>'
 		    + '<td class="value acct-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= a.acctId %></td>'
-		    + '<td data-orgid="<%= a.orgId %>" data-acctid="<%= a.acctId %>" class="role-id">'
-            +   '<button class="btn btn-default change-role-btn"><%= a.roleId %></button>'
-            + '</td>'
-		    + '<td data-orgid="<%= a.orgId %>" data-acctid="<%= a.acctId %>"class="status" title=" 0-NotInList&#010 1-PendingApproval&#010 2-Active&#010 4-Suspended&#010 5-Blacklisted&#010 6-Revoked&#010 7-Recovery initiated">'
-            +   '<button class="btn btn-default update-acct-btn"><%= a.status %></button>'
-            + '</td>'
-            + '<td class="value org-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= a.orgId %></td>'
+		    + '<td class="value role-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= a.roleId %></td>'
+		    + '<td class="value status" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= status %></td>'
             + '<td class="value org-admin" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= a.orgAdmin %></td>'
+		    + '<td data-orgid="<%= a.orgId %>" data-acctid="<%= a.acctId %>" class="role-col">'
+            +   '<button class="btn btn-default change-role-btn">Change Role</button>'
+            + '</td>'
+		    + '<td data-orgid="<%= a.orgId %>" data-acctid="<%= a.acctId %>"class="status-col">'
+            +   '<button class="btn btn-default update-acct-btn">Change Status</button>'
+            + '</td>'
 		    + '<td data-orgid="<%= a.orgId %>" data-acctid="<%= a.acctId %>"class="recover-acct-col">'
-            +   '<button class="btn btn-default recover-acct-btn">Recover</button>'
+            +   '<button class="btn btn-default recover-acct-btn <%= disabled %>">Recover Acct</button>'
             + '</td>'
 		    + '</tr>'
 		),
@@ -170,8 +171,7 @@ module.exports = function() {
 		templateRowRole: _.template('<tr>'
 		    + '<td class="value role-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= r.roleId %></td>'
 		    + '<td class="value active" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= r.active %></td>'
-            + '<td class="value access" contentEditable="false" title=" 0-ReadOnly&#010 1-Tranasct&#010 2-ContractDeploy&#010 3-FullAccess" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= r.access %></td>'
-		    + '<td class="value org-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= r.orgId %></td>'
+            + '<td class="value access" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= access %></td>'
 		    + '<td class="value voter" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= r.isVoter %></td>'
 		    + '<td class="value admin" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= r.isAdmin %></a></td>'
 		    + '<td data-orgid="<%= r.orgId %>" data-roleid="<%= r.roleId %>" class="remove-role-col">'
@@ -181,12 +181,12 @@ module.exports = function() {
 		),
 
 		templateRowSubs: _.template('<tr>'
-		    + '<td class="value subOrg" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= s %></td>'
+		    + '<td class="value subOrg" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><a href="#"><%= s %></a></td>'
 		    + '</tr>'
 		),
 
 		modalStatusTemplate: _.template( '<div class="modal-header">' +
-			'	<%=addOrg%>' +
+			'	<%=header%>' +
 			'</div>' +
 			'<div class="modal-body">' +
 			'	<div class="form-group status-form">' +
@@ -197,11 +197,12 @@ module.exports = function() {
 			'	</div>' +
 			'</div>' +
 			'<div class="modal-footer">' +
-			'	<button type="button" id="changeStatus-btn-final" class="btn btn-primary">Yes, <%=addOrg%>.</button>' +
+			'	<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
+			'	<button type="button" id="changeStatus-btn-final" class="btn btn-primary">Change Status.</button>' +
 			'</div>'),
 
 		modalFromTemplate: _.template( '<div class="modal-header">' +
-			'	<%=addOrg%>' +
+			'	<%=header%>' +
 			'</div>' +
 			'<div class="modal-body">' +
 			'	<div class="form-group from-form">' +
@@ -210,11 +211,12 @@ module.exports = function() {
 			'	</div>' +
 			'</div>' +
 			'<div class="modal-footer">' +
-			'	<button type="button" id="from-btn-final" class="btn btn-primary">Yes, <%=addOrg%>.</button>' +
+			'	<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
+			'	<button type="button" id="from-btn-final" class="btn btn-primary">Remove Role.</button>' +
 			'</div>'),
 
 		modalRoleTemplate: _.template( '<div class="modal-header">' +
-			'	<%=addOrg%>' +
+			'	<%=header%>' +
 			'</div>' +
 			'<div class="modal-body">' +
 			'	<div class="form-group role-form">' +
@@ -231,11 +233,12 @@ module.exports = function() {
 			'	</div>' +
 			'</div>' +
 			'<div class="modal-footer">' +
-			'	<button type="button" id="newRole-btn-final" class="btn btn-primary">Yes, <%=addOrg%>.</button>' +
+			'	<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
+			'	<button type="button" id="newRole-btn-final" class="btn btn-primary">Add Role.</button>' +
 			'</div>'),
 
 		modalNodeTemplate: _.template( '<div class="modal-header">' +
-			'	<%=addOrg%>' +
+			'	<%=header%>' +
 			'</div>' +
 			'<div class="modal-body">' +
 			'	<div class="form-group node-form">' +
@@ -248,11 +251,12 @@ module.exports = function() {
 			'	</div>' +
 			'</div>' +
 			'<div class="modal-footer">' +
-			'	<button type="button" id="newNode-btn-final" class="btn btn-primary">Yes, <%=addOrg%>.</button>' +
+			'	<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
+			'	<button type="button" id="newNode-btn-final" class="btn btn-primary">Add Node.</button>' +
 			'</div>'),
 
 		modalAcctTemplate: _.template( '<div class="modal-header">' +
-			'	<%=addOrg%>' +
+			'	<%=header%>' +
 			'</div>' +
 			'<div class="modal-body">' +
 			'	<div class="form-group acct-form">' +
@@ -267,11 +271,12 @@ module.exports = function() {
 			'	</div>' +
 			'</div>' +
 			'<div class="modal-footer">' +
-			'	<button type="button" id="newAcct-btn-final" class="btn btn-primary">Yes, <%=addOrg%>.</button>' +
+			'	<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
+			'	<button type="button" id="newAcct-btn-final" class="btn btn-primary">Add Account.</button>' +
 			'</div>'),
 
 		modalAdminTemplate: _.template( '<div class="modal-header">' +
-			'	<%=addOrg%>' +
+			'	<%=header%>' +
 			'</div>' +
 			'</div>' +
 			'<div class="modal-body">' +
@@ -305,11 +310,12 @@ module.exports = function() {
 			'	</div>' +
 			'</div>' +
 			'<div class="modal-footer">' +
-			'	<button type="button" id="admin-btn-final" class="btn btn-primary">Yes, <%=addOrg%>.</button>' +
+			'	<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
+			'	<button type="button" id="admin-btn-final" class="btn btn-primary">Update Role.</button>' +
 			'</div>'),
 
 		modalRecoverAcctTemplate: _.template( '<div class="modal-header">' +
-			'	<%=addOrg%>' +
+			'	<%=header%>' +
 			'</div>' +
 			'</div>' +
 			'<div class="modal-body">' +
@@ -331,11 +337,12 @@ module.exports = function() {
 			'	</div>' +
 			'</div>' +
 			'<div class="modal-footer">' +
-			'	<button type="button" id="recover-acct-btn-final" class="btn btn-primary">Yes, <%=addOrg%>.</button>' +
+			'	<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
+			'	<button type="button" id="recover-acct-btn-final" class="btn btn-primary">Recover Account.</button>' +
 			'</div>'),
 
 		modalRecoverNodeTemplate: _.template( '<div class="modal-header">' +
-			'	<%=addOrg%>' +
+			'	<%=header%>' +
 			'</div>' +
 			'</div>' +
 			'<div class="modal-body">' +
@@ -357,7 +364,8 @@ module.exports = function() {
 			'	</div>' +
 			'</div>' +
 			'<div class="modal-footer">' +
-			'	<button type="button" id="recover-node-btn-final" class="btn btn-primary">Yes, <%=addOrg%>.</button>' +
+			'	<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
+			'	<button type="button" id="recover-node-btn-final" class="btn btn-primary">Recover Node.</button>' +
 			'</div>'),
 
         modalConfirmation: _.template('<div class="modal-body"><%=message%></div>'),
@@ -384,21 +392,30 @@ module.exports = function() {
 				var roleRows = [];
 				var subRows = [];
 
+				var nodeStatuses = ["Not in List", "Pending", "Approved", "Deactivated", "Blacklisted", "Recovery Initiated"];
+                var acctStatuses = ["Not in List", "Pending", "Active", "Suspended", "Blacklisted", "Revoked", "Recovery Initiated"];
+                var roleAccesses = ["Read Only", "Transact", "ContractDeploy", "FullAccess"];
+
 				_.each(res.data.attributes.nodeList, function(node) {
-			        nodeRows.push(_this.templateRowNode({n: node}));
+				    var status = nodeStatuses[node.status]
+				    var disabled = node.status == 4 ? '' : 'disabled'
+			        nodeRows.push(_this.templateRowNode({n: node, status: status, disabled: disabled}));
 			    })
 			    _.each(res.data.attributes.acctList, function(acct) {
-					acctRows.push(_this.templateRowAcct({a: acct}));
+			        var status = acctStatuses[acct.status]
+			        var disabled = acct.status == 4 ? '' : 'disabled'
+					acctRows.push(_this.templateRowAcct({a: acct, status: status, disabled: disabled}));
 			    })
 			    _.each(res.data.attributes.roleList, function(role) {
-			        console.log(role);
-					roleRows.push(_this.templateRowRole({r: role}));
+			        var access = roleAccesses[role.access]
+					roleRows.push(_this.templateRowRole({r: role, access: access}));
 			    })
 			    _.each(res.data.attributes.subOrgList, function(subOrg) {
 					subRows.push(_this.templateRowSubs({s: subOrg}));
 			    })
 
-				$('#widget-' + _this.shell.id).html('<h3 style="margin-top: 30px;margin-left: 8px;">Node List</h3>' +
+				$('#widget-' + _this.shell.id).html(_this.templateButtons({orgId: _this.orgDet}) +
+				    '<h3 style="margin-top: 30px;margin-left: 8px;">Node List</h3>' +
 				    _this.templateNode({ nodeRows: nodeRows.join(''), orgId: _this.orgDet }) +
 					'<h3 style="margin-top: 30px;margin-left: 8px;">Account List</h3>' +
 					_this.templateAcct({ acctRows: acctRows.join(''), orgId: _this.orgDet }) +
@@ -409,6 +426,15 @@ module.exports = function() {
 			    );
 
 			    $('#widget-shell-' + _this.shell.id + ' .panel-title span').html(_this.title);
+
+				$('#widget-' + _this.shell.id + ' a').click(function(e) {
+					e.preventDefault();
+					console.log($(this).text())
+
+					Dashboard.show({ widgetId: 'permissions-detail', section: 'permissions', data: $(this).text(), refetch: true });
+				});
+
+				_this.postFetch();
             });
 		},
 
@@ -426,7 +452,7 @@ module.exports = function() {
 
 				// set the modal text
 				$('#myModal .modal-content').html(_this.modalStatusTemplate({
-				    addOrg: "updateNode"
+				    header: "Change Status of Node"
 				}) );
 
 				//open modal
@@ -471,13 +497,10 @@ module.exports = function() {
 				var orgId = $(e.target.parentElement).data("orgid");
 				var acctId = $(e.target.parentElement).data("acctid");
 
-                console.log('acctid')
-				console.log(acctId);
-
 
 				// set the modal text
 				$('#myModal .modal-content').html(_this.modalStatusTemplate({
-				    addOrg: "updateAcct"
+				    header: "Change Status of Account"
 				}) );
 
 				//open modal
@@ -521,7 +544,7 @@ module.exports = function() {
 
 				// set the modal text
 				$('#myModal .modal-content').html(_this.modalAdminTemplate({
-				    addOrg: "changeRole/assignAdmin",
+				    header: "Change Role of Account or Assign/Approve Account as an Admin",
 				    orgId: orgId,
 				    acctId: acctId
 				}) );
@@ -552,11 +575,6 @@ module.exports = function() {
                         default:
                             urlAdmin = ""
                     }
-
-				    console.log(orgId);
-				    console.log(role);
-				    console.log(fromAcct);
-				    console.log(urlAdmin);
 
 					$.when(
 						utils.load({
@@ -592,7 +610,7 @@ module.exports = function() {
 
 				// set the modal text
 				$('#myModal .modal-content').html(_this.modalFromTemplate({
-				    addOrg: "removeRole"
+				    header: "Remove Role from " + orgId
 				}) );
 
 				//open modal
@@ -634,7 +652,7 @@ module.exports = function() {
 
 				// set the modal text
 				$('#myModal .modal-content').html(_this.modalRoleTemplate({
-				    addOrg: "addRole",
+				    header: "Add a new role to " + orgId,
 				    orgId: orgId
 				}) );
 
@@ -687,7 +705,7 @@ module.exports = function() {
 
 				// set the modal text
 				$('#myModal .modal-content').html(_this.modalNodeTemplate({
-				    addOrg: "addNode",
+				    header: "Add new node to " + orgId,
 				    orgId: orgId
 				}) );
 
@@ -731,7 +749,7 @@ module.exports = function() {
 
 				// set the modal text
 				$('#myModal .modal-content').html(_this.modalAcctTemplate({
-				    addOrg: "addAcct",
+				    header: "Add new account to " + orgId,
 				    orgId: orgId,
 				    acctId: ""
 				}) );
@@ -779,7 +797,7 @@ module.exports = function() {
 
 				// set the modal text
 				$('#myModal .modal-content').html(_this.modalRecoverAcctTemplate({
-				    addOrg: "recoverAcct"
+				    header: "Recover or approve recovery of this blacklisted account"
 				}) );
 
 				//open modal
@@ -823,7 +841,7 @@ module.exports = function() {
 
 				// set the modal text
 				$('#myModal .modal-content').html(_this.modalRecoverNodeTemplate({
-				    addOrg: "recoverNode"
+				    header: "Recover or approve recovery of this blacklisted node"
 				}) );
 
 				//open modal
