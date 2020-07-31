@@ -38,7 +38,7 @@ public class CakeshopUtils {
     }
 
     @SuppressWarnings("unchecked")
-	   public static Map<String, Object> processWeb3Response(Object data, org.web3j.protocol.core.Response.Error e) throws APIException {
+    public static Map<String, Object> processWeb3Response(Object data, org.web3j.protocol.core.Response.Error e) throws APIException {
         if(e != null ) {
             throw new APIException(e.getMessage());
 
@@ -50,9 +50,9 @@ public class CakeshopUtils {
          return res;
        }
        return (Map<String, Object>) data;
-	    }
+    }
 
-	    public static <T> T convertToObject(Map<String, Object> map, Class<T> cls) throws Exception {
-            return objectMapper.convertValue(map, cls);
-        }
+    public static <T> T convertToObject(Map<String, Object> map, Class<T> cls) throws Exception {
+        return objectMapper.convertValue(map, cls);
+    }
 }
