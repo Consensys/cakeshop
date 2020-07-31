@@ -53,9 +53,6 @@ module.exports = function() {
             Account.list().then(function(accounts) {
 		        var rows = ['<option>0-ReadOnly</option>', '<option>1-Transact</option>', '<option>2-ContractDeploy</option>', '<option>3-FullAccess</option>'];
 
-                console.log('rows')
-                console.log(rows)
-
                 $('#access').html( rows.join('') );
             })
         },

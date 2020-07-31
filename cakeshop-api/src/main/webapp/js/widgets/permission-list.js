@@ -23,10 +23,10 @@ module.exports = function() {
 		    + '     <tr>'
 			+ '			<td class="org-id">OrgId</td>'
 			+ '         <td class="org-status">Status</td>'
-            + '         <td class="parent-id" style="width:90px;">ParentOrgId</td>'
-            + '         <td class="ultimate-parent" style="width:110px;">UltimateParent</td>'
+            + '         <td class="parent-id">Parent Orgs</td>'
             + '         <td class="status-col"></td>'
             + '         <td class="approve-col"></td>'
+            + '         <td class="subOrg-col"></td>'
 		    + '     </tr>'
 		    + ' </thead>'
 		    + '<tbody><%= rows %></tbody>'
@@ -34,7 +34,6 @@ module.exports = function() {
 		    + '</div>'
             + '<div class="form-group pull-right">'
 			+ '	<button class="btn btn-primary add-org">Add New Org</button>'
-			+ ' <button class="btn btn-primary add-subOrg">Add New SubOrg</button>'
 			+ '</div>'
 		),
 
@@ -47,19 +46,21 @@ module.exports = function() {
 		templateRow: _.template('<tr>'
 		    + '<td class="value org-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap;"><a href="#"><%= o.fullOrgId %></a></td>'
             + '<td class="value org-status" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap;"><%= status %></td>'
-            + '<td class="value parent-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><a href="#"><%= o.parentOrgId %></a></td>'
-            + '<td class="value ultimate-parent" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><a href="#"><%= o.ultimateParent %></a></td>'
+            + '<td class="value parent-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><a href="#"><%= parentUlt %></a><a href="#"><%= parentDirect %></a></td>'
 		    + '<td data-orgid="<%= o.fullOrgId %>" class="status-col">'
             +   '<button class="btn btn-default status-btn">Change Status</button>'
             + '</td>'
 		    + '<td data-orgid="<%= o.fullOrgId %>" class="approve-col">'
-            +   '<button class="btn btn-default approve-btn">Approve Org</button>'
+            +   '<button class="btn btn-default approve-btn" <%= disabled %>>Approve Org</button>'
+            + '</td>'
+            + '<td data-orgid="<%= o.fullOrgId %>" class="subOrg-col">'
+            + ' <button class="btn btn-default add-subOrg">Add New SubOrg</button>'
             + '</td>'
 		    + '</tr>'
 		),
 
 		modalOrgTemplate: _.template( '<div class="modal-header">' +
-			'	<%=addOrg%>' +
+			'	<%=header%>' +
 			'</div>' +
 			'<div class="modal-body">' +
 			'	<div class="form-group add-org-form">' +
@@ -67,18 +68,19 @@ module.exports = function() {
 			'		<input type="text" class="form-control" id="org-label" value="<%=orgId%>">' +
 			'		<label for="enode-id">Enode id</label>' +
 			'		<input type="text" class="form-control" id="enode-id">' +
-			'		<label for="account-admin">Account Admin</label>' +
+			'		<label for="account-admin">Account Admin for Org</label>' +
             '		<input type="text" class="form-control" id="account-admin">' +
 		    '	    <label for="from-account">From Account</label>' +
             '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
 			'	</div>' +
 			'</div>' +
 			'<div class="modal-footer">' +
-			'	<button type="button" id="addOrg-btn-final" class="btn btn-primary">Yes, <%=addOrg%>.</button>' +
+			'	<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
+			'	<button type="button" id="addOrg-btn-final" class="btn btn-primary">Add Org.</button>' +
 			'</div>'),
 
 		modalOrgApproveTemplate: _.template( '<div class="modal-header">' +
-			'	<%=addOrg%>' +
+			'	<%=header%>' +
 			'</div>' +
 			'<div class="modal-body">' +
 			'	<div class="form-group add-org-form">' +
@@ -86,25 +88,26 @@ module.exports = function() {
 			'		<input type="text" class="form-control" id="org-label" value="<%=orgId%>">' +
 		    '	    <label for="enode-id">Enode id</label>' +
             '	    <select id="enode-id" class="form-control" style="transition: none;"> </select>' +
-		    '	    <label for="account-admin">Account Admin</label>' +
+		    '	    <label for="account-admin">Account Admin for Org</label>' +
             '	    <select id="account-admin" class="form-control" style="transition: none;"> </select>' +
 		    '	    <label for="from-account">From Account</label>' +
             '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
 			'	</div>' +
 			'</div>' +
 			'<div class="modal-footer">' +
-			'	<button type="button" id="addOrg-btn-final" class="btn btn-primary">Yes, <%=addOrg%>.</button>' +
+			'	<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
+			'	<button type="button" id="addOrg-btn-final" class="btn btn-primary">Approve Org.</button>' +
 			'</div>'),
 
 		modalSubOrgTemplate: _.template( '<div class="modal-header">' +
-			'	<%=addOrg%>' +
+			'	<%=header%>' +
 			'</div>' +
 			'<div class="modal-body">' +
 			'	<div class="form-group add-org-form">' +
 			'		<label for="org-label">Org Name</label>' +
 			'		<input type="text" class="form-control" id="org-label">' +
 			'		<label for="parent-label">Parent Org</label>' +
-            '		<input type="text" class="form-control" id="parent-label">' +
+            '		<input type="text" class="form-control" id="parent-label" value="<%=parentOrg%>">' +
 			'		<label for="enode-id">Enode id</label>' +
 			'		<input type="text" class="form-control" id="enode-id">' +
 		    '	    <label for="from-account">From Account</label>' +
@@ -112,23 +115,24 @@ module.exports = function() {
 			'	</div>' +
 			'</div>' +
 			'<div class="modal-footer">' +
-			'	<button type="button" id="addSubOrg-btn-final" class="btn btn-primary">Yes, <%=addOrg%>.</button>' +
+			'	<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
+			'	<button type="button" id="addSubOrg-btn-final" class="btn btn-primary">Add Sub Org.</button>' +
 			'</div>'),
 
 		modalStatusTemplate: _.template( '<div class="modal-header">' +
-			'	<%=addOrg%>' +
+			'	<%=header%>' +
 			'</div>' +
 			'<div class="modal-body">' +
             '  <div class="radio">' +
 			'    <label>' +
 			'      <input type="radio" id="action" name="action" value="update" checked="checked"/>' +
-			'      Update' +
+			'      Change Org Status' +
 			'    </label>' +
 			'  </div>' +
 			'  <div class="radio">' +
 			'    <label>' +
 			'      <input type="radio" id="action" name="action" value="approve"/>' +
-			'      Approve' +
+			'      Approve Change to Org Status' +
 			'    </label>' +
 			'  </div>' +
 			'	<div class="form-group">' +
@@ -139,7 +143,8 @@ module.exports = function() {
 			'	</div>' +
 			'</div>' +
 			'<div class="modal-footer">' +
-			'	<button type="button" id="changeStatus-btn-final" class="btn btn-primary">Yes, <%=addOrg%>.</button>' +
+			'	<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
+			'	<button type="button" id="changeStatus-btn-final" class="btn btn-primary">Change Status.</button>' +
 			'</div>'),
 
 
@@ -159,16 +164,14 @@ module.exports = function() {
             Account.list().then(function(accounts) {
 		        var rows = ['<option>1-Suspend</option>', '<option>2-Activate</option>'];
 
-                console.log('rows')
-                console.log(rows)
-
                 $('#stat').html( rows.join('') );
             })
         },
 
 		populateFrom: function() {
             Account.list().then(function(accounts) {
-		        var rows = ['<option>Choose Account</option>'];
+                console.log(accounts)
+		        var rows = [];
 
 				accounts.forEach(function(acct) {
                     if (acct.get('unlocked')) {
@@ -176,9 +179,6 @@ module.exports = function() {
                         rows.push( '<option>' + acct.get('address') + '</option>' );
                     }
 				});
-
-                console.log('rows')
-                console.log(rows)
 
                 $('#from-account').html( rows.join('') );
 
@@ -190,9 +190,12 @@ module.exports = function() {
 		    $.when(
 		        utils.load({ url: this.url_details, data: { id: orgId } })
 		    ).done(function(list) {
-		        console.log(list)
-		        var nodes = ['<option> Select enodeId </option>'];
-		        var accts = ['<option> Select Admin Account </option>'];
+		        console.log(list.data.attributes.nodeList)
+		        console.log(list.data.attributes.nodeList.length)
+		        console.log(list.data.attributes.acctList)
+		        console.log(list.data.attributes.acctList.length)
+		        var nodes = list.data.attributes.nodeList.length > 1 ? ['<option> Select enodeId </option>'] : [];
+		        var accts = list.data.attributes.acctList.length > 1 ? ['<option> Select Admin Account </option>'] : [];
 
 		        _.each(list.data.attributes.nodeList, function(node) {
                     nodes.push('<option>' + node.url + '</option>');
@@ -213,7 +216,6 @@ module.exports = function() {
 			$.when(
 				utils.load({ url: this.url_list })
 			).fail(function(res) {
-                console.log("failingin heree")
                 $('#widget-' + _this.shell.id).html(
                     _this.templateUninitialized());
             }).done(function(info) {
@@ -224,8 +226,12 @@ module.exports = function() {
 				if (info.data.length > 0) {
 					_.each(info.data, function(peer) {
 					    var status = statuses[peer.attributes.status]
-					    console.log(status)
-						rows.push( _this.templateRow({ o: peer.attributes, status: status }) );
+					    var orgId = peer.attributes.fullOrgId
+					    var parentUlt = orgId != peer.attributes.ultimateParent ? peer.attributes.ultimateParent : ''
+					    var parentDirect = parentUlt != peer.attributes.parentOrgId ? '/' + peer.attributes.parentOrgId : ''
+					    var disabled = peer.attributes.status == 2 ? 'disabled' : ''
+					    console.log(disabled)
+						rows.push( _this.templateRow({ o: peer.attributes, status: status, parentUlt: parentUlt, parentDirect: parentDirect, disabled: disabled }) );
 					});
 
 
@@ -252,7 +258,7 @@ module.exports = function() {
 
 				// set the modal text
 				$('#myModal .modal-content').html(_this.modalOrgTemplate({
-				    addOrg: "addOrg",
+				    header: "Add a new org to the network",
 				    orgId: "",
 
 				}) );
@@ -284,9 +290,10 @@ module.exports = function() {
 						Dashboard.Utils.emit(['orgUpdate'], true)
 						_this.fetch();
 
-					}).fail(function() {
+					}).fail(function(err) {
+					    console.log(err)
 						$('#myModal .modal-content').html(_this.modalConfirmation({
-							message: 'Sorry, Please try again.'
+							message: err.responseJSON.errors.map((error) => error.detail)
 						}) );
 					});
 				});
@@ -306,7 +313,7 @@ module.exports = function() {
 
 				// set the modal text
 				$('#myModal .modal-content').html(_this.modalOrgApproveTemplate({
-				    addOrg: "approveOrg",
+				    header: "Approve new org",
 				    orgId: orgName,
 				}) );
 
@@ -336,9 +343,10 @@ module.exports = function() {
 						Dashboard.Utils.emit(['orgUpdate'], true)
 						_this.fetch();
 
-					}).fail(function() {
+					}).fail(function(err) {
+					    console.log(err)
 						$('#myModal .modal-content').html(_this.modalConfirmation({
-							message: 'Sorry, Please try again.'
+							message: err.responseJSON.errors.map((error) => error.detail)
 						}) );
 					});
 				});
@@ -354,7 +362,7 @@ module.exports = function() {
 
 				// set the modal text
 				$('#myModal .modal-content').html(_this.modalStatusTemplate({
-				    addOrg: "changeStatus"
+				    header: "Change org status/Approve org status change"
 				}) );
 
 				//open modal
@@ -365,8 +373,6 @@ module.exports = function() {
 					var status = $('#stat').val().split('-')[0];
 					var type = $('#action:checked').val();
 					var fromAcct = $('#from-account').val();
-
-					console.log(status)
 
 					var urlStatus = type == "update" ? _this.url_update_status : _this.url_approve_status
 
@@ -387,9 +393,10 @@ module.exports = function() {
 						Dashboard.Utils.emit(['orgDetailUpdate'], true)
 						_this.fetch();
 
-					}).fail(function() {
+					}).fail(function(err) {
+					    console.log(err)
 						$('#myModal .modal-content').html(_this.modalConfirmation({
-							message: 'Sorry, Please try again.'
+							message: err.responseJSON.errors.map((error) => error.detail)
 						}) );
 					});
 				});
@@ -398,11 +405,14 @@ module.exports = function() {
 
             $('#widget-' + _this.shell.id).on('click', '.add-subOrg', function(e) {
 
+                var orgId = $(e.target.parentElement).data("orgid");
+
                 _this.populateFrom();
 
 				// set the modal text
 				$('#myModal .modal-content').html(_this.modalSubOrgTemplate({
-				    addOrg: "addSubOrg"
+				    header: "Add new suborg to " + orgId,
+				    parentOrg: orgId,
 				}) );
 
 				//open modal
@@ -431,9 +441,10 @@ module.exports = function() {
 						Dashboard.Utils.emit(['orgUpdate'], true)
 						_this.fetch();
 
-					}).fail(function() {
+					}).fail(function(err) {
+					    console.log(err)
 						$('#myModal .modal-content').html(_this.modalConfirmation({
-							message: 'Sorry, Please try again.'
+							message: err.responseJSON.errors.map((error) => error.detail)
 						}) );
 					});
 				});
