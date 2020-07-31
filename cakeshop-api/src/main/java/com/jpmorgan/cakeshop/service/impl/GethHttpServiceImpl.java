@@ -1,6 +1,5 @@
 package com.jpmorgan.cakeshop.service.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.jpmorgan.cakeshop.dao.BlockDAO;
@@ -9,13 +8,11 @@ import com.jpmorgan.cakeshop.dao.TransactionDAO;
 import com.jpmorgan.cakeshop.dao.WalletDAO;
 import com.jpmorgan.cakeshop.db.BlockScanner;
 import com.jpmorgan.cakeshop.error.APIException;
-import com.jpmorgan.cakeshop.error.ErrorLog;
 import com.jpmorgan.cakeshop.model.NodeInfo;
 import com.jpmorgan.cakeshop.model.Web3DefaultResponseType;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.util.CakeshopUtils;
 import com.jpmorgan.cakeshop.util.ProcessUtils;
-import com.jpmorgan.cakeshop.util.StreamLogAdapter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -34,7 +31,6 @@ import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -48,7 +44,6 @@ public class GethHttpServiceImpl implements GethHttpService {
     public static final String SIMPLE_RESULT = "_result";
 
     private static final Logger LOG = LoggerFactory.getLogger(GethHttpServiceImpl.class);
-    private static final Logger GETH_LOG = LoggerFactory.getLogger("geth");
 
     @Autowired(required = false)
     private BlockDAO blockDAO;
@@ -78,15 +73,9 @@ public class GethHttpServiceImpl implements GethHttpService {
     private String currentRpcUrl;
     private String currentTransactionManagerUrl;
 
-    private StreamLogAdapter stdoutLogger;
-    private StreamLogAdapter stderrLogger;
-
-    private final List<ErrorLog> startupErrors;
-
     private Web3jService cakeshopService;
 
     public GethHttpServiceImpl() {
-        this.startupErrors = new ArrayList<>();
     }
 
     private Web3jService getCakeshopService() throws APIException {
@@ -190,7 +179,6 @@ public class GethHttpServiceImpl implements GethHttpService {
     private void setCurrentTransactionManagerUrl(String transactionManagerUrl) {
         this.currentTransactionManagerUrl = transactionManagerUrl;
     }
-
 
     @Override
     public void connectToNode(Long nodeId) {
