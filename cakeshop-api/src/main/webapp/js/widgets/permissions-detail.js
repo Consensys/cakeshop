@@ -28,7 +28,7 @@ module.exports = function() {
 			this.data = data;
 			this.orgDet = data;
 
-			this.title = 'Org: ' + this.orgDet;
+			this.title = 'Permissions For: ' + this.orgDet;
 		},
 
 		populateFrom: function() {

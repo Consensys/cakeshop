@@ -22,9 +22,10 @@ module.exports = function() {
 		    + ' <thead style="font-weight: bold;">'
 		    + '     <tr>'
 			+ '			<td class="org-id">OrgId</td>'
-			+ '         <td class="org-status" title=" 0-NotInList&#010 1-Proposed&#010 2-Approved&#010 3-PendingSuspension&#010 4-Suspended&#010 5-Recovery initiated">Status</td>'
+			+ '         <td class="org-status">Status</td>'
             + '         <td class="parent-id" style="width:90px;">ParentOrgId</td>'
             + '         <td class="ultimate-parent" style="width:110px;">UltimateParent</td>'
+            + '         <td class="status-col"></td>'
             + '         <td class="approve-col"></td>'
 		    + '     </tr>'
 		    + ' </thead>'
@@ -45,11 +46,12 @@ module.exports = function() {
 
 		templateRow: _.template('<tr>'
 		    + '<td class="value org-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap;"><a href="#"><%= o.fullOrgId %></a></td>'
-		    + '<td data-orgid="<%= o.fullOrgId %>" class="org-status" title=" 0-NotInList&#010 1-Proposed&#010 2-Approved&#010 3-PendingSuspension&#010 4-Suspended&#010 5-Recovery initiated">'
-            +   '<button class="btn btn-default status-btn"><%= o.status %></button>'
-            + '</td>'
+            + '<td class="value org-status" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap;"><%= status %></td>'
             + '<td class="value parent-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><a href="#"><%= o.parentOrgId %></a></td>'
             + '<td class="value ultimate-parent" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><a href="#"><%= o.ultimateParent %></a></td>'
+		    + '<td data-orgid="<%= o.fullOrgId %>" class="status-col">'
+            +   '<button class="btn btn-default status-btn">Change Status</button>'
+            + '</td>'
 		    + '<td data-orgid="<%= o.fullOrgId %>" class="approve-col">'
             +   '<button class="btn btn-default approve-btn">Approve Org</button>'
             + '</td>'
@@ -217,10 +219,13 @@ module.exports = function() {
             }).done(function(info) {
 			    console.log(info)
 				var rows = [];
+			    var statuses = ["Not in List", "Proposed", "Approved", "Pending Suspension", "Suspended", "Recovery initiated"];
 
 				if (info.data.length > 0) {
 					_.each(info.data, function(peer) {
-						rows.push( _this.templateRow({ o: peer.attributes }) );
+					    var status = statuses[peer.attributes.status]
+					    console.log(status)
+						rows.push( _this.templateRow({ o: peer.attributes, status: status }) );
 					});
 
 
