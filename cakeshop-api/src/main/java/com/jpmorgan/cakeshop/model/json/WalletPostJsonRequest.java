@@ -15,7 +15,7 @@ public class WalletPostJsonRequest {
     }
 
     /**
-     * @param formAccount the formAccount to set
+     * @param fromAccount the formAccount to set
      */
     public void setFromAccount(String fromAccount) {
         this.fromAccount = fromAccount;
