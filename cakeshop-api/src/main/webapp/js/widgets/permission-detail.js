@@ -21,13 +21,9 @@ module.exports = function() {
 		url_addRole: 'api/permissions/addNewRole',
 		url_removeRole: 'api/permissions/removeRole',
 
-
-		hideLink: true,
-
 		setData: function(data) {
 			this.data = data;
 			this.orgDet = data;
-
 			this.title = 'Permissions For: ' + this.orgDet;
 		},
 
@@ -49,7 +45,6 @@ module.exports = function() {
 		},
 
 		roleAccessOptions: function() {
-
             Account.list().then(function(accounts) {
 		        var rows = ['<option>Choose role access</option>', '<option>0-ReadOnly</option>', '<option>1-Transact</option>', '<option>2-ContractDeploy</option>', '<option>3-FullAccess</option>'];
                 $('#access').html( rows.join('') );
@@ -57,7 +52,6 @@ module.exports = function() {
         },
 
 		statusOptions: function() {
-
             Account.list().then(function(accounts) {
 		        var rows = ['<option>Choose new status</option>', '<option>1-Suspend</option>', '<option>2-Activate</option>', '<option>3-Blacklist</option>'];
                 $('#stat').html( rows.join('') );

@@ -36,6 +36,7 @@ public class PermissionsServiceImpl implements PermissionsService {
 
         } catch (Exception e) {
             LOG.error(e.getMessage());
+            throw new APIException("Could not retrieve Permission Org Details ");
         }
 
         return details;
@@ -86,7 +87,7 @@ public class PermissionsServiceImpl implements PermissionsService {
 
     @Override
     public String updateOrgStatus(String id, int action, Object f) throws APIException {
-        LOG.info("update permissions org {} status", id);
+        LOG.info("update permissions org {} status: {}", id, action);
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_updateOrgStatus", new Object[]{id, action, f});
 
         if (res == null || res.get(SIMPLE_RESULT) == null) {
@@ -98,7 +99,7 @@ public class PermissionsServiceImpl implements PermissionsService {
 
     @Override
     public String approveOrgStatus(String id, int action, Object f) throws APIException {
-        LOG.info("approve permissions org {} status", id);
+        LOG.info("approve permissions org {} status: {}", id, action);
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_approveOrgStatus", new Object[]{id, action, f});
 
         if (res == null || res.get(SIMPLE_RESULT) == null) {
@@ -220,7 +221,7 @@ public class PermissionsServiceImpl implements PermissionsService {
 
     @Override
     public String updateNode(String id, String enodeId, int action, Object f) throws APIException {
-        LOG.info("update status of node {}", enodeId);
+        LOG.info("update status {} of node {}", action, enodeId);
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_updateNodeStatus", new Object[]{id, enodeId, action, f});
 
         if (res == null || res.get(SIMPLE_RESULT) == null) {

@@ -324,7 +324,7 @@ module.exports = function() {
 
 			});
 
-         $('#widget-' + _this.shell.id).on('click', '.status-btn', function(e) {
+            $('#widget-' + _this.shell.id).on('click', '.status-btn', function(e) {
 
 				var orgId = $(e.target.parentElement).data("orgid");
 				var status = $(e.target.parentElement).data("status");
