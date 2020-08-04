@@ -54,6 +54,7 @@ public class PermissionsServiceImpl implements PermissionsService {
 
         } catch (Exception e) {
             LOG.error(e.getMessage());
+            throw new APIException("Could not retrieve Permission Org List ");
         }
 
         return details;
@@ -61,12 +62,11 @@ public class PermissionsServiceImpl implements PermissionsService {
 
     @Override
     public String addOrg(String id, String enodeId, String accountId, Object f) throws APIException {
-
+        LOG.info("Add new permissions org {}", id);
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_addOrg", new Object[]{id, enodeId, accountId, f});
 
-        LOG.info("addorg {}", res);
         if (res == null || res.get(SIMPLE_RESULT) == null) {
-            throw new APIException("Could not add org: " + id);
+            throw new APIException("Could not add new permissions org: " + id);
         }
 
         return (String) res.get(SIMPLE_RESULT);
@@ -74,10 +74,9 @@ public class PermissionsServiceImpl implements PermissionsService {
 
     @Override
     public String approveOrg(String id, String enodeId, String accountId, Object f) throws APIException {
-
+        LOG.info("Approve new permissions org {}", id);
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_approveOrg", new Object[]{id, enodeId, accountId, f});
 
-        LOG.info("approve {}", res);
         if (res == null || res.get(SIMPLE_RESULT) == null) {
             throw new APIException("Could not approve org: " + id);
         }
@@ -87,10 +86,9 @@ public class PermissionsServiceImpl implements PermissionsService {
 
     @Override
     public String updateOrgStatus(String id, int action, Object f) throws APIException {
-
+        LOG.info("update permissions org {} status", id);
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_updateOrgStatus", new Object[]{id, action, f});
 
-        LOG.info("update org status {}", res);
         if (res == null || res.get(SIMPLE_RESULT) == null) {
             throw new APIException("Could not update org status: " + id);
         }
@@ -100,10 +98,9 @@ public class PermissionsServiceImpl implements PermissionsService {
 
     @Override
     public String approveOrgStatus(String id, int action, Object f) throws APIException {
-
+        LOG.info("approve permissions org {} status", id);
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_approveOrgStatus", new Object[]{id, action, f});
 
-        LOG.info("approve org status {}", res);
         if (res == null || res.get(SIMPLE_RESULT) == null) {
             throw new APIException("Could not approve org status: " + id);
         }
@@ -113,10 +110,9 @@ public class PermissionsServiceImpl implements PermissionsService {
 
     @Override
     public String addSubOrg(String id, String parentId, String enodeId, Object f) throws APIException {
-
+        LOG.info("add new suborg {} to parent {}", id, parentId);
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_addSubOrg", new Object[]{parentId, id, enodeId, f});
 
-        LOG.info("approve org status {}", res);
         if (res == null || res.get(SIMPLE_RESULT) == null) {
             throw new APIException("Could not add sub org: " + id);
         }
@@ -126,12 +122,9 @@ public class PermissionsServiceImpl implements PermissionsService {
 
     @Override
     public String addNewRole(String id, String roleId, int access, boolean isVoter, boolean isAdmin, Object f) throws APIException {
-
-        LOG.info("addingnew role");
-
+        LOG.info("add new permissions role {} to org {}", roleId, id);
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_addNewRole", new Object[]{id, roleId, access, isVoter, isAdmin, f});
 
-        LOG.info("add new role {}", res);
         if (res == null || res.get(SIMPLE_RESULT) == null) {
             throw new APIException("Could not add new role: " + roleId);
         }
@@ -141,10 +134,10 @@ public class PermissionsServiceImpl implements PermissionsService {
 
     @Override
     public String removeRole(String id, String roleId, Object f) throws APIException {
-
+        LOG.info("remove new role {} from org {}", roleId, id);
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_removeRole", new Object[]{id, roleId, f});
 
-        LOG.info("remove new role {}", res);
+
         if (res == null || res.get(SIMPLE_RESULT) == null) {
             throw new APIException("Could not remove role: " + roleId);
         }
@@ -154,10 +147,9 @@ public class PermissionsServiceImpl implements PermissionsService {
 
     @Override
     public String addAccount(String acctId, String id, String roleId, Object f) throws APIException {
-
+        LOG.info("add account {} to org {}", acctId, id);
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_addAccountToOrg", new Object[]{acctId, id, roleId, f});
 
-        LOG.info("add account {}", res);
         if (res == null || res.get(SIMPLE_RESULT) == null) {
             throw new APIException("Could not add account: " + acctId);
         }
@@ -167,12 +159,12 @@ public class PermissionsServiceImpl implements PermissionsService {
 
     @Override
     public String changeAccountRole(String acctId, String id, String roleId, Object f) throws APIException {
-
+        LOG.info("change account role to {} for acct {}", roleId, acctId);
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_changeAccountRole", new Object[]{acctId, id, roleId, f});
 
-        LOG.info("change account {}", res);
+
         if (res == null || res.get(SIMPLE_RESULT) == null) {
-            throw new APIException("Could not change account: " + acctId);
+            throw new APIException("Could not change account role for acct: " + acctId);
         }
 
         return (String) res.get(SIMPLE_RESULT);
@@ -180,10 +172,9 @@ public class PermissionsServiceImpl implements PermissionsService {
 
     @Override
     public String updateAccount(String acctId, String id, int action, Object f) throws APIException {
-
+        LOG.info("update account {} status to {} ", acctId, action);
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_updateAccountStatus", new Object[]{id, acctId, action, f});
 
-        LOG.info("update account {}", res);
         if (res == null || res.get(SIMPLE_RESULT) == null) {
             throw new APIException("Could not update account: " + acctId);
         }
@@ -193,12 +184,11 @@ public class PermissionsServiceImpl implements PermissionsService {
 
     @Override
     public String assignAdmin(String acctId, String id, String roleId, Object f) throws APIException {
-
+        LOG.info("assign admin to account {}", acctId);
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_assignAdminRole", new Object[]{id, acctId, roleId, f});
 
-        LOG.info("assign admin {}", res);
         if (res == null || res.get(SIMPLE_RESULT) == null) {
-            throw new APIException("Could not assign admin: " + acctId);
+            throw new APIException("Could not assign admin for acct: " + acctId);
         }
 
         return (String) res.get(SIMPLE_RESULT);
@@ -206,12 +196,11 @@ public class PermissionsServiceImpl implements PermissionsService {
 
     @Override
     public String approveAdmin(String acctId, String id, Object f) throws APIException {
-
+        LOG.info("approve assignment of admin for account {}", acctId);
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_approveAdminRole", new Object[]{id, acctId, f});
 
-        LOG.info("approve admin {}", res);
         if (res == null || res.get(SIMPLE_RESULT) == null) {
-            throw new APIException("Could not approve admin: " + acctId);
+            throw new APIException("Could not approve admin for acct: " + acctId);
         }
 
         return (String) res.get(SIMPLE_RESULT);
@@ -219,10 +208,9 @@ public class PermissionsServiceImpl implements PermissionsService {
 
     @Override
     public String addNode(String id, String enodeId, Object f) throws APIException {
-
+        LOG.info("add new node {} to org {}", enodeId, id);
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_addNode", new Object[]{id, enodeId, f});
 
-        LOG.info("add node {}", res);
         if (res == null || res.get(SIMPLE_RESULT) == null) {
             throw new APIException("Could not add node: " + enodeId);
         }
@@ -232,10 +220,9 @@ public class PermissionsServiceImpl implements PermissionsService {
 
     @Override
     public String updateNode(String id, String enodeId, int action, Object f) throws APIException {
-
+        LOG.info("update status of node {}", enodeId);
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_updateNodeStatus", new Object[]{id, enodeId, action, f});
 
-        LOG.info("update node {}", res);
         if (res == null || res.get(SIMPLE_RESULT) == null) {
             throw new APIException("Could not update node: " + enodeId);
         }
@@ -245,10 +232,9 @@ public class PermissionsServiceImpl implements PermissionsService {
 
     @Override
     public String recoverAcct(String id, String accountId, Object f) throws APIException {
-
+        LOG.info("recover blacklisted account {}", accountId);
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_recoverBlackListedAccount", new Object[]{id, accountId, f});
 
-        LOG.info("update node {}", res);
         if (res == null || res.get(SIMPLE_RESULT) == null) {
             throw new APIException("Could not recover acct: " + accountId);
         }
@@ -258,10 +244,9 @@ public class PermissionsServiceImpl implements PermissionsService {
 
     @Override
     public String approveAcct(String id, String accountId, Object f) throws APIException {
-
+        LOG.info("approve recovery of blacklisted account {}", accountId);
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_approveBlackListedAccountRecovery", new Object[]{id, accountId, f});
 
-        LOG.info("update node {}", res);
         if (res == null || res.get(SIMPLE_RESULT) == null) {
             throw new APIException("Could not approve recover of acct: " + accountId);
         }
@@ -271,12 +256,11 @@ public class PermissionsServiceImpl implements PermissionsService {
 
     @Override
     public String recoverNode(String id, String enodeId, Object f) throws APIException {
-
+        LOG.info("recover blacklisted node {}", enodeId);
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_recoverBlackListedNode", new Object[]{id, enodeId, f});
 
-        LOG.info("update node {}", res);
         if (res == null || res.get(SIMPLE_RESULT) == null) {
-            throw new APIException("Could not recover acct: " + enodeId);
+            throw new APIException("Could not recover node: " + enodeId);
         }
 
         return (String) res.get(SIMPLE_RESULT);
@@ -284,12 +268,11 @@ public class PermissionsServiceImpl implements PermissionsService {
 
     @Override
     public String approveNode(String id, String enodeId, Object f) throws APIException {
-
+        LOG.info("approve recovery of blacklisted node {}", enodeId);
         Map<String, Object> res = gethService.executeGethCall("quorumPermission_approveBlackListedNodeRecovery", new Object[]{id, enodeId, f});
 
-        LOG.info("update node {}", res);
         if (res == null || res.get(SIMPLE_RESULT) == null) {
-            throw new APIException("Could not approve recover of acct: " + enodeId);
+            throw new APIException("Could not approve recover of node: " + enodeId);
         }
 
         return (String) res.get(SIMPLE_RESULT);

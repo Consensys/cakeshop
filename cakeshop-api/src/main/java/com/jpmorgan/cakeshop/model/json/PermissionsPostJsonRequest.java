@@ -89,7 +89,5 @@ public class PermissionsPostJsonRequest {
         return admin;
     }
 
-    public void setAdmin(boolean admin) {
-        this.admin = admin;
-    }
+    public void setAdmin(boolean admin) { this.admin = admin; }
 }

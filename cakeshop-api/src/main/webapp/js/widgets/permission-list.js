@@ -8,14 +8,11 @@ module.exports = function() {
 
 		url_list: 'api/permissions/getList',
 		url_details: 'api/permissions/getDetails',
-		url_add: 'api/permissions/addOrg',
-		url_approve: 'api/permissions/approveOrg',
+		url_addOrg: 'api/permissions/addOrg',
+		url_approveOrg: 'api/permissions/approveOrg',
 		url_update_status: 'api/permissions/updateOrgStatus',
 		url_approve_status: 'api/permissions/approveOrgStatus',
 		url_subOrg: 'api/permissions/addSubOrg',
-
-		topic: '/topic/block',
-
 
 		template: _.template('<div>'
 		    + '<table style="width: 100%; table-layout: fixed;" class="table table-striped">'
@@ -47,11 +44,11 @@ module.exports = function() {
 		    + '<td class="value org-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap;"><a href="#"><%= o.fullOrgId %></a></td>'
             + '<td class="value org-status" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap;"><%= status %></td>'
             + '<td class="value parent-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><a href="#"><%= parentUlt %></a><%= separator %><a href="#"><%= parentDirect %></a></td>'
-		    + '<td data-orgid="<%= o.fullOrgId %>" class="status-col">'
-            +   '<button class="btn btn-default status-btn">Change Status</button>'
+		    + '<td data-orgid="<%= o.fullOrgId %>" data-status="<%= o.status %>" class="status-col">'
+            +   '<button class="btn btn-default status-btn" <%= disableStatus %>>Change Status</button>'
             + '</td>'
 		    + '<td data-orgid="<%= o.fullOrgId %>" class="approve-col">'
-            +   '<button class="btn btn-default approve-btn" <%= disabled %>>Approve Org</button>'
+            +   '<button class="btn btn-default approve-btn" <%= disableApprove %>>Approve Org</button>'
             + '</td>'
             + '<td data-orgid="<%= o.fullOrgId %>" class="subOrg-col">'
             + ' <button class="btn btn-default add-subOrg">Add New SubOrg</button>'
@@ -65,18 +62,18 @@ module.exports = function() {
 			'<div class="modal-body">' +
 			'	<div class="form-group add-org-form">' +
 			'		<label for="org-label">Org Name</label>' +
-			'		<input type="text" class="form-control" id="org-label" value="<%=orgId%>">' +
+			'		<input type="text" class="form-control" id="org-label" value="<%=orgId%>" placeholder="Enter name for new org">' +
 			'		<label for="enode-id">Enode id</label>' +
-			'		<input type="text" class="form-control" id="enode-id">' +
+			'		<input type="text" class="form-control" id="enode-id" placeholder="Enter full enode id">' +
 			'		<label for="account-admin">Account Admin for Org</label>' +
-            '		<input type="text" class="form-control" id="account-admin">' +
+            '		<input type="text" class="form-control" id="account-admin" placeholder="Enter account address">' +
 		    '	    <label for="from-account">From Account</label>' +
             '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
 			'	</div>' +
 			'</div>' +
 			'<div class="modal-footer">' +
 			'	<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
-			'	<button type="button" id="addOrg-btn-final" class="btn btn-primary">Add Org.</button>' +
+			'	<button type="button" id="addOrg-btn-final" class="btn btn-primary">Add Org</button>' +
 			'</div>'),
 
 		modalOrgApproveTemplate: _.template( '<div class="modal-header">' +
@@ -96,7 +93,7 @@ module.exports = function() {
 			'</div>' +
 			'<div class="modal-footer">' +
 			'	<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
-			'	<button type="button" id="addOrg-btn-final" class="btn btn-primary">Approve Org.</button>' +
+			'	<button type="button" id="addOrg-btn-final" class="btn btn-primary">Approve Org</button>' +
 			'</div>'),
 
 		modalSubOrgTemplate: _.template( '<div class="modal-header">' +
@@ -105,46 +102,34 @@ module.exports = function() {
 			'<div class="modal-body">' +
 			'	<div class="form-group add-org-form">' +
 			'		<label for="org-label">Org Name</label>' +
-			'		<input type="text" class="form-control" id="org-label">' +
+			'		<input type="text" class="form-control" id="org-label" placeholder="Enter name for new suborg">' +
 			'		<label for="parent-label">Parent Org</label>' +
             '		<input type="text" class="form-control" id="parent-label" value="<%=parentOrg%>">' +
 			'		<label for="enode-id">Enode id</label>' +
-			'		<input type="text" class="form-control" id="enode-id">' +
+			'		<input type="text" class="form-control" id="enode-id" placeholder="Enter full enode id">' +
 		    '	    <label for="from-account">From Account</label>' +
             '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
 			'	</div>' +
 			'</div>' +
 			'<div class="modal-footer">' +
 			'	<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
-			'	<button type="button" id="addSubOrg-btn-final" class="btn btn-primary">Add Sub Org.</button>' +
+			'	<button type="button" id="addSubOrg-btn-final" class="btn btn-primary">Add Sub Org</button>' +
 			'</div>'),
 
 		modalStatusTemplate: _.template( '<div class="modal-header">' +
 			'	<%=header%>' +
 			'</div>' +
 			'<div class="modal-body">' +
-            '  <div class="radio">' +
-			'    <label>' +
-			'      <input type="radio" id="action" name="action" value="update" checked="checked"/>' +
-			'      Change Org Status' +
-			'    </label>' +
-			'  </div>' +
-			'  <div class="radio">' +
-			'    <label>' +
-			'      <input type="radio" id="action" name="action" value="approve"/>' +
-			'      Approve Change to Org Status' +
-			'    </label>' +
-			'  </div>' +
 			'	<div class="form-group">' +
-		    '	    <label for="stat">Status</label>' +
-            '	    <select id="stat" class="form-control" style="transition: none;"> </select>' +
+			'		<label for="stat">Change Status</label>' +
+            '		<input type="text" class="form-control" id="stat" value="<%=action%>">' +
 		    '	    <label for="from-account">From Account</label>' +
             '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
 			'	</div>' +
 			'</div>' +
 			'<div class="modal-footer">' +
 			'	<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
-			'	<button type="button" id="changeStatus-btn-final" class="btn btn-primary">Change Status.</button>' +
+			'	<button type="button" id="changeStatus-btn-final" class="btn btn-primary">Change Status</button>' +
 			'</div>'),
 
 
@@ -158,19 +143,8 @@ module.exports = function() {
 			}.bind(this));
 		},
 
-		statusOptions: function() {
-		   //var rows = ['<option>1-Suspend</option>', '<option>2-Activate</option>'];
-
-            Account.list().then(function(accounts) {
-		        var rows = ['<option>1-Suspend</option>', '<option>2-Activate</option>'];
-
-                $('#stat').html( rows.join('') );
-            })
-        },
-
 		populateFrom: function() {
             Account.list().then(function(accounts) {
-                console.log(accounts)
 		        var rows = [];
 
 				accounts.forEach(function(acct) {
@@ -215,7 +189,6 @@ module.exports = function() {
                 $('#widget-' + _this.shell.id).html(
                     _this.templateUninitialized());
             }).done(function(info) {
-			    console.log(info)
 				var rows = [];
 			    var statuses = ["Not in List", "Proposed", "Approved", "Pending Suspension", "Suspended", "Recovery initiated"];
 
@@ -226,9 +199,16 @@ module.exports = function() {
 					    var parentUlt = orgId != peer.attributes.ultimateParent ? peer.attributes.ultimateParent : ''
 					    var parentDirect = parentUlt != peer.attributes.parentOrgId ? peer.attributes.parentOrgId : ''
 					    var separator = parentDirect == '' || parentUlt == '' ? '' : '/'
-					    var disabled = peer.attributes.status == 2 ? 'disabled' : ''
-					    console.log(disabled)
-						rows.push( _this.templateRow({ o: peer.attributes, status: status, parentUlt: parentUlt, parentDirect: parentDirect, disabled: disabled, separator: separator }) );
+					    var disableApprove = peer.attributes.status != 1 ? 'disabled' : ''
+					    var disableStatus = peer.attributes.status == 1 || peer.attributes.status == 0 ? 'disabled' : ''
+						rows.push( _this.templateRow({
+						    o: peer.attributes,
+						    status: status,
+						    parentUlt: parentUlt,
+						    parentDirect: parentDirect,
+						    disableApprove: disableApprove,
+						    disableStatus: disableStatus,
+						    separator: separator }) );
 					});
 
 
@@ -237,7 +217,6 @@ module.exports = function() {
 
 				$('#widget-' + _this.shell.id + ' a').click(function(e) {
 					e.preventDefault();
-					console.log($(this).text())
 
 					Dashboard.show({ widgetId: 'permissions-detail', section: 'permissions', data: $(this).text(), refetch: true });
 				});
@@ -273,7 +252,7 @@ module.exports = function() {
 
 					$.when(
 						utils.load({
-							url: _this.url_add,
+							url: _this.url_addOrg,
 							data: {
 								"id": orgName,
 								"enodeId": enodeId,
@@ -303,11 +282,6 @@ module.exports = function() {
                 _this.populateFrom();
                 _this.populateEnode(orgName);
 
- 		        console.log('parentel');
- 			    console.log($(e.target.parentElement).data);
-
-
-
 				// set the modal text
 				$('#myModal .modal-content').html(_this.modalOrgApproveTemplate({
 				    header: "Approve new org",
@@ -326,7 +300,7 @@ module.exports = function() {
 
 					$.when(
 						utils.load({
-							url: _this.url_approve,
+							url: _this.url_approveOrg,
 							data: {
 								"id": orgName,
 								"enodeId": enodeId,
@@ -353,13 +327,23 @@ module.exports = function() {
          $('#widget-' + _this.shell.id).on('click', '.status-btn', function(e) {
 
 				var orgId = $(e.target.parentElement).data("orgid");
+				var status = $(e.target.parentElement).data("status");
+				var change = status == 2 || status == 4
+//				var approve = status == 3 || status == 5
+				var header = change ? "Change org status" : "Approve org status change"
                 _this.populateFrom();
 
-		    _this.statusOptions();
+                var action = ""
+                if (status == 3 || status == 2) {
+                    action = "1-Suspend"
+                } else if (status == 5 || status == 4) {
+                    action = "2-Activate"
+                }
 
 				// set the modal text
 				$('#myModal .modal-content').html(_this.modalStatusTemplate({
-				    header: "Change org status/Approve org status change"
+				    header: header,
+				    action: action
 				}) );
 
 				//open modal
@@ -368,12 +352,9 @@ module.exports = function() {
 
                 $('#changeStatus-btn-final').click( function() {
 					var status = $('#stat').val().split('-')[0];
-					var type = $('#action:checked').val();
 					var fromAcct = $('#from-account').val();
 
-					var urlStatus = type == "update" ? _this.url_update_status : _this.url_approve_status
-
-					console.log(urlStatus)
+					var urlStatus = change ? _this.url_update_status : _this.url_approve_status
 
 					$.when(
 						utils.load({

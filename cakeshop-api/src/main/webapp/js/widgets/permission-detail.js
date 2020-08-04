@@ -7,19 +7,19 @@ module.exports = function() {
 		size: 'large',
 
 		url_details: 'api/permissions/getDetails',
-		url_newRole: 'api/permissions/addNewRole',
-		url_removeRole: 'api/permissions/removeRole',
+		url_addNode: 'api/permissions/addNode',
+		url_updateNode: 'api/permissions/updateNode',
+		url_recoverNode: 'api/permissions/recoverNode',
+		url_approveNode: 'api/permissions/approveNode',
 		url_addAcct: 'api/permissions/addAccount',
 		url_changeAcct: 'api/permissions/changeAccount',
 		url_updateAcct: 'api/permissions/updateAccount',
 		url_assignAdmin: 'api/permissions/assignAdmin',
 		url_approveAdmin: 'api/permissions/approveAdmin',
-		url_addNode: 'api/permissions/addNode',
-		url_updateNode: 'api/permissions/updateNode',
 		url_recoverAcct: 'api/permissions/recoverAcct',
 		url_approveAcct: 'api/permissions/approveAcct',
-		url_recoverNode: 'api/permissions/recoverNode',
-		url_approveNode: 'api/permissions/approveNode',
+		url_addRole: 'api/permissions/addNewRole',
+		url_removeRole: 'api/permissions/removeRole',
 
 
 		hideLink: true,
@@ -51,8 +51,7 @@ module.exports = function() {
 		roleAccessOptions: function() {
 
             Account.list().then(function(accounts) {
-		        var rows = ['<option>0-ReadOnly</option>', '<option>1-Transact</option>', '<option>2-ContractDeploy</option>', '<option>3-FullAccess</option>'];
-
+		        var rows = ['<option>Choose role access</option>', '<option>0-ReadOnly</option>', '<option>1-Transact</option>', '<option>2-ContractDeploy</option>', '<option>3-FullAccess</option>'];
                 $('#access').html( rows.join('') );
             })
         },
@@ -60,14 +59,25 @@ module.exports = function() {
 		statusOptions: function() {
 
             Account.list().then(function(accounts) {
-		        var rows = ['<option>1-Suspend</option>', '<option>2-Activate</option>', '<option>3-Blacklist</option>'];
-
-                console.log('rows')
-                console.log(rows)
-
+		        var rows = ['<option>Choose new status</option>', '<option>1-Suspend</option>', '<option>2-Activate</option>', '<option>3-Blacklist</option>'];
                 $('#stat').html( rows.join('') );
             })
         },
+
+		populateRoles: function(orgId) {
+		    $.when(
+		        utils.load({ url: this.url_details, data: { id: orgId } })
+		    ).done(function(list) {
+		        var roles = list.data.attributes.roleList.length > 1 ? ['<option> Select role id </option>'] : [];
+
+		        _.each(list.data.attributes.roleList, function(role) {
+                    roles.push('<option>' + role.roleId + '</option>');
+                })
+
+                $('#role-id').html(roles.join(''));
+		    }.bind(this));
+
+		},
 
 		templateNode: _.template('<div>'
             + '<table style="width: 100%; table-layout: fixed;" class="table table-striped">'
@@ -119,7 +129,6 @@ module.exports = function() {
 		    + '</div>'
 		),
 
-
 		templateSubs: _.template('<div>'
             + '<table style="width: 100%; table-layout: fixed;" class="table table-striped">'
 		 	+ '	<thead style="font-weight: bold;">'
@@ -132,10 +141,10 @@ module.exports = function() {
 		    + '</div>'
 		),
 
-		templateButtons: _.template('<div data-orgid="<%= orgId %>"class="form-group pull-right">'
-            + '	<button class="btn btn-primary add-acct">Add New Account</button>'
+		templateAddNewButtons: _.template('<div data-orgid="<%= orgId %>"class="form-group pull-right">'
+		    + '	<button class="btn btn-primary add-node">Add New Node</button>'
+            + '	<button class="btn btn-primary add-acct <%= disableAddAcct %>">Add New Account</button>'
 			+ '	<button class="btn btn-primary add-role">Add New Role</button>'
-			+ '	<button class="btn btn-primary add-node">Add New Node</button>'
 			+ '</div>'
 		),
 
@@ -143,10 +152,10 @@ module.exports = function() {
             + '<td class="value org-url" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= n.url %></td>'
             + '<td class="value status" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= status %></td>'
             + '<td data-orgid="<%= n.orgId %>" data-url="<%= n.url %>" class="status-col">'
-            +   '<button class="btn btn-default update-node-btn">Change Status</button>'
+            +   '<button class="btn btn-default update-node-btn" <%= disableStatus %>>Change Status</button>'
             + '</td>'
-		    + '<td data-orgid="<%= n.orgId %>" data-enodeid="<%= n.url %>"class="recover-col">'
-            +   '<button class="btn btn-default recover-node-btn" <%= disabled %>>Recover</button>'
+		    + '<td data-orgid="<%= n.orgId %>" data-enodeid="<%= n.url %>" data-status="<%= n.status %>" class="recover-col">'
+            +   '<button class="btn btn-default recover-node-btn" <%= disableRecover %>>Recover</button>'
             + '</td>'
 		    + '</tr>'
 		),
@@ -160,10 +169,10 @@ module.exports = function() {
             +   '<button class="btn btn-default change-role-btn">Change Role</button>'
             + '</td>'
 		    + '<td data-orgid="<%= a.orgId %>" data-acctid="<%= a.acctId %>"class="status-col">'
-            +   '<button class="btn btn-default update-acct-btn">Change Status</button>'
+            +   '<button class="btn btn-default update-acct-btn" <%= disableStatus %>>Change Status</button>'
             + '</td>'
-		    + '<td data-orgid="<%= a.orgId %>" data-acctid="<%= a.acctId %>"class="recover-acct-col">'
-            +   '<button class="btn btn-default recover-acct-btn <%= disabled %>">Recover Acct</button>'
+		    + '<td data-orgid="<%= a.orgId %>" data-acctid="<%= a.acctId %>" data-status="<%= a.status %>" class="recover-acct-col">'
+            +   '<button class="btn btn-default recover-acct-btn <%= disableRecover %>">Recover Acct</button>'
             + '</td>'
 		    + '</tr>'
 		),
@@ -190,7 +199,7 @@ module.exports = function() {
 			'</div>' +
 			'<div class="modal-body">' +
 			'	<div class="form-group status-form">' +
-		    '	    <label for="stat">Status</label>' +
+		    '	    <label for="stat">Change Status</label>' +
             '	    <select id="stat" class="form-control" style="transition: none;"> </select>' +
 		    '	    <label for="from-account">From Account</label>' +
             '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
@@ -198,13 +207,15 @@ module.exports = function() {
 			'</div>' +
 			'<div class="modal-footer">' +
 			'	<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
-			'	<button type="button" id="changeStatus-btn-final" class="btn btn-primary">Change Status.</button>' +
+			'	<button type="button" id="changeStatus-btn-final" class="btn btn-primary">Change Status</button>' +
 			'</div>'),
 
 		modalFromTemplate: _.template( '<div class="modal-header">' +
 			'	<%=header%>' +
 			'</div>' +
 			'<div class="modal-body">' +
+			'   <div id="notification">' +
+			'   </div>' +
 			'	<div class="form-group from-form">' +
 		    '	    <label for="from-account">From Account</label>' +
             '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
@@ -212,7 +223,7 @@ module.exports = function() {
 			'</div>' +
 			'<div class="modal-footer">' +
 			'	<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
-			'	<button type="button" id="from-btn-final" class="btn btn-primary">Remove Role.</button>' +
+			'	<button type="button" id="from-btn-final" class="btn btn-primary">Remove Role</button>' +
 			'</div>'),
 
 		modalRoleTemplate: _.template( '<div class="modal-header">' +
@@ -223,8 +234,8 @@ module.exports = function() {
             '		<label for="org-id">Org Id</label>' +
             '		<input type="text" class="form-control" id="org-id" value="<%=orgId%>">' +
             '		<label for="role-id">Role Id</label>' +
-            '		<input type="text" class="form-control" id="role-id">' +
-		    '	    <label for="access">Access</label>' +
+            '		<input type="text" class="form-control" id="role-id" placeholder="Enter new role name">' +
+		    '	    <label for="access">Access Level</label>' +
             '	    <select id="access" class="form-control" style="transition: none;"> </select>' +
 		    '	    <label for="from-account">From Account</label>' +
             '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
@@ -234,7 +245,7 @@ module.exports = function() {
 			'</div>' +
 			'<div class="modal-footer">' +
 			'	<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
-			'	<button type="button" id="newRole-btn-final" class="btn btn-primary">Add Role.</button>' +
+			'	<button type="button" id="newRole-btn-final" class="btn btn-primary">Add Role</button>' +
 			'</div>'),
 
 		modalNodeTemplate: _.template( '<div class="modal-header">' +
@@ -245,14 +256,14 @@ module.exports = function() {
             '		<label for="org-id">Org Id</label>' +
             '		<input type="text" class="form-control" id="org-id" value="<%=orgId%>">' +
             '		<label for="enode-id">Enode Id</label>' +
-            '		<input type="text" class="form-control" id="enode-id">' +
+            '		<input type="text" class="form-control" id="enode-id" placeholder="Enter full enode id">' +
 		    '	    <label for="from-account">From Account</label>' +
             '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
 			'	</div>' +
 			'</div>' +
 			'<div class="modal-footer">' +
 			'	<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
-			'	<button type="button" id="newNode-btn-final" class="btn btn-primary">Add Node.</button>' +
+			'	<button type="button" id="newNode-btn-final" class="btn btn-primary">Add Node</button>' +
 			'</div>'),
 
 		modalAcctTemplate: _.template( '<div class="modal-header">' +
@@ -263,19 +274,19 @@ module.exports = function() {
             '		<label for="org-id">Org Id</label>' +
             '		<input type="text" class="form-control" id="org-id" value="<%=orgId%>">' +
             '		<label for="acct-id">Acct Id</label>' +
-            '		<input type="text" class="form-control" id="acct-id" value="<%=acctId%>">' +
-            '		<label for="role-id">Role Id</label>' +
-            '		<input type="text" class="form-control" id="role-id">' +
+            '		<input type="text" class="form-control" id="acct-id" placeholder="Enter new account address">' +
+		    '	    <label for="role-id">Role Id</label>' +
+            '	    <select id="role-id" class="form-control" style="transition: none;"> </select>' +
 		    '	    <label for="from-account">From Account</label>' +
             '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
 			'	</div>' +
 			'</div>' +
 			'<div class="modal-footer">' +
 			'	<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
-			'	<button type="button" id="newAcct-btn-final" class="btn btn-primary">Add Account.</button>' +
+			'	<button type="button" id="newAcct-btn-final" class="btn btn-primary">Add Account</button>' +
 			'</div>'),
 
-		modalAdminTemplate: _.template( '<div class="modal-header">' +
+		modalChangeRoleTemplate: _.template( '<div class="modal-header">' +
 			'	<%=header%>' +
 			'</div>' +
 			'</div>' +
@@ -304,33 +315,20 @@ module.exports = function() {
             '		<label for="acct-id">Acct Id</label>' +
             '		<input type="text" class="form-control" id="acct-id" value="<%=acctId%>">' +
             '		<label for="role-id">Role Id</label>' +
-            '		<input type="text" class="form-control" id="role-id">' +
+            '		<input type="text" class="form-control" id="role-id" placeholder="Enter new role name">' +
 		    '	    <label for="from-account">From Account</label>' +
             '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
 			'	</div>' +
 			'</div>' +
 			'<div class="modal-footer">' +
 			'	<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
-			'	<button type="button" id="admin-btn-final" class="btn btn-primary">Update Role.</button>' +
+			'	<button type="button" id="change-role-btn-final" class="btn btn-primary">Update Role</button>' +
 			'</div>'),
 
 		modalRecoverAcctTemplate: _.template( '<div class="modal-header">' +
 			'	<%=header%>' +
 			'</div>' +
-			'</div>' +
 			'<div class="modal-body">' +
-            '  <div class="radio">' +
-			'    <label>' +
-			'      <input type="radio" id="action" name="action" value="recover" checked="checked"/>' +
-			'      Recover Blacklisted Account' +
-			'    </label>' +
-			'  </div>' +
-			'  <div class="radio">' +
-			'    <label>' +
-			'      <input type="radio" id="action" name="action" value="approve"/>' +
-			'      Approve Blacklisted Account' +
-			'    </label>' +
-			'  </div>' +
 			'	<div class="form-group recover-form">' +
 		    '	    <label for="from-account">From Account</label>' +
             '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
@@ -338,26 +336,13 @@ module.exports = function() {
 			'</div>' +
 			'<div class="modal-footer">' +
 			'	<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
-			'	<button type="button" id="recover-acct-btn-final" class="btn btn-primary">Recover Account.</button>' +
+			'	<button type="button" id="recover-acct-btn-final" class="btn btn-primary">Recover Account</button>' +
 			'</div>'),
 
 		modalRecoverNodeTemplate: _.template( '<div class="modal-header">' +
 			'	<%=header%>' +
 			'</div>' +
-			'</div>' +
 			'<div class="modal-body">' +
-            '  <div class="radio">' +
-			'    <label>' +
-			'      <input type="radio" id="action" name="action" value="recover" checked="checked"/>' +
-			'      Recover Blacklisted Node' +
-			'    </label>' +
-			'  </div>' +
-			'  <div class="radio">' +
-			'    <label>' +
-			'      <input type="radio" id="action" name="action" value="approve"/>' +
-			'      Approve Blacklisted Node' +
-			'    </label>' +
-			'  </div>' +
 			'	<div class="form-group recover-form">' +
 		    '	    <label for="from-account">From Account</label>' +
             '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
@@ -365,7 +350,7 @@ module.exports = function() {
 			'</div>' +
 			'<div class="modal-footer">' +
 			'	<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
-			'	<button type="button" id="recover-node-btn-final" class="btn btn-primary">Recover Node.</button>' +
+			'	<button type="button" id="recover-node-btn-final" class="btn btn-primary">Recover Node</button>' +
 			'</div>'),
 
         modalConfirmation: _.template('<div class="modal-body"><%=message%></div>'),
@@ -393,18 +378,30 @@ module.exports = function() {
 				var subRows = [];
 
 				var nodeStatuses = ["Not in List", "Pending", "Approved", "Deactivated", "Blacklisted", "Recovery Initiated"];
-                var acctStatuses = ["Not in List", "Pending", "Active", "Suspended", "Blacklisted", "Revoked", "Recovery Initiated"];
+                var acctStatuses = ["Not in List", "Pending", "Active", "", "Suspended", "Blacklisted", "Revoked", "Recovery Initiated"];
                 var roleAccesses = ["Read Only", "Transact", "ContractDeploy", "FullAccess"];
 
 				_.each(res.data.attributes.nodeList, function(node) {
 				    var status = nodeStatuses[node.status]
-				    var disabled = node.status == 4 ? '' : 'disabled'
-			        nodeRows.push(_this.templateRowNode({n: node, status: status, disabled: disabled}));
+				    var disableRecover = node.status == 4 || node.status == 5 ? '' : 'disabled'
+				    var disableStatus = node.status == 1 || node.status == 2 || node.status == 3 ? '' : 'disabled'
+			        nodeRows.push(_this.templateRowNode({
+			            n: node,
+			            status: status,
+			            disableRecover: disableRecover,
+			            disableStatus: disableStatus
+			        }));
 			    })
 			    _.each(res.data.attributes.acctList, function(acct) {
 			        var status = acctStatuses[acct.status]
-			        var disabled = acct.status == 4 ? '' : 'disabled'
-					acctRows.push(_this.templateRowAcct({a: acct, status: status, disabled: disabled}));
+			        var disableRecover = acct.status == 5 || acct.status == 7? '' : 'disabled'
+			        var disableStatus = acct.status == 1 || acct.status == 2 || acct.status == 4 ? '' : 'disabled'
+					acctRows.push(_this.templateRowAcct({
+					    a: acct,
+					    status: status,
+					    disableRecover: disableRecover,
+					    disableStatus: disableStatus
+					}));
 			    })
 			    _.each(res.data.attributes.roleList, function(role) {
 			        var access = roleAccesses[role.access]
@@ -414,7 +411,9 @@ module.exports = function() {
 					subRows.push(_this.templateRowSubs({s: subOrg}));
 			    })
 
-				$('#widget-' + _this.shell.id).html(_this.templateButtons({orgId: _this.orgDet}) +
+			    var disableAddAcct = res.data.attributes.roleList == null || res.data.attributes.roleList.length < 1 ? 'disabled' : ''
+
+				$('#widget-' + _this.shell.id).html(_this.templateAddNewButtons({orgId: _this.orgDet, disableAddAcct: disableAddAcct}) +
 				    '<h3 style="margin-top: 30px;margin-left: 8px;">Node List</h3>' +
 				    _this.templateNode({ nodeRows: nodeRows.join(''), orgId: _this.orgDet }) +
 					'<h3 style="margin-top: 30px;margin-left: 8px;">Account List</h3>' +
@@ -429,7 +428,6 @@ module.exports = function() {
 
 				$('#widget-' + _this.shell.id + ' a').click(function(e) {
 					e.preventDefault();
-					console.log($(this).text())
 
 					Dashboard.show({ widgetId: 'permissions-detail', section: 'permissions', data: $(this).text(), refetch: true });
 				});
@@ -440,6 +438,50 @@ module.exports = function() {
 
         postRender: function() {
 			var _this = this;
+
+         $('#widget-' + _this.shell.id).on('click', '.add-node', function(e) {
+                var orgId = $(e.target.parentElement).data("orgid");
+                _this.populateFrom();
+
+				// set the modal text
+				$('#myModal .modal-content').html(_this.modalNodeTemplate({
+				    header: "Add new node to " + orgId,
+				    orgId: orgId
+				}) );
+
+				//open modal
+				$('#myModal').modal('show');
+
+
+                $('#newNode-btn-final').click( function() {
+                var orgId = $('#org-id').val();
+                var enodeId = $('#enode-id').val();
+                var fromAcct = $('#from-account').val();
+
+					$.when(
+						utils.load({
+							url: _this.url_addNode,
+							data: {
+								"id": orgId,
+								"enodeId": enodeId,
+								"f": {"from": fromAcct}
+							}
+						})
+					).done(function () {
+						$('#myModal').modal('hide');
+
+						Dashboard.Utils.emit(['orgDetailUpdate'], true)
+						_this.fetch();
+
+					}).fail(function(err) {
+					    console.log(err)
+						$('#myModal .modal-content').html(_this.modalConfirmation({
+							message: err.responseJSON.errors.map((error) => error.detail)
+						}) );
+					});
+				});
+
+			});
 
             $('#widget-' + _this.shell.id).on('click', '.update-node-btn', function(e) {
 
@@ -470,6 +512,100 @@ module.exports = function() {
 								"id": orgId,
 								"enodeId": url,
 								"action": status,
+								"f": {"from": fromAcct}
+							}
+						})
+					).done(function () {
+						$('#myModal').modal('hide');
+
+						Dashboard.Utils.emit(['orgDetailUpdate'], true)
+						_this.fetch();
+
+					}).fail(function(err) {
+					    console.log(err)
+						$('#myModal .modal-content').html(_this.modalConfirmation({
+							message: err.responseJSON.errors.map((error) => error.detail)
+						}) );
+					});
+				});
+
+			});
+
+        $('#widget-' + _this.shell.id).on('click', '.recover-node-btn', function(e) {
+                var orgId = $(e.target.parentElement).data("orgid");
+                var enodeId = $(e.target.parentElement).data("enodeid");
+                var status = $(e.target.parentElement).data("status");
+                var approve = status == 5
+                var header = approve ? "Approve recovery of this blacklisted node" : "Recover this node"
+                _this.populateFrom();
+
+				// set the modal text
+				$('#myModal .modal-content').html(_this.modalRecoverNodeTemplate({
+				    header: header
+				}) );
+
+				//open modal
+				$('#myModal').modal('show');
+
+
+                $('#recover-node-btn-final').click( function() {
+                var fromAcct = $('#from-account').val();
+
+                var urlRecover = !approve ? _this.url_recoverNode : _this.url_approveNode
+
+					$.when(
+						utils.load({
+							url: urlRecover,
+							data: {
+								"id": orgId,
+								"enodeId": enodeId,
+								"f": {"from": fromAcct}
+							}
+						})
+					).done(function () {
+						$('#myModal').modal('hide');
+
+						Dashboard.Utils.emit(['orgDetailUpdate'], true)
+						_this.fetch();
+
+					}).fail(function(err) {
+					    console.log(err)
+						$('#myModal .modal-content').html(_this.modalConfirmation({
+							message: err.responseJSON.errors.map((error) => error.detail)
+						}) );
+					});
+				});
+
+			});
+
+         $('#widget-' + _this.shell.id).on('click', '.add-acct', function(e) {
+                var orgId = $(e.target.parentElement).data("orgid");
+                _this.populateFrom();
+                _this.populateRoles(orgId);
+
+				// set the modal text
+				$('#myModal .modal-content').html(_this.modalAcctTemplate({
+				    header: "Add new account to " + orgId,
+				    orgId: orgId
+				}) );
+
+				//open modal
+				$('#myModal').modal('show');
+
+
+                $('#newAcct-btn-final').click( function() {
+                var orgId = $('#org-id').val();
+                var acctId = $('#acct-id').val();
+                var roleId = $('#role-id').val();
+                var fromAcct = $('#from-account').val();
+
+					$.when(
+						utils.load({
+							url: _this.url_addAcct,
+							data: {
+								"id": orgId,
+								"accountId": acctId,
+								"roleId": roleId,
 								"f": {"from": fromAcct}
 							}
 						})
@@ -543,7 +679,7 @@ module.exports = function() {
                 _this.populateFrom();
 
 				// set the modal text
-				$('#myModal .modal-content').html(_this.modalAdminTemplate({
+				$('#myModal .modal-content').html(_this.modalChangeRoleTemplate({
 				    header: "Change Role of Account or Assign/Approve Account as an Admin",
 				    orgId: orgId,
 				    acctId: acctId
@@ -553,7 +689,7 @@ module.exports = function() {
 				$('#myModal').modal('show');
 
 
-                $('#admin-btn-final').click( function() {
+                $('#change-role-btn-final').click( function() {
                     var orgId = $('#org-id').val();
 					var role = $('#role-id').val();
 					var acctId = $('#acct-id').val();
@@ -602,30 +738,35 @@ module.exports = function() {
 
 			});
 
-         $('#widget-' + _this.shell.id).on('click', '.remove-role-btn', function(e) {
-
+        $('#widget-' + _this.shell.id).on('click', '.recover-acct-btn', function(e) {
                 var orgId = $(e.target.parentElement).data("orgid");
-         		var roleId = $(e.target.parentElement).data("roleid");
+                var acctId = $(e.target.parentElement).data("acctid");
+                var status = $(e.target.parentElement).data("status");
+                var approve = status == 7
+                var header = approve ? "Approve recovery of this blacklisted account" : "Recover this account"
                 _this.populateFrom();
 
 				// set the modal text
-				$('#myModal .modal-content').html(_this.modalFromTemplate({
-				    header: "Remove Role from " + orgId
+				$('#myModal .modal-content').html(_this.modalRecoverAcctTemplate({
+				    header: header,
+
 				}) );
 
 				//open modal
 				$('#myModal').modal('show');
 
 
-                $('#from-btn-final').click( function() {
+                $('#recover-acct-btn-final').click( function(e) {
                 var fromAcct = $('#from-account').val();
 
+                var urlRecover = !approve ? _this.url_recoverAcct : _this.url_approveAcct
 					$.when(
+
 						utils.load({
-							url: _this.url_removeRole,
+							url: urlRecover,
 							data: {
 								"id": orgId,
-								"roleId": roleId,
+								"accountId": acctId,
 								"f": {"from": fromAcct}
 							}
 						})
@@ -672,7 +813,7 @@ module.exports = function() {
 
 					$.when(
 						utils.load({
-							url: _this.url_newRole,
+							url: _this.url_addRole,
 							data: {
 								"id": id,
 								"roleId": roleId,
@@ -684,7 +825,6 @@ module.exports = function() {
 						})
 					).done(function () {
 						$('#myModal').modal('hide');
-						console.log('role-done')
 
 						Dashboard.Utils.emit(['orgDetailUpdate'], true)
 						_this.fetch();
@@ -699,167 +839,30 @@ module.exports = function() {
 
 			});
 
-         $('#widget-' + _this.shell.id).on('click', '.add-node', function(e) {
+         $('#widget-' + _this.shell.id).on('click', '.remove-role-btn', function(e) {
+
                 var orgId = $(e.target.parentElement).data("orgid");
+         		var roleId = $(e.target.parentElement).data("roleid");
                 _this.populateFrom();
 
 				// set the modal text
-				$('#myModal .modal-content').html(_this.modalNodeTemplate({
-				    header: "Add new node to " + orgId,
-				    orgId: orgId
+				$('#myModal .modal-content').html(_this.modalFromTemplate({
+				    header: "Remove Role from " + orgId
 				}) );
 
 				//open modal
 				$('#myModal').modal('show');
 
 
-                $('#newNode-btn-final').click( function() {
-                var orgId = $('#org-id').val();
-                var enodeId = $('#enode-id').val();
+                $('#from-btn-final').click( function() {
                 var fromAcct = $('#from-account').val();
 
 					$.when(
 						utils.load({
-							url: _this.url_addNode,
+							url: _this.url_removeRole,
 							data: {
 								"id": orgId,
-								"enodeId": enodeId,
-								"f": {"from": fromAcct}
-							}
-						})
-					).done(function () {
-						$('#myModal').modal('hide');
-
-						Dashboard.Utils.emit(['orgDetailUpdate'], true)
-						_this.fetch();
-
-					}).fail(function(err) {
-					    console.log(err)
-						$('#myModal .modal-content').html(_this.modalConfirmation({
-							message: err.responseJSON.errors.map((error) => error.detail)
-						}) );
-					});
-				});
-
-			});
-
-         $('#widget-' + _this.shell.id).on('click', '.add-acct', function(e) {
-                var orgId = $(e.target.parentElement).data("orgid");
-                _this.populateFrom();
-
-				// set the modal text
-				$('#myModal .modal-content').html(_this.modalAcctTemplate({
-				    header: "Add new account to " + orgId,
-				    orgId: orgId,
-				    acctId: ""
-				}) );
-
-				//open modal
-				$('#myModal').modal('show');
-
-
-                $('#newAcct-btn-final').click( function() {
-                var orgId = $('#org-id').val();
-                var acctId = $('#acct-id').val();
-                var roleId = $('#role-id').val();
-                var fromAcct = $('#from-account').val();
-
-					$.when(
-						utils.load({
-							url: _this.url_addAcct,
-							data: {
-								"id": orgId,
-								"accountId": acctId,
 								"roleId": roleId,
-								"f": {"from": fromAcct}
-							}
-						})
-					).done(function () {
-						$('#myModal').modal('hide');
-
-						Dashboard.Utils.emit(['orgDetailUpdate'], true)
-						_this.fetch();
-
-					}).fail(function(err) {
-					    console.log(err)
-						$('#myModal .modal-content').html(_this.modalConfirmation({
-							message: err.responseJSON.errors.map((error) => error.detail)
-						}) );
-					});
-				});
-
-			});
-
-        $('#widget-' + _this.shell.id).on('click', '.recover-acct-btn', function(e) {
-                var orgId = $(e.target.parentElement).data("orgid");
-                var acctId = $(e.target.parentElement).data("acctid");
-                _this.populateFrom();
-
-				// set the modal text
-				$('#myModal .modal-content').html(_this.modalRecoverAcctTemplate({
-				    header: "Recover or approve recovery of this blacklisted account"
-				}) );
-
-				//open modal
-				$('#myModal').modal('show');
-
-
-                $('#recover-acct-btn-final').click( function() {
-                var fromAcct = $('#from-account').val();
-                var type = $('#action:checked').val();
-
-                var urlRecover = type == "recover" ? _this.url_recoverAcct : _this.url_approveAcct
-
-					$.when(
-						utils.load({
-							url: urlRecover,
-							data: {
-								"id": orgId,
-								"accountId": acctId,
-								"f": {"from": fromAcct}
-							}
-						})
-					).done(function () {
-						$('#myModal').modal('hide');
-
-						Dashboard.Utils.emit(['orgDetailUpdate'], true)
-						_this.fetch();
-
-					}).fail(function(err) {
-					    console.log(err)
-						$('#myModal .modal-content').html(_this.modalConfirmation({
-							message: err.responseJSON.errors.map((error) => error.detail)
-						}) );
-					});
-				});
-
-			});
-        $('#widget-' + _this.shell.id).on('click', '.recover-node-btn', function(e) {
-                var orgId = $(e.target.parentElement).data("orgid");
-                var enodeId = $(e.target.parentElement).data("enodeid");
-                _this.populateFrom();
-
-				// set the modal text
-				$('#myModal .modal-content').html(_this.modalRecoverNodeTemplate({
-				    header: "Recover or approve recovery of this blacklisted node"
-				}) );
-
-				//open modal
-				$('#myModal').modal('show');
-
-
-                $('#recover-node-btn-final').click( function() {
-                var fromAcct = $('#from-account').val();
-                var type = $('#action:checked').val();
-
-                var urlRecover = type == "recover" ? _this.url_recoverNode : _this.url_approveNode
-
-					$.when(
-						utils.load({
-							url: urlRecover,
-							data: {
-								"id": orgId,
-								"enodeId": acctId,
 								"f": {"from": fromAcct}
 							}
 						})
