@@ -378,7 +378,7 @@ module.exports = function() {
 				_.each(res.data.attributes.nodeList, function(node) {
 				    var status = nodeStatuses[node.status]
 				    var disableRecover = node.status == 4 || node.status == 5 ? '' : 'disabled'
-				    var disableStatus = node.status == 1 || node.status == 2 || node.status == 3 ? '' : 'disabled'
+				    var disableStatus = node.status == 2 || node.status == 3 ? '' : 'disabled'
 			        nodeRows.push(_this.templateRowNode({
 			            n: node,
 			            status: status,
@@ -389,7 +389,7 @@ module.exports = function() {
 			    _.each(res.data.attributes.acctList, function(acct) {
 			        var status = acctStatuses[acct.status]
 			        var disableRecover = acct.status == 5 || acct.status == 7? '' : 'disabled'
-			        var disableStatus = acct.status == 1 || acct.status == 2 || acct.status == 4 ? '' : 'disabled'
+			        var disableStatus = acct.status == 2 || acct.status == 4 || acct.status == 6 ? '' : 'disabled'
 					acctRows.push(_this.templateRowAcct({
 					    a: acct,
 					    status: status,
