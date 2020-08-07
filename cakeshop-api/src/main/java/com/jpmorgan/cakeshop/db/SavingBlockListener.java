@@ -98,10 +98,6 @@ public class SavingBlockListener implements BlockListener {
     }
 
     protected void saveBlock(Block block) {
-        if (!gethConfig.isDbEnabled()) {
-            return;
-        }
-
         LOG.debug("Persisting block #" + block.getNumber());
         blockDAO.save(block);
         if (!block.getTransactions().isEmpty()) {
@@ -144,9 +140,6 @@ public class SavingBlockListener implements BlockListener {
 
     @Override
     public void blockCreated(Block block) {
-        if (!gethConfig.isDbEnabled()) {
-            return;
-        }
         try {
             blockQueue.put(block);
         } catch (InterruptedException e) {
