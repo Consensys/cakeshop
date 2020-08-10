@@ -302,7 +302,7 @@ window.Tower = {
 		'peers': function() {
 			var widgets = [
 				{ widgetId: 'peers-list' },
-                { widgetId: 'transaction-manager' },
+//                { widgetId: 'transaction-manager' },
                 { widgetId: 'peers-add' }
 			];
 

@@ -12,16 +12,32 @@ module.exports = function() {
 		url: 'api/node/peers',
 		topic: '/topic/node/status',
 
-		template: _.template('<table style="width: 100%; table-layout: fixed;" class="table table-striped"><%= rows %></table>'),
-		templateRow: _.template('<tr><td style="padding-left: 0px; padding-right: 0px; padding-top: 0px; padding-bottom: 10px;">' +
-			'<table style="width: 100%; table-layout: fixed; background-color: inherit; margin-bottom: initial;" class="table">' +
-			'	<tr><td style="font-weight: bold; width: 35px;">Peer</td><td class="value" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;" colspan="2"><%= o.nodeUrl %></td></tr>' +
-			'	<tr><td style="font-weight: bold;">Info</td><td><%= o.nodeName %></td><td><%= o.nodeIP %></td></tr>' +
-            '<% if (o.raftId !== "0") { %>' +
-            '	<tr><td style="font-weight: bold;">Raft</td><td><%= o.raftId %></td><td><%= o.leader ? "Minter" : "Verifier" %></td></tr>' +
-            '<% } %>' +
-			//'	<tr><td style="font-weight: bold;">IPs</td><td><%= o.nodeIP %></td><td><%= o.status %></td></tr>' +
-			'</table></td></tr>'),
+		template: _.template('<div>' +
+		    '<table style="width: 100%; table-layout: fixed;" class="table table-striped">' +
+		    ' <thead style ="front-weight: bold;">' +
+		    '   <tr>' +
+		    '       <td class="enode">Enode</td>' +
+		    '       <td class="name">Name</td>' +
+		    '       <td class="ip">Ip</td>' +
+		    '<% if (consensus == "raft") { %>' +
+		    '       <td class="raftId">Raft Id</td>' +
+		    '       <td class="role">Role</td>' +
+		    '<% } %>' +
+		    '   </tr>' +
+		    ' </thead>' +
+		    '<tbody><%= rows %></tbody>' +
+		    '</table>'+
+		    '</div>'),
+
+		templateRow: _.template('<tr>' +
+		    '   <td class="value enode" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= o.nodeUrl %></td>' +
+		    '   <td class="value name"><%= o.nodeName %></td>' +
+		    '   <td class="value ip"><%= o.nodeIP %></td>' +
+		    '<% if (consensus == "raft") { %>' +
+		    '       <td class="value raftId"><%= o.raftId %></td>' +
+		    '       <td class="value role"><%= o.role %></td>' +
+		    '<% } %>' +
+		    '</tr>'),
 
 
 		fetch: function() {
@@ -35,12 +51,12 @@ module.exports = function() {
 
 				if (info.data.length > 0) {
 					_.each(info.data, function(peer) {
-						rows.push( _this.templateRow({ o: peer.attributes }) );
+						rows.push( _this.templateRow({ o: peer.attributes, consensus: "raft" }) );
 					});
 
 					Dashboard.Utils.emit( widget.name + '|fetch|' + JSON.stringify(info.data) );
 
-					$('#widget-' + _this.shell.id).html( _this.template({ rows: rows.join('') }) );
+					$('#widget-' + _this.shell.id).html( _this.template({ rows: rows.join(''), consensus: "raft" }) );
 
 					utils.makeAreaEditable('#widget-' + _this.shell.id + ' .value');
 				} else {

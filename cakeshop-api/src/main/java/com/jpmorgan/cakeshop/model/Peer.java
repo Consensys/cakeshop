@@ -46,7 +46,7 @@ public class Peer implements Serializable  {
     /**
      * Raft leader
      */
-    private boolean leader;
+    private String role;
 
     public String getStatus() {
          return status;
@@ -96,12 +96,12 @@ public class Peer implements Serializable  {
         this.raftId = raftId;
     }
 
-    public boolean isLeader() {
-        return leader;
+    public String getRole() {
+        return role;
     }
 
-    public void setLeader(boolean leader) {
-        this.leader = leader;
+    public void setRole(String role) {
+        this.role = role;
     }
 
     @Override

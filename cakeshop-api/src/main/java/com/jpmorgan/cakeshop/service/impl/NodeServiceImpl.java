@@ -164,8 +164,6 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
         peerList.put(self.getId(), self);
 
         if (isRaft()) {
-            String raftLeader = ((String) gethService.executeGethCall(RAFT_LEADER)
-                .get(SIMPLE_RESULT));
             List<Map<String, Object>> raftPeers = (List<Map<String, Object>>) gethService
                 .executeGethCall(RAFT_CLUSTER).get(SIMPLE_RESULT);
             if (raftPeers != null) {
@@ -179,11 +177,12 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
                     peer = peerList.get(id);
                     peer.setId(id);
                     peer.setRaftId(String.valueOf(raftPeer.get("raftId")));
-                    peer.setLeader(id.equalsIgnoreCase(raftLeader));
+                    peer.setRole(String.valueOf(raftPeer.get("role")));
                     String nodeUrl = CakeshopUtils.formatEnodeUrl(id,
                         (String) raftPeer.get("ip"),
                         String.valueOf(raftPeer.get("p2pPort")),
                         String.valueOf(raftPeer.get("raftPort")));
+                    LOG.info(nodeUrl);
                     peer.setNodeUrl(nodeUrl);
                 }
             }
@@ -290,8 +289,11 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
 
         try {
             URI uri = new URI((String) data.get("enode"));
+            LOG.info(uri.toString());
             peer.setNodeUrl(uri.toString());
+            LOG.info(uri.getHost());
             peer.setNodeIP(uri.getHost());
+            LOG.info(uri.getUserInfo());
             peer.setId(uri.getUserInfo());
 
         } catch (URISyntaxException ex) {

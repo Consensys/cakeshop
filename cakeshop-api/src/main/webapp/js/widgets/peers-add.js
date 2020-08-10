@@ -9,17 +9,42 @@ module.exports = function() {
 		hideLink: true,
 		hideRefresh: true,
 
-		addUrl: 'api/node/peers/add',
+	    memberUrl: 'api/node/peers/add',
         removeUrl: 'api/node/peers/remove',
+		learnerUrl: 'api/node/peers/addLearner',
+        promoteUrl: 'api/node/peers/promote',
 
 		template: _.template(
+			'  <div class="radio">' +
+            '    <label>' +
+            '      <input type="radio" id="role" name="role" value="member" checked="checked"/>' +
+            '      Add as Member' +
+            '    </label>' +
+            '  </div>' +
+            '  <div class="radio">' +
+            '    <label>' +
+            '      <input type="radio" id="role" name="role" value="learner"/>' +
+            '      Add as Learner' +
+            '    </label>' +
+            '  </div>' +
+            '  <div class="radio">' +
+            '    <label>' +
+            '      <input type="radio" id="role" name="role" value="promotion"/>' +
+            '      Promote to Member' +
+            '    </label>' +
+            '  </div>' +
+            '  <div class="radio">' +
+            '    <label>' +
+            '      <input type="radio" id="role" name="role" value="remove"/>' +
+            '      Remove' +
+            '    </label>' +
+            '  </div>' +
 			'  <div class="form-group">' +
 			'    <label for="addy">Peer Node Address</label>' +
 			'    <input type="text" class="form-control" id="addy">' +
 			'  </div>'+
 			'  <div class="form-group pull-right">' +
-			'    <button type="button" class="btn btn-primary" id="peerAdd">Add</button>' +
-            '    <button type="button" class="btn btn-secondary" id="peerRemove">Remove</button>' +
+			'    <button type="button" class="btn btn-primary" id="update">Update</button>' +
 			'  </div>'+
 			'  <div id="notification">' +
 			'  </div>'),
@@ -33,13 +58,33 @@ module.exports = function() {
 		_handler: function(ev) {
 
 			var _this = widget,
-             url = ev.target.id === "peerRemove" ? widget.removeUrl : widget.addUrl,
 			 input = $('#widget-' + _this.shell.id + ' #addy'),
 			 notif = $('#widget-' + _this.shell.id + ' #notification');
+
+			var type = $('#role:checked').val();
+			console.log(type)
 
 			if (!input.val()) {
 				return;
 			}
+
+			var url;
+            switch(type) {
+                case "member":
+                    url = _this.memberUrl
+                    break;
+                case "learner":
+                    url = _this.learnerUrl
+                    break;
+                case "promotion":
+                    url = _this.promoteUrl
+                    break;
+                case "remove":
+                    url = _this.removeUrl
+                    break;
+                default:
+                    url = ""
+            }
 
 			$.when(
 				utils.load({ url: url, data: { "address": input.val() } })
