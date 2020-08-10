@@ -189,8 +189,8 @@ public class BlockScanner extends Thread {
     private void checkDbSync() throws APIException {
         Block firstChainBlock = blockService.get(null, 1L, null);
         Block firstKnownBlock = blockDAO.getByNumber(new BigInteger("1"));
-        if ((firstKnownBlock != null && firstChainBlock != null && !firstKnownBlock.equals(firstChainBlock))
-                || (firstChainBlock == null && firstKnownBlock != null)) {
+        if ((firstKnownBlock != null && firstChainBlock.getId() != null && !firstKnownBlock.equals(firstChainBlock))
+                || (firstChainBlock.getId() == null && firstKnownBlock != null)) {
 
             // if block #1 changed, we have a reorg
             LOG.warn("Detected chain reorganization due to new peer connection!");
