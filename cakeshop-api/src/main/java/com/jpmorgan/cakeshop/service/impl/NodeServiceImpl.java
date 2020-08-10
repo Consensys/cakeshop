@@ -10,13 +10,12 @@ import com.jpmorgan.cakeshop.service.GethRpcConstants;
 import com.jpmorgan.cakeshop.service.NodeService;
 import com.jpmorgan.cakeshop.util.AbiUtils;
 import com.jpmorgan.cakeshop.util.CakeshopUtils;
-import com.jpmorgan.cakeshop.util.EEUtils;
-import com.jpmorgan.cakeshop.util.EEUtils.IP;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -54,37 +53,30 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
             gethService.setConnected(true);
             lastNodeInfo = data;
 
-            node.setRpcUrl(gethService.getCurrentRpcUrl());
+            String currentRpcUrl = gethService.getCurrentRpcUrl();
+            node.setRpcUrl(currentRpcUrl);
 
             node.setId((String) data.get("id"));
             node.setStatus(StringUtils.isEmpty((String) data.get("id")) ? NODE_NOT_RUNNING_STATUS : NODE_RUNNING_STATUS);
             node.setNodeName((String) data.get("name"));
             node.setConsensus(getConsensusType());
 
-            // populate enode and url/ip
             String nodeURI = (String) data.get("enode");
+
             if (StringUtils.isNotEmpty(nodeURI)) {
+                // nodeURI will have the internal ip of the node, which may be different than the ip used to connect.
+                // switch the host to whatever RPC url/ip we used to connect to the node
                 try {
-                    URI uri = new URI(nodeURI);
-                    String host = uri.getHost();
-                    // if host or IP aren't set, then populate with correct IP
-                    if (StringUtils.isEmpty(host) || "[::]".equals(host) || "0.0.0.0".equalsIgnoreCase(host)) {
-
-                        try {
-                            List<IP> ips = EEUtils.getAllIPs();
-                            uri = new URI(uri.getScheme(), uri.getUserInfo(), ips.get(0).getAddr(), uri.getPort(), null, uri.getQuery(), null);
-                            node.setNodeUrl(uri.toString());
-                            node.setNodeIP(Joiner.on(",").join(ips));
-
-                        } catch (APIException ex) {
-                            LOG.error(ex.getMessage());
-                            node.setNodeUrl(nodeURI);
-                            node.setNodeIP(host);
-                        }
-
-                    } else {
-                        node.setNodeUrl(nodeURI);
+                    String currentRpcHost = new URI(currentRpcUrl).getHost();
+                    if(currentRpcHost.equals("localhost")) {
+                        // raft doesn't like 'localhost', use standard localhost ip instead
+                        currentRpcHost = "127.0.0.1";
                     }
+                    String fixedNodeUri = UriComponentsBuilder.fromUriString(nodeURI)
+                        .host(currentRpcHost)
+                        .build()
+                        .toUriString();
+                    node.setNodeUrl(fixedNodeUri);
                 } catch (URISyntaxException ex) {
                     LOG.error(ex.getMessage());
                     throw new APIException(ex.getMessage());
@@ -177,7 +169,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
                     peer.setRaftId(String.valueOf(raftPeer.get("raftId")));
                     peer.setLeader(id.equalsIgnoreCase(raftLeader));
                     String nodeUrl = CakeshopUtils.formatEnodeUrl(id,
-                        (String) raftPeer.get("ip"),
+                        (String) raftPeer.get("hostname"),
                         String.valueOf(raftPeer.get("p2pPort")),
                         String.valueOf(raftPeer.get("raftPort")));
                     peer.setNodeUrl(nodeUrl);
