@@ -10,9 +10,7 @@ module.exports = function() {
 		hideRefresh: true,
 
 	    memberUrl: 'api/node/peers/add',
-        removeUrl: 'api/node/peers/remove',
 		learnerUrl: 'api/node/peers/addLearner',
-        promoteUrl: 'api/node/peers/promote',
 
 		template: _.template(
 			'  <div class="radio">' +
@@ -27,24 +25,12 @@ module.exports = function() {
             '      Add as Learner' +
             '    </label>' +
             '  </div>' +
-            '  <div class="radio">' +
-            '    <label>' +
-            '      <input type="radio" id="role" name="role" value="promotion"/>' +
-            '      Promote to Member' +
-            '    </label>' +
-            '  </div>' +
-            '  <div class="radio">' +
-            '    <label>' +
-            '      <input type="radio" id="role" name="role" value="remove"/>' +
-            '      Remove' +
-            '    </label>' +
-            '  </div>' +
 			'  <div class="form-group">' +
 			'    <label for="addy">Peer Node Address</label>' +
 			'    <input type="text" class="form-control" id="addy">' +
 			'  </div>'+
 			'  <div class="form-group pull-right">' +
-			'    <button type="button" class="btn btn-primary" id="update">Update</button>' +
+			'    <button type="button" class="btn btn-primary" id="update">Add</button>' +
 			'  </div>'+
 			'  <div id="notification">' +
 			'  </div>'),
@@ -75,12 +61,6 @@ module.exports = function() {
                     break;
                 case "learner":
                     url = _this.learnerUrl
-                    break;
-                case "promotion":
-                    url = _this.promoteUrl
-                    break;
-                case "remove":
-                    url = _this.removeUrl
                     break;
                 default:
                     url = ""

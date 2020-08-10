@@ -10,6 +10,8 @@ module.exports = function() {
 		hideLink: true,
 
 		url: 'api/node/peers',
+		promoteUrl: 'api/node/peers/promote',
+		removeUrl: 'api/node/peers/remove',
 		topic: '/topic/node/status',
 
 		template: _.template('<div>' +
@@ -22,7 +24,9 @@ module.exports = function() {
 		    '<% if (consensus == "raft") { %>' +
 		    '       <td class="raftId">Raft Id</td>' +
 		    '       <td class="role">Role</td>' +
+		    '       <td class="promote-col"></td>' +
 		    '<% } %>' +
+		    '       <td class="remove-col"></td>' +
 		    '   </tr>' +
 		    ' </thead>' +
 		    '<tbody><%= rows %></tbody>' +
@@ -36,7 +40,13 @@ module.exports = function() {
 		    '<% if (consensus == "raft") { %>' +
 		    '       <td class="value raftId"><%= o.raftId %></td>' +
 		    '       <td class="value role"><%= o.role %></td>' +
+		    '       <td data-enode="<%= o.nodeUrl %>" class="promote-col">' +
+            '       <button class="btn btn-default promote-btn" <%= o.role == "learner" ? "" : "disabled" %>>Promote</button>' +
+            '       </td>' +
 		    '<% } %>' +
+		    '       <td data-enode="<%= o.nodeUrl %>" class="remove-col">' +
+            '       <button class="btn btn-default remove-btn">Remove</button>' +
+            '       </td>' +
 		    '</tr>'),
 
 
@@ -67,6 +77,34 @@ module.exports = function() {
 				_this.postFetch();
 			}.bind(this));
 		},
+
+		postRender: function() {
+            var _this = this;
+
+            $('#widget-' + _this.shell.id).on('click', '.promote-btn', function(e) {
+                var enode = $(e.target.parentElement).data("enode");
+
+                $.when(
+				    utils.load({ url: _this.promoteUrl, data: { "address": enode } })
+			    ).done(function(r) {
+
+			    }).fail(function(r) {
+			        console.log(r)
+                });
+            });
+
+            $('#widget-' + _this.shell.id).on('click', '.remove-btn', function(e) {
+                var enode = $(e.target.parentElement).data("enode");
+
+                $.when(
+				    utils.load({ url: _this.removeUrl, data: { "address": enode } })
+			    ).done(function(r) {
+                    console.log('success')
+			    }).fail(function(r) {
+			        console.log(r)
+                });
+            });
+        },
 
 		subscribe: function() {
 			utils.subscribe(this.topic, this.updatePeers.bind(this));
