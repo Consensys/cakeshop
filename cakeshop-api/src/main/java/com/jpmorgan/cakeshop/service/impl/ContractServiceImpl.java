@@ -2,7 +2,6 @@ package com.jpmorgan.cakeshop.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.dao.TransactionDAO;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.error.CompilerException;
@@ -45,8 +44,8 @@ public class ContractServiceImpl implements ContractService {
     @Value("${contract.poll.delay.millis}")
     Long pollDelayMillis;
 
-    @Autowired
-    private GethConfig gethConfig;
+    @Value("${nodejs.binary:node}")
+    String nodeJsBinaryName;
 
     @Autowired
     private GethHttpService geth;
@@ -91,7 +90,7 @@ public class ContractServiceImpl implements ContractService {
         SolcResponse res = null;
         try {
             List<String> args = Lists.newArrayList(
-                    gethConfig.getNodeJsBinaryName(),
+                    nodeJsBinaryName,
                     CakeshopUtils.getSolcPath(),
                     "--ipc",
                     "--evm-version",
@@ -254,7 +253,7 @@ public class ContractServiceImpl implements ContractService {
         Map<String, Object> contractRes = geth.executeGethCall("eth_getCode", new Object[]{address, "latest"});
 
         String bin = (String) contractRes.get(CakeshopUtils.SIMPLE_RESULT);
-        if (bin.contentEquals("0x")) {
+        if (bin == null || bin.contentEquals("0x")) {
             throw new APIException("Contract does not exist at " + address);
         }
 

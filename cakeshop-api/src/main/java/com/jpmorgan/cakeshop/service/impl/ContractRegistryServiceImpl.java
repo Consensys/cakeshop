@@ -1,6 +1,5 @@
 package com.jpmorgan.cakeshop.service.impl;
 
-import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.dao.ContractDAO;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Contract;
@@ -30,7 +29,7 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
     private static final String REGISTRY_ABI_FILE =
             "contracts" + File.separator + "ContractRegistry.abi.json";
 
-    @Value("${config.path}")
+    @Value("${cakeshop.config.dir}")
     private String CONFIG_ROOT;
 
     @Autowired
@@ -42,13 +41,7 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
     @Autowired
     private ContractDAO contractDAO;
 
-    @Autowired
-    private GethConfig gethConfig;
-
-    private final ContractABI abi;
-
     public ContractRegistryServiceImpl() throws IOException {
-        this.abi = ContractABI.fromJson(FileUtils.readClasspathFile(REGISTRY_ABI_FILE));
     }
 
     @Override

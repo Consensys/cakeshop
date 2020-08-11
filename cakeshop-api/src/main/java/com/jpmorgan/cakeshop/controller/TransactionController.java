@@ -53,7 +53,7 @@ public class TransactionController extends BaseController {
 
         APIResponse res = new APIResponse();
 
-        if (tx != null) {
+        if (tx != null && tx.getId() != null) {
             res.setData(tx.toAPIData());
             return new ResponseEntity<>(res, HttpStatus.OK);
         }

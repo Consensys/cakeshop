@@ -1,7 +1,6 @@
 package com.jpmorgan.cakeshop.config;
 
 import com.google.common.collect.Lists;
-import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.error.ErrorLog;
 import com.jpmorgan.cakeshop.service.task.InitializeNodesTask;
@@ -33,11 +32,11 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AppStartup.class);
     private final Long REQUIRED_MEMORY = 2000000L;
 
-    @Value("${config.path}")
+    @Value("${cakeshop.config.dir}")
     private String CONFIG_ROOT;
 
-    @Autowired
-    private GethConfig gethConfig;
+    @Value("${server.port}")
+    private String SERVER_PORT;
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -51,8 +50,6 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
     private boolean healthy = true;
 
     private String solcVer;
-
-    private String gethVer;
 
     private final List<ErrorLog> errors;
 
@@ -73,18 +70,6 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         autoStartFired = true;
         healthy = testSystemHealth();
         if (healthy) {
-            if (Boolean.valueOf(System.getProperty("geth.init.example"))) {
-                // Exit after all system initialization has completed
-                try {
-                    gethConfig.save();
-                } catch (IOException e) {
-                    LOG.error("Error writing application.properties: " + e.getMessage());
-                    System.exit(1);
-                }
-                System.out.println("initialization complete. wrote quorum-example config. exiting.");
-                System.exit(0);
-            }
-
             // Make sure initial nodes are in the DB if file provided
             executor.execute(applicationContext.getBean(InitializeNodesTask.class));
         }
@@ -136,7 +121,7 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         System.out.println("          build id:    " + AppVersion.BUILD_ID);
         System.out.println("          build date:  " + AppVersion.BUILD_DATE);
         System.out.println(
-            "          Access the Cakeshop UI at: " + getSpringUrl(gethConfig.getCakeshopPort()));
+            "          Access the Cakeshop UI at: " + getSpringUrl(SERVER_PORT));
     }
 
     // Try to determine listening URL

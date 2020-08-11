@@ -1,7 +1,6 @@
 package com.jpmorgan.cakeshop.test;
 
 import com.google.common.collect.Lists;
-import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.config.AppStartup;
 import com.jpmorgan.cakeshop.dao.NodeInfoDAO;
 import com.jpmorgan.cakeshop.error.APIException;
@@ -56,6 +55,9 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
         System.setProperty("cakeshop.database.vendor", "hsqldb");
     }
 
+    @Value("${nodejs.binary:node}")
+    String nodeJsBinaryName;
+
     @Autowired
     private ContractService contractService;
 
@@ -68,7 +70,7 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
     @Autowired
     protected GethHttpService geth;
 
-    @Value("${config.path}")
+    @Value("${cakeshop.config.dir}")
     private String CONFIG_ROOT;
 
     @Autowired
@@ -76,9 +78,6 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
 
     @Autowired
     private GethHttpService gethHttpService;
-
-    @Autowired
-    private GethConfig gethConfig;
 
     @Autowired
     @Qualifier("hsql")
@@ -98,7 +97,7 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
     @AfterSuite(alwaysRun = true)
     public void stopSolc() throws IOException {
         List<String> args = Lists.newArrayList(
-                gethConfig.getNodeJsBinaryName(),
+                nodeJsBinaryName,
                 CakeshopUtils.getSolcPath(),
                 "--stop-ipc");
 
