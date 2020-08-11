@@ -99,6 +99,7 @@ public class BlockScanner extends Thread {
      */
     protected Long backfillBlocks() {
 
+        LOG.info("Catching database up to latest block");
         // get the max block at startup
         Block largestSavedBlock = blockDAO.getLatest();
         Block chainBlock = null;
@@ -125,7 +126,7 @@ public class BlockScanner extends Thread {
     }
 
     private void fillBlockRange(long start, long end) {
-        LOG.debug("Filling blocks from " + start + " to " + end);
+        LOG.info("Filling blocks from " + start + " to " + end);
 
         long step = 99L;
 
@@ -170,7 +171,6 @@ public class BlockScanner extends Thread {
         txDAO.reset();
 
         // fill
-        LOG.info("Backfilling blocks with new chain");
         long maxBlock = backfillBlocks();
         long maxDBBlock = 0L;
 

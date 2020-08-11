@@ -32,8 +32,6 @@ public class SpringBootApplication {
     private static final Logger LOG = LoggerFactory.getLogger(SpringBootApplication.class);
 
     public static void main(String[] args) throws IOException {
-        // setup configs
-        WebAppInit.setLoggingPath(true);
 
         String configDir = System.getProperty("cakeshop.config.dir");
         if (StringUtils.isBlank(configDir)) {
