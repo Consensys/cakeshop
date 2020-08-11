@@ -171,18 +171,17 @@ public class BlockScanner extends Thread {
 
         // fill
         LOG.info("Backfilling blocks with new chain");
-        Long maxBlock = backfillBlocks();
-        Block latest = blockDAO.getLatest();
-        if (latest != null && maxBlock >= 0) {
-            Long maxDBBlock = latest.getNumber().longValue();
-            while (maxDBBlock < maxBlock) {
-                maxDBBlock = blockDAO.getLatest().getNumber().longValue();
-                LOG.debug("Wait to sync up with database");
-                try {
-                    TimeUnit.MILLISECONDS.sleep(100);
-                } catch (InterruptedException ex) {
-                    LOG.info(ex.getMessage());
-                }
+        long maxBlock = backfillBlocks();
+        long maxDBBlock = 0L;
+
+        while (maxDBBlock < maxBlock) {
+            Block latest = blockDAO.getLatest();
+            maxDBBlock = latest == null ? 0 : latest.getNumber().longValue();
+            LOG.debug("Wait to sync up with database");
+            try {
+                TimeUnit.MILLISECONDS.sleep(100);
+            } catch (InterruptedException ex) {
+                LOG.info(ex.getMessage());
             }
         }
     }
@@ -190,11 +189,11 @@ public class BlockScanner extends Thread {
     private void checkDbSync() throws APIException {
         Block firstChainBlock = blockService.get(null, 1L, null);
         Block firstKnownBlock = blockDAO.getByNumber(new BigInteger("1"));
-        if ((firstKnownBlock != null && firstChainBlock != null && !firstKnownBlock.equals(firstChainBlock))
-                || (firstChainBlock == null && firstKnownBlock != null)) {
+        if ((firstKnownBlock != null && firstChainBlock.getId() != null && !firstKnownBlock.equals(firstChainBlock))
+                || (firstChainBlock.getId() == null && firstKnownBlock != null)) {
 
             // if block #1 changed, we have a reorg
-            LOG.warn("Detected chain reorganization do to new peer connection!");
+            LOG.warn("Detected chain reorganization due to new peer connection!");
             handleChainReorg();
             previousBlock = null;
         }
