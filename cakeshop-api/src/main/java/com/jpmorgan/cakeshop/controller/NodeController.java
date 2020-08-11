@@ -70,7 +70,8 @@ public class NodeController extends BaseController {
     }
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "address", required = false, value = "Required. External node address to add", dataType = "java.lang.String", paramType = "body")
+        @ApiImplicitParam(name = "address", required = false, value = "Required. External node address to add", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "raftLearner", required = false, defaultValue = "false", value = "Whether the node should be added as a raft learner", dataType = "java.lang.Boolean", paramType = "body")
     })
     @RequestMapping("/peers/add")
     public ResponseEntity<APIResponse> addPeer(@RequestBody NodePostJsonRequest jsonRequest) throws APIException {
@@ -78,8 +79,21 @@ public class NodeController extends BaseController {
             return new ResponseEntity<>(new APIResponse().error(new APIError().title("Missing param 'address'")),
                     HttpStatus.BAD_REQUEST);
         }
-        boolean added = nodeService.addPeer(jsonRequest.getAddress());
+        boolean added = nodeService.addPeer(jsonRequest.getAddress(), jsonRequest.isRaftLearner());
         return new ResponseEntity<>(APIResponse.newSimpleResponse(added), HttpStatus.OK);
+    }
+
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "address", required = false, value = "Required. External node address to add", dataType = "java.lang.String", paramType = "body"),
+    })
+    @RequestMapping("/peers/promote")
+    public ResponseEntity<APIResponse> promoteToPeer(@RequestBody NodePostJsonRequest jsonRequest) throws APIException {
+        if (StringUtils.isBlank(jsonRequest.getAddress())) {
+            return new ResponseEntity<>(new APIResponse().error(new APIError().title("Missing param 'address'")),
+                HttpStatus.BAD_REQUEST);
+        }
+        nodeService.promoteToPeer(jsonRequest.getAddress());
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(true), HttpStatus.OK);
     }
 
     @ApiImplicitParams({

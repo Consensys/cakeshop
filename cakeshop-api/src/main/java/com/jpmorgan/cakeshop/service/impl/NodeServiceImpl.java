@@ -1,6 +1,5 @@
 package com.jpmorgan.cakeshop.service.impl;
 
-import com.google.common.base.Joiner;
 import com.jpmorgan.cakeshop.dao.PeerDAO;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Node;
@@ -27,8 +26,6 @@ import static com.jpmorgan.cakeshop.service.impl.GethHttpServiceImpl.SIMPLE_RESU
 public class NodeServiceImpl implements NodeService, GethRpcConstants {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(NodeServiceImpl.class);
-    public static final String STATIC_NODES_JSON = "static-nodes.json";
-    public static final String PERMISSIONED_NODES_JSON = "permissioned-nodes.json";
 
     @Autowired
     private GethHttpService gethService;
@@ -166,8 +163,8 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
 
                     peer = peerList.get(id);
                     peer.setId(id);
-                    peer.setRaftId(String.valueOf(raftPeer.get("raftId")));
-                    peer.setLeader(id.equalsIgnoreCase(raftLeader));
+                    peer.setRaftId((Integer) raftPeer.get("raftId"));
+                    peer.setRole(String.valueOf(raftPeer.get("role")));
                     String nodeUrl = CakeshopUtils.formatEnodeUrl(id,
                         (String) raftPeer.get("hostname"),
                         String.valueOf(raftPeer.get("p2pPort")),
@@ -178,13 +175,13 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
         }
 
         ArrayList<Peer> peers = new ArrayList<>(peerList.values());
-        peers.sort(Comparator.comparing(Peer::getRaftId));
+        peers.sort(Comparator.comparingInt(Peer::getRaftId));
 
         return peers;
     }
 
     @Override
-    public boolean addPeer(String address) throws APIException {
+    public boolean addPeer(String address, boolean raftLearner) throws APIException {
 
         URI uri = null;
         try {
@@ -194,7 +191,8 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
         }
 
         if (isRaft()) {
-            Map<String, Object> res = gethService.executeGethCall(RAFT_ADD_PEER, address);
+            String method = raftLearner ? RAFT_ADD_LEARNER : RAFT_ADD_PEER;
+            Map<String, Object> res = gethService.executeGethCall(method, address);
             if (res == null) {
                 throw new APIException("Could not add raft peer: " + address);
             }
@@ -208,17 +206,40 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
         boolean added = (boolean) res.get(SIMPLE_RESULT);
 
         if (added) {
-
             Peer peer = new Peer();
             peer.setId(uri.getUserInfo());
             peer.setNodeIP(uri.getHost());
             peer.setNodeUrl(address);
             peerDAO.save(peer);
-            // TODO if db is not enabled, save peers somewhere else? props file?
-
         }
 
         return added;
+    }
+
+    @Override
+    public void promoteToPeer(String address) throws APIException {
+        if (!isRaft()) {
+            throw new APIException("Peers may only be promoted in a raft network");
+        }
+
+        try {
+            new URI(address);
+        } catch (URISyntaxException e) {
+            throw new APIException("Bad peer address URI: " + address, e);
+        }
+
+        List<Peer> raftPeers = peers();
+        for (Peer raftPeer : raftPeers) {
+            if (raftPeer.getNodeUrl().equals(address)) {
+                LOG.info("Attempting to promote learner to peer {} {}", raftPeer.getRaftId(), address);
+                Map<String, Object> res = gethService.executeGethCall(RAFT_PROMOTE_TO_PEER, raftPeer.getRaftId());
+                if (res == null) {
+                    throw new APIException("Could not promote raft peer: " + address);
+                }
+                return;
+            }
+        }
+        throw new APIException("Could not find raft peer: " + address);
     }
 
     @Override
@@ -238,7 +259,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
                 if (raftPeer.getNodeUrl().equals(address)) {
                     LOG.info("Found raft peer at id: {}, removing.", raftPeer.getRaftId());
                     Map<String, Object> res = gethService
-                        .executeGethCall(RAFT_REMOVE_PEER, Integer.valueOf(raftPeer.getRaftId()));
+                        .executeGethCall(RAFT_REMOVE_PEER, raftPeer.getRaftId());
                     if (res == null) {
                         throw new APIException("Could not remove raft peer: " + address);
                     }
@@ -274,7 +295,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
 
         peer.setStatus("running");
         peer.setNodeName((String) data.get("name"));
-        peer.setRaftId("0");
+        peer.setRaftId(0);
 
         try {
             URI uri = new URI((String) data.get("enode"));
