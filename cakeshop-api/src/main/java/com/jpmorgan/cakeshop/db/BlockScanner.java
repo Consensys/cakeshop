@@ -1,11 +1,9 @@
 package com.jpmorgan.cakeshop.db;
 
-import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.dao.BlockDAO;
 import com.jpmorgan.cakeshop.dao.TransactionDAO;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Block;
-import com.jpmorgan.cakeshop.model.Transaction;
 import com.jpmorgan.cakeshop.service.BlockService;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.NodeService;
@@ -18,7 +16,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.List;
@@ -55,9 +52,6 @@ public class BlockScanner extends Thread {
 
     @Autowired
     private GethHttpService gethService;
-
-    @Autowired
-    private GethConfig gethConfig;
 
     @Autowired
     private ApplicationContext appContext;
@@ -169,34 +163,6 @@ public class BlockScanner extends Thread {
     }
 
     private void handleChainReorg() {
-
-        // Search for ContractRegistry address in first two blocks
-        boolean found = false;
-        for (int i = 1; i < 10; i++) {
-            try {
-                Block block = blockService.get(null, Integer.valueOf(i).longValue(), null);
-                if (block != null && block.getTransactions() != null && !block.getTransactions().isEmpty()) {
-                    String txId = block.getTransactions().get(0);
-                    Transaction tx = txService.get(txId);
-                    if (tx != null && tx.getContractAddress() != null) {
-                        // found it!
-                        LOG.info("Found new ContractRegistry address " + tx.getContractAddress() + " at block #" + i);
-                        saveContractRegistryAddress(tx.getContractAddress());
-                        found = true;
-                        break;
-                    }
-                }
-
-            } catch (APIException e) {
-                LOG.warn("Failed to read block", e);
-            }
-        }
-
-        if (!found) {
-            LOG.error("Couldn't find ContractRegistry address after chain reorg event");
-            // TODO how to recover from this? Try again after a timeout?
-        }
-
         // flush db
         LOG.info("Flushing DB");
 //        dbConfig.reset();
@@ -206,8 +172,9 @@ public class BlockScanner extends Thread {
         // fill
         LOG.info("Backfilling blocks with new chain");
         Long maxBlock = backfillBlocks();
-        Long maxDBBlock = blockDAO.getLatest().getNumber().longValue();
-        if (maxBlock >= 0) {
+        Block latest = blockDAO.getLatest();
+        if (latest != null && maxBlock >= 0) {
+            Long maxDBBlock = latest.getNumber().longValue();
             while (maxDBBlock < maxBlock) {
                 maxDBBlock = blockDAO.getLatest().getNumber().longValue();
                 LOG.debug("Wait to sync up with database");
@@ -220,20 +187,7 @@ public class BlockScanner extends Thread {
         }
     }
 
-    private void saveContractRegistryAddress(String addr) throws APIException {
-        try {
-            gethConfig.setContractAddress(addr);
-            gethConfig.save();
-        } catch (IOException e) {
-            LOG.warn("Unable to update env.properties", e);
-            throw new APIException("Unable to update env.properties", e);
-        }
-    }
-
     private void checkDbSync() throws APIException {
-        if (!gethConfig.isDbEnabled()) {
-            return;
-        }
         Block firstChainBlock = blockService.get(null, 1L, null);
         Block firstKnownBlock = blockDAO.getByNumber(new BigInteger("1"));
         if ((firstKnownBlock != null && firstChainBlock != null && !firstKnownBlock.equals(firstChainBlock))

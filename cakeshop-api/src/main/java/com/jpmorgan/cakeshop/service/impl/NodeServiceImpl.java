@@ -1,7 +1,6 @@
 package com.jpmorgan.cakeshop.service.impl;
 
 import com.google.common.base.Joiner;
-import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.dao.PeerDAO;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Node;
@@ -34,9 +33,6 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
 
     @Autowired
     private GethHttpService gethService;
-
-    @Autowired
-    private GethConfig gethConfig;
 
     @Autowired
     private PeerDAO peerDAO;

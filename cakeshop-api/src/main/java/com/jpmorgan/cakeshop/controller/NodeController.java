@@ -1,6 +1,5 @@
 package com.jpmorgan.cakeshop.controller;
 
-import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.dao.NodeInfoDAO;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.*;
@@ -49,9 +48,6 @@ public class NodeController extends BaseController {
 
     @Autowired
     private RestTemplate restTemplate;
-
-    @Autowired
-    private GethConfig gethConfig;
 
     @Autowired
     private CacheManager cacheManager;

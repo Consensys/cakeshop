@@ -3,7 +3,6 @@ package com.jpmorgan.cakeshop.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.dao.BlockDAO;
 import com.jpmorgan.cakeshop.dao.NodeInfoDAO;
 import com.jpmorgan.cakeshop.dao.TransactionDAO;
@@ -22,6 +21,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.web3j.protocol.Web3jService;
@@ -50,9 +50,6 @@ public class GethHttpServiceImpl implements GethHttpService {
     private static final Logger LOG = LoggerFactory.getLogger(GethHttpServiceImpl.class);
     private static final Logger GETH_LOG = LoggerFactory.getLogger("geth");
 
-    @Autowired
-    private GethConfig gethConfig;
-
     @Autowired(required = false)
     private BlockDAO blockDAO;
 
@@ -70,6 +67,9 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     @Autowired
     private ObjectMapper jsonMapper;
+
+    @Value("${nodejs.binary:node}")
+    String nodeJsBinaryName;
 
     private BlockScanner blockScanner;
 
@@ -151,7 +151,7 @@ public class GethHttpServiceImpl implements GethHttpService {
         // stop solc server
         LOG.info("Stopping solc daemon");
         List<String> args = Lists.newArrayList(
-                gethConfig.getNodeJsBinaryName(),
+                nodeJsBinaryName,
                 CakeshopUtils.getSolcPath(),
                 "--stop-ipc");
 
@@ -201,8 +201,6 @@ public class GethHttpServiceImpl implements GethHttpService {
                 setCurrentTransactionManagerUrl(node.transactionManagerUrl);
                 resetCakeshopService();
                 runPostConnectTasks();
-                gethConfig.setSelectedNode(nodeId);
-                gethConfig.save();
             } else {
                 LOG.info("Node with id {} does not exist", nodeId);
             }

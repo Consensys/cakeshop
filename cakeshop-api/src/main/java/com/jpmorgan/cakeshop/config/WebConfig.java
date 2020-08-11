@@ -32,7 +32,7 @@ public class WebConfig implements WebMvcConfigurer {
 
 	private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(WebConfig.class);
 
-    @Value("${config.path}")
+    @Value("${cakeshop.config.dir}")
     private String CONFIG_ROOT;
 
     @Autowired

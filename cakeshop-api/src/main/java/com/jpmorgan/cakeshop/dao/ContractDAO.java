@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.hibernate.Session;
-import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,11 +34,11 @@ public class ContractDAO extends BaseDAO {
     }
 
     @Transactional
-    public void save(Contract contract, String contractRegistryAddress) throws IOException {
+    public void save(Contract contract) throws IOException {
         if (null != getCurrentSession()) {
             LOG.info("Saving private contract");
             String contractJson = jsonMapper.writeValueAsString(contract);
-            getCurrentSession().save(new ContractInfo(contract.getAddress(), contractRegistryAddress, contractJson));
+            getCurrentSession().save(new ContractInfo(contract.getAddress(), contractJson));
         }
     }
 
@@ -55,11 +54,10 @@ public class ContractDAO extends BaseDAO {
     }
 
     @Transactional
-    public List<Contract> list(String contractRegistryAddress) {
+    public List<Contract> list() {
         if (null != getCurrentSession()) {
             Session session = getCurrentSession();
             return (List<Contract>) session.createCriteria(ContractInfo.class)
-                .add(Restrictions.eq("contractRegistryAddress", contractRegistryAddress))
                 .list()
                 .stream()
                 .map((contractInfo) -> {
@@ -76,10 +74,10 @@ public class ContractDAO extends BaseDAO {
     }
 
     @Transactional
-    public List<String> listAddresses(String contractRegistryAddress) {
+    public List<String> listAddresses() {
         if (null != getCurrentSession()) {
             Session session = getCurrentSession();
-            return session.createQuery("SELECT address FROM ContractInfo WHERE contractRegistryAddress = ?").setParameter(0, contractRegistryAddress).list();
+            return session.createQuery("SELECT address FROM ContractInfo").list();
         }
         return Collections.emptyList();
     }

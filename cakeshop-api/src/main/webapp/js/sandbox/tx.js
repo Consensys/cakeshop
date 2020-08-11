@@ -14,27 +14,6 @@ import utils from "../utils"
           document.getElementById('rpc-select-container')
       );
       loadAccounts();
-
-      if ($(".select_contract .contracts select option").length <= 1) {
-          // make sure the contract registry is deployed, otherwise alert
-          $.when(
-              utils.load({url: 'api/contract/registry', method: "GET"})
-          ).fail(function (res) {
-              console.log("Failed to load contract registry address", res);
-          }).done(function (res) {
-              let contractRegistryAddress = res.data.attributes.result;
-              if (contractRegistryAddress === "0x") {
-                  console.log("No contract registry, showing deploy widget.")
-                  alert(
-                      "Contract registry not deployed, please deploy from the Contracts page");
-                  window.location = "/#section=contracts"
-              } else {
-                  console.log("Contract registry exists at",
-                      contractRegistryAddress, "Loading contracts");
-                  loadContracts();
-              }
-          });
-      }
   }
 
   var events_enabled = true;

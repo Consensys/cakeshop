@@ -1,8 +1,5 @@
 package com.jpmorgan.cakeshop.config;
 
-import static com.jpmorgan.cakeshop.config.AppConfig.CONFIG_FILE;
-import static com.jpmorgan.cakeshop.config.AppConfig.getConfigPath;
-
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.StringUtils;
 import java.io.File;
@@ -46,18 +43,6 @@ public class SpringBootApplication {
         }
         LOG.info("cakeshop.config.dir=" + configDir);
 
-        // default to 'local' spring profile
-        // this determines which application-${profile}.properties file to load
-        if (StringUtils.isBlank(System.getProperty("spring.profiles.active"))) {
-            System.out.println("Defaulting to spring profile: local");
-            System.setProperty("spring.profiles.active", "local");
-        }
-
-        String profileConfigPath = getConfigPath();
-        AppConfig.createConfigIfNecessary(profileConfigPath);
-        System.setProperty("spring.config.location",
-            "file:" + FileUtils.expandPath(profileConfigPath, CONFIG_FILE));
-
         // extract binaries from WAR (if necessary)
         try {
             extractBinaries(configDir);
@@ -66,15 +51,6 @@ public class SpringBootApplication {
             System.err.println(e.getMessage());
             e.printStackTrace();
             System.exit(1);
-        }
-
-        if (args.length > 0 && StringUtils.isNotBlank(args[0]) && args[0].equalsIgnoreCase("init")) {
-            // yep, it's a global. dealwithit.jpg
-            System.setProperty("geth.init.only", "true");
-        }
-
-        if (args.length > 0 && StringUtils.isNotBlank(args[0]) && args[0].equalsIgnoreCase("example")) {
-            System.setProperty("geth.init.example", "true");
         }
 
         // boot app

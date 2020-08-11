@@ -2,7 +2,6 @@ package com.jpmorgan.cakeshop.service.task;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.dao.NodeInfoDAO;
 import com.jpmorgan.cakeshop.model.NodeInfo;
 import com.jpmorgan.cakeshop.service.GethHttpService;
@@ -28,38 +27,33 @@ public class InitializeNodesTask implements Runnable {
 
     private final GethHttpService gethHttpService;
 
-    private final GethConfig gethConfig;
-
     private final NodeInfoDAO nodeInfoDAO;
 
     private final ObjectMapper jsonMapper;
 
     @Autowired
-    public InitializeNodesTask(GethHttpService gethHttpService,
-        GethConfig gethConfig, NodeInfoDAO nodeInfoDAO,
-        ObjectMapper jsonMapper) {
+    public InitializeNodesTask(GethHttpService gethHttpService, NodeInfoDAO nodeInfoDAO, ObjectMapper jsonMapper) {
         this.gethHttpService = gethHttpService;
-        this.gethConfig = gethConfig;
         this.nodeInfoDAO = nodeInfoDAO;
         this.jsonMapper = jsonMapper;
     }
 
     @Override
     public void run() {
-        if (StringUtils.isNotEmpty(initialNodesFile)) {
+        List<NodeInfo> nodeInfoList = nodeInfoDAO.list();
+        if(!nodeInfoList.isEmpty()) {
+            gethHttpService.connectToNode(nodeInfoList.get(0).id);
+        } else if (StringUtils.isNotEmpty(initialNodesFile)) {
             try {
-                if (nodeInfoDAO.list().isEmpty()) {
-                    LOG.info("Loading initial nodes from: {}", initialNodesFile);
-                    List<NodeInfo> nodes = jsonMapper
-                        .readValue(new File(initialNodesFile), new TypeReference<List<NodeInfo>>() {
-                        });
-                    nodeInfoDAO.save(nodes);
-                }
+                LOG.info("Loading initial nodes from: {}", initialNodesFile);
+                List<NodeInfo> nodes = jsonMapper
+                    .readValue(new File(initialNodesFile), new TypeReference<List<NodeInfo>>() {
+                    });
+                nodeInfoDAO.save(nodes);
             } catch (IOException e) {
                 LOG.error("Could not load initial nodes file", e);
             }
         }
-        gethHttpService.connectToNode(gethConfig.getSelectedNode());
     }
 
 }
