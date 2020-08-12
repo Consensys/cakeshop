@@ -28,6 +28,8 @@ public interface GethRpcConstants {
     public static final String RAFT_CLUSTER = "raft_cluster";
     public static final String RAFT_ADD_PEER = "raft_addPeer";
     public static final String RAFT_REMOVE_PEER = "raft_removePeer";
+    public static final String RAFT_ADD_LEARNER = "raft_addLearner";
+    public static final String RAFT_PROMOTE_TO_PEER = "raft_promoteToPeer";
     public static final String RAFT_LEADER = "raft_leader";
     public static final String RAFT_ROLE = "raft_role";
 

@@ -28,13 +28,23 @@ public interface NodeService {
     public List<Peer> peers() throws APIException;
 
     /**
-     * Connect to the given peer
+     * Add a node to the raft cluster (optionally make it a view-only learner node)
+     *
+     * @param address
+     * @param raftLearner
+     * @return
+     * @throws APIException
+     */
+    public boolean addPeer(String address, boolean raftLearner) throws APIException;
+
+    /**
+     * Promote raft learner node to full peer
      *
      * @param address
      * @return
      * @throws APIException
      */
-    public boolean addPeer(String address) throws APIException;
+    void promoteToPeer(String address) throws APIException;
 
     /**
      * Remove the given peer
