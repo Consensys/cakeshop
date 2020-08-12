@@ -51,8 +51,4 @@ public class CakeshopUtils {
        }
        return (Map<String, Object>) data;
     }
-
-    public static <T> T convertToObject(Map<String, Object> map, Class<T> cls) throws Exception {
-        return objectMapper.convertValue(map, cls);
-    }
 }

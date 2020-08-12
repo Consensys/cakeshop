@@ -1,17 +1,22 @@
 package com.jpmorgan.cakeshop.service.impl;
 
 import com.jpmorgan.cakeshop.error.APIException;
-import com.jpmorgan.cakeshop.model.PermissionsDetails;
-import com.jpmorgan.cakeshop.model.PermissionsOrgDetails;
 import com.jpmorgan.cakeshop.service.PermissionsService;
 import com.jpmorgan.cakeshop.service.GethHttpService;
-import com.jpmorgan.cakeshop.util.CakeshopUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.io.IOException;
 
+
+import org.web3j.quorum.methods.response.permissioning.*;
+import org.web3j.quorum.methods.request.*;
+import org.web3j.protocol.core.Request;
+
+import java.math.BigInteger;
 import java.util.Map;
+import java.util.List;
 
 import static com.jpmorgan.cakeshop.service.impl.GethHttpServiceImpl.SIMPLE_RESULT;
 
@@ -24,211 +29,243 @@ public class PermissionsServiceImpl implements PermissionsService {
     private GethHttpService gethService;
 
     @Override
-    public PermissionsOrgDetails get(String id) throws APIException {
+    public OrgDetails get(String id) throws APIException {
 
-        Map<String, Object> permissionData = gethService.executeGethCall("quorumPermission_getOrgDetails", new Object[]{id});
-
-        PermissionsOrgDetails details = null;
-
+        OrgDetailsInfo res = null;
         try {
-
-            details = CakeshopUtils.convertToObject(permissionData, PermissionsOrgDetails.class);
-
-        } catch (Exception e) {
-            LOG.error(e.getMessage());
-            throw new APIException("Could not retrieve Permission Org Details ");
+            res = gethService.getQuorumService().quorumPermissionGetOrgDetails(id).send();
+            if(res.hasError()) {
+                throw new APIException(res.getError().getMessage());
+            }
+            return res.getOrgDetails();
+        } catch (IOException e) {
+            throw new APIException("Could not retrieve Permission Org details: " + e.getMessage());
         }
-
-        return details;
     }
 
     @Override
-    public PermissionsDetails get() throws APIException {
-
-        PermissionsDetails details = null;
-
+    public List<PermissionOrgInfo> get() throws APIException {
+        PermissionOrgList list = null;
         try {
-
-            Map<String, Object> pInfo = gethService.executeGethCall("quorumPermission_orgList");
-
-            details = CakeshopUtils.convertToObject(pInfo, PermissionsDetails.class);
-
-        } catch (Exception e) {
-            LOG.error(e.getMessage());
-            throw new APIException("Could not retrieve Permission Org List ");
+            list = gethService.getQuorumService().quorumPermissionGetOrgList().send();
+            if(list.hasError()) {
+                throw new APIException(list.getError().getMessage());
+            }
+            return list.getPermissionOrgList();
+        } catch (IOException e) {
+            throw new APIException("Could not retrieve Permission Org List: " + e.getMessage());
         }
-
-        return details;
     }
 
     @Override
-    public String addOrg(String id, String enodeId, String accountId, Object f) throws APIException {
+    public String addOrg(String id, String enodeId, String accountId, String from) throws APIException {
         LOG.info("Add new permissions org {}", id);
-        Map<String, Object> res = gethService.executeGethCall("quorumPermission_addOrg", new Object[]{id, enodeId, accountId, f});
-
-        if (res == null || res.get(SIMPLE_RESULT) == null) {
-            throw new APIException("Could not add new permissions org: " + id);
+        ExecStatusInfo res = null;
+        try {
+            res = gethService.getQuorumService().quorumPermissionAddOrg(id, enodeId, accountId, createPrivateTransaction(from)).send();
+            if(res.hasError()) {
+                throw new APIException(res.getError().getMessage());
+            }
+            return res.getExecStatus();
+        } catch (IOException e) {
+            throw new APIException("Could not add org:  " + e.getMessage());
         }
-
-        return (String) res.get(SIMPLE_RESULT);
     }
 
     @Override
-    public String approveOrg(String id, String enodeId, String accountId, Object f) throws APIException {
+    public String approveOrg(String id, String enodeId, String accountId, String f) throws APIException {
         LOG.info("Approve new permissions org {}", id);
-        Map<String, Object> res = gethService.executeGethCall("quorumPermission_approveOrg", new Object[]{id, enodeId, accountId, f});
-
-        if (res == null || res.get(SIMPLE_RESULT) == null) {
-            throw new APIException("Could not approve org: " + id);
+        ExecStatusInfo res = null;
+        try {
+            res = gethService.getQuorumService().quorumPermissionApproveOrg(id, enodeId, accountId, createPrivateTransaction(f)).send();
+            if(res.hasError()) {
+                throw new APIException(res.getError().getMessage());
+            }
+            return res.getExecStatus();
+        } catch (IOException e) {
+            throw new APIException("Could not approve org: " + e.getMessage());
         }
-
-        return (String) res.get(SIMPLE_RESULT);
     }
 
     @Override
-    public String updateOrgStatus(String id, int action, Object f) throws APIException {
+    public String updateOrgStatus(String id, int action, String f) throws APIException {
         LOG.info("update permissions org {} status: {}", id, action);
-        Map<String, Object> res = gethService.executeGethCall("quorumPermission_updateOrgStatus", new Object[]{id, action, f});
-
-        if (res == null || res.get(SIMPLE_RESULT) == null) {
-            throw new APIException("Could not update org status: " + id);
+        ExecStatusInfo res = null;
+        try {
+            res = gethService.getQuorumService().quorumPermissionUpdateOrgStatus(id, action, createPrivateTransaction(f)).send();
+            if(res.hasError()) {
+                throw new APIException(res.getError().getMessage());
+            }
+            return res.getExecStatus();
+        } catch (IOException e) {
+            throw new APIException("Could not update org status: " + e.getMessage());
         }
 
-        return (String) res.get(SIMPLE_RESULT);
     }
 
     @Override
-    public String approveOrgStatus(String id, int action, Object f) throws APIException {
+    public String approveOrgStatus(String id, int action, String f) throws APIException {
         LOG.info("approve permissions org {} status: {}", id, action);
-        Map<String, Object> res = gethService.executeGethCall("quorumPermission_approveOrgStatus", new Object[]{id, action, f});
-
-        if (res == null || res.get(SIMPLE_RESULT) == null) {
-            throw new APIException("Could not approve org status: " + id);
+        ExecStatusInfo res = null;
+        try {
+            res = gethService.getQuorumService().quorumPermissionApproveOrgStatus(id, action, createPrivateTransaction(f)).send();
+            if(res.hasError()) {
+                throw new APIException(res.getError().getMessage());
+            }
+            return res.getExecStatus();
+        } catch (IOException e) {
+            throw new APIException("Could not approve org status: " + e.getMessage());
         }
-
-        return (String) res.get(SIMPLE_RESULT);
     }
 
     @Override
-    public String addSubOrg(String id, String parentId, String enodeId, Object f) throws APIException {
+    public String addSubOrg(String id, String parentId, String enodeId, String f) throws APIException {
         LOG.info("add new suborg {} to parent {}", id, parentId);
-        Map<String, Object> res = gethService.executeGethCall("quorumPermission_addSubOrg", new Object[]{parentId, id, enodeId, f});
-
-        if (res == null || res.get(SIMPLE_RESULT) == null) {
-            throw new APIException("Could not add sub org: " + id);
+        ExecStatusInfo res = null;
+        try {
+            res = gethService.getQuorumService().quorumPermissionAddSubOrg(parentId, id, enodeId, createPrivateTransaction(f)).send();
+            if(res.hasError()) {
+                throw new APIException(res.getError().getMessage());
+            }
+            return res.getExecStatus();
+        } catch (IOException e) {
+            throw new APIException("Could not add sub org: " + e.getMessage());
         }
-
-        return (String) res.get(SIMPLE_RESULT);
     }
 
     @Override
-    public String addNewRole(String id, String roleId, int access, boolean isVoter, boolean isAdmin, Object f) throws APIException {
+    public String addNewRole(String id, String roleId, int access, boolean isVoter, boolean isAdmin, String f) throws APIException {
         LOG.info("add new permissions role {} to org {}", roleId, id);
-        Map<String, Object> res = gethService.executeGethCall("quorumPermission_addNewRole", new Object[]{id, roleId, access, isVoter, isAdmin, f});
-
-        if (res == null || res.get(SIMPLE_RESULT) == null) {
-            throw new APIException("Could not add new role: " + roleId);
+        ExecStatusInfo res = null;
+        try {
+            res = gethService.getQuorumService().quorumPermissionAddNewRole(id, roleId, access, isVoter, isAdmin, createPrivateTransaction(f)).send();
+            if(res.hasError()) {
+                throw new APIException(res.getError().getMessage());
+            }
+            return res.getExecStatus();
+        } catch (IOException e) {
+            throw new APIException("Could not add new role: " + e.getMessage());
         }
-
-        return (String) res.get(SIMPLE_RESULT);
     }
 
     @Override
-    public String removeRole(String id, String roleId, Object f) throws APIException {
+    public String removeRole(String id, String roleId, String f) throws APIException {
         LOG.info("remove new role {} from org {}", roleId, id);
-        Map<String, Object> res = gethService.executeGethCall("quorumPermission_removeRole", new Object[]{id, roleId, f});
-
-
-        if (res == null || res.get(SIMPLE_RESULT) == null) {
-            throw new APIException("Could not remove role: " + roleId);
+        ExecStatusInfo res = null;
+        try {
+            res = gethService.getQuorumService().quorumPermissionRemoveRole(id, roleId, createPrivateTransaction(f)).send();
+            if(res.hasError()) {
+                throw new APIException(res.getError().getMessage());
+            }
+            return res.getExecStatus();
+        } catch (IOException e) {
+            throw new APIException("Could not remove role: " + e.getMessage());
         }
-
-        return (String) res.get(SIMPLE_RESULT);
     }
 
     @Override
-    public String addAccount(String acctId, String id, String roleId, Object f) throws APIException {
+    public String addAccount(String acctId, String id, String roleId, String f) throws APIException {
         LOG.info("add account {} to org {}", acctId, id);
-        Map<String, Object> res = gethService.executeGethCall("quorumPermission_addAccountToOrg", new Object[]{acctId, id, roleId, f});
-
-        if (res == null || res.get(SIMPLE_RESULT) == null) {
-            throw new APIException("Could not add account: " + acctId);
+        ExecStatusInfo res = null;
+        try {
+            res = gethService.getQuorumService().quorumPermissionAddAccountToOrg(acctId, id, roleId, createPrivateTransaction(f)).send();
+            if(res.hasError()) {
+                throw new APIException(res.getError().getMessage());
+            }
+            return res.getExecStatus();
+        } catch (IOException e) {
+            throw new APIException("Could not add account: " + e.getMessage());
         }
-
-        return (String) res.get(SIMPLE_RESULT);
     }
 
     @Override
-    public String changeAccountRole(String acctId, String id, String roleId, Object f) throws APIException {
+    public String changeAccountRole(String acctId, String id, String roleId, String f) throws APIException {
         LOG.info("change account role to {} for acct {}", roleId, acctId);
-        Map<String, Object> res = gethService.executeGethCall("quorumPermission_changeAccountRole", new Object[]{acctId, id, roleId, f});
-
-
-        if (res == null || res.get(SIMPLE_RESULT) == null) {
-            throw new APIException("Could not change account role for acct: " + acctId);
+        ExecStatusInfo res = null;
+        try {
+            res = gethService.getQuorumService().quorumPermissionChangeAccountRole(acctId, id, roleId, createPrivateTransaction(f)).send();
+            if(res.hasError()) {
+                throw new APIException(res.getError().getMessage());
+            }
+            return res.getExecStatus();
+        } catch (Exception e) {
+            throw new APIException("Could not change account role for acct: " + e.getMessage());
         }
-
-        return (String) res.get(SIMPLE_RESULT);
     }
 
     @Override
-    public String updateAccount(String acctId, String id, int action, Object f) throws APIException {
+    public String updateAccount(String acctId, String id, int action, String f) throws APIException {
         LOG.info("update account {} status to {} ", acctId, action);
-        Map<String, Object> res = gethService.executeGethCall("quorumPermission_updateAccountStatus", new Object[]{id, acctId, action, f});
-
-        if (res == null || res.get(SIMPLE_RESULT) == null) {
-            throw new APIException("Could not update account: " + acctId);
+        ExecStatusInfo res = null;
+        try {
+            res = gethService.getQuorumService().quorumPermissionUpdateAccountStatus(id, acctId, action, createPrivateTransaction(f)).send();
+            if(res.hasError()) {
+                throw new APIException(res.getError().getMessage());
+            }
+            return res.getExecStatus();
+        } catch (IOException e) {
+            throw new APIException("Could not update account: " + e.getMessage());
         }
-
-        return (String) res.get(SIMPLE_RESULT);
     }
 
     @Override
-    public String assignAdmin(String acctId, String id, String roleId, Object f) throws APIException {
+    public String assignAdmin(String acctId, String id, String roleId, String f) throws APIException {
         LOG.info("assign admin to account {}", acctId);
-        Map<String, Object> res = gethService.executeGethCall("quorumPermission_assignAdminRole", new Object[]{id, acctId, roleId, f});
-
-        if (res == null || res.get(SIMPLE_RESULT) == null) {
-            throw new APIException("Could not assign admin for acct: " + acctId);
+        ExecStatusInfo res = null;
+        try {
+            res = gethService.getQuorumService().quorumPermissionAssignAdminRole(id, acctId, roleId, createPrivateTransaction(f)).send();
+            if(res.hasError()) {
+                throw new APIException(res.getError().getMessage());
+            }
+            return res.getExecStatus();
+        } catch (IOException e) {
+            throw new APIException("Could not assign admin for acct: " + e.getMessage());
         }
-
-        return (String) res.get(SIMPLE_RESULT);
     }
 
     @Override
-    public String approveAdmin(String acctId, String id, Object f) throws APIException {
+    public String approveAdmin(String acctId, String id, String f) throws APIException {
         LOG.info("approve assignment of admin for account {}", acctId);
-        Map<String, Object> res = gethService.executeGethCall("quorumPermission_approveAdminRole", new Object[]{id, acctId, f});
-
-        if (res == null || res.get(SIMPLE_RESULT) == null) {
-            throw new APIException("Could not approve admin for acct: " + acctId);
+        ExecStatusInfo res = null;
+        try {
+            res = gethService.getQuorumService().quorumPermissionApproveAdminRole(id, acctId, createPrivateTransaction(f)).send();
+            if(res.hasError()) {
+                throw new APIException(res.getError().getMessage());
+            }
+            return res.getExecStatus();
+        } catch (IOException e) {
+            throw new APIException("Could not approve admin for acct: " + e.getMessage());
         }
-
-        return (String) res.get(SIMPLE_RESULT);
     }
 
     @Override
-    public String addNode(String id, String enodeId, Object f) throws APIException {
+    public String addNode(String id, String enodeId, String f) throws APIException {
         LOG.info("add new node {} to org {}", enodeId, id);
-        Map<String, Object> res = gethService.executeGethCall("quorumPermission_addNode", new Object[]{id, enodeId, f});
-
-        if (res == null || res.get(SIMPLE_RESULT) == null) {
-            throw new APIException("Could not add node: " + enodeId);
+        ExecStatusInfo res = null;
+        try {
+            res = gethService.getQuorumService().quorumPermissionAddNode(id, enodeId, createPrivateTransaction(f)).send();
+            if(res.hasError()) {
+                throw new APIException(res.getError().getMessage());
+            }
+            return res.getExecStatus();
+        } catch (IOException e) {
+            throw new APIException("Could not add node: " + e.getMessage());
         }
-
-        return (String) res.get(SIMPLE_RESULT);
     }
 
     @Override
-    public String updateNode(String id, String enodeId, int action, Object f) throws APIException {
+    public String updateNode(String id, String enodeId, int action, String f) throws APIException {
         LOG.info("update status {} of node {}", action, enodeId);
-        Map<String, Object> res = gethService.executeGethCall("quorumPermission_updateNodeStatus", new Object[]{id, enodeId, action, f});
-
-        if (res == null || res.get(SIMPLE_RESULT) == null) {
-            throw new APIException("Could not update node: " + enodeId);
+        ExecStatusInfo res = null;
+        try {
+            res = gethService.getQuorumService().quorumPermissionUpdateNodeStatus(id, enodeId, action, createPrivateTransaction(f)).send();
+            if(res.hasError()) {
+                throw new APIException(res.getError().getMessage());
+            }
+            return res.getExecStatus();
+        } catch (IOException e) {
+            throw new APIException("Could not update node: " + e.getMessage());
         }
-
-        return (String) res.get(SIMPLE_RESULT);
     }
 
     @Override
@@ -256,26 +293,36 @@ public class PermissionsServiceImpl implements PermissionsService {
     }
 
     @Override
-    public String recoverNode(String id, String enodeId, Object f) throws APIException {
+    public String recoverNode(String id, String enodeId, String f) throws APIException {
         LOG.info("recover blacklisted node {}", enodeId);
-        Map<String, Object> res = gethService.executeGethCall("quorumPermission_recoverBlackListedNode", new Object[]{id, enodeId, f});
-
-        if (res == null || res.get(SIMPLE_RESULT) == null) {
-            throw new APIException("Could not recover node: " + enodeId);
+        ExecStatusInfo res = null;
+        try {
+            res = gethService.getQuorumService().quorumPermissionRecoverBlackListedNode(id, enodeId, createPrivateTransaction(f)).send();
+            if(res.hasError()) {
+                throw new APIException(res.getError().getMessage());
+            }
+            return res.getExecStatus();
+        } catch (IOException e) {
+            throw new APIException("Could not recover node: " + e.getMessage());
         }
-
-        return (String) res.get(SIMPLE_RESULT);
     }
 
     @Override
-    public String approveNode(String id, String enodeId, Object f) throws APIException {
+    public String approveNode(String id, String enodeId, String f) throws APIException {
         LOG.info("approve recovery of blacklisted node {}", enodeId);
-        Map<String, Object> res = gethService.executeGethCall("quorumPermission_approveBlackListedNodeRecovery", new Object[]{id, enodeId, f});
-
-        if (res == null || res.get(SIMPLE_RESULT) == null) {
-            throw new APIException("Could not approve recover of node: " + enodeId);
+        ExecStatusInfo res = null;
+        try {
+            res = gethService.getQuorumService().quorumPermissionApproveBlackListedNodeRecovery(id, enodeId, createPrivateTransaction(f)).send();
+            if(res.hasError()) {
+                throw new APIException(res.getError().getMessage());
+            }
+            return res.getExecStatus();
+        } catch (IOException e) {
+            throw new APIException("Could not approve recover of node: " + e.getMessage());
         }
+    }
 
-        return (String) res.get(SIMPLE_RESULT);
+    private PrivateTransaction createPrivateTransaction(String address) {
+        return new PrivateTransaction(address, BigInteger.ZERO, BigInteger.valueOf(4700000), null, BigInteger.ZERO, null, null, null);
     }
 }

@@ -175,8 +175,8 @@ module.exports = function() {
 		    + '<td class="value role-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= r.roleId %></td>'
 		    + '<td class="value active" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= r.active %></td>'
             + '<td class="value access" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= access %></td>'
-		    + '<td class="value voter" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= r.isVoter %></td>'
-		    + '<td class="value admin" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= r.isAdmin %></a></td>'
+		    + '<td class="value voter" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= r.voter %></td>'
+		    + '<td class="value admin" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= r.admin %></a></td>'
 		    + '<td data-orgid="<%= r.orgId %>" data-roleid="<%= r.roleId %>" class="remove-role-col">'
             +   '<button class="btn btn-default remove-role-btn">Remove Role</button>'
             + '</td>'
@@ -308,8 +308,8 @@ module.exports = function() {
             '		<input type="text" class="form-control" id="org-id" value="<%=orgId%>">' +
             '		<label for="acct-id">Acct Id</label>' +
             '		<input type="text" class="form-control" id="acct-id" value="<%=acctId%>">' +
-            '		<label for="role-id">Role Id</label>' +
-            '		<input type="text" class="form-control" id="role-id" placeholder="Enter new role name">' +
+		    '	    <label for="role-id">Role Id</label>' +
+            '	    <select id="role-id" class="form-control" style="transition: none;"> </select>' +
 		    '	    <label for="from-account">From Account</label>' +
             '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
 			'	</div>' +
@@ -398,6 +398,7 @@ module.exports = function() {
 					}));
 			    })
 			    _.each(res.data.attributes.roleList, function(role) {
+			        console.log(role)
 			        var access = roleAccesses[role.access]
 					roleRows.push(_this.templateRowRole({r: role, access: access}));
 			    })
@@ -458,7 +459,7 @@ module.exports = function() {
 							data: {
 								"id": orgId,
 								"enodeId": enodeId,
-								"f": {"from": fromAcct}
+								"from": fromAcct
 							}
 						})
 					).done(function () {
@@ -506,7 +507,7 @@ module.exports = function() {
 								"id": orgId,
 								"enodeId": url,
 								"action": status,
-								"f": {"from": fromAcct}
+								"from": fromAcct
 							}
 						})
 					).done(function () {
@@ -553,7 +554,7 @@ module.exports = function() {
 							data: {
 								"id": orgId,
 								"enodeId": enodeId,
-								"f": {"from": fromAcct}
+								"from": fromAcct
 							}
 						})
 					).done(function () {
@@ -600,7 +601,7 @@ module.exports = function() {
 								"id": orgId,
 								"accountId": acctId,
 								"roleId": roleId,
-								"f": {"from": fromAcct}
+								"from": fromAcct
 							}
 						})
 					).done(function () {
@@ -648,7 +649,7 @@ module.exports = function() {
 								"id": orgId,
 								"accountId": acctId,
 								"action": status,
-								"f": {"from": fromAcct}
+								"from": fromAcct
 							}
 						})
 					).done(function () {
@@ -671,6 +672,7 @@ module.exports = function() {
 				var orgId = $(e.target.parentElement).data("orgid");
 				var acctId = $(e.target.parentElement).data("acctid");
                 _this.populateFrom();
+                _this.populateRoles(orgId);
 
 				// set the modal text
 				$('#myModal .modal-content').html(_this.modalChangeRoleTemplate({
@@ -713,7 +715,7 @@ module.exports = function() {
 								"id": orgId,
 								"roleId": role,
 								"accountId": acctId,
-								"f": {"from": fromAcct}
+								"from": fromAcct
 							}
 						})
 					).done(function () {
@@ -814,7 +816,7 @@ module.exports = function() {
 								"access" : access,
 								"voter": voter,
 								"admin": admin,
-								"f": {"from": fromAcct}
+								"from": fromAcct
 							}
 						})
 					).done(function () {
@@ -857,7 +859,7 @@ module.exports = function() {
 							data: {
 								"id": orgId,
 								"roleId": roleId,
-								"f": {"from": fromAcct}
+								"from": fromAcct
 							}
 						})
 					).done(function () {

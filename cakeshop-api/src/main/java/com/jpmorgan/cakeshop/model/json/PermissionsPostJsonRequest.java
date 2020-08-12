@@ -2,10 +2,10 @@ package com.jpmorgan.cakeshop.model.json;
 
 public class PermissionsPostJsonRequest {
 
-    private String id, enodeId, accountId, parentId, roleId;
-    private Object f;
+    private String id, enodeId, accountId, parentId, roleId, from;
     private int action, access;
     private Boolean voter, admin;
+    private Object f;
 
     /**
      * @return the id
@@ -37,12 +37,12 @@ public class PermissionsPostJsonRequest {
         this.accountId = accountId;
     }
 
-    public Object getF() {
-        return f;
+    public String getFrom() {
+        return from;
     }
 
-    public void setF(Object f) {
-        this.f = f;
+    public void setFrom(String from) {
+        this.from = from;
     }
 
     public int getAction() {
@@ -90,4 +90,12 @@ public class PermissionsPostJsonRequest {
     }
 
     public void setAdmin(boolean admin) { this.admin = admin; }
+
+    public Object getF() {
+        return f;
+    }
+
+    public void setF(Object f) {
+        this.f = f;
+    }
 }

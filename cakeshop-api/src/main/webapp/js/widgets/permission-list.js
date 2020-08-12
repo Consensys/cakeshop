@@ -199,8 +199,9 @@ module.exports = function() {
 					    var parentUlt = orgId != peer.attributes.ultimateParent ? peer.attributes.ultimateParent : ''
 					    var parentDirect = parentUlt != peer.attributes.parentOrgId ? peer.attributes.parentOrgId : ''
 					    var separator = parentDirect == '' || parentUlt == '' ? '' : '/'
+					    var parent = parentUlt+separator+parentDirect
 					    var disableApprove = peer.attributes.status != 1 ? 'disabled' : ''
-					    var disableStatus = peer.attributes.status == 1 || peer.attributes.status == 0 ? 'disabled' : ''
+					    var disableStatus = peer.attributes.status == 1 || peer.attributes.status == 0 || parent != '' ? 'disabled' : ''
 						rows.push( _this.templateRow({
 						    o: peer.attributes,
 						    status: status,
@@ -257,7 +258,7 @@ module.exports = function() {
 								"id": orgName,
 								"enodeId": enodeId,
 								"accountId": acctAdmin,
-								"f": {"from": fromAcct}
+								"from": fromAcct
 							}
 						})
 					).done(function () {
@@ -305,7 +306,7 @@ module.exports = function() {
 								"id": orgName,
 								"enodeId": enodeId,
 								"accountId": acctAdmin,
-								"f": {"from": fromAcct}
+								"from": fromAcct
 							}
 						})
 					).done(function () {
@@ -362,12 +363,12 @@ module.exports = function() {
 							data: {
 								"id": orgId,
 								"action": status,
-								"f": {"from": fromAcct}
+								"from": fromAcct
 							}
 						})
 					).done(function () {
 						$('#myModal').modal('hide');
-
+                        console.log("done")
 						Dashboard.Utils.emit(['orgDetailUpdate'], true)
 						_this.fetch();
 
@@ -410,7 +411,7 @@ module.exports = function() {
 								"id": orgName,
 								"parentId": parentOrg,
 								"enodeId": enodeId,
-								"f": {"from": fromAcct}
+								"from": fromAcct
 							}
 						})
 					).done(function () {
