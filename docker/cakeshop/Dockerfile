@@ -49,7 +49,7 @@ VOLUME $CAKESHOP_HOME/data
 # for main web interface:
 EXPOSE 8080
 
-# will be used by attached slave agents:
+# will be used by attached dependent agents:
 EXPOSE 8102
 
 # entrypoint script can't use variables, so install to /usr/local/bin

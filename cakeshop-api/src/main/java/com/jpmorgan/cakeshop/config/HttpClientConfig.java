@@ -1,18 +1,16 @@
 package com.jpmorgan.cakeshop.config;
 
-import com.jpmorgan.cakeshop.util.ImmutableRestTemplate;
-
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.client.ClientHttpRequestFactory;
-import org.springframework.http.client.OkHttp3ClientHttpRequestFactory;
-import org.springframework.web.client.RestTemplate;
 
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.OkHttp3ClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
 
 @Configuration
 public class HttpClientConfig {
@@ -37,7 +35,6 @@ public class HttpClientConfig {
 
     @Bean
     public RestTemplate createRestTemplate(ClientHttpRequestFactory httpRequestFactory) {
-        return new ImmutableRestTemplate(httpRequestFactory);
+        return new RestTemplate(httpRequestFactory);
     }
-
 }

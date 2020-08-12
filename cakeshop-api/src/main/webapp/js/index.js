@@ -304,13 +304,8 @@ window.Tower = {
 		'peers': function() {
 			var widgets = [
 				{ widgetId: 'peers-list' },
-                { widgetId: 'transaction-manager' },
                 { widgetId: 'peers-add' }
 			];
-
-			if (Tower.client === 'quorum') {
-				widgets.push({ widgetId: 'transaction-manager' });
-			}
 
 			Dashboard.showSection('peers', widgets);
 		},

@@ -1,27 +1,24 @@
 package com.jpmorgan.cakeshop.service.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.dao.BlockDAO;
 import com.jpmorgan.cakeshop.dao.NodeInfoDAO;
 import com.jpmorgan.cakeshop.dao.TransactionDAO;
 import com.jpmorgan.cakeshop.dao.WalletDAO;
 import com.jpmorgan.cakeshop.db.BlockScanner;
 import com.jpmorgan.cakeshop.error.APIException;
-import com.jpmorgan.cakeshop.error.ErrorLog;
 import com.jpmorgan.cakeshop.model.NodeInfo;
 import com.jpmorgan.cakeshop.model.Web3DefaultResponseType;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.util.CakeshopUtils;
 import com.jpmorgan.cakeshop.util.ProcessUtils;
-import com.jpmorgan.cakeshop.util.StreamLogAdapter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.web3j.quorum.Quorum;
@@ -35,7 +32,6 @@ import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -49,10 +45,6 @@ public class GethHttpServiceImpl implements GethHttpService {
     public static final String SIMPLE_RESULT = "_result";
 
     private static final Logger LOG = LoggerFactory.getLogger(GethHttpServiceImpl.class);
-    private static final Logger GETH_LOG = LoggerFactory.getLogger("geth");
-
-    @Autowired
-    private GethConfig gethConfig;
 
     @Autowired(required = false)
     private BlockDAO blockDAO;
@@ -72,6 +64,9 @@ public class GethHttpServiceImpl implements GethHttpService {
     @Autowired
     private ObjectMapper jsonMapper;
 
+    @Value("${nodejs.binary:node}")
+    String nodeJsBinaryName;
+
     private BlockScanner blockScanner;
 
     private boolean connected;
@@ -79,17 +74,11 @@ public class GethHttpServiceImpl implements GethHttpService {
     private String currentRpcUrl;
     private String currentTransactionManagerUrl;
 
-    private StreamLogAdapter stdoutLogger;
-    private StreamLogAdapter stderrLogger;
-
-    private final List<ErrorLog> startupErrors;
-
     private Quorum quorumService;
 
     private Web3jService cakeshopService;
 
     public GethHttpServiceImpl() {
-        this.startupErrors = new ArrayList<>();
     }
 
     private Web3jService getCakeshopService() throws APIException {
@@ -137,7 +126,7 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     @Override
     public Map<String, Object> executeGethCall(String funcName, Object... args) throws APIException {
-        LOG.info("Geth call: " + funcName);
+        LOG.debug("Geth call: " + funcName);
         return executeGethCall(createHttpRequestType(funcName, args));
     }
 
@@ -172,7 +161,7 @@ public class GethHttpServiceImpl implements GethHttpService {
         // stop solc server
         LOG.info("Stopping solc daemon");
         List<String> args = Lists.newArrayList(
-                gethConfig.getNodeJsBinaryName(),
+                nodeJsBinaryName,
                 CakeshopUtils.getSolcPath(),
                 "--stop-ipc");
 
@@ -212,7 +201,6 @@ public class GethHttpServiceImpl implements GethHttpService {
         this.currentTransactionManagerUrl = transactionManagerUrl;
     }
 
-
     @Override
     public void connectToNode(Long nodeId) {
         try {
@@ -222,8 +210,6 @@ public class GethHttpServiceImpl implements GethHttpService {
                 setCurrentTransactionManagerUrl(node.transactionManagerUrl);
                 resetCakeshopService();
                 runPostConnectTasks();
-                gethConfig.setSelectedNode(nodeId);
-                gethConfig.save();
             } else {
                 LOG.info("Node with id {} does not exist", nodeId);
             }

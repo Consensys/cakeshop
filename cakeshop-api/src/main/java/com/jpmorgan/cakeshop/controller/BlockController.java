@@ -49,7 +49,7 @@ public class BlockController extends BaseController {
 
         APIResponse res = new APIResponse();
 
-        if (block != null) {
+        if (block != null && block.getId() != null) {
             res.setData(block.toAPIData());
             return new ResponseEntity<>(res, HttpStatus.OK);
         }

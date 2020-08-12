@@ -1,7 +1,6 @@
 package com.jpmorgan.cakeshop.db;
 
 import com.google.common.collect.Lists;
-import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.dao.BlockDAO;
 import com.jpmorgan.cakeshop.dao.TransactionDAO;
 import com.jpmorgan.cakeshop.error.APIException;
@@ -65,9 +64,6 @@ public class SavingBlockListener implements BlockListener {
     @Autowired
     private TransactionService txService;
 
-    @Autowired
-    private GethConfig gethConfig;
-
     private final ArrayBlockingQueue<Block> blockQueue;
 
     private final BlockSaverThread blockSaver;
@@ -98,10 +94,6 @@ public class SavingBlockListener implements BlockListener {
     }
 
     protected void saveBlock(Block block) {
-        if (!gethConfig.isDbEnabled()) {
-            return;
-        }
-
         LOG.debug("Persisting block #" + block.getNumber());
         blockDAO.save(block);
         if (!block.getTransactions().isEmpty()) {
@@ -144,9 +136,6 @@ public class SavingBlockListener implements BlockListener {
 
     @Override
     public void blockCreated(Block block) {
-        if (!gethConfig.isDbEnabled()) {
-            return;
-        }
         try {
             blockQueue.put(block);
         } catch (InterruptedException e) {

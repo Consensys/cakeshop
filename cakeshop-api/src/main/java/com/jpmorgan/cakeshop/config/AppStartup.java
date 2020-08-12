@@ -1,11 +1,11 @@
 package com.jpmorgan.cakeshop.config;
 
 import com.google.common.collect.Lists;
-import com.jpmorgan.cakeshop.bean.GethConfig;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.error.ErrorLog;
 import com.jpmorgan.cakeshop.service.task.InitializeNodesTask;
 import com.jpmorgan.cakeshop.util.*;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -33,11 +33,14 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AppStartup.class);
     private final Long REQUIRED_MEMORY = 2000000L;
 
-    @Value("${config.path}")
+    @Value("${cakeshop.config.dir}")
     private String CONFIG_ROOT;
 
-    @Autowired
-    private GethConfig gethConfig;
+    @Value("${server.port}")
+    private String SERVER_PORT;
+
+    @Value("${nodejs.binary:node}")
+    String nodeJsBinaryName;
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -51,8 +54,6 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
     private boolean healthy = true;
 
     private String solcVer;
-
-    private String gethVer;
 
     private final List<ErrorLog> errors;
 
@@ -73,18 +74,6 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         autoStartFired = true;
         healthy = testSystemHealth();
         if (healthy) {
-            if (Boolean.valueOf(System.getProperty("geth.init.example"))) {
-                // Exit after all system initialization has completed
-                try {
-                    gethConfig.save();
-                } catch (IOException e) {
-                    LOG.error("Error writing application.properties: " + e.getMessage());
-                    System.exit(1);
-                }
-                System.out.println("initialization complete. wrote quorum-example config. exiting.");
-                System.exit(0);
-            }
-
             // Make sure initial nodes are in the DB if file provided
             executor.execute(applicationContext.getBean(InitializeNodesTask.class));
         }
@@ -135,19 +124,7 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         System.out.println("          version:     " + AppVersion.BUILD_VERSION);
         System.out.println("          build id:    " + AppVersion.BUILD_ID);
         System.out.println("          build date:  " + AppVersion.BUILD_DATE);
-        System.out.println(
-            "          Access the Cakeshop UI at: " + getSpringUrl(gethConfig.getCakeshopPort()));
-    }
-
-    // Try to determine listening URL
-    private String getSpringUrl(String port) {
-        String uri = "http://";
-        try {
-            uri = uri + EEUtils.getAllIPs().get(0).getAddr();
-        } catch (APIException e) {
-            uri = uri + "localhost";
-        }
-        return uri + ":" + port + "/";
+        System.out.println("          Access the Cakeshop UI at: http://localhost:" + SERVER_PORT);
     }
 
     public String getDebugInfo(ServletContext servletContext) {
@@ -186,8 +163,21 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         out.append("cakeshop.config.dir: ").append(CONFIG_ROOT).append("\n");
         out.append("\n\n");
 
+        // test solc binary
         out.append("solc.path: ").append(CakeshopUtils.getSolcPath()).append("\n");
         out.append("solc.version: ");
+        try {
+            List<String> args = Lists.newArrayList(
+                nodeJsBinaryName,
+                CakeshopUtils.getSolcPath(),
+                "--version");
+            ProcessBuilder builder = ProcessUtils.createProcessBuilder(args);
+            Process process = builder.start();
+            process.waitFor();
+            solcVer = IOUtils.toString(process.getInputStream(), Charset.defaultCharset());
+        } catch (Exception e) {
+            addError(e);
+        }
         if (StringUtils.isNotBlank(solcVer)) {
             out.append(solcVer);
         } else {
@@ -297,21 +287,8 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
             isHealthy = false;
         }
 
-        System.out.println();
-        if (isHealthy) {
-            System.out.println("ALL TESTS PASSED!");
-        } else {
-            System.out.println("!!! SYSTEM FAILED SELF-TEST !!!");
-        }
-
         System.out.println(StringUtils.repeat("*", 80));
         System.out.println();
-
-        //Check if total memory or free memory is Less than 2 GB
-        if (MemoryUtils.getMemoryData(false) < REQUIRED_MEMORY && MemoryUtils.getMemoryData(true) < REQUIRED_MEMORY) {
-            errors.add(new ErrorLog("System does not have enough total or free RAM to run cakeshop. Need at least 2 GB of free RAM"));
-            isHealthy = false;
-        }
 
         return isHealthy;
     }

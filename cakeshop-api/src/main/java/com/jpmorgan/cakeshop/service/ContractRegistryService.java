@@ -9,25 +9,6 @@ import java.util.List;
 public interface ContractRegistryService {
 
     /**
-     * Deploy the Contract Registry contract onto the chain.
-     *
-     * Primarily used during chain initialization.
-     *
-     * @return
-     * @throws APIException
-     */
-    public void deploy() throws APIException;
-
-    /**
-     * Update the location of the ContractRegistry
-     *
-     * @param addr String
-     *
-     * @throws APIException
-     */
-    public void updateRegistryAddress(String addr) throws APIException;
-
-    /**
      * Register a new contract
      *
      * @param id
@@ -80,18 +61,4 @@ public interface ContractRegistryService {
      * @throws APIException
      */
     public List<Contract> listByOwner(String owner) throws APIException;
-
-    /**
-     * Determine whether the registry needs to be deployed
-     *
-     * @return whether the contract exists
-     */
-    public boolean contractRegistryExists();
-
-    /**
-     * Lookup the address of the contract from application.properties
-     *
-     * @return the address where the contract registry is supposed to exist
-     */
-    String getAddress();
 }

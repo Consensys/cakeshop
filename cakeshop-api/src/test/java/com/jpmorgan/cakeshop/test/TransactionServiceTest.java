@@ -1,7 +1,5 @@
 package com.jpmorgan.cakeshop.test;
 
-import com.jpmorgan.cakeshop.bean.GethConfig;
-import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.ContractABI;
 import com.jpmorgan.cakeshop.model.Transaction;
 import com.jpmorgan.cakeshop.model.Transaction.Status;
@@ -11,7 +9,6 @@ import com.jpmorgan.cakeshop.service.TransactionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.Assert.*;
 import org.testng.annotations.Test;
 import org.testng.collections.Lists;
 
@@ -30,9 +27,6 @@ public class TransactionServiceTest extends BaseGethRpcTest {
 
     @Autowired
     private TransactionService transactionService;
-
-    @Autowired
-    private GethConfig gethConfig;
 
     @Test
     public void testGet() throws IOException {
@@ -68,18 +62,6 @@ public class TransactionServiceTest extends BaseGethRpcTest {
         assertEquals(txns.size(), 2);
         assertEquals(txns.get(0).getId(), result.getId());
         assertEquals(txns.get(1).getId(), result2.getId());
-    }
-
-    @Test
-    public void testGetInvalidHash() throws IOException {
-        assertThrows(APIException.class, new ThrowingRunnable() {
-            @Override
-            public void run() throws Throwable {
-                transactionService.get("0xasdf");
-            }
-        });
-
-        assertNull(transactionService.get("0x19ceb68f8df155fb05029ef89dc7e74d0f7bd7c97f9837cc659381ecb9e8eb49"));
     }
 
     @Test
