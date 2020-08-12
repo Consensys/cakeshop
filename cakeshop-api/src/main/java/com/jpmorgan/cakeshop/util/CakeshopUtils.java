@@ -3,7 +3,6 @@ package com.jpmorgan.cakeshop.util;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jpmorgan.cakeshop.error.APIException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +15,6 @@ public class CakeshopUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(CakeshopUtils.class);
     public static final String SIMPLE_RESULT = "_result";
-    public static final ObjectMapper objectMapper = new ObjectMapper();
 
     public static String formatEnodeUrl(String address, String ip, String port, String raftPort) {
         String enodeurl = String.format("enode://%s@%s:%s", address, ip, port);
