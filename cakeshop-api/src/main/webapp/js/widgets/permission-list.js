@@ -368,7 +368,6 @@ module.exports = function() {
 						})
 					).done(function () {
 						$('#myModal').modal('hide');
-                        console.log("done")
 						Dashboard.Utils.emit(['orgDetailUpdate'], true)
 						_this.fetch();
 

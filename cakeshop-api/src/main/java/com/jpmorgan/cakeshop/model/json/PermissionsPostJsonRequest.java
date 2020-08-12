@@ -5,7 +5,7 @@ public class PermissionsPostJsonRequest {
     private String id, enodeId, accountId, parentId, roleId, from;
     private int action, access;
     private Boolean voter, admin;
-    private Object f;
+    private Object fromObject;
 
     /**
      * @return the id
@@ -91,11 +91,11 @@ public class PermissionsPostJsonRequest {
 
     public void setAdmin(boolean admin) { this.admin = admin; }
 
-    public Object getF() {
-        return f;
+    public Object getFromObject() {
+        return fromObject;
     }
 
-    public void setF(Object f) {
-        this.f = f;
+    public void setFromObject(Object fromObject) {
+        this.fromObject = fromObject;
     }
 }

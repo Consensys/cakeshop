@@ -106,7 +106,6 @@ public class PermissionsController extends BaseController {
     @RequestMapping("/updateOrgStatus")
     public ResponseEntity<APIResponse> updatePermissionsOrgStatus(@RequestBody PermissionsPostJsonRequest jsonRequest) throws APIException {
         String updated = permissionsService.updateOrgStatus(jsonRequest.getId(), jsonRequest.getAction(), jsonRequest.getFrom());
-        LOG.info(updated);
         return new ResponseEntity<>(APIResponse.newSimpleResponse(updated), HttpStatus.OK);
     }
 
@@ -220,23 +219,22 @@ public class PermissionsController extends BaseController {
     @ApiImplicitParams({
         @ApiImplicitParam(name = "id", required = true, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
         @ApiImplicitParam(name = "accountId", required = true, value = "unique account id", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "f", required = false, value = "acct sending the request", dataType = "java.lang.Object", paramType = "body")
+        @ApiImplicitParam(name = "fromObject", required = false, value = "acct sending the request", dataType = "java.lang.Object", paramType = "body")
     })
     @RequestMapping("/recoverAcct")
     public ResponseEntity<APIResponse> recoverAcct(@RequestBody PermissionsPostJsonRequest jsonRequest) throws APIException {
-        LOG.info(jsonRequest.getF().toString());
-        String recovered = permissionsService.recoverAcct(jsonRequest.getId(), jsonRequest.getAccountId(), jsonRequest.getF());
+        String recovered = permissionsService.recoverAcct(jsonRequest.getId(), jsonRequest.getAccountId(), jsonRequest.getFromObject());
         return new ResponseEntity<>(APIResponse.newSimpleResponse(recovered), HttpStatus.OK);
     }
 
     @ApiImplicitParams({
         @ApiImplicitParam(name = "id", required = true, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
         @ApiImplicitParam(name = "accountId", required = true, value = "unique account id", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "f", required = false, value = "acct sending the request", dataType = "java.lang.Object", paramType = "body")
+        @ApiImplicitParam(name = "fromObject", required = false, value = "acct sending the request", dataType = "java.lang.Object", paramType = "body")
     })
     @RequestMapping("/approveAcct")
     public ResponseEntity<APIResponse> approveAcct(@RequestBody PermissionsPostJsonRequest jsonRequest) throws APIException {
-        String approved = permissionsService.approveAcct(jsonRequest.getId(), jsonRequest.getAccountId(), jsonRequest.getF());
+        String approved = permissionsService.approveAcct(jsonRequest.getId(), jsonRequest.getAccountId(), jsonRequest.getFromObject());
         return new ResponseEntity<>(APIResponse.newSimpleResponse(approved), HttpStatus.OK);
     }
 
