@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
+import org.web3j.quorum.Quorum;
 import org.web3j.protocol.Web3jService;
 import org.web3j.protocol.core.Request;
 import org.web3j.protocol.http.HttpService;
@@ -73,6 +74,8 @@ public class GethHttpServiceImpl implements GethHttpService {
     private String currentRpcUrl;
     private String currentTransactionManagerUrl;
 
+    private Quorum quorumService;
+
     private Web3jService cakeshopService;
 
     public GethHttpServiceImpl() {
@@ -94,8 +97,26 @@ public class GethHttpServiceImpl implements GethHttpService {
       }
     }
 
+    public Quorum getQuorumService() throws APIException {
+        try {
+            if (StringUtils.isEmpty(currentRpcUrl)) {
+                throw new ResourceAccessException("Current RPC URL not set, skipping request");
+            }
+            if (quorumService == null) {
+                quorumService = Quorum.build(getCakeshopService());
+                LOG.info("New quorum web3j service connected to " + currentRpcUrl);
+            }
+            return quorumService;
+        } catch (RestClientException e) {
+            LOG.error("RPC call failed - " + ExceptionUtils.getRootCauseMessage(e));
+            throw new APIException("RPC call failed", e);
+        }
+    }
+
     private void resetCakeshopService() {
-      cakeshopService = null;
+
+        cakeshopService = null;
+        quorumService = null;
     }
 
     @Override

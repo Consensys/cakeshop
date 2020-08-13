@@ -426,8 +426,8 @@
                 <configuration>
                     <workingDirectory>src/main/webapp</workingDirectory>
                     <installDirectory>target</installDirectory>
-                    <nodeVersion>v6.9.1</nodeVersion>
-                    <npmVersion>3.10.9</npmVersion>
+                    <nodeVersion>v10.22.0</nodeVersion>
+                    <npmVersion>6.14.6</npmVersion>
                 </configuration>
 
                 <executions>

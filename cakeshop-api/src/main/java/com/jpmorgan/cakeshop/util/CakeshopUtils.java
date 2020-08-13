@@ -3,8 +3,11 @@ package com.jpmorgan.cakeshop.util;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.jpmorgan.cakeshop.error.APIException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.web3j.protocol.core.Response.Error;
 
 import static com.jpmorgan.cakeshop.util.FileUtils.expandPath;
 
@@ -33,13 +36,17 @@ public class CakeshopUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static Map<String, Object> processWeb3Response(Object data) {
-        if (!(data instanceof Map)) {
-            // Handle case where a simple value is returned instead of a map (int, bool, or string)
-            Map<String, Object> res = new HashMap<>();
-            res.put(SIMPLE_RESULT, data);
-            return res;
+    public static Map<String, Object> processWeb3Response(Object data, org.web3j.protocol.core.Response.Error e) throws APIException {
+        if(e != null ) {
+            throw new APIException(e.getMessage());
+
         }
-        return (Map<String, Object>) data;
+       if (!(data instanceof Map)) {
+         // Handle case where a simple value is returned instead of a map (int, bool, or string)
+         Map<String, Object> res = new HashMap<>();
+         res.put(SIMPLE_RESULT, data);
+         return res;
+       }
+       return (Map<String, Object>) data;
     }
 }
