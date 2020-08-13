@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.jpmorgan</groupId>
         <artifactId>cakeshop-parent</artifactId>
-        <version>0.11.0</version>
+        <version>0.12.0</version>
     </parent>
 
     <artifactId>cakeshop</artifactId>
@@ -22,7 +22,7 @@
         <dependency>
             <groupId>com.jpmorgan</groupId>
             <artifactId>cakeshop-abi</artifactId>
-            <version>0.11.0</version>
+            <version>0.12.0</version>
         </dependency>
         <dependency>
             <groupId>org.web3j</groupId>
@@ -426,8 +426,8 @@
                 <configuration>
                     <workingDirectory>src/main/webapp</workingDirectory>
                     <installDirectory>target</installDirectory>
-                    <nodeVersion>v10.22.0</nodeVersion>
-                    <npmVersion>6.14.6</npmVersion>
+                    <nodeVersion>${nodejs.version}</nodeVersion>
+                    <npmVersion>${npm.version}</npmVersion>
                 </configuration>
 
                 <executions>
