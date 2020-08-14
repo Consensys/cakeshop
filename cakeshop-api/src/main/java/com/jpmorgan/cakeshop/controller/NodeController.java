@@ -20,6 +20,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -79,7 +80,7 @@ public class NodeController extends BaseController {
             return new ResponseEntity<>(new APIResponse().error(new APIError().title("Missing param 'address'")),
                     HttpStatus.BAD_REQUEST);
         }
-        boolean added = nodeService.addPeer(jsonRequest.getAddress(), jsonRequest.isRaftLearner());
+        BigInteger added = nodeService.addPeer(jsonRequest.getAddress(), jsonRequest.isRaftLearner());
         return new ResponseEntity<>(APIResponse.newSimpleResponse(added), HttpStatus.OK);
     }
 

@@ -12,13 +12,9 @@ import java.io.IOException;
 
 import org.web3j.quorum.methods.response.permissioning.*;
 import org.web3j.quorum.methods.request.*;
-import org.web3j.protocol.core.Request;
 
 import java.math.BigInteger;
-import java.util.Map;
 import java.util.List;
-
-import static com.jpmorgan.cakeshop.service.impl.GethHttpServiceImpl.SIMPLE_RESULT;
 
 @Service
 public class PermissionsServiceImpl implements PermissionsService {

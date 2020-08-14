@@ -4,6 +4,7 @@ import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Node;
 import com.jpmorgan.cakeshop.model.Peer;
 
+import java.math.BigInteger;
 import java.util.List;
 
 public interface NodeService {
@@ -35,7 +36,7 @@ public interface NodeService {
      * @return
      * @throws APIException
      */
-    public boolean addPeer(String address, boolean raftLearner) throws APIException;
+    public BigInteger addPeer(String address, boolean raftLearner) throws APIException;
 
     /**
      * Promote raft learner node to full peer

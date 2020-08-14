@@ -4,6 +4,7 @@ package com.jpmorgan.cakeshop.model;
 import com.jpmorgan.cakeshop.util.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
+import java.math.BigInteger;
 import java.util.List;
 
 public class Node  {
@@ -21,12 +22,12 @@ public class Node  {
     /**
      * Number of peers connected to node
      */
-    private int peerCount;
+    private BigInteger peerCount;
 
     /**
      * Last mined block
      */
-    private long latestBlock;
+    private BigInteger latestBlock;
 
     /**
      * Pending transactions in txpool
@@ -92,19 +93,19 @@ public class Node  {
         this.status = status;
     }
 
-    public int getPeerCount() {
+    public BigInteger getPeerCount() {
         return peerCount;
     }
 
-    public void setPeerCount(int peerCount) {
+    public void setPeerCount(BigInteger peerCount) {
         this.peerCount = peerCount;
     }
 
-    public long getLatestBlock() {
+    public BigInteger getLatestBlock() {
         return latestBlock;
     }
 
-    public void setLatestBlock(long latestBlock) {
+    public void setLatestBlock(BigInteger latestBlock) {
         this.latestBlock = latestBlock;
     }
 
