@@ -269,27 +269,33 @@ public class PermissionsServiceImpl implements PermissionsService {
     }
 
     @Override
-    public String recoverAcct(String id, String accountId, Object from) throws APIException {
+    public String recoverAcct(String id, String accountId, String from) throws APIException {
         LOG.info("recover blacklisted account {}", accountId);
-        Map<String, Object> res = gethService.executeGethCall("quorumPermission_recoverBlackListedAccount", new Object[]{id, accountId, from});
-
-        if (res == null || res.get(SIMPLE_RESULT) == null) {
-            throw new APIException("Could not recover acct: " + accountId);
+        ExecStatusInfo res = null;
+        try {
+        	res = gethService.getQuorumService().quorumPermissionRecoverBlackListedAccount(id, accountId, createPrivateTransaction(from)).send();
+        	if(res.hasError()) {
+                throw new APIException(res.getError().getMessage());
+            }
+            return res.getExecStatus();
+        } catch (IOException e) {
+        	throw new APIException("Could not recover account: " + e.getMessage());
         }
-
-        return (String) res.get(SIMPLE_RESULT);
     }
 
     @Override
-    public String approveAcct(String id, String accountId, Object from) throws APIException {
+    public String approveAcct(String id, String accountId, String from) throws APIException {
         LOG.info("approve recovery of blacklisted account {}", accountId);
-        Map<String, Object> res = gethService.executeGethCall("quorumPermission_approveBlackListedAccountRecovery", new Object[]{id, accountId, from});
-
-        if (res == null || res.get(SIMPLE_RESULT) == null) {
-            throw new APIException("Could not approve recover of acct: " + accountId);
+        ExecStatusInfo res = null;
+        try {
+        	res = gethService.getQuorumService().quorumPermissionApproveBlackListedAccountRecovery(id, accountId, createPrivateTransaction(from)).send();
+        	if(res.hasError()) {
+                throw new APIException(res.getError().getMessage());
+            }
+            return res.getExecStatus();
+        } catch (IOException e) {
+        	throw new APIException("Could not approve recovery of account: " + e.getMessage());
         }
-
-        return (String) res.get(SIMPLE_RESULT);
     }
 
     @Override

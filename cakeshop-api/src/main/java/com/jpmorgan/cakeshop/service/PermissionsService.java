@@ -38,9 +38,9 @@ public interface PermissionsService {
 
     String updateNode(String id, String enodeId, int action, String from) throws APIException;
 
-    String recoverAcct(String id, String accountId, Object from) throws APIException;
+    String recoverAcct(String id, String accountId, String from) throws APIException;
 
-    String approveAcct(String id, String accountId, Object from) throws APIException;
+    String approveAcct(String id, String accountId, String from) throws APIException;
 
     String recoverNode(String id, String enodeId, String from) throws APIException;
 
