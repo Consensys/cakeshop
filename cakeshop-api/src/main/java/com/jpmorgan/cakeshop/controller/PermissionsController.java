@@ -219,22 +219,22 @@ public class PermissionsController extends BaseController {
     @ApiImplicitParams({
         @ApiImplicitParam(name = "id", required = true, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
         @ApiImplicitParam(name = "accountId", required = true, value = "unique account id", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "fromObject", required = false, value = "acct sending the request", dataType = "java.lang.Object", paramType = "body")
+        @ApiImplicitParam(name = "from", required = false, value = "acct sending the request", dataType = "java.lang.Object", paramType = "body")
     })
     @RequestMapping("/recoverAcct")
     public ResponseEntity<APIResponse> recoverAcct(@RequestBody PermissionsPostJsonRequest jsonRequest) throws APIException {
-        String recovered = permissionsService.recoverAcct(jsonRequest.getId(), jsonRequest.getAccountId(), jsonRequest.getFromObject());
+        String recovered = permissionsService.recoverAcct(jsonRequest.getId(), jsonRequest.getAccountId(), jsonRequest.getFrom());
         return new ResponseEntity<>(APIResponse.newSimpleResponse(recovered), HttpStatus.OK);
     }
 
     @ApiImplicitParams({
         @ApiImplicitParam(name = "id", required = true, value = "unique org identifier", dataType = "java.lang.String", paramType = "body"),
         @ApiImplicitParam(name = "accountId", required = true, value = "unique account id", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "fromObject", required = false, value = "acct sending the request", dataType = "java.lang.Object", paramType = "body")
+        @ApiImplicitParam(name = "from", required = false, value = "acct sending the request", dataType = "java.lang.Object", paramType = "body")
     })
     @RequestMapping("/approveAcct")
     public ResponseEntity<APIResponse> approveAcct(@RequestBody PermissionsPostJsonRequest jsonRequest) throws APIException {
-        String approved = permissionsService.approveAcct(jsonRequest.getId(), jsonRequest.getAccountId(), jsonRequest.getFromObject());
+        String approved = permissionsService.approveAcct(jsonRequest.getId(), jsonRequest.getAccountId(), jsonRequest.getFrom());
         return new ResponseEntity<>(APIResponse.newSimpleResponse(approved), HttpStatus.OK);
     }
 

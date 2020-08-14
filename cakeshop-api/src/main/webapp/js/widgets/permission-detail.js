@@ -762,7 +762,7 @@ module.exports = function() {
 							data: {
 								"id": orgId,
 								"accountId": acctId,
-								"fromObject": {"from": fromAcct}
+								"from": fromAcct
 							}
 						})
 					).done(function () {
