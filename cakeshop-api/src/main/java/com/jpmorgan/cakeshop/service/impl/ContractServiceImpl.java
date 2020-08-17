@@ -24,9 +24,13 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
+import org.web3j.protocol.core.DefaultBlockParameter;
+import org.web3j.protocol.core.methods.response.EthSendTransaction;
+import org.web3j.quorum.methods.request.PrivateTransaction;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -48,7 +52,7 @@ public class ContractServiceImpl implements ContractService {
     String nodeJsBinaryName;
 
     @Autowired
-    private GethHttpService geth;
+    private GethHttpService gethService;
 
     @Autowired
     private ContractRegistryService contractRegistry;
@@ -225,10 +229,18 @@ public class ContractServiceImpl implements ContractService {
             contract.setPrivateFor(StringUtils.join(privateFor, ","));
         }
 
-        Map<String, Object> contractRes = geth.executeGethCall("eth_sendTransaction", new Object[]{contractArgs});
+        PrivateTransaction pt = new PrivateTransaction(getAddress(from), null, BigInteger.valueOf(TransactionRequest.DEFAULT_GAS), null, null, data, privateFrom, privateFor);
+        String hash = null;
+        try {
+        	hash = gethService.getQuorumService().ethSendTransaction(pt).send().getTransactionHash();
+        } catch (IOException e) {
+        	throw new APIException(e.getMessage());
+        }
+        if (hash == null) {
+            throw new APIException("Error creating contract ");
+        }
 
-        TransactionResult tr = new TransactionResult();
-        tr.setId((String) contractRes.get(CakeshopUtils.SIMPLE_RESULT));
+        TransactionResult tr = new TransactionResult(hash);
 
         // defer contract registration
         executor.execute(appContext.getBean(ContractRegistrationTask.class, contract, tr));
@@ -249,10 +261,13 @@ public class ContractServiceImpl implements ContractService {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Contract cache miss for: " + address);
         }
-
-        Map<String, Object> contractRes = geth.executeGethCall("eth_getCode", new Object[]{address, "latest"});
-
-        String bin = (String) contractRes.get(CakeshopUtils.SIMPLE_RESULT);
+        String bin = null;
+        try {
+        	bin = gethService.getQuorumService().ethGetCode(address, DefaultBlockParameter.valueOf("latest")).send().getCode();
+        } catch (IOException e) {
+        	throw new APIException(e.getMessage());
+        }
+        
         if (bin == null || bin.contentEquals("0x")) {
             throw new APIException("Contract does not exist at " + address);
         }
@@ -301,9 +316,12 @@ public class ContractServiceImpl implements ContractService {
     @Override
     public Object[] read(TransactionRequest request) throws APIException {
         request.setFromAddress(getAddress(request.getFromAddress())); // make sure we have a non-null from address
-
-        Map<String, Object> readRes = geth.executeGethCall("eth_call", request.toGethArgs());
-        String res = (String) readRes.get(CakeshopUtils.SIMPLE_RESULT);
+        String res = "";
+        try {
+        	res = gethService.getQuorumService().ethCall(request.toPrivateTransaction(), request.toBlockParameter()).send().getValue();
+        } catch (IOException e) {
+        	throw new APIException(e.getMessage());
+        }
         if (StringUtils.isNotBlank(res) && res.length() == 2 && res.contentEquals("0x")) {
             throw new APIException("eth_call failed (returned 0 bytes)");
         }
@@ -327,8 +345,16 @@ public class ContractServiceImpl implements ContractService {
     @Override
     public TransactionResult transact(TransactionRequest request) throws APIException {
         request.setFromAddress(getAddress(request.getFromAddress())); // make sure we have a non-null from address
-        Map<String, Object> readRes = geth.executeGethCall("eth_sendTransaction", request.toGethArgs());
-        return new TransactionResult((String) readRes.get(CakeshopUtils.SIMPLE_RESULT));
+        String hash = null;
+        try {
+        	hash = gethService.getQuorumService().ethSendTransaction(request.toPrivateTransaction()).send().getTransactionHash();
+        } catch (IOException e) {
+        	throw new APIException(e.getMessage());
+        }
+        if (hash == null) {
+            throw new APIException("Error transacting ");
+        }
+        return new TransactionResult(hash);
     }
 
     @Override

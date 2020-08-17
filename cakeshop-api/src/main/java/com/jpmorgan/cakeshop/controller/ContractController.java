@@ -13,6 +13,8 @@ import com.jpmorgan.cakeshop.service.task.BlockchainInitializerTask;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import org.bouncycastle.util.encoders.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
@@ -32,6 +34,8 @@ import java.util.concurrent.Callable;
         consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE)
 public class ContractController extends BaseController {
+	
+	static final Logger LOG = LoggerFactory.getLogger(com.jpmorgan.cakeshop.controller.ContractController.class);
 
     @Autowired
     private ContractService contractService;
@@ -150,11 +154,12 @@ public class ContractController extends BaseController {
         ,
         @ApiImplicitParam(name = "args", required = false, value = "Required. Args for contratc method", dataType = "java.util.Arrays", paramType = "body")
     })
-    @RequestMapping("/read")
+	@RequestMapping("/read")
     public ResponseEntity<APIResponse> read(@RequestBody ContractPostJsonRequest jsonRequest) throws APIException {
 
         Object result = contractService.read(createTransactionRequest(jsonRequest.getFrom(), jsonRequest.getAddress(),
                 jsonRequest.getMethod(), jsonRequest.getArgs(), true, jsonRequest.getBlockNumber()));
+        System.out.println(jsonRequest.getBlockNumber());
         APIResponse res = new APIResponse();
         res.setData(result);
 

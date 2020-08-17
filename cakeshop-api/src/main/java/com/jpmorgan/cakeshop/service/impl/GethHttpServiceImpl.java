@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.web3j.quorum.Quorum;
 import org.web3j.protocol.Web3jService;
 import org.web3j.protocol.core.Request;
+import org.web3j.protocol.core.Response;
 import org.web3j.protocol.http.HttpService;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
@@ -119,6 +120,11 @@ public class GethHttpServiceImpl implements GethHttpService {
         quorumService = null;
     }
 
+    @Override
+    public <T extends Response> Request<?, T> createHttpRequestType(String funcName, Class<T> type, Object... args) throws APIException{
+    	return new Request<>(funcName, Arrays.asList(args), getCakeshopService(), type);
+    }
+    
     @Override
     public Request<?, Web3DefaultResponseType> createHttpRequestType(String funcName, Object... args) throws APIException{
     	return new Request<>(funcName, Arrays.asList(args), getCakeshopService(), Web3DefaultResponseType.class);

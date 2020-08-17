@@ -5,7 +5,11 @@ import com.jpmorgan.cakeshop.model.ContractABI.Function;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.web3j.protocol.core.DefaultBlockParameter;
+import org.web3j.protocol.core.DefaultBlockParameterNumber;
+import org.web3j.quorum.methods.request.PrivateTransaction;
 
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,32 +59,22 @@ public class TransactionRequest {
         }
     }
 
-    public Object[] toGethArgs() {
+	public DefaultBlockParameter toBlockParameter() {
+		if (isRead) {
+			if (blockNumber == null) {
+				return DefaultBlockParameter.valueOf(BLOCK_LATEST);
+			} else {
+				return new DefaultBlockParameterNumber((Integer) blockNumber);
+			}
+		} else {
+			return DefaultBlockParameter.valueOf("");
+		}
+	}
 
-        Map<String, Object> req = new HashMap<>();
-        req.put("from", fromAddress);
-        req.put("to", contractAddress);
-        req.put("gas", "0x" + Integer.toHexString(DEFAULT_GAS));
-        req.put("data", "0x" + function.encodeAsHex(args));
-
-        if (StringUtils.isNotBlank(privateFrom)) {
-            req.put("privateFrom", privateFrom);
-        }
-
-        if (privateFor != null && !privateFor.isEmpty()) {
-            req.put("privateFor", privateFor);
-        }
-
-        if (isRead) {
-            if (blockNumber == null) {
-                return new Object[]{req, BLOCK_LATEST};
-            } else {
-                return new Object[]{req, blockNumber};
-            }
-        } else {
-            return new Object[]{req};
-        }
-    }
+	public PrivateTransaction toPrivateTransaction() {
+		return new PrivateTransaction(fromAddress, null, BigInteger.valueOf(DEFAULT_GAS),
+				contractAddress, null, "0x" + function.encodeAsHex(args), privateFrom, privateFor);
+	}
 
     public String getFromAddress() {
         return fromAddress;

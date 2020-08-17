@@ -1,17 +1,24 @@
 package com.jpmorgan.cakeshop.service.impl;
 
-import static com.jpmorgan.cakeshop.util.AbiUtils.*;
 
 import com.jpmorgan.cakeshop.error.APIException;
-import com.jpmorgan.cakeshop.model.Block;
 import com.jpmorgan.cakeshop.model.Web3DefaultResponseType;
+import com.jpmorgan.cakeshop.model.Block;
 import com.jpmorgan.cakeshop.service.BlockService;
 import com.jpmorgan.cakeshop.service.GethHttpService;
-import org.web3j.protocol.core.Request;
 
+import org.web3j.protocol.core.BatchRequest;
+import org.web3j.protocol.core.DefaultBlockParameter;
+import org.web3j.protocol.core.DefaultBlockParameterNumber;
+import org.web3j.protocol.core.Request;
+import org.web3j.protocol.core.Response;
+import org.web3j.protocol.core.methods.response.EthBlock;
+import org.web3j.protocol.core.methods.response.EthBlock.TransactionResult;
+
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,89 +31,86 @@ public class BlockServiceImpl implements BlockService {
 
     @Override
     public Block get(String id, Long number, String tag) throws APIException {
-
-        String method = null;
-        Object input = null;
-
-        if (id != null && !id.isEmpty()) {
-            method = "eth_getBlockByHash";
-            input = id;
-        } else if (number != null && number >= 0) {
-            method = "eth_getBlockByNumber";
-            input = "0x" + Long.toHexString(number);
-        } else if (tag != null && !tag.isEmpty()) {
-            method = "eth_getBlockByNumber";
-            input = tag;
+    	org.web3j.protocol.core.methods.response.EthBlock.Block b = null;
+        try {
+        	if (id != null && !id.isEmpty()) {
+        		b = gethService.getQuorumService().ethGetBlockByHash(id, false).send().getBlock();
+        	} else if (number != null && number >= 0) {
+        		b = gethService.getQuorumService().ethGetBlockByNumber(new DefaultBlockParameterNumber(number), false).send().getBlock();
+            } else if (tag != null && !tag.isEmpty()) {
+            	b = gethService.getQuorumService().ethGetBlockByNumber(DefaultBlockParameter.valueOf(tag), false).send().getBlock();
+            }
+        } catch (IOException e) {
+        	throw new APIException(e.getMessage());
         }
-
-        if (method == null || input == null) {
-            throw new APIException("Bad request");
-        }
-
-        Map<String, Object> blockData
-                = gethService.executeGethCall(method, new Object[]{input, false});
-
-        return processBlockData(blockData);
+        return processBlock(b);
     }
-
-    @SuppressWarnings("unchecked")
-    private Block processBlockData(Map<String, Object> blockData) {
-        if (blockData == null) {
-            return null;
-        }
-
-        // Convert to model
-        Block block = new Block();
-
-        // add addresses directly
-        block.setId((String) blockData.get("hash"));
-        block.setParentId((String) blockData.get("parentHash"));
-        block.setNonce((String) blockData.get("nonce"));
-        block.setSha3Uncles((String) blockData.get("sha3Uncles"));
-        block.setLogsBloom((String) blockData.get("logsBloom"));
-        block.setTransactionsRoot((String) blockData.get("transactionsRoot"));
-        block.setStateRoot((String) blockData.get("stateRoot"));
-        block.setMiner((String) blockData.get("miner"));
-        block.setExtraData((String) blockData.get("extraData"));
-        block.setTransactions((List<String>) blockData.get("transactions"));
-        block.setUncles((List<String>) blockData.get("uncles"));
-
-        // convert longs
-        block.setNumber(toBigInt("number", blockData));
-        block.setDifficulty(toBigInt("difficulty", blockData));
-        block.setTotalDifficulty(toBigInt("totalDifficulty", blockData));
-        block.setGasLimit(toBigInt("gasLimit", blockData));
-        block.setGasUsed(toBigInt("gasUsed", blockData));
-        block.setTimestamp(toBigInt("timestamp", blockData));
-
-        return block;
+    
+    private Block processBlock(org.web3j.protocol.core.methods.response.EthBlock.Block b) {
+    	Block block = new Block();
+    	block.setId(b.getHash());
+    	block.setParentId(b.getParentHash());
+    	block.setNonce(b.getNonceRaw());
+    	block.setSha3Uncles(b.getSha3Uncles());
+    	block.setLogsBloom(b.getLogsBloom());
+    	block.setTransactionsRoot(b.getTransactionsRoot());
+    	block.setStateRoot(b.getStateRoot());
+    	block.setMiner(b.getMiner());
+    	block.setExtraData(b.getExtraData());
+    	block.setTransactions(processTransactions(b.getTransactions()));
+    	block.setUncles(b.getUncles());
+    	block.setNumber(b.getNumber());
+    	block.setDifficulty(b.getDifficulty());
+    	block.setTotalDifficulty(b.getTotalDifficulty());
+    	block.setGasLimit(b.getGasLimit());
+    	block.setGasUsed(b.getGasUsed());
+    	block.setTimestamp(b.getTimestamp());
+    	
+    	return block;
+    }
+    
+    private List<String> processTransactions(List<TransactionResult> tr) {
+    	List<String> txs = new ArrayList<>();
+    	for (TransactionResult t : tr) {
+    		txs.add((String) t.get()); 
+    	}
+    	return txs;
     }
 
     @Override
     public List<Block> get(long start, long end) throws APIException {
-        List<Request<?, Web3DefaultResponseType>> reqs = new ArrayList<>();
+        List<Request<?, EthBlock>> reqs = new ArrayList<>();
         for (long i = start; i <= end; i++) {
-            reqs.add(gethService.createHttpRequestType("eth_getBlockByNumber", new Object[]{"0x" + Long.toHexString(i), false}));
+            reqs.add(gethService.createHttpRequestType("eth_getBlockByNumber", EthBlock.class, new Object[]{"0x" + Long.toHexString(i), false}));
         }
         return batchGet(reqs);
     }
 
     @Override
     public List<Block> get(List<Long> numbers) throws APIException {
-        List<Request<?, Web3DefaultResponseType>> reqs = new ArrayList<>();
+        List<Request<?, EthBlock>> reqs = new ArrayList<>();
         for (Long num : numbers) {
-            reqs.add(gethService.createHttpRequestType("eth_getBlockByNumber", new Object[]{"0x" + Long.toHexString(num), false}));
+        	reqs.add(gethService.createHttpRequestType("eth_getBlockByNumber", EthBlock.class, new Object[]{"0x" + Long.toHexString(num), false}));          		
         }
         return batchGet(reqs);
     }
 
-    private List<Block> batchGet(List<Request<?, Web3DefaultResponseType>> reqs) throws APIException {
-        List<Map<String, Object>> batchRes = gethService.batchExecuteGethCall(reqs);
+    private List<Block> batchGet(List<Request<?, EthBlock>> reqs) throws APIException {
+    	BatchRequest batch = null;
+    	for (Request<?, EthBlock> req : reqs) {
+    		batch = gethService.getQuorumService().newBatch().add(req);
+    	}
+    	List<? extends Response<?>> res; 
+    	try {
+    		res = batch.send().getResponses();
+    	} catch (IOException e) {
+    		throw new APIException(e.getMessage());
+    	}
 
         // TODO ignore return order for now
         List<Block> blocks = new ArrayList<>();
-        for (Map<String, Object> blockData : batchRes) {
-            blocks.add(processBlockData(blockData));
+        for (Response<?> blockData : res) {
+            blocks.add(processBlock((org.web3j.protocol.core.methods.response.EthBlock.Block)blockData.getResult()));
         }
         return blocks;
     }
