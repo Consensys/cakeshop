@@ -2,7 +2,7 @@
 
 ## Cakeshop
 
-Cakeshop follows standard [Spring Boot's configuration patterns](https://docs.spring.io/spring-boot/docs/2.0.9.RELEASE/reference/html/boot-features-external-config.html#:~:text=Spring%20Boot%20lets%20you%20externalize,line%20arguments%20to%20externalize%20configuration.), so you may provide an `application.properties` in the location where you are running cakeshop to customize some settings of cakeshop.
+Cakeshop follows standard [Spring Boot configuration patterns](https://docs.spring.io/spring-boot/docs/2.0.9.RELEASE/reference/html/boot-features-external-config.html#:~:text=Spring%20Boot%20lets%20you%20externalize,line%20arguments%20to%20externalize%20configuration.), so you may provide an `application.properties` in the location where you are running cakeshop to customize some settings of cakeshop.
 
 You may also override config options via Java system properties passed via `java -D<prop>=<val>`:
 
