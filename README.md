@@ -1,75 +1,69 @@
 # Cakeshop
 
-[![Build Status](https://travis-ci.com/jpmorganchase/cakeshop.svg?branch=master)](https://travis-ci.com/jpmorganchase/cakeshop)
-
-An integrated development environment and SDK for Ethereum-like ledgers
-
 ![screenshot](docs/images/console.png "screenshot")
 
 ![screenshot](docs/images/sandbox.png "sandbox screenshot")
 
 ## What is it?
 
-_Cakeshop_ is a set of tools and APIs for working with [Ethereum](https://ethereum.org/)-like ledgers, packaged as a Java web application archive (WAR) that gets you up and running in under 60 seconds.
+_Cakeshop_ is a set of tools and APIs for working with Quorum nodes, packaged as a Java web application archive (WAR) that gets you up and running in under 60 seconds.
 
-Cakeshop will download the latest version of [quorum](https://github.com/jpmorganchase/quorum) and bootnode from [geth](https://github.com/ethereum/go-ethereum) (to use a different version, see [here](docs/configuration.md#custom-quorum-binaries)). The cakeshop package includes the [tessera](https://github.com/jpmorganchase/tessera) and [constellation](https://github.com/jpmorganchase/constellation) transaction managers, a [Solidity](https://solidity.readthedocs.org/en/latest/)
-compiler, and all dependencies.
-
-It provides tools for managing a local blockchain node, setting up clusters,
-exploring the state of the chain, and working with contracts.
+It provides tools for attaching to and managing a quorum node, exploring the state of the chain, and working with contracts.
 
 ## Download
 
-Binary packages are available for macOS and Linux platforms on the [releases](https://github.com/jpmorganchase/cakeshop/releases) page.
+Binary packages are available on the [Github releases page](https://github.com/jpmorganchase/cakeshop/releases).
 
-## Quickstart
+## Running via Quorum Wizard
+
+The easiest way to use Cakeshop is to generate a Quorum network with [Quorum Wizard](../Wizard/GettingStarted) and choose to deploy Cakeshop alongside the network.
+
+## Running via Spring Boot
 
 ### Requirements
 
-* Java 8+
-* NodeJS (if the nodejs binary on your machine isn't called 'node', see [here](docs/configuration.md#nodejs-binary))
+* Java 11+
+* NodeJS (if the nodejs binary on your machine isn't called 'node', see [here](./Configuration#cakeshop-internals))
 
-### Running via Spring Boot
+### Running
 
 * Download WAR file
 * Run `java -jar cakeshop.war`
 * Navigate to [http://localhost:8080/](http://localhost:8080/)
 
 
-### Running via Docker -- NEEDS UPDATE
+## Running via Docker
 
-Run via docker and access UI on [http://localhost:8080/](http://localhost:8080/)
+Simple example of running via docker on port 8080:
 
 ```sh
 docker run -p 8080:8080 quorumengineering/cakeshop
 ```
 
-You'll probably want to mount a data volume:
+Then access the UI at [http://localhost:8080/](http://localhost:8080/)
+
+### Docker Customizations
+You can add some extra flags to the run command to further customize cakeshop.
+
+Here is an example where you mount `./data` as a data volume for the container to use:
 
 ```sh
 mkdir data
 docker run -p 8080:8080 -v "$PWD/data":/opt/cakeshop/data quorumengineering/cakeshop
 ```
 
-Running under a specific environment
+An example providing an initial nodes.json in the data directory and configuring it to be used:
 
 ```sh
+# makes sure you have nodes.json at $PWD/data/nodes.json
 docker run -p 8080:8080 -v "$PWD/data":/opt/cakeshop/data \
-    -e JAVA_OPTS="-Dspring.profiles.active=local" \
-    quorumengineering/cakeshop
-```
-
-Note that DAG generation will take time and Cakeshop will not be available until it's complete. If you already have a DAG for epoch 0 in your `$HOME/.ethash` folder, then you can expose that to your container (or just cache it for later):
-
-```sh
-docker run -p 8080:8080 -v "$PWD/data":/opt/cakeshop/data \
-    -v $HOME/.ethash:/opt/cakeshop/.ethash \
+    -e JAVA_OPTS="-Dcakeshop.initialnodes=/opt/cakeshop/data/nodes.json" \
     quorumengineering/cakeshop
 ```
 
 ## Further Reading
 
-Further documentation can be found on the [wiki](https://github.com/jpmorganchase/cakeshop/wiki/) and in the [docs](docs/) folder.
+Further documentation can be found [here](http://docs.goquorum.com/en/latest/Cakeshop/Overview/).
 
 ## See Also
 

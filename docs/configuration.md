@@ -2,127 +2,60 @@
 
 ## Cakeshop
 
-The sections below describe the various configuration settings for Cakeshop itself.
+Cakeshop follows standard [Spring Boot's configuration patterns](https://docs.spring.io/spring-boot/docs/2.0.9.RELEASE/reference/html/boot-features-external-config.html#:~:text=Spring%20Boot%20lets%20you%20externalize,line%20arguments%20to%20externalize%20configuration.), so you may provide an `application.properties` in the location where you are running cakeshop to customize some settings of cakeshop.
 
-Most of the configuration can be found in the file `application.properties` located in your `data` folder at `data/<env>/application.properties`. The default `env` is `local` resulting in the file `data/local/application.properties`.
-
-Some settings (as noted below) may be overridden via Java system properties passed via `java -D<prop>=<val>`. e.g.,
+You may also override config options via Java system properties passed via `java -D<prop>=<val>`:
 
 ```sh
-$ java -Dcakeshop.database.vendor=oracle -jar cakeshop.war
+java -Dcakeshop.initialnodes=data/cakeshop/nodes.json -jar cakeshop.war
 ```
 
-Finally, certain properties can also be passed via environment variable, as detailed below.
+### Initial Nodes
 
-Config order:
+When Cakeshop starts for the first time, it will not actually know which node(s) it is supposed to connect to. You will need to click on 'Manage Nodes' in the top right corner of the Cakeshop UI to add nodes by RPC url.
 
-* Environment var
-* System property
-* Config file (application.properties)
+Alternatively, you may provide an initial set of nodes in a JSON file that Cakeshop will use to prepopulate the nodes list. This file will only be used if no nodes have previously been added to Cakeshops database.
 
-### geth
-
-Cakeshop can use geth in one of two modes: __managed__ or __unmanaged__.
-
-* In __managed__ mode, Cakeshop will start a bundled version of geth which can be controlled from within the application.
-* In __unmanaged__ mode, Cakeshop will connect to an externally managed version of geth (one that is started in some other way or running on another machine).
-
-The various options are described below and can be modified via `application.properties`.
-
-Also note that normal "public node" options are disabled by default and there is
-currently no way to change this behavior:
-
-    --nat none --nodiscover --ipcdisable
+The format of the JSON file is as follows:
 
 ```
-# Toggle managed mode: true = managed
-geth.auto.start=true
-geth.auto.stop=true
-
-# RPC URL to connect to geth on [managed or unmanaged]
-#
-# In managed mode, the port is passed to --rpcport. --rpcaddr defaults to
-# '127.0.0.1' but can be overridden via geth.params.extra, below.
-#
-# In unmanaged mode, simply uses this URL for issuing RPC calls.
-geth.url=http://localhost:8102
-
-# Sets the p2p node port (--port) [managed only]
-geth.node.port=30303
-
-# Network identifier (--networkid) [managed only]
-geth.networkid=1006
-
-# Data directory path (--datadir) [managed only]
-#
-# When set to the default value of "/.ethereum", will be rewritten to a local
-# path at `data/<env>/ethereum`
-geth.datadir=/.ethereum
-
-# List of RPC APIs to enable [managed only]
-#
-# Only modify if you know what you are doing.
-#
-# NOTE: If running in `unmanaged` mode, make sure your geth is configured
-#       to enable at least these APIs.
-geth.rpcapi.list=admin,db,eth,debug,miner,net,raft,shh,txpool,personal,web3
-
-# geth log verbosity (--verbosity) [managed or unmanaged]
-#
-# Higher is more verbose. Can be modified at runtime without restart via API.
-geth.verbosity=
-
-# Custom node name (--identity) [managed only]
-geth.identity=
-
-# Enable Mining (--mine) [managed or unmanaged]
-#
-# Can be modified at runtime without restart via API. Only applies to vanilla
-# geth.
-#
-# When using Raft-based consensus with quorum, the mining value doesn't have any affect.
-geth.mining=true
-
-# Enable CORS for geth RPC endpoint [managed only]
-geth.cors.enabled=false
-geth.cors.url=
-
-# Extra geth params [managed only]
-geth.params.extra=
-
+[
+  {
+    "name": "node1",
+    "rpcUrl": "http://localhost:22000",
+    "transactionManagerUrl": "http://localhost:9081"
+  },
+  {
+    "name": "node2",
+    "rpcUrl": "http://127.0.0.1:22001",
+    "transactionManagerUrl": "http://127.0.0.1:9082"
+  },
+  {
+    "name": "node3",
+    "rpcUrl": "http://localhost:22002",
+    "transactionManagerUrl": "http://localhost:9083"
+  }
+]
 ```
 
-### Contract Registry
+The rpcUrl field should be the RPC endpoint on the Quorum (geth) node, and the transactionManagerUrl should be the Tessera 3rd Party API endpoint. 
 
-On startup, Cakeshop will deploy a custom Smart Contract Registry onto the
-configured chain. This registry is used to store metadata about the contract,
-most importantly the ABI and the original solidity source. Once deployed, the
-registry's address is stored in the config file under the
-`contract.registry.addr` key. This value can be overridden by passing the
-environment variable `CAKESHOP_REGISTRY_ADDR`.
-
-#### Shared config mode
-
-Another mode exists to facilitate locally testing a multi-node cluster by
-running Cakeshop multiple times in managed mode. By setting the
-`CAKESHOP_SHARED_CONFIG` environment variable, Cakeshop will read/write the
-registry address from/to the shared location. This allows this address to be
-easily shared among multiple Cakeshops.
-
-Note, however, that the `CAKESHOP_REGISTRY_ADDR` env var takes highest
-precedence and will override all other property file values (both local and
-shared).
-
-Example: `CAKESHOP_REGISTRY_ADDR=$HOME/data/shared_cakeshop_config`
+Provide the location of the initial nodes file through application.properties or by using the `-D` flag mentioned above.
+```sh
+# inside application.properties
+cakeshop.initialnodes=path/to/nodes.json
+```
 
 ### Cakeshop Internals
 
-```
+Some other options that may be customized in application.properties:
+
+```sh
+# some systems don't call the nodejs binary 'node', in that change you can change this value
+nodejs.binary=node
+
 # Timeout between polls on contract deploy
 contract.poll.delay.millis=5000
-
-# Address of contract registry
-contract.registry.addr=
 
 # Various internal queues and thread pools
 # Defaults are probably fine, modify at your own risk
@@ -169,9 +102,6 @@ The settings below control the behavior of Spring. For detailed information, ple
 # spring config
 spring.main.banner-mode=off
 
-spring.mvc.view.prefix=/WEB-INF/jsp/
-spring.mvc.view.suffix=.jsp
-
 server.compression.enabled=true
 server.compression.mime-types=application/json,application/xml,text/html,text/xml,text/plain
 
@@ -179,21 +109,3 @@ server.compression.mime-types=application/json,application/xml,text/html,text/xm
 management.context-path=/manage
 endpoints.actuator.enabled=true
 ```
-
-### Custom Quorum Binaries
-
-The following settings tells cakeshop where to download Quorum's version of 'geth' and the 'bootnode' binaries from. Leaving them blank will default to the latest versions tested with cakeshop.
-
-```config
-geth.release.url=https://bintray.com/quorumengineering/quorum/download_file?file_path=v2.2.4%2Fgeth_v2.2.4_darwin_amd64.tar.gz
-geth.tools.url=https://gethstore.blob.core.windows.net/builds/geth-alltools-darwin-amd64-1.8.27-4bcc0a37.tar.gz
-```
-
-### NodeJS Binary
-
-NodeJS is required to be installed on the machine running cakeshop in order to properly run the solc solidity compiler. Some machines may not use the default name of 'node'. You can customize that with the following settings:
-
-```config
-nodejs.binary=node
-```
-
