@@ -23,7 +23,7 @@ The easiest way to use Cakeshop is to generate a Quorum network with [Quorum Wiz
 ### Requirements
 
 * Java 11+
-* NodeJS (if the nodejs binary on your machine isn't called 'node', see [here](docs/configuration.md#nodejs-binary))
+* NodeJS (if the nodejs binary on your machine isn't called 'node', see [here](docs/configuration.md#cakeshop-internals))
 
 ### Running
 
