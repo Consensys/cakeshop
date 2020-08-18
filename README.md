@@ -16,7 +16,7 @@ Binary packages are available on the [Github releases page](https://github.com/j
 
 ## Running via Quorum Wizard
 
-The easiest way to use Cakeshop is to generate a Quorum network with [Quorum Wizard](../Wizard/GettingStarted) and choose to deploy Cakeshop alongside the network.
+The easiest way to use Cakeshop is to generate a Quorum network with [Quorum Wizard](https://docs.goquorum.com/en/latest/Wizard/GettingStarted/) and choose to deploy Cakeshop alongside the network.
 
 ## Running via Spring Boot
 
