@@ -25,7 +25,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 import org.web3j.protocol.core.DefaultBlockParameter;
-import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.quorum.methods.request.PrivateTransaction;
 
 import java.io.File;
@@ -34,9 +33,7 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.apache.commons.io.FileUtils.forceDelete;
 
@@ -214,18 +211,8 @@ public class ContractServiceImpl implements ContractService {
             }
             data = data + Hex.toHexString(constructor.encode(args));
         }
-
-        Map<String, Object> contractArgs = new HashMap<>();
-        contractArgs.put("from", getAddress(from));
-        contractArgs.put("data", "0x" + data);
-        contractArgs.put("gas", "0x" + Integer.toHexString(TransactionRequest.DEFAULT_GAS));
-
-        // add quorum args
-        if (StringUtils.isNotBlank(privateFrom)) {
-            contractArgs.put("privateFrom", privateFrom);
-        }
+        
         if (privateFor != null && privateFor.size() > 0) {
-            contractArgs.put("privateFor", privateFor);
             contract.setPrivateFor(StringUtils.join(privateFor, ","));
         }
 

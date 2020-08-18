@@ -23,6 +23,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.web3j.quorum.Quorum;
 import org.web3j.protocol.Web3jService;
+import org.web3j.protocol.admin.Admin;
 import org.web3j.protocol.core.Request;
 import org.web3j.protocol.core.Response;
 import org.web3j.protocol.http.HttpService;
@@ -78,6 +79,8 @@ public class GethHttpServiceImpl implements GethHttpService {
     private Quorum quorumService;
 
     private Web3jService cakeshopService;
+    
+    private Admin adminService;
 
     public GethHttpServiceImpl() {
     }
@@ -113,27 +116,39 @@ public class GethHttpServiceImpl implements GethHttpService {
             throw new APIException("RPC call failed", e);
         }
     }
+    
+    public Admin getAdminService() throws APIException {
+    	try {
+            if (StringUtils.isEmpty(currentRpcUrl)) {
+                throw new ResourceAccessException("Current RPC URL not set, skipping request");
+            }
+            if (adminService == null) {
+            	adminService = Admin.build(getCakeshopService());
+                LOG.info("New admin web3j service connected to " + currentRpcUrl);
+            }
+            return adminService;
+        } catch (RestClientException e) {
+            LOG.error("RPC call failed - " + ExceptionUtils.getRootCauseMessage(e));
+            throw new APIException("RPC call failed", e);
+        }
+    }
 
     private void resetCakeshopService() {
 
         cakeshopService = null;
         quorumService = null;
+        adminService = null;
     }
 
     @Override
     public <T extends Response> Request<?, T> createHttpRequestType(String funcName, Class<T> type, Object... args) throws APIException{
     	return new Request<>(funcName, Arrays.asList(args), getCakeshopService(), type);
     }
-    
-    @Override
-    public Request<?, Web3DefaultResponseType> createHttpRequestType(String funcName, Object... args) throws APIException{
-    	return new Request<>(funcName, Arrays.asList(args), getCakeshopService(), Web3DefaultResponseType.class);
-    }
 
     @Override
     public Map<String, Object> executeGethCall(String funcName, Object... args) throws APIException {
         LOG.debug("Geth call: " + funcName);
-        return executeGethCall(createHttpRequestType(funcName, args));
+        return executeGethCall(createHttpRequestType(funcName, Web3DefaultResponseType.class, args));
     }
 
     @SuppressWarnings("unchecked")

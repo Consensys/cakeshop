@@ -2,6 +2,7 @@ package com.jpmorgan.cakeshop.model;
 
 import com.jpmorgan.cakeshop.error.APIException;
 
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,9 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.web3j.protocol.core.DefaultBlockParameter;
+import org.web3j.protocol.core.DefaultBlockParameterNumber;
+import org.web3j.quorum.methods.request.PrivateTransaction;
 
 public class DirectTransactionRequest {
 
@@ -45,31 +49,8 @@ public class DirectTransactionRequest {
         this.privateFor = null;
     }
 
-    public Object[] toGethArgs() {
-
-        Map<String, Object> req = new HashMap<>();
-	    req.put("from", fromAddress);
-	    req.put("to", toAddress);
-	    req.put("gas", DEFAULT_GAS);
-        req.put("data", data);
-
-	    if (StringUtils.isNotBlank(privateFrom)) {
-	        req.put("privateFrom", privateFrom);
-	    }
-
-	    if (privateFor != null && !privateFor.isEmpty()) {
-            req.put("privateFor", privateFor);
-	    }
-
-        if (isRead) {
-            if (blockNumber == null) {
-                return new Object[] { req, BLOCK_LATEST };
-            } else {
-                return new Object[] { req, blockNumber };
-            }
-        } else {
-            return new Object[] { req };
-        }
+    public PrivateTransaction toPrivateTransaction() {
+    	return new PrivateTransaction(fromAddress, null, BigInteger.valueOf(DEFAULT_GAS), toAddress, null, data, privateFrom, privateFor);
     }
 
     public String getFromAddress() {

@@ -1,7 +1,5 @@
 package com.jpmorgan.cakeshop.service.impl;
 
-import static com.jpmorgan.cakeshop.util.AbiUtils.*;
-
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Contract;
 import com.jpmorgan.cakeshop.model.ContractABI;
@@ -19,14 +17,16 @@ import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import com.jpmorgan.cakeshop.util.CakeshopUtils;
 import org.bouncycastle.util.encoders.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.web3j.protocol.core.DefaultBlockParameterNumber;
+import org.web3j.protocol.core.methods.request.EthFilter;
+import org.web3j.protocol.core.methods.response.EthLog.LogResult;
+import org.web3j.protocol.core.methods.response.Log;
 
 @Service
 public class EventServiceImpl implements EventService {
@@ -60,26 +60,34 @@ public class EventServiceImpl implements EventService {
     @SuppressWarnings("unchecked")
     @Override
     public List<Event> listForBlock(Long blockNumber) throws APIException {
-        Map<String, Object> res = gethService.executeGethCall("eth_getLogs", new Object[] { new BlockRangeFilter(blockNumber, blockNumber) });
-        List<Map<String, Object>> results = (List<Map<String, Object>>) res.get(CakeshopUtils.SIMPLE_RESULT);
-        return processEvents(results);
+    	List<LogResult> logs = null;
+    	try {
+    		logs = gethService.getQuorumService().ethGetLogs(new EthFilter(new DefaultBlockParameterNumber(blockNumber), new DefaultBlockParameterNumber(blockNumber), "")).send().getLogs();
+    	} catch (IOException e ) {
+    		throw new APIException(e.getMessage());
+    	}
+    	if (logs == null) {
+    		throw new APIException("unable to get logs for block: " + blockNumber);
+    	}
+    	List<Log> l = new ArrayList<Log>();
+    	logs.forEach( (log) -> l.add((Log) log.get()));
+        return processEvents(l);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public List<Event> processEvents(List<Map<String, Object>> txnEvents) throws APIException {
+    public List<Event> processEvents(List<Log> txnEvents) throws APIException {
 
         List<Event> events = new ArrayList<>();
-        for (Map<String, Object> data : txnEvents) {
-
+        for (Log log : txnEvents) {
             Event event = new Event();
             event.setId(new BigInteger(String.valueOf(System.nanoTime())));
-            event.setBlockId((String) data.get("blockHash"));
-            event.setBlockNumber(toBigInt("blockNumber", data));
+            event.setBlockId(log.getBlockHash());
+            event.setBlockNumber(log.getBlockNumber());
 
-            event.setLogIndex(toBigInt("logIndex", data));
-            event.setTransactionId((String) data.get("transactionHash"));
-            event.setContractId((String) data.get("address"));
+            event.setLogIndex(log.getLogIndex());
+            event.setTransactionId(log.getTransactionHash());
+            event.setContractId(log.getAddress());
 
             // Fetch the associated contract by it's ID so we can decode the log data (requires registry)
             Contract contract = null;
@@ -104,13 +112,13 @@ public class EventServiceImpl implements EventService {
 
             ContractABI abi = ContractABI.fromJson(contract.getABI());
 
-            List<String> topics = (List<String>) data.get("topics");
+            List<String> topics = (List<String>) log.getTopics();
             String eventSigHash = (topics).get(0);
 
             com.jpmorgan.cakeshop.model.ContractABI.Event abiEvent = abi.findEventBySignature(eventSigHash);
             event.setName(abiEvent.name);
 
-            byte[] logData = Hex.decode(((String) data.get("data")).substring(2));
+            byte[] logData = Hex.decode((log.getData()).substring(2));
             byte[][] topicData = new byte[topics.size()][];
             for (int i = 0; i < topics.size(); i++) {
                 String t = topics.get(i);

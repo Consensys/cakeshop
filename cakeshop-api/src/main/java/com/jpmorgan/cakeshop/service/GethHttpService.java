@@ -4,6 +4,7 @@ import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Web3DefaultResponseType;
 
 import org.web3j.protocol.Web3jService;
+import org.web3j.protocol.admin.Admin;
 import org.web3j.protocol.core.Request;
 import org.web3j.protocol.core.Response;
 import org.web3j.quorum.Quorum;
@@ -21,6 +22,8 @@ public interface GethHttpService {
     public static final Long GETH_REQUEST_ID = 42L; // We don't actually use this, so just use a constant
 
     public Quorum getQuorumService() throws APIException;
+    
+    public Admin getAdminService() throws APIException;
     /**
      * Call the given Geth RPC method
      *
@@ -42,8 +45,6 @@ public interface GethHttpService {
     public Map<String, Object> executeGethCall(Request<?, Web3DefaultResponseType> request) throws APIException;
 
     public List<Map<String, Object>> batchExecuteGethCall(List<Request<?, Web3DefaultResponseType>> requests) throws APIException;
-
-    public Request<?, Web3DefaultResponseType> createHttpRequestType(String funcName, Object... args) throws APIException;
 
     public <T extends Response> Request<?, T> createHttpRequestType(String funcName, Class<T> type, Object... args) throws APIException;
     /**

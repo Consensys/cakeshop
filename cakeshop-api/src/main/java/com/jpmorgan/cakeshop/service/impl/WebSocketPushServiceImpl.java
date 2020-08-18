@@ -44,7 +44,7 @@ public class WebSocketPushServiceImpl implements WebSocketPushService {
     private SimpMessagingTemplate template;
 
     @Autowired
-    private GethHttpService geth;
+    private GethHttpService gethService;
 
     @Autowired
     private NodeService nodeService;
@@ -95,7 +95,7 @@ public class WebSocketPushServiceImpl implements WebSocketPushService {
             return;
         }
 
-        if (!geth.isConnected()) {
+        if (!gethService.isConnected()) {
             // send back a node-down response
             Node node = new Node();
             node.setStatus(NodeService.NODE_NOT_RUNNING_STATUS);
@@ -119,7 +119,7 @@ public class WebSocketPushServiceImpl implements WebSocketPushService {
     @Override
     @Scheduled(fixedDelay = 5000)
     public void pushLatestBlocks() throws APIException {
-        if (openedSessions <= 0 || !geth.isConnected()) {
+        if (openedSessions <= 0 || !gethService.isConnected()) {
             return;
         }
 
@@ -146,7 +146,7 @@ public class WebSocketPushServiceImpl implements WebSocketPushService {
     @Override
     @Scheduled(fixedDelay = 200)
     public void pushTransactions() throws APIException {
-        if (openedSessions <= 0 || transactionsMap.isEmpty() || !geth.isConnected()) {
+        if (openedSessions <= 0 || transactionsMap.isEmpty() || !gethService.isConnected()) {
             return;
         }
 

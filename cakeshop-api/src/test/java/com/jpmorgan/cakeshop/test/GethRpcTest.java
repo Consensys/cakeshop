@@ -3,8 +3,13 @@ package com.jpmorgan.cakeshop.test;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Web3DefaultResponseType;
 import org.testng.annotations.Test;
+import org.web3j.protocol.core.BatchRequest;
 import org.web3j.protocol.core.Request;
+import org.web3j.protocol.core.Response;
+import org.web3j.protocol.core.methods.response.EthBlock;
+import org.web3j.protocol.core.methods.response.EthBlock.Block;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -33,17 +38,23 @@ public class GethRpcTest extends BaseGethRpcTest {
     @Test
     public void testBatchExec() throws APIException {
 
-        List<Request<?, Web3DefaultResponseType>> reqs = new ArrayList<>();
-        reqs.add(geth.createHttpRequestType("eth_getBlockByNumber", new Object[]{"0x" + Long.toHexString(0), false}));
-        reqs.add(geth.createHttpRequestType("eth_getBlockByNumber", new Object[]{"0x" + Long.toHexString(0), false}));
+    	BatchRequest batch = geth.getQuorumService().newBatch();
+        batch.add(geth.createHttpRequestType("eth_getBlockByNumber", EthBlock.class, new Object[]{"0x" + Long.toHexString(0), false}));
+        batch.add(geth.createHttpRequestType("eth_getBlockByNumber", EthBlock.class, new Object[]{"0x" + Long.toHexString(0), false}));
 
-        List<Map<String, Object>> batchRes = geth.batchExecuteGethCall(reqs);
+        List<? extends Response<?>> res;  
+    	try {
+    		res = batch.send().getResponses();
+    	} catch (IOException e) {
+    		throw new APIException(e.getMessage());
+    	}
 
-        assertNotNull(batchRes);
-        assertEquals(batchRes.size(), 2);
+        assertNotNull(res);
+        assertEquals(res.size(), 2);
 
-        for (Map<String, Object> data : batchRes) {
-            assertEquals(data.get("hash"), expectedHash);
+        for (Response<?> data : res) {
+        	Block b = (Block)data.getResult();
+            assertEquals(b.getHash(), expectedHash);
         }
 
     }

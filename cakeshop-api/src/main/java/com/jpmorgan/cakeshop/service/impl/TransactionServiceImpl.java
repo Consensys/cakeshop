@@ -1,13 +1,10 @@
 package com.jpmorgan.cakeshop.service.impl;
 
-import static com.jpmorgan.cakeshop.util.AbiUtils.*;
-
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Contract;
 import com.jpmorgan.cakeshop.model.ContractABI;
 import com.jpmorgan.cakeshop.model.DirectTransactionRequest;
 import com.jpmorgan.cakeshop.model.Event;
-import com.jpmorgan.cakeshop.model.Web3DefaultResponseType;
 import com.jpmorgan.cakeshop.model.Transaction;
 import com.jpmorgan.cakeshop.model.Transaction.Status;
 import com.jpmorgan.cakeshop.model.TransactionResult;
@@ -17,9 +14,15 @@ import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.TransactionService;
 import com.jpmorgan.cakeshop.service.WalletService;
 import com.jpmorgan.cakeshop.util.StringUtils;
-import com.jpmorgan.cakeshop.util.CakeshopUtils;
-import org.web3j.protocol.core.Request;
 
+import org.web3j.protocol.core.BatchRequest;
+import org.web3j.protocol.core.Response;
+import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
+import org.web3j.protocol.core.methods.response.EthTransaction;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.web3j.protocol.core.methods.response.Log;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,7 +41,7 @@ public class TransactionServiceImpl implements TransactionService {
     private static final Logger LOG = LoggerFactory.getLogger(TransactionServiceImpl.class);
 
     @Autowired
-    private GethHttpService geth;
+    private GethHttpService gethService;
 
     @Autowired
     private EventService eventService;
@@ -53,53 +56,63 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public Transaction get(String id) throws APIException {
-        List<Request<?, Web3DefaultResponseType>> reqs = new ArrayList<>();
-        reqs.add(geth.createHttpRequestType("eth_getTransactionByHash", new Object[]{id}));
-        reqs.add(geth.createHttpRequestType("eth_getTransactionReceipt", new Object[]{id}));
-        List<Map<String, Object>> batchRes = geth.batchExecuteGethCall(reqs);
+        BatchRequest batch = gethService.getQuorumService().newBatch();
+        batch.add(gethService.createHttpRequestType("eth_getTransactionByHash", EthTransaction.class, new Object[]{id}));
+        batch.add(gethService.createHttpRequestType("eth_getTransactionReceipt", EthGetTransactionReceipt.class, new Object[]{id}));
 
-        if (batchRes.isEmpty() || batchRes.get(0) == null) {
+        List<? extends Response<?>> res; 
+    	try {
+    		res = batch.send().getResponses();
+    	} catch (IOException e) {
+    		throw new APIException(e.getMessage());
+    	}
+    	
+        if (res == null || res.isEmpty() || res.get(0) == null) {
             return null;
         }
 
-        Map<String, Object> txData = batchRes.get(0);
-        if (batchRes.get(1) != null) {
-            txData.putAll(batchRes.get(1));
+        org.web3j.protocol.core.methods.response.Transaction txData = ((EthTransaction) res.get(0)).getTransaction().get();
+        TransactionReceipt tr = null;
+        
+        if (res.get(1) != null) {
+        	tr = ((EthGetTransactionReceipt)res.get(1)).getTransactionReceipt().get();
         }
 
-        Transaction tx = processTx(txData);
+        Transaction tx = processTx(txData, tr);
 
         return tx;
     }
 
-    private Transaction processTx(Map<String, Object> txData) throws APIException {
+    private Transaction processTx(org.web3j.protocol.core.methods.response.Transaction t, TransactionReceipt tr) throws APIException {
         Transaction tx = new Transaction();
-        tx.setId((String) txData.get("hash"));
-        tx.setBlockId((String) txData.get("blockHash"));
-        //TODO: this is a hack to make test happy. Need to evaluate the logic to have to and contract address always present.
-        tx.setContractAddress((String) txData.get("contractAddress"));
-        tx.setTo((String)txData.get("to"));
-        //hack end
-        tx.setNonce((String) txData.get("nonce"));
-        tx.setInput((String) txData.get("input"));
-        tx.setFrom((String) txData.get("from"));
+        tx.setId(t.getHash());
+        tx.setBlockId(t.getBlockHash());
+        tx.setTo(t.getTo());
+        tx.setNonce(t.getNonceRaw());
+        tx.setInput(t.getInput());
+        tx.setFrom(t.getFrom());
 
         // add signature
-        if (txData.get("r") != null) {
-            tx.setR((String) txData.get("r"));
-            tx.setS((String) txData.get("s"));
-            tx.setV((String) txData.get("v"));
+        if (t.getR() != null) {
+            tx.setR(t.getR());
+            tx.setS(t.getS());
+            tx.setV(t.getS());
+        }
+        
+        if (tr != null) {
+            //TODO: this is a hack to make test happy. Need to evaluate the logic to have to and contract address always present.
+            tx.setContractAddress(tr.getContractAddress());
+            //hack end
+            tx.setCumulativeGasUsed(tr.getCumulativeGasUsed());
+            tx.setGasUsed(tr.getGasUsed());
+            tx.setReturnCode(tr.getStatus());
         }
 
-        tx.setGasPrice(toBigInt("gasPrice", txData));
-
-        tx.setTransactionIndex(toBigInt("transactionIndex", txData));
-        tx.setBlockNumber(toBigInt("blockNumber", txData));
-        tx.setValue(toBigInt("value", txData));
-        tx.setGas(toBigInt("gas", txData));
-        tx.setCumulativeGasUsed(toBigInt("cumulativeGasUsed", txData));
-        tx.setGasUsed(toBigInt("gasUsed", txData));
-        tx.setReturnCode((String) txData.get("status"));
+        tx.setGasPrice(t.getGasPrice());
+        tx.setTransactionIndex(t.getTransactionIndex());
+        tx.setBlockNumber(t.getBlockNumber());
+        tx.setValue(t.getValue());
+        tx.setGas(t.getGas());
 
         if (tx.getBlockId() == null || tx.getBlockNumber() == null
                 || tx.getBlockId().contentEquals("0x0000000000000000000000000000000000000000000000000000000000000000")) {
@@ -134,8 +147,8 @@ public class TransactionServiceImpl implements TransactionService {
             }
         }
 
-        if (txData.get("logs") != null) {
-            List<Map<String, Object>> logs = (List<Map<String, Object>>) txData.get("logs");
+        if (tr != null && tr.getLogs() != null) {
+            List<Log> logs = (List<Log>) tr.getLogs();
             if (!logs.isEmpty()) {
                 List<Event> events = eventService.processEvents(logs);
                 tx.setLogs(events);
@@ -158,51 +171,48 @@ public class TransactionServiceImpl implements TransactionService {
 
         try {
             // TODO use txn manager
-            Map<String, Object> res = geth.executeGethCall("eth_getQuorumPayload", new Object[] { tx.getInput().substring(2) });
-            if (res.get(CakeshopUtils.SIMPLE_RESULT) != null) {
-                tx.setInput((String) res.get(CakeshopUtils.SIMPLE_RESULT)); // replace input with private payload
+        	String pp = gethService.getQuorumService().quorumGetPrivatePayload(tx.getInput().substring(2)).send().getPrivatePayload();
+            if (pp != null) {
+                tx.setInput(pp); // replace input with private payload
             }
-        } catch (APIException e) {
+        } catch (Exception e) {
             LOG.warn("Failed to load private payload: " + e.getMessage());
         }
     }
 
     @Override
     public List<Transaction> get(List<String> ids) throws APIException {
-
-        List<Request<?, Web3DefaultResponseType>> reqs = new ArrayList<>();
+        BatchRequest batch = gethService.getQuorumService().newBatch();
         for (String id : ids) {
-            reqs.add(geth.createHttpRequestType("eth_getTransactionByHash", new Object[]{id}));
-            reqs.add(geth.createHttpRequestType("eth_getTransactionReceipt", new Object[]{id}));
+        	batch.add(gethService.createHttpRequestType("eth_getTransactionByHash", EthTransaction.class, new Object[]{id}));
+        	batch.add(gethService.createHttpRequestType("eth_getTransactionReceipt", EthGetTransactionReceipt.class, new Object[]{id}));
         }
-        List<Map<String, Object>> batchRes = geth.batchExecuteGethCall(reqs);
 
-        // merge pairs of requests for all txns into single map
-        Map<String, Map<String, Object>> txnResponses = new HashMap<>();
-        for (Map<String, Object> res : batchRes) {
-            if (res != null) {
-                String hash = null;
-                if (res.get("hash") != null) {
-                    hash = (String) res.get("hash");
-                } else if (res.get("transactionHash") != null) {
-                    hash = (String) res.get("transactionHash");
-                }
-                if (hash != null) {
-                    Map<String, Object> map = txnResponses.get(hash);
-                    if (map != null) {
-                        map.putAll(res); // add to existing map
-                    } else {
-                        txnResponses.put(hash, res); // insert new map
-                    }
-                }
-            }
+        List<? extends Response<?>> res; 
+    	try {
+    		res = batch.send().getResponses();
+    	} catch (IOException e) {
+    		throw new APIException(e.getMessage());
+    	}
+    	
+        //collect all txs and txreceipts by txHash
+        Map<String, org.web3j.protocol.core.methods.response.Transaction> txMap = new HashMap<>();
+        Map<String, TransactionReceipt> trMap = new HashMap<>();
+        
+        for (Response<?> r : res) {
+        	if (r instanceof EthTransaction) {
+        		org.web3j.protocol.core.methods.response.Transaction t = ((EthTransaction) r).getTransaction().get();
+        		txMap.put(t.getHash(), t);
+        	} else if (r instanceof EthGetTransactionReceipt) {
+        		TransactionReceipt receipt = ((EthGetTransactionReceipt) r).getResult();
+        		trMap.put(receipt.getTransactionHash(), receipt);
+        	}
         }
 
         // collect txns in the order they were requested
         List<Transaction> txns = new ArrayList<>();
         for (String id : ids) {
-            Map<String, Object> txData = txnResponses.get(id);
-            txns.add(processTx(txData));
+            txns.add(processTx(txMap.get(id), trMap.get(id)));
         }
 
         return txns;
@@ -244,8 +254,16 @@ public class TransactionServiceImpl implements TransactionService {
                 StringUtils.isNotBlank(request.getFromAddress())
                         ? request.getFromAddress()
                         : defaultFromAddress); // make sure we have a non-null from address
-        Map<String, Object> readRes = geth.executeGethCall("eth_sendTransaction", request.toGethArgs());
-        return new TransactionResult((String) readRes.get(CakeshopUtils.SIMPLE_RESULT));
+        String hash = null; 
+        try {
+        	hash = gethService.getQuorumService().ethSendTransaction(request.toPrivateTransaction()).send().getTransactionHash();
+        } catch (IOException e) {
+        	throw new APIException(e.getMessage());
+        }
+        if (hash == null) {
+        	throw new APIException("transaction failure");
+        }
+        return new TransactionResult(hash);
     }
 
 }
