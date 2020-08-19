@@ -1,7 +1,7 @@
 package com.jpmorgan.cakeshop.test;
 
 import com.jpmorgan.cakeshop.db.SavingBlockListener;
-import com.jpmorgan.cakeshop.model.Block;
+import com.jpmorgan.cakeshop.model.BlockWrapper;
 
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
@@ -18,7 +18,7 @@ public class TestSavingBlockListener extends SavingBlockListener {
     }
 
     @Override
-    public void blockCreated(Block block) {
+    public void blockCreated(BlockWrapper block) {
         saveBlock(block);
     }
 

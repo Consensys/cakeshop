@@ -1,7 +1,7 @@
 package com.jpmorgan.cakeshop.service;
 
 import com.jpmorgan.cakeshop.error.APIException;
-import com.jpmorgan.cakeshop.model.Block;
+import com.jpmorgan.cakeshop.model.BlockWrapper;
 
 import java.util.List;
 
@@ -19,10 +19,10 @@ public interface BlockService {
      *
      * @throws APIException
      */
-    public Block get(String id, Long number, String tag) throws APIException;
+    public BlockWrapper get(String id, Long number, String tag) throws APIException;
 
-    public List<Block> get(long start, long end) throws APIException;
+    public List<BlockWrapper> get(long start, long end) throws APIException;
 
-    public List<Block> get(List<Long> numbers) throws APIException;
+    public List<BlockWrapper> get(List<Long> numbers) throws APIException;
 
 }

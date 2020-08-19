@@ -1,6 +1,6 @@
 package com.jpmorgan.cakeshop.dao;
 
-import com.jpmorgan.cakeshop.model.Block;
+import com.jpmorgan.cakeshop.model.BlockWrapper;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -17,19 +17,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class BlockDAO extends BaseDAO {
 
     @Transactional
-    public Block getById(String id) {
+    public BlockWrapper getById(String id) {
         if (null != getCurrentSession()) {
-            return getCurrentSession().get(Block.class, id);
+            return getCurrentSession().get(BlockWrapper.class, id);
         }
         return null;
     }
 
     @SuppressWarnings("rawtypes")
     @Transactional
-    public Block getByNumber(BigInteger number) {
-        Block block = null;
+    public BlockWrapper getByNumber(BigInteger number) {
+    	BlockWrapper block = null;
         if (null != getCurrentSession()) {
-            Criteria c = getCurrentSession().createCriteria(Block.class);
+            Criteria c = getCurrentSession().createCriteria(BlockWrapper.class);
             c.add(Restrictions.eq("number", number));
             List list = c.list();
 
@@ -37,7 +37,7 @@ public class BlockDAO extends BaseDAO {
                 return null;
             }
 
-            block = (Block) list.get(0);
+            block = (BlockWrapper) list.get(0);
             if (null != getCurrentSession()) {
                 Hibernate.initialize(block.getTransactions());
                 Hibernate.initialize(block.getUncles());
@@ -48,9 +48,9 @@ public class BlockDAO extends BaseDAO {
 
     @SuppressWarnings("rawtypes")
     @Transactional
-    public Block getLatest() {
+    public BlockWrapper getLatest() {
         if (null != getCurrentSession()) {
-            Criteria c = getCurrentSession().createCriteria(Block.class);
+            Criteria c = getCurrentSession().createCriteria(BlockWrapper.class);
             c.setProjection(Projections.max("number"));
             List list = c.list();
 
@@ -65,7 +65,7 @@ public class BlockDAO extends BaseDAO {
     }
 
     @Transactional
-    public void save(Block block) {
+    public void save(BlockWrapper block) {
         if (null != getCurrentSession()) {
             getCurrentSession().save(block);
         }

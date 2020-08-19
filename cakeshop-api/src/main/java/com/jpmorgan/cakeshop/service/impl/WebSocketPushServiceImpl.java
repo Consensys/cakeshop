@@ -4,7 +4,7 @@ import com.jpmorgan.cakeshop.db.MetricsBlockListener;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.APIData;
 import com.jpmorgan.cakeshop.model.APIResponse;
-import com.jpmorgan.cakeshop.model.Block;
+import com.jpmorgan.cakeshop.model.BlockWrapper;
 import com.jpmorgan.cakeshop.model.Node;
 import com.jpmorgan.cakeshop.service.*;
 import org.apache.commons.collections4.map.LRUMap;
@@ -62,7 +62,7 @@ public class WebSocketPushServiceImpl implements WebSocketPushService {
     private Node previousNodeStatus;
 
     // For tracking block changes
-    private Block previousBlock;
+    private BlockWrapper previousBlock;
 
     @Scheduled(fixedDelay = 1000)
     public void pushTxnPerMin() {
@@ -123,7 +123,7 @@ public class WebSocketPushServiceImpl implements WebSocketPushService {
             return;
         }
 
-        Block block = blockService.get(null, null, "latest");
+        BlockWrapper block = blockService.get(null, null, "latest");
 
         if (previousBlock != null && block.equals(previousBlock)) {
             return; // did not change

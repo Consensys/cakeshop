@@ -3,7 +3,7 @@ package com.jpmorgan.cakeshop.controller;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.APIError;
 import com.jpmorgan.cakeshop.model.APIResponse;
-import com.jpmorgan.cakeshop.model.Block;
+import com.jpmorgan.cakeshop.model.BlockWrapper;
 import com.jpmorgan.cakeshop.model.json.BlockPostJsonRequest;
 import com.jpmorgan.cakeshop.service.BlockService;
 import com.jpmorgan.cakeshop.util.StringUtils;
@@ -45,7 +45,7 @@ public class BlockController extends BaseController {
             jsonRequest.setId(jsonRequest.getHash());  // backwards compat
         }
 
-        Block block = blockService.get(jsonRequest.getId(), jsonRequest.getNumber(), jsonRequest.getTag());
+        BlockWrapper block = blockService.get(jsonRequest.getId(), jsonRequest.getNumber(), jsonRequest.getTag());
 
         APIResponse res = new APIResponse();
 

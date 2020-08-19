@@ -48,23 +48,11 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     private static final Logger LOG = LoggerFactory.getLogger(GethHttpServiceImpl.class);
 
-    @Autowired(required = false)
-    private BlockDAO blockDAO;
-
-    @Autowired(required = false)
-    private TransactionDAO txDAO;
-
-    @Autowired(required = false)
-    private WalletDAO walletDAO;
-
     @Autowired()
     private NodeInfoDAO nodeInfoDao;
 
     @Autowired
     private ApplicationContext applicationContext;
-
-    @Autowired
-    private ObjectMapper jsonMapper;
 
     @Value("${nodejs.binary:node}")
     String nodeJsBinaryName;
@@ -248,19 +236,6 @@ public class GethHttpServiceImpl implements GethHttpService {
         LOG.info("Starting new BlockScanner");
         blockScanner = applicationContext.getBean(BlockScanner.class);
         blockScanner.start();
-    }
-
-    private Boolean checkConnection() {
-
-        try {
-            Map<String, Object> info = executeGethCall("admin_nodeInfo");
-            if (info != null && StringUtils.isNotBlank((String) info.get("id"))) {
-                return true;
-            }
-        } catch (APIException e) {
-            LOG.debug("geth not yet up: " + e.getMessage());
-        }
-        return false;
     }
 
 }

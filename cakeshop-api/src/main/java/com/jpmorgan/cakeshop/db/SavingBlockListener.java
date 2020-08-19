@@ -6,7 +6,7 @@ import com.jpmorgan.cakeshop.dao.TransactionDAO;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.APIData;
 import com.jpmorgan.cakeshop.model.APIResponse;
-import com.jpmorgan.cakeshop.model.Block;
+import com.jpmorgan.cakeshop.model.BlockWrapper;
 import com.jpmorgan.cakeshop.model.Transaction;
 import com.jpmorgan.cakeshop.service.TransactionService;
 import com.jpmorgan.cakeshop.service.WebSocketPushService;
@@ -40,7 +40,7 @@ public class SavingBlockListener implements BlockListener {
         public void run() {
             while (running) {
                 try {
-                    Block block = blockQueue.poll(500, TimeUnit.MILLISECONDS);
+                	BlockWrapper block = blockQueue.poll(500, TimeUnit.MILLISECONDS);
                     if (block != null) {
                         saveBlock(block);
                     }
@@ -64,7 +64,7 @@ public class SavingBlockListener implements BlockListener {
     @Autowired
     private TransactionService txService;
 
-    private final ArrayBlockingQueue<Block> blockQueue;
+    private final ArrayBlockingQueue<BlockWrapper> blockQueue;
 
     private final BlockSaverThread blockSaver;
 
@@ -93,7 +93,7 @@ public class SavingBlockListener implements BlockListener {
         blockSaver.running = false;
     }
 
-    protected void saveBlock(Block block) {
+    protected void saveBlock(BlockWrapper block) {
         LOG.debug("Persisting block #" + block.getNumber());
         blockDAO.save(block);
         if (!block.getTransactions().isEmpty()) {
@@ -135,7 +135,7 @@ public class SavingBlockListener implements BlockListener {
     }
 
     @Override
-    public void blockCreated(Block block) {
+    public void blockCreated(BlockWrapper block) {
         try {
             blockQueue.put(block);
         } catch (InterruptedException e) {

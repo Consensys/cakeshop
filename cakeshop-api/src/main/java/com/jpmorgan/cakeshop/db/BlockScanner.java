@@ -3,7 +3,7 @@ package com.jpmorgan.cakeshop.db;
 import com.jpmorgan.cakeshop.dao.BlockDAO;
 import com.jpmorgan.cakeshop.dao.TransactionDAO;
 import com.jpmorgan.cakeshop.error.APIException;
-import com.jpmorgan.cakeshop.model.Block;
+import com.jpmorgan.cakeshop.model.BlockWrapper;
 import com.jpmorgan.cakeshop.service.BlockService;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.NodeService;
@@ -58,7 +58,7 @@ public class BlockScanner extends Thread {
 
     private Collection<BlockListener> blockListeners;
 
-    private Block previousBlock;
+    private BlockWrapper previousBlock;
 
     private Integer previousPeerCount;
 
@@ -101,8 +101,8 @@ public class BlockScanner extends Thread {
 
         LOG.info("Catching database up to latest block");
         // get the max block at startup
-        Block largestSavedBlock = blockDAO.getLatest();
-        Block chainBlock = null;
+        BlockWrapper largestSavedBlock = blockDAO.getLatest();
+        BlockWrapper chainBlock = null;
         try {
             chainBlock = blockService.get(null, null, "latest");
         } catch (APIException e) {
@@ -137,8 +137,8 @@ public class BlockScanner extends Thread {
                 i = end;
             }
             try {
-                List<Block> blocks = blockService.get(start, i);
-                for (Block block : blocks) {
+                List<BlockWrapper> blocks = blockService.get(start, i);
+                for (BlockWrapper block : blocks) {
                     notifyListeners(block);
                     previousBlock = block;
                 }
@@ -157,7 +157,7 @@ public class BlockScanner extends Thread {
      * Propagate block to all registered listeners
      * @param block
      */
-    private void notifyListeners(Block block) {
+    private void notifyListeners(BlockWrapper block) {
         for (BlockListener blockListener : blockListeners) {
             blockListener.blockCreated(block);
         }
@@ -175,7 +175,7 @@ public class BlockScanner extends Thread {
         long maxDBBlock = 0L;
 
         while (maxDBBlock < maxBlock) {
-            Block latest = blockDAO.getLatest();
+        	BlockWrapper latest = blockDAO.getLatest();
             maxDBBlock = latest == null ? 0 : latest.getNumber().longValue();
             LOG.debug("Wait to sync up with database");
             try {
@@ -187,8 +187,8 @@ public class BlockScanner extends Thread {
     }
 
     private void checkDbSync() throws APIException {
-        Block firstChainBlock = blockService.get(null, 1L, null);
-        Block firstKnownBlock = blockDAO.getByNumber(new BigInteger("1"));
+    	BlockWrapper firstChainBlock = blockService.get(null, 1L, null);
+    	BlockWrapper firstKnownBlock = blockDAO.getByNumber(new BigInteger("1"));
         if ((firstKnownBlock != null && firstChainBlock.getId() != null && !firstKnownBlock.equals(firstChainBlock))
                 || (firstChainBlock.getId() == null && firstKnownBlock != null)) {
 
@@ -262,7 +262,7 @@ public class BlockScanner extends Thread {
                     checkDbSync();
                 }
 
-                Block latestBlock = blockService.get(null, null, "latest");
+                BlockWrapper latestBlock = blockService.get(null, null, "latest");
                 if (previousBlock == null) {
                     previousBlock = blockDAO.getLatest();
                 }

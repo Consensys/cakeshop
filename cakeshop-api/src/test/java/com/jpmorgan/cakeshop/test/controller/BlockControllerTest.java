@@ -6,7 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.testng.Assert.*;
 
 import com.jpmorgan.cakeshop.controller.BlockController;
-import com.jpmorgan.cakeshop.model.Block;
+import com.jpmorgan.cakeshop.model.BlockWrapper;
 import com.jpmorgan.cakeshop.service.BlockService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +38,7 @@ public class BlockControllerTest extends BaseControllerTest {
 
     @Test
     public void testGetBlockByHash() throws Exception {
-        Block block = blockService.get(null, 0L, null);
+    	BlockWrapper block = blockService.get(null, 0L, null);
         commonTest("{\"hash\":\"" + block.getId() + "\"}", 0L);
     }
 
@@ -53,7 +53,7 @@ public class BlockControllerTest extends BaseControllerTest {
 
     @Test
     public void testGetBlockByTag() throws Exception {
-        Block block = blockService.get(null, null, "latest");
+    	BlockWrapper block = blockService.get(null, null, "latest");
         commonTest("{\"tag\":\"latest\"}", block.getNumber().longValue());
     }
 

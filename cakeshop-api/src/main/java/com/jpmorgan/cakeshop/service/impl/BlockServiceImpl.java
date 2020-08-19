@@ -2,8 +2,7 @@ package com.jpmorgan.cakeshop.service.impl;
 
 
 import com.jpmorgan.cakeshop.error.APIException;
-import com.jpmorgan.cakeshop.model.Web3DefaultResponseType;
-import com.jpmorgan.cakeshop.model.Block;
+import com.jpmorgan.cakeshop.model.BlockWrapper;
 import com.jpmorgan.cakeshop.service.BlockService;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 
@@ -17,7 +16,6 @@ import org.web3j.protocol.core.methods.response.EthBlock.TransactionResult;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +28,7 @@ public class BlockServiceImpl implements BlockService {
     private GethHttpService gethService;
 
     @Override
-    public Block get(String id, Long number, String tag) throws APIException {
+    public BlockWrapper get(String id, Long number, String tag) throws APIException {
     	org.web3j.protocol.core.methods.response.EthBlock.Block b = null;
         try {
         	if (id != null && !id.isEmpty()) {
@@ -46,8 +44,8 @@ public class BlockServiceImpl implements BlockService {
         return processBlock(b);
     }
     
-    private Block processBlock(org.web3j.protocol.core.methods.response.EthBlock.Block b) {
-    	Block block = new Block();
+    private BlockWrapper processBlock(org.web3j.protocol.core.methods.response.EthBlock.Block b) {
+    	BlockWrapper block = new BlockWrapper();
     	block.setId(b.getHash());
     	block.setParentId(b.getParentHash());
     	block.setNonce(b.getNonceRaw());
@@ -78,7 +76,7 @@ public class BlockServiceImpl implements BlockService {
     }
 
     @Override
-    public List<Block> get(long start, long end) throws APIException {
+    public List<BlockWrapper> get(long start, long end) throws APIException {
         List<Request<?, EthBlock>> reqs = new ArrayList<>();
         for (long i = start; i <= end; i++) {
             reqs.add(gethService.createHttpRequestType("eth_getBlockByNumber", EthBlock.class, new Object[]{"0x" + Long.toHexString(i), false}));
@@ -87,7 +85,7 @@ public class BlockServiceImpl implements BlockService {
     }
 
     @Override
-    public List<Block> get(List<Long> numbers) throws APIException {
+    public List<BlockWrapper> get(List<Long> numbers) throws APIException {
         List<Request<?, EthBlock>> reqs = new ArrayList<>();
         for (Long num : numbers) {
         	reqs.add(gethService.createHttpRequestType("eth_getBlockByNumber", EthBlock.class, new Object[]{"0x" + Long.toHexString(num), false}));          		
@@ -95,7 +93,7 @@ public class BlockServiceImpl implements BlockService {
         return batchGet(reqs);
     }
 
-    private List<Block> batchGet(List<Request<?, EthBlock>> reqs) throws APIException {
+    private List<BlockWrapper> batchGet(List<Request<?, EthBlock>> reqs) throws APIException {
     	BatchRequest batch = null;
     	for (Request<?, EthBlock> req : reqs) {
     		batch = gethService.getQuorumService().newBatch().add(req);
@@ -108,7 +106,7 @@ public class BlockServiceImpl implements BlockService {
     	}
 
         // TODO ignore return order for now
-        List<Block> blocks = new ArrayList<>();
+        List<BlockWrapper> blocks = new ArrayList<>();
         for (Response<?> blockData : res) {
             blocks.add(processBlock((org.web3j.protocol.core.methods.response.EthBlock.Block)blockData.getResult()));
         }

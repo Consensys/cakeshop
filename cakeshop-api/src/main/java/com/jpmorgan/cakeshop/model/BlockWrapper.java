@@ -19,7 +19,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 @Entity
 @Table(name="BLOCKS", indexes = {@Index(name="block_number_idx", columnList = "block_number")})
-public class Block implements Serializable {
+public class BlockWrapper implements Serializable {
 
     public static final String API_DATA_TYPE = "block";
 
@@ -282,7 +282,7 @@ public class Block implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Block block = (Block) o;
+        BlockWrapper block = (BlockWrapper) o;
         return Objects.equals(id, block.id);
     }
 

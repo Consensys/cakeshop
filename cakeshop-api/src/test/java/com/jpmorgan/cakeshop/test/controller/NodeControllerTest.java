@@ -3,7 +3,6 @@ package com.jpmorgan.cakeshop.test.controller;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.google.gson.JsonParser;
 import com.jpmorgan.cakeshop.controller.NodeController;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,11 +14,8 @@ public class NodeControllerTest extends BaseControllerTest {
     @Autowired
     NodeController nodeController;
 
-    private static JsonParser jsonParser;
-
     public NodeControllerTest() {
         super();
-        jsonParser = new JsonParser();
     }
 
     @Override

@@ -4,7 +4,7 @@ import com.jpmorgan.cakeshop.metrics.FastMeter;
 import com.jpmorgan.cakeshop.metrics.SimpleRollingMeter;
 import com.jpmorgan.cakeshop.metrics.TickListener;
 import com.jpmorgan.cakeshop.model.APIResponse;
-import com.jpmorgan.cakeshop.model.Block;
+import com.jpmorgan.cakeshop.model.BlockWrapper;
 
 import javax.annotation.PreDestroy;
 
@@ -125,7 +125,7 @@ public class MetricsBlockListener implements BlockListener, TickListener {
     }
 
     @Override
-    public void blockCreated(Block block) {
+    public void blockCreated(BlockWrapper block) {
 
         if (this.metricCollector == null || !this.metricCollector.isAlive()) {
             // lazily start collector thread if not running
