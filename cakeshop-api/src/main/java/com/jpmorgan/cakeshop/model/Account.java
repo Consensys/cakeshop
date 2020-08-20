@@ -10,8 +10,6 @@ import javax.persistence.Transient;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-@Entity
-@Table(name = "ACCOUNTS")
 public class Account implements Serializable {
 
     /**
@@ -22,7 +20,6 @@ public class Account implements Serializable {
     /**
      * Ethereum account address
      */
-    @Id
     private String address;
 
     private String balance;

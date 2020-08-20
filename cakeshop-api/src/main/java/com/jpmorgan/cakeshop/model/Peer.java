@@ -11,8 +11,6 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-@Entity
-@Table(name="PEERS")
 public class Peer implements Serializable  {
 
     /**
@@ -23,7 +21,6 @@ public class Peer implements Serializable  {
     /**
      * Node ID
      */
-    @Id
     private String id;
 
     /**
@@ -45,11 +42,6 @@ public class Peer implements Serializable  {
      * Raft Id
      */
     private int raftId;
-
-    /**
-     * Raft leader
-     */
-    private boolean leader;
 
     /**
      * Raft role
@@ -104,14 +96,6 @@ public class Peer implements Serializable  {
 
     public void setRaftId(int raftId) {
         this.raftId = raftId;
-    }
-
-    public boolean isLeader() {
-        return leader;
-    }
-
-    public void setLeader(boolean leader) {
-        this.leader = leader;
     }
 
     public String getRole() {

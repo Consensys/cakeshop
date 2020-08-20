@@ -1,13 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.jpmorgan.cakeshop.service.auth.impl;
 
-import com.jpmorgan.cakeshop.dao.UserDAO;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,10 +17,7 @@ public class AuthenticationService implements AuthenticationProvider {
 
     private final PasswordEncoder ENCODER = new BCryptPasswordEncoder();
 
-    @Autowired
-    private UserDAO userDao;
-
-    @Value("${cakeshop.cred1:\"\"}")
+  @Value("${cakeshop.cred1:\"\"}")
     private String cred1;
 
     @Value("${cakeshop.cred2:\"\"}")
@@ -43,14 +33,6 @@ public class AuthenticationService implements AuthenticationProvider {
             throw new AuthenticationException("Unable to authenticate user") {
             };
         }
-        //Use database for auth
-//        if (userDao.authenticate(userName, password)) {
-//            return new UsernamePasswordAuthenticationToken(userName, password);
-//        } else {
-//            throw new AuthenticationException("Unable to authenticate user") {
-//            };
-//        }
-
     }
 
     @Override

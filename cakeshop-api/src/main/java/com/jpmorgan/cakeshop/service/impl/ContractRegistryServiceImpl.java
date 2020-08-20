@@ -26,7 +26,7 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
     @Autowired
     private ContractDAO contractDAO;
 
-    public ContractRegistryServiceImpl() throws IOException {
+    public ContractRegistryServiceImpl() {
     }
 
     @Override

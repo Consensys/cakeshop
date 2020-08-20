@@ -12,7 +12,6 @@ import com.jpmorgan.cakeshop.service.ContractService;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.TransactionService;
 import com.jpmorgan.cakeshop.service.WalletService;
-import com.jpmorgan.cakeshop.service.task.BlockchainInitializerTask;
 import com.jpmorgan.cakeshop.test.config.TempFileManager;
 import com.jpmorgan.cakeshop.test.config.TestAppConfig;
 import com.jpmorgan.cakeshop.util.CakeshopUtils;
@@ -200,8 +199,5 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
                 e.printStackTrace();
             }
         });
-        BlockchainInitializerTask chainInitTask =
-            applicationContext.getBean(BlockchainInitializerTask.class);
-        chainInitTask.run(); // run in same thread
     }
 }

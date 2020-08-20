@@ -1,6 +1,5 @@
 package com.jpmorgan.cakeshop.service.impl;
 
-import com.jpmorgan.cakeshop.dao.WalletDAO;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Account;
 import com.jpmorgan.cakeshop.model.json.WalletPostJsonRequest;
@@ -35,10 +34,7 @@ public class WalletServiceImpl implements WalletService, GethRpcConstants {
     @Autowired
     private GethHttpService gethService;
 
-    @Autowired
-    private WalletDAO walletDAO;
-
-    @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked")
     @Override
     public List<Account> list() throws APIException {
 
@@ -77,7 +73,6 @@ public class WalletServiceImpl implements WalletService, GethRpcConstants {
 
         Account account = new Account();
         account.setAddress(newAddress);
-        walletDAO.save(account);
 
         return account;
     }
