@@ -26,6 +26,7 @@ import org.web3j.protocol.Web3jService;
 import org.web3j.protocol.admin.Admin;
 import org.web3j.protocol.core.Request;
 import org.web3j.protocol.core.Response;
+import org.web3j.protocol.geth.Geth;
 import org.web3j.protocol.http.HttpService;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
@@ -69,6 +70,8 @@ public class GethHttpServiceImpl implements GethHttpService {
     private Web3jService cakeshopService;
     
     private Admin adminService;
+    
+    private Geth gethService;
 
     public GethHttpServiceImpl() {
     }
@@ -120,12 +123,29 @@ public class GethHttpServiceImpl implements GethHttpService {
             throw new APIException("RPC call failed", e);
         }
     }
+    
+    public Geth getGethService() throws APIException {
+    	try {
+            if (StringUtils.isEmpty(currentRpcUrl)) {
+                throw new ResourceAccessException("Current RPC URL not set, skipping request");
+            }
+            if (gethService == null) {
+            	gethService = Geth.build(getCakeshopService());
+                LOG.info("New geth web3j service connected to " + currentRpcUrl);
+            }
+            return gethService;
+        } catch (RestClientException e) {
+            LOG.error("RPC call failed - " + ExceptionUtils.getRootCauseMessage(e));
+            throw new APIException("RPC call failed", e);
+        }
+    }
 
     private void resetCakeshopService() {
 
         cakeshopService = null;
         quorumService = null;
         adminService = null;
+        gethService = null;
     }
 
     @Override

@@ -7,7 +7,6 @@ import com.jpmorgan.cakeshop.model.Peer;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.GethRpcConstants;
 import com.jpmorgan.cakeshop.service.NodeService;
-import com.jpmorgan.cakeshop.util.AbiUtils;
 import com.jpmorgan.cakeshop.util.CakeshopUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
@@ -22,7 +21,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 
-import static com.jpmorgan.cakeshop.service.impl.GethHttpServiceImpl.SIMPLE_RESULT;
 import org.web3j.protocol.core.methods.response.admin.AdminNodeInfo.NodeInfo;
 import org.web3j.quorum.methods.response.raft.RaftPeer;
 
@@ -61,7 +59,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
             node.setId(info.getId());
             node.setStatus(StringUtils.isEmpty(info.getId()) ? NODE_NOT_RUNNING_STATUS : NODE_RUNNING_STATUS);
             node.setNodeName(info.getName());
-            node.setConsensus(getConsensusType());
+            node.setConsensus(info.getConsensus());
 
             String nodeURI = info.getEnode();
 
@@ -96,10 +94,13 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
             BigInteger blockNumber = gethService.getQuorumService().ethBlockNumber().send().getBlockNumber();
             node.setLatestBlock(blockNumber == null ? BigInteger.ZERO : blockNumber);
 
-            // get pending transactions
-            Integer pending = AbiUtils.hexToBigInteger((String) gethService.executeGethCall(ADMIN_TXPOOL_STATUS).get("pending")).intValue();
+            // get pending transactions           
+            Integer pending = gethService.getQuorumService().txPoolStatus().send().getPending();
             node.setPendingTxn(pending == null ? 0 : pending);
-
+            
+            String dataDir = gethService.getQuorumService().adminDataDir().send().getDataDir();
+            node.setDataDirectory(dataDir);
+            
             if (isRaft()) {
                 // get raft role
                 node.setRole(gethService.getQuorumService().raftGetRole().send().getRole());
@@ -144,10 +145,10 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
     				p.setNodeName(peer.getName());
     				p.setStatus(StringUtils.isEmpty(peer.getId()) ? NODE_NOT_RUNNING_STATUS : NODE_RUNNING_STATUS);
     				p.setRaftId(0);
-//        		URI uri = new URI(peer.getEnode());
-//                p.setNodeUrl(uri.toString());
-//                p.setNodeIP(uri.getHost());
-//                p.setId(uri.getUserInfo());
+        		URI uri = new URI(peer.getEnode());
+                p.setNodeUrl(uri.toString());
+                p.setNodeIP(uri.getHost());
+                p.setId(uri.getUserInfo());
     				peerList.put(p.getId(), p);
     			}
     		}
@@ -186,7 +187,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
     		peers.sort(Comparator.comparingInt(Peer::getRaftId));
 
     		return peers;
-    	} catch (IOException e) {
+    	} catch (IOException | URISyntaxException e) {
     		throw new APIException(e.getMessage());
     	}
     }
@@ -218,12 +219,12 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
             }
         }
 
-        Map<String, Object> res = gethService.executeGethCall(ADMIN_PEERS_ADD, address);
-        if (res == null) {
-            throw new APIException("Could not add geth peer: " + address);
+        boolean added = false;
+        try {
+        	added = gethService.getQuorumService().adminAddPeer(address).send().success();
+        } catch (IOException e) {
+        	throw new APIException(e.getMessage());
         }
-
-        boolean added = (boolean) res.get(SIMPLE_RESULT);
 
         if (added) {
             Peer peer = new Peer();
@@ -296,12 +297,12 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
             }
         }
 
-        Map<String, Object> res = gethService.executeGethCall(ADMIN_PEERS_REMOVE, address);
-        if (res == null) {
-            throw new APIException("Could not remove geth peer: " + address);
+        boolean removed = false;
+        try {
+        	removed = gethService.getQuorumService().adminAddPeer(address).send().success();
+        } catch (IOException e) {
+        	throw new APIException(e.getMessage());
         }
-
-        boolean removed = (boolean) res.get(SIMPLE_RESULT);
 
         if (removed) {
             Peer peerInDb = peerDAO.getById(uri.getUserInfo());
@@ -344,21 +345,13 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
         return "raft".equals(getConsensusType());
     }
 
-    private String getConsensusType(){
-        // need to do some modifications to web3j AdminNodeInfo for this to be nicer
-        String consensus = "unknown";
-        try {
-        	Map<String, Object> data = gethService.executeGethCall(ADMIN_NODE_INFO);
-            Map<String, Object> protocols = (Map<String, Object>) data.get("protocols");
-            if(protocols.containsKey("istanbul")) {
-                consensus = "istanbul";
-            } else {
-                Map<String, Object> eth = (Map<String, Object>) protocols.get("eth");
-                consensus = (String) eth.get("consensus");
-            }
-        } catch (Exception e) {
-            LOG.debug("Could not retrieve consensus type from admin_nodeInfo", e);
-        }
-        return consensus;
+    private String getConsensusType() {
+    	String consensus = "unkown";
+    	try {
+    		consensus = gethService.getQuorumService().adminNodeInfo().send().getResult().getConsensus();
+    	} catch (Exception e) {
+    		LOG.debug("Could not retrieve consensus type from admin_nodeInfo", e);
+    	}
+    	return consensus;
     }
 }

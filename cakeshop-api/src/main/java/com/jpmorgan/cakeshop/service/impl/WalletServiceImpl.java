@@ -111,15 +111,10 @@ public class WalletServiceImpl implements WalletService, GethRpcConstants {
     @Override
     public Boolean lockAccount(WalletPostJsonRequest request) throws APIException {
         try {
-            Map<String, Object> result = gethService.executeGethCall("personal_lockAccount", new Object[]{request.getAccount()});
-            String response = result.get(CakeshopUtils.SIMPLE_RESULT).toString();
-            if (StringUtils.isNotBlank(response) && Boolean.valueOf(response)) {
-                return Boolean.TRUE;
-            }
-        } catch (APIException ex) {
-            throw ex;
+        	return gethService.getGethService().personalLockAccount(request.getAccount()).send().success();
+        } catch (IOException ex) {
+            throw new APIException(ex.getMessage());
         }
-        return Boolean.FALSE;
     }
 
     @Override

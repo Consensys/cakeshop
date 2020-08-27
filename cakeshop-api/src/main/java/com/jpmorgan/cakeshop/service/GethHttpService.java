@@ -3,10 +3,10 @@ package com.jpmorgan.cakeshop.service;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Web3DefaultResponseType;
 
-import org.web3j.protocol.Web3jService;
 import org.web3j.protocol.admin.Admin;
 import org.web3j.protocol.core.Request;
 import org.web3j.protocol.core.Response;
+import org.web3j.protocol.geth.Geth;
 import org.web3j.quorum.Quorum;
 
 import java.util.List;
@@ -24,6 +24,8 @@ public interface GethHttpService {
     public Quorum getQuorumService() throws APIException;
     
     public Admin getAdminService() throws APIException;
+    
+    public Geth getGethService() throws APIException;
     /**
      * Call the given Geth RPC method
      *
