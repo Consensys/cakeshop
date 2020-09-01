@@ -195,6 +195,7 @@ module.exports = function() {
 			'	<div class="form-group status-form">' +
 		    '	    <label for="stat">Change Status</label>' +
             '	    <select id="stat" class="form-control" style="transition: none;"> </select>' +
+            '		</br> '+
 		    '	    <label for="from-account">From Account</label>' +
             '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
 			'	</div>' +
@@ -227,13 +228,18 @@ module.exports = function() {
 			'	<div class="form-group role-form">' +
             '		<label for="org-id">Org Id</label>' +
             '		<input type="text" class="form-control" id="org-id" value="<%=orgId%>">' +
+            '		</br> '+
             '		<label for="role-id">Role Id</label>' +
             '		<input type="text" class="form-control" id="role-id" placeholder="Enter new role name">' +
+            '		</br> '+
 		    '	    <label for="access">Access Level</label>' +
             '	    <select id="access" class="form-control" style="transition: none;"> </select>' +
+            '		</br> '+
 		    '	    <label for="from-account">From Account</label>' +
             '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
+            '		</br> '+
             '       <input type="checkbox" id="voter" name="voter" value="yes"> <label for="voter">Voter</label>' +
+            '		</br> '+
             '       <input type="checkbox" id="admin" name="admin" value="yes"> <label for="admin">Admin</label>' +
 			'	</div>' +
 			'</div>' +
@@ -249,8 +255,10 @@ module.exports = function() {
 			'	<div class="form-group node-form">' +
             '		<label for="org-id">Org Id</label>' +
             '		<input type="text" class="form-control" id="org-id" value="<%=orgId%>">' +
+            '		</br> '+
             '		<label for="enode-id">Enode Id</label>' +
             '		<input type="text" class="form-control" id="enode-id" placeholder="Enter full enode id">' +
+            '		</br> '+
 		    '	    <label for="from-account">From Account</label>' +
             '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
 			'	</div>' +
@@ -267,10 +275,13 @@ module.exports = function() {
 			'	<div class="form-group acct-form">' +
             '		<label for="org-id">Org Id</label>' +
             '		<input type="text" class="form-control" id="org-id" value="<%=orgId%>">' +
+            '		</br> '+
             '		<label for="acct-id">Acct Id</label>' +
             '		<input type="text" class="form-control" id="acct-id" placeholder="Enter new account address">' +
+            '		</br> '+
 		    '	    <label for="role-id">Role Id</label>' +
             '	    <select id="role-id" class="form-control" style="transition: none;"> </select>' +
+            '		</br> '+
 		    '	    <label for="from-account">From Account</label>' +
             '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
 			'	</div>' +
@@ -304,12 +315,16 @@ module.exports = function() {
 			'    </label>' +
 			'  </div>' +
 			'	<div class="form-group acct-form">' +
+			'		</br> '+
             '		<label for="org-id">Org Id</label>' +
             '		<input type="text" class="form-control" id="org-id" value="<%=orgId%>">' +
+            '		</br> '+
             '		<label for="acct-id">Acct Id</label>' +
             '		<input type="text" class="form-control" id="acct-id" value="<%=acctId%>">' +
+            '		</br> '+
 		    '	    <label for="role-id">Role Id</label>' +
             '	    <select id="role-id" class="form-control" style="transition: none;"> </select>' +
+            '		</br> '+
 		    '	    <label for="from-account">From Account</label>' +
             '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
 			'	</div>' +
