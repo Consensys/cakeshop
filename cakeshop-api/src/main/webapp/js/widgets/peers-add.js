@@ -48,7 +48,6 @@ module.exports = function() {
 			$.when(
 				utils.load({ url: url, data: { address: input.val(), raftLearner: raftLearner } })
 			).done(function(r) {
-				console.log('peers',r)
 				notif.show();
 
 					input.val('');
@@ -62,7 +61,6 @@ module.exports = function() {
 						notif.fadeOut();
 					}, 2000);
 			}).fail(function(r) {
-			    console.log(r)
                 notif
                   .addClass('text-danger')
                   .removeClass('text-success')

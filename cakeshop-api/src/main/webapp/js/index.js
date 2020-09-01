@@ -139,6 +139,7 @@ window.Tower = {
 			'node-info'              : require('./widgets/node-info'),
 			'peers-add'              : require('./widgets/peers-add'),
 			'peers-list'             : require('./widgets/peers-list'),
+			'peers-istanbul'             : require('./widgets/peers-istanbul'),
 			'txn-detail'             : require('./widgets/txn-detail'),
 		});
 
@@ -304,7 +305,9 @@ window.Tower = {
 		'peers': function() {
 			var widgets = [
 				{ widgetId: 'peers-list' },
-                { widgetId: 'peers-add' }
+                { widgetId: 'peers-add' },
+                { widgetId: 'peers-istanbul' },
+                { widgetId: 'istanbul-validators' }
 			];
 
 			Dashboard.showSection('peers', widgets);
