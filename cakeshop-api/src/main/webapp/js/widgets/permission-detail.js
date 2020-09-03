@@ -158,7 +158,7 @@ module.exports = function() {
 		    + '<td class="value acct-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= a.acctId %></td>'
 		    + '<td class="value role-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= a.roleId %></td>'
 		    + '<td class="value status" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= status %></td>'
-            + '<td class="value org-admin" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= a.orgAdmin %></td>'
+            + '<td class="value org-admin" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= orgAdmin %></td>'
 		    + '<td data-orgid="<%= a.orgId %>" data-acctid="<%= a.acctId %>" class="role-col">'
             +   '<button class="btn btn-default change-role-btn">Change Role</button>'
             + '</td>'
@@ -173,10 +173,10 @@ module.exports = function() {
 
 		templateRowRole: _.template('<tr>'
 		    + '<td class="value role-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= r.roleId %></td>'
-		    + '<td class="value active" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= r.active %></td>'
+		    + '<td class="value active" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= active %></td>'
             + '<td class="value access" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= access %></td>'
-		    + '<td class="value voter" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= r.voter %></td>'
-		    + '<td class="value admin" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= r.admin %></a></td>'
+		    + '<td class="value voter" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= voter %></td>'
+		    + '<td class="value admin" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= admin %></a></td>'
 		    + '<td data-orgid="<%= r.orgId %>" data-roleid="<%= r.roleId %>" class="remove-role-col">'
             +   '<button class="btn btn-default remove-role-btn">Remove Role</button>'
             + '</td>'
@@ -405,16 +405,27 @@ module.exports = function() {
 			        var status = acctStatuses[acct.status]
 			        var disableRecover = acct.status == 5 || acct.status == 7? '' : 'disabled'
 			        var disableStatus = acct.status == 2 || acct.status == 4 || acct.status == 6 ? '' : 'disabled'
+			        var orgAdmin = acct.orgAdmin ? '\u2713' : '\u2717'
 					acctRows.push(_this.templateRowAcct({
 					    a: acct,
 					    status: status,
 					    disableRecover: disableRecover,
-					    disableStatus: disableStatus
+					    disableStatus: disableStatus,
+					    orgAdmin: orgAdmin
 					}));
 			    })
 			    _.each(res.data.attributes.roleList, function(role) {
 			        var access = roleAccesses[role.access]
-					roleRows.push(_this.templateRowRole({r: role, access: access}));
+			        var admin = role.admin ? '\u2713' : '\u2717'
+			        var active = role.active ? "\u2713" : '\u2717'
+			        var voter = role.voter ? '\u2713' : '\u2717'
+					roleRows.push(_this.templateRowRole({
+						r: role, 
+						access: access, 
+						admin: admin, 
+						active: active, 
+						voter: voter
+					}));
 			    })
 			    _.each(res.data.attributes.subOrgList, function(subOrg) {
 					subRows.push(_this.templateRowSubs({s: subOrg}));
