@@ -405,6 +405,7 @@ module.exports = function() {
 			        var status = acctStatuses[acct.status]
 			        var disableRecover = acct.status == 5 || acct.status == 7? '' : 'disabled'
 			        var disableStatus = acct.status == 2 || acct.status == 4 || acct.status == 6 ? '' : 'disabled'
+			        // checkmark (\u2713) and x (\u2717)
 			        var orgAdmin = acct.orgAdmin ? '\u2713' : '\u2717'
 					acctRows.push(_this.templateRowAcct({
 					    a: acct,
@@ -416,6 +417,7 @@ module.exports = function() {
 			    })
 			    _.each(res.data.attributes.roleList, function(role) {
 			        var access = roleAccesses[role.access]
+			        // checkmark (\u2713) and x (\u2717)
 			        var admin = role.admin ? '\u2713' : '\u2717'
 			        var active = role.active ? "\u2713" : '\u2717'
 			        var voter = role.voter ? '\u2713' : '\u2717'
