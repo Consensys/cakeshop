@@ -158,7 +158,7 @@ module.exports = function() {
 		    + '<td class="value acct-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= a.acctId %></td>'
 		    + '<td class="value role-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= a.roleId %></td>'
 		    + '<td class="value status" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= status %></td>'
-            + '<td class="value org-admin" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= a.orgAdmin %></td>'
+            + '<td class="value org-admin" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= orgAdmin %></td>'
 		    + '<td data-orgid="<%= a.orgId %>" data-acctid="<%= a.acctId %>" class="role-col">'
             +   '<button class="btn btn-default change-role-btn">Change Role</button>'
             + '</td>'
@@ -173,10 +173,10 @@ module.exports = function() {
 
 		templateRowRole: _.template('<tr>'
 		    + '<td class="value role-id" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= r.roleId %></td>'
-		    + '<td class="value active" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= r.active %></td>'
+		    + '<td class="value active" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= active %></td>'
             + '<td class="value access" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= access %></td>'
-		    + '<td class="value voter" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= r.voter %></td>'
-		    + '<td class="value admin" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= r.admin %></a></td>'
+		    + '<td class="value voter" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= voter %></td>'
+		    + '<td class="value admin" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= admin %></a></td>'
 		    + '<td data-orgid="<%= r.orgId %>" data-roleid="<%= r.roleId %>" class="remove-role-col">'
             +   '<button class="btn btn-default remove-role-btn">Remove Role</button>'
             + '</td>'
@@ -195,6 +195,7 @@ module.exports = function() {
 			'	<div class="form-group status-form">' +
 		    '	    <label for="stat">Change Status</label>' +
             '	    <select id="stat" class="form-control" style="transition: none;"> </select>' +
+            '		</br> '+
 		    '	    <label for="from-account">From Account</label>' +
             '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
 			'	</div>' +
@@ -227,13 +228,18 @@ module.exports = function() {
 			'	<div class="form-group role-form">' +
             '		<label for="org-id">Org Id</label>' +
             '		<input type="text" class="form-control" id="org-id" value="<%=orgId%>">' +
+            '		</br> '+
             '		<label for="role-id">Role Id</label>' +
             '		<input type="text" class="form-control" id="role-id" placeholder="Enter new role name">' +
+            '		</br> '+
 		    '	    <label for="access">Access Level</label>' +
             '	    <select id="access" class="form-control" style="transition: none;"> </select>' +
+            '		</br> '+
 		    '	    <label for="from-account">From Account</label>' +
             '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
+            '		</br> '+
             '       <input type="checkbox" id="voter" name="voter" value="yes"> <label for="voter">Voter</label>' +
+            '		</br> '+
             '       <input type="checkbox" id="admin" name="admin" value="yes"> <label for="admin">Admin</label>' +
 			'	</div>' +
 			'</div>' +
@@ -249,8 +255,10 @@ module.exports = function() {
 			'	<div class="form-group node-form">' +
             '		<label for="org-id">Org Id</label>' +
             '		<input type="text" class="form-control" id="org-id" value="<%=orgId%>">' +
+            '		</br> '+
             '		<label for="enode-id">Enode Id</label>' +
             '		<input type="text" class="form-control" id="enode-id" placeholder="Enter full enode id">' +
+            '		</br> '+
 		    '	    <label for="from-account">From Account</label>' +
             '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
 			'	</div>' +
@@ -267,10 +275,13 @@ module.exports = function() {
 			'	<div class="form-group acct-form">' +
             '		<label for="org-id">Org Id</label>' +
             '		<input type="text" class="form-control" id="org-id" value="<%=orgId%>">' +
+            '		</br> '+
             '		<label for="acct-id">Acct Id</label>' +
             '		<input type="text" class="form-control" id="acct-id" placeholder="Enter new account address">' +
+            '		</br> '+
 		    '	    <label for="role-id">Role Id</label>' +
             '	    <select id="role-id" class="form-control" style="transition: none;"> </select>' +
+            '		</br> '+
 		    '	    <label for="from-account">From Account</label>' +
             '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
 			'	</div>' +
@@ -304,12 +315,16 @@ module.exports = function() {
 			'    </label>' +
 			'  </div>' +
 			'	<div class="form-group acct-form">' +
+			'		</br> '+
             '		<label for="org-id">Org Id</label>' +
             '		<input type="text" class="form-control" id="org-id" value="<%=orgId%>">' +
+            '		</br> '+
             '		<label for="acct-id">Acct Id</label>' +
             '		<input type="text" class="form-control" id="acct-id" value="<%=acctId%>">' +
+            '		</br> '+
 		    '	    <label for="role-id">Role Id</label>' +
             '	    <select id="role-id" class="form-control" style="transition: none;"> </select>' +
+            '		</br> '+
 		    '	    <label for="from-account">From Account</label>' +
             '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
 			'	</div>' +
@@ -390,16 +405,29 @@ module.exports = function() {
 			        var status = acctStatuses[acct.status]
 			        var disableRecover = acct.status == 5 || acct.status == 7? '' : 'disabled'
 			        var disableStatus = acct.status == 2 || acct.status == 4 || acct.status == 6 ? '' : 'disabled'
+			        // checkmark (\u2713) and x (\u2717)
+			        var orgAdmin = acct.orgAdmin ? '\u2713' : '\u2717'
 					acctRows.push(_this.templateRowAcct({
 					    a: acct,
 					    status: status,
 					    disableRecover: disableRecover,
-					    disableStatus: disableStatus
+					    disableStatus: disableStatus,
+					    orgAdmin: orgAdmin
 					}));
 			    })
 			    _.each(res.data.attributes.roleList, function(role) {
 			        var access = roleAccesses[role.access]
-					roleRows.push(_this.templateRowRole({r: role, access: access}));
+			        // checkmark (\u2713) and x (\u2717)
+			        var admin = role.admin ? '\u2713' : '\u2717'
+			        var active = role.active ? "\u2713" : '\u2717'
+			        var voter = role.voter ? '\u2713' : '\u2717'
+					roleRows.push(_this.templateRowRole({
+						r: role, 
+						access: access, 
+						admin: admin, 
+						active: active, 
+						voter: voter
+					}));
 			    })
 			    _.each(res.data.attributes.subOrgList, function(subOrg) {
 					subRows.push(_this.templateRowSubs({s: subOrg}));
