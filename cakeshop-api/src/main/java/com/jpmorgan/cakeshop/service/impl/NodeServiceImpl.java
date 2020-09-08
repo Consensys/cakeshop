@@ -381,7 +381,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
     	} catch (IOException e) {
     		throw new APIException(e.getMessage());
     	}
-    	return response.success();
+    	return true;
     }
     
     @Override
@@ -395,7 +395,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
     	} catch (IOException e) {
     		throw new APIException(e.getMessage());
     	}
-    	return response.success();
+    	return true;
     }
 
 }

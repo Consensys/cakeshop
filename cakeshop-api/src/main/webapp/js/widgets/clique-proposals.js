@@ -2,7 +2,7 @@ import utils from '../utils';
 
 module.exports = function() {
 	var extended = {
-		name: 'clique-proposal',
+		name: 'clique-proposals',
 		title: 'Clique Proposals',
 		size: 'medium',
 
@@ -31,7 +31,7 @@ module.exports = function() {
 				'		<button class="btn btn-default yes-btn">Agree</button>' +
 				'   </td>' +
 				'   <td data-candidate="<%= candidate %>" class="discard-col">' +
-				'		<button class="btn btn-default yes-btn">Discard</button>' +
+				'		<button class="btn btn-default discard-btn">Discard</button>' +
 				'   </td>' +
 				'</tr>'),
 
@@ -39,15 +39,17 @@ module.exports = function() {
 
 		fetch: function() {
 			var _this = this;
-			console.log("hi")
+
 			$.when(
 				utils.load({ url: _this.url })
 			).done(function(info) {
 				var candidates = [];
-				
+
 
 				if (!_.isEmpty(info.data.attributes.result)) {
 					_.each(info.data.attributes.result, function(auth, candidate) {
+						console.log(candidate);
+						console.log(auth)
 						var action = auth ? "Add" : "Remove"
 						candidates.push( _this.templateRow({ candidate: candidate, auth: action }) );
 					});
@@ -69,13 +71,10 @@ module.exports = function() {
 
 		postRender: function() {
 			var _this = this;
-			console.log('sup')
 
          $('#widget-' + _this.shell.id).on('click', '.yes-btn', function(e) {
         	 var candidate = $(e.target.parentElement).data("candidate")
         	 var auth = $(e.target.parentElement).data("auth") == "Add" ? "true" : "false"
-        	 console.log("auth")
-        	 console.log(auth)
         	 $.when(
  					utils.load({
  						url: _this.url_propose,
@@ -92,26 +91,26 @@ module.exports = function() {
  						}) );
  				});
 
-         	}),
-         	
-            $('#widget-' + _this.shell.id).on('click', '.discard-btn', function(e) {
-           	 var candidate = $(e.target.parentElement).data("candidate")
-           	 $.when(
-    					utils.load({
-    						url: _this.url_discard,
-    						data: {
-    							"address": candidate
-    						}
-    					})
-    				).done(function () {
-    					_this.fetch();
-    				}).fail(function(err) {
-    						$('#myModal .modal-content').html(_this.modalConfirmation({
-    							message: err.responseJSON.errors.map((error) => error.detail)
-    						}) );
-    				});
+         	});
+         
+         $('#widget-' + _this.shell.id).on('click', '.discard-btn', function(e) {
+        	 var candidate = $(e.target.parentElement).data("candidate")
+        	 $.when(
+ 					utils.load({
+ 						url: _this.url_discard,
+ 						data: {
+ 							"address": candidate,
+ 						}
+ 					})
+ 				).done(function () {
+ 					_this.fetch();
+ 				}).fail(function(err) {
+ 						$('#myModal .modal-content').html(_this.modalConfirmation({
+ 							message: err.responseJSON.errors.map((error) => error.detail)
+ 						}) );
+ 				});
 
-            	})
+         	})
 		}
 
 	};
