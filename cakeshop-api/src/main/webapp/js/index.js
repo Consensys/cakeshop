@@ -140,6 +140,7 @@ window.Tower = {
 			'peers-add'              : require('./widgets/peers-add'),
 			'peers-list'             : require('./widgets/peers-list'),
 			'peers-istanbul'             : require('./widgets/peers-istanbul'),
+			'istanbul-validators'             : require('./widgets/istanbul-validators'),
 			'txn-detail'             : require('./widgets/txn-detail'),
 		});
 
