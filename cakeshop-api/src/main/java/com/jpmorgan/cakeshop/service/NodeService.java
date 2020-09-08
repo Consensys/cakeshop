@@ -62,6 +62,8 @@ public interface NodeService {
     
     public String propose(String address, boolean auth) throws APIException;
     
+    public String discard(String address) throws APIException;
+    
     public String istanbulGetNodeAddress() throws APIException;
 
 }

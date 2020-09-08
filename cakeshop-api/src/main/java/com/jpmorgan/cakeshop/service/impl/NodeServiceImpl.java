@@ -380,6 +380,20 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
     }
     
     @Override
+    public String discard(String address) throws APIException {
+    	ConsensusNoResponse response = null;
+    	try {
+    		response = gethService.getQuorumService().istanbulDiscard(address).send();
+    		if (response == null || response.hasError()) {
+    			throw new APIException(response.getError().getMessage());
+    		}
+    	} catch (IOException e) {
+    		throw new APIException(e.getMessage());
+    	}
+    	return response.getNoResponse();
+    }
+    
+    @Override
     public String istanbulGetNodeAddress() throws APIException {
     	IstanbulNodeAddress address = null;
     	try {

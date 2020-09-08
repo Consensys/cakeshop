@@ -210,9 +210,17 @@ public class NodeController extends BaseController {
     })
     @RequestMapping("/peers/istanbulPropose")
     public ResponseEntity<APIResponse> istanbulPropose(@RequestBody NodePostJsonRequest jsonRequest) throws APIException {
-    	LOG.info(jsonRequest.getAddress());
-    	LOG.info(Boolean.toString(jsonRequest.isIstanbulPropose()));
         String response = nodeService.propose(jsonRequest.getAddress(), jsonRequest.isIstanbulPropose());
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(response), HttpStatus.OK);
+    }
+    
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "address", required = false, value = "Required. External node address to add", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "istanbulPropose", required = false, value = "what action to propose", dataType = "java.lang.Boolean", paramType = "body")
+    })
+    @RequestMapping("/peers/istanbulDiscard")
+    public ResponseEntity<APIResponse> istanbulDiscard(@RequestBody NodePostJsonRequest jsonRequest) throws APIException {
+        String response = nodeService.discard(jsonRequest.getAddress());
         return new ResponseEntity<>(APIResponse.newSimpleResponse(response), HttpStatus.OK);
     }
     

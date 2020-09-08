@@ -2,14 +2,15 @@ import utils from '../utils';
 
 module.exports = function() {
 	var extended = {
-		name: 'peers-istanbul',
-		title: 'Peer Istanbul',
+		name: 'istanbul-candidates',
+		title: 'Istanbul Candidates',
 		size: 'medium',
 
 		hideLink: true,
 
 		url: 'api/node/peers/istanbul/candidates',
 		url_propose: 'api/node/peers/istanbulPropose',
+		url_discard: 'api/node/peers/istanbulDiscard',
 
 		template: _.template('<table style="width: 100%; table-layout: fixed;" class="table table-striped">' +
 				' <thead style="front-weight: bold;">' +
@@ -17,6 +18,7 @@ module.exports = function() {
 				'	<td class="candidate">Candidate</td>' +
 				'	<td class="action">Voting Action</td>' +
 				'	<td class="yes-col"</td>' +
+				'	<td class="discard-col"</td>' +
 				' </tr>' +
 				' </thead>' +
 				'<tbody><%= rows %></tbody>' +
@@ -27,6 +29,9 @@ module.exports = function() {
 				'   <td class="value action"><%= auth %></td>' +
 				'   <td data-candidate="<%= candidate %>" data-auth="<%= auth %>" class="yes-col">' +
 				'		<button class="btn btn-default yes-btn">Agree</button>' +
+				'   </td>' +
+				'   <td data-candidate="<%= candidate %>" class="discard-col">' +
+				'		<button class="btn btn-default discard-btn">Discard</button>' +
 				'   </td>' +
 				'</tr>'),
 		
@@ -78,6 +83,25 @@ module.exports = function() {
  						data: {
  							"address": candidate,
  							"istanbulPropose": auth
+ 						}
+ 					})
+ 				).done(function () {
+ 					_this.fetch();
+ 				}).fail(function(err) {
+ 						$('#myModal .modal-content').html(_this.modalConfirmation({
+ 							message: err.responseJSON.errors.map((error) => error.detail)
+ 						}) );
+ 				});
+        	 
+         	});
+         
+         $('#widget-' + _this.shell.id).on('click', '.discard-btn', function(e) {
+        	 var candidate = $(e.target.parentElement).data("candidate")
+        	 $.when(
+ 					utils.load({
+ 						url: _this.url_discard,
+ 						data: {
+ 							"address": candidate
  						}
  					})
  				).done(function () {

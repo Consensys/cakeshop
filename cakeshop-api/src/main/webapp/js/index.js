@@ -139,7 +139,7 @@ window.Tower = {
 			'node-info'              : require('./widgets/node-info'),
 			'peers-add'              : require('./widgets/peers-add'),
 			'peers-list'             : require('./widgets/peers-list'),
-			'peers-istanbul'             : require('./widgets/peers-istanbul'),
+			'istanbul-candidates'             : require('./widgets/istanbul-candidates'),
 			'istanbul-validators'             : require('./widgets/istanbul-validators'),
 			'txn-detail'             : require('./widgets/txn-detail'),
 		});
@@ -307,7 +307,7 @@ window.Tower = {
 			var widgets = [
 				{ widgetId: 'peers-list' },
                 { widgetId: 'peers-add' },
-                { widgetId: 'peers-istanbul' },
+                { widgetId: 'istanbul-candidates' },
                 { widgetId: 'istanbul-validators' }
 			];
 
