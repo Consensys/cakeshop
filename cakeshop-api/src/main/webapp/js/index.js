@@ -124,6 +124,8 @@ window.Tower = {
 			'block-detail'           : require('./widgets/block-detail'),
 			'block-list'             : require('./widgets/block-list'),
 			'block-view'             : require('./widgets/block-view'),
+			'clique-proposals'		 : require('./widgets/clique-proposals'),
+			'clique-signers'		 : require('./widgets/clique-signers'),
 			'contract-current-state' : require('./widgets/contract-current-state'),
 			'contract-detail'        : require('./widgets/contract-detail'),
             'contract-transact'      : require('./widgets/contract-transact'),
@@ -304,7 +306,9 @@ window.Tower = {
 		'peers': function() {
 			var widgets = [
 				{ widgetId: 'peers-list' },
-                { widgetId: 'peers-add' }
+                { widgetId: 'peers-add' },
+                { widgetId: 'clique-signers' },
+                { widgetId: 'clique-proposals' }
 			];
 
 			Dashboard.showSection('peers', widgets);

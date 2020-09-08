@@ -68,7 +68,6 @@ module.exports = function() {
             $.when(
                 utils.load({ url: _this.promote, data: { address: address } })
             ).done(function(r) {
-                console.log('peers',r)
                 _this.fetch()
             }).fail(function(r) {
                 console.log(r)
