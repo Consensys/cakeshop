@@ -111,7 +111,6 @@ module.exports = function() {
 			});
 			
 			$('#widget-' + _this.shell.id).on('click', '.add-btn', function(e) {
-				console.log("hiii")
 				
 				// set the modal text
 				$('#myModal .modal-content').html(_this.modalValidator({}) );

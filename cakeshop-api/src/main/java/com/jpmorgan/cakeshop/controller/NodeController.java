@@ -215,8 +215,7 @@ public class NodeController extends BaseController {
     }
     
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "address", required = false, value = "Required. External node address to add", dataType = "java.lang.String", paramType = "body"),
-        @ApiImplicitParam(name = "istanbulPropose", required = false, value = "what action to propose", dataType = "java.lang.Boolean", paramType = "body")
+        @ApiImplicitParam(name = "address", required = false, value = "Required. External node address to add", dataType = "java.lang.String", paramType = "body")
     })
     @RequestMapping("/peers/istanbulDiscard")
     public ResponseEntity<APIResponse> istanbulDiscard(@RequestBody NodePostJsonRequest jsonRequest) throws APIException {
