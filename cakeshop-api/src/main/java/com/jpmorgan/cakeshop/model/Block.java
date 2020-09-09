@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -278,8 +279,15 @@ public class Block implements Serializable {
      * Blocks are considered equal if their IDs (hashes) are the same
      */
     @Override
-    public boolean equals(Object obj) {
-        Block otherBlock = (Block) obj;
-        return this.id.contentEquals(otherBlock.getId());
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Block block = (Block) o;
+        return Objects.equals(id, block.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

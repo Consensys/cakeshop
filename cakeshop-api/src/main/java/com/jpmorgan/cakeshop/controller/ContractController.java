@@ -132,37 +132,6 @@ public class ContractController extends BaseController {
         return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
     }
 
-    @GetMapping("/registry")
-    public ResponseEntity<APIResponse> registry() throws APIException {
-        String contractRegistryAddress = "0x";
-        if (contractRegistryService.contractRegistryExists()) {
-            contractRegistryAddress = contractRegistryService.getAddress();
-        }
-
-        return new ResponseEntity<>(
-            APIResponse.newSimpleResponse(contractRegistryAddress), HttpStatus.OK);
-    }
-
-    @PostMapping("/registry/use")
-    public ResponseEntity<APIResponse> useRegistry(@RequestBody Map<String, String> body) throws APIException {
-        String contractRegistryAddress = body.get("address");
-        contractRegistryService.updateRegistryAddress(contractRegistryAddress);
-        if(!contractRegistryService.contractRegistryExists()) {
-            return new ResponseEntity<>(APIResponse.newSimpleResponse("No registry at address " + contractRegistryAddress), HttpStatus.BAD_REQUEST);
-        }
-        return new ResponseEntity<>(
-            APIResponse.newSimpleResponse(contractRegistryAddress), HttpStatus.OK);
-    }
-
-    @PostMapping("/registry/deploy")
-    public ResponseEntity<APIResponse> deployRegistry() throws APIException {
-        // run chain init task
-        BlockchainInitializerTask chainInitTask =
-            applicationContext.getBean(BlockchainInitializerTask.class);
-        chainInitTask.run(); // run in same thread
-        return registry();
-    }
-
     @RequestMapping("/list")
     public ResponseEntity<APIResponse> list() throws APIException {
         List<Contract> contracts = contractService.list();

@@ -1,37 +1,20 @@
 package com.jpmorgan.cakeshop.util;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import com.jpmorgan.cakeshop.error.APIException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
+import org.web3j.protocol.core.Response.Error;
 
 import static com.jpmorgan.cakeshop.util.FileUtils.expandPath;
 
 public class CakeshopUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(CakeshopUtils.class);
-
-    /**
-     * Get the location of the shared configuration file, if available
-     * @return File
-     */
-    public static File getSharedNetworkConfigFile() {
-
-        String sharedConfig = System.getenv("CAKESHOP_SHARED_CONFIG");
-        if (StringUtils.isBlank(sharedConfig)) {
-            LOG.debug("CAKESHOP_SHARED_CONFIG not set");
-            return null;
-        }
-
-        File fSharedConfig;
-        if (sharedConfig.endsWith(".properties")) {
-            fSharedConfig = new File(FileUtils.expandPath(sharedConfig));
-        } else {
-            fSharedConfig = new File(FileUtils.expandPath(sharedConfig, "shared.properties"));
-        }
-
-        return fSharedConfig;
-    }
+    public static final String SIMPLE_RESULT = "_result";
 
     public static String formatEnodeUrl(String address, String ip, String port, String raftPort) {
         String enodeurl = String.format("enode://%s@%s:%s", address, ip, port);
@@ -50,5 +33,20 @@ public class CakeshopUtils {
             binPath = FileUtils.getClasspathName("bin");
         }
         return expandPath(binPath, "solc", "node_modules", "solc-cakeshop-cli", "bin", "solc");
+    }
+
+    @SuppressWarnings("unchecked")
+    public static Map<String, Object> processWeb3Response(Object data, org.web3j.protocol.core.Response.Error e) throws APIException {
+        if(e != null ) {
+            throw new APIException(e.getMessage());
+
+        }
+       if (!(data instanceof Map)) {
+         // Handle case where a simple value is returned instead of a map (int, bool, or string)
+         Map<String, Object> res = new HashMap<>();
+         res.put(SIMPLE_RESULT, data);
+         return res;
+       }
+       return (Map<String, Object>) data;
     }
 }

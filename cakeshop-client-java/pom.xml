@@ -6,7 +6,7 @@
   <parent>
     <groupId>com.jpmorgan</groupId>
     <artifactId>cakeshop-parent</artifactId>
-    <version>0.11.0</version>
+    <version>0.12.0</version>
   </parent>
 
   <artifactId>cakeshop-client</artifactId>
@@ -25,7 +25,7 @@
     <dependency>
       <groupId>com.jpmorgan</groupId>
       <artifactId>cakeshop-abi</artifactId>
-      <version>0.11.0</version>
+      <version>0.12.0</version>
     </dependency>
 
     <dependency>
@@ -66,14 +66,6 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.datatype</groupId>
-      <artifactId>jackson-datatype-joda</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>joda-time</groupId>
-      <artifactId>joda-time</artifactId>
     </dependency>
 
     <!-- oauth2 support (not currently used) -->

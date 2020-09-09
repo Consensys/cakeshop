@@ -10,6 +10,7 @@ public class NodePostJsonRequest {
     private String address;
     private String logLevel, networkId, identity, genesisBlock, extraParams, transactionManagerNode;
     private Object committingTransactions;
+    private boolean raftLearner;
 
     /**
      * @return the address
@@ -123,4 +124,11 @@ public class NodePostJsonRequest {
         this.transactionManagerNode = transactionManagerNode;
     }
 
+    public boolean isRaftLearner() {
+        return raftLearner;
+    }
+
+    public void setRaftLearner(boolean raftLearner) {
+        this.raftLearner = raftLearner;
+    }
 }

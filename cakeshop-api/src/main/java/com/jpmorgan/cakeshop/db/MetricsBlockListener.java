@@ -1,8 +1,8 @@
 package com.jpmorgan.cakeshop.db;
 
-import com.codahale.metrics.FastMeter;
-import com.codahale.metrics.SimpleRollingMeter;
-import com.codahale.metrics.TickListener;
+import com.jpmorgan.cakeshop.metrics.FastMeter;
+import com.jpmorgan.cakeshop.metrics.SimpleRollingMeter;
+import com.jpmorgan.cakeshop.metrics.TickListener;
 import com.jpmorgan.cakeshop.model.APIResponse;
 import com.jpmorgan.cakeshop.model.Block;
 
