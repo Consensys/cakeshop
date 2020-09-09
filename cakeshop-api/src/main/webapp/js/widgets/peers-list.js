@@ -46,6 +46,8 @@ module.exports = function() {
 					_.each(info.data, function(peer) {
 						rows.push( _this.templateRow({ o: peer.attributes }) );
 					});
+					
+					Dashboard.Utils.emit( widget.name + '|fetch|' + JSON.stringify(info.data) );
 
 					$('#widget-' + _this.shell.id).html( _this.template({ rows: rows.join('') }) );
                     $('#widget-' + _this.shell.id + ' .promote').click(_this._handler);
