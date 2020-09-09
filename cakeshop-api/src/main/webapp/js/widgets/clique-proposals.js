@@ -18,6 +18,7 @@ module.exports = function() {
 				'	<td class="candidate">Candidate</td>' +
 				'	<td class="action">Voting Action</td>' +
 				'	<td class="yes-col"</td>' +
+				'	<td class="no-col"</td>' +
 				'	<td class="discard-col"</td>' +
 				' </tr>' +
 				' </thead>' +
@@ -29,6 +30,9 @@ module.exports = function() {
 				'   <td class="value action"><%= auth %></td>' +
 				'   <td data-candidate="<%= candidate %>" data-auth="<%= auth %>" class="yes-col">' +
 				'		<button class="btn btn-default yes-btn">Agree</button>' +
+				'   </td>' +
+				'   <td data-candidate="<%= candidate %>" data-auth="<%= auth %>" class="no-col">' +
+				'		<button class="btn btn-default no-btn">Disagree</button>' +
 				'   </td>' +
 				'   <td data-candidate="<%= candidate %>" class="discard-col">' +
 				'		<button class="btn btn-default discard-btn">Discard</button>' +
@@ -48,8 +52,6 @@ module.exports = function() {
 
 				if (!_.isEmpty(info.data.attributes.result)) {
 					_.each(info.data.attributes.result, function(auth, candidate) {
-						console.log(candidate);
-						console.log(auth)
 						var action = auth ? "Add" : "Remove"
 						candidates.push( _this.templateRow({ candidate: candidate, auth: action }) );
 					});
@@ -75,6 +77,27 @@ module.exports = function() {
          $('#widget-' + _this.shell.id).on('click', '.yes-btn', function(e) {
         	 var candidate = $(e.target.parentElement).data("candidate")
         	 var auth = $(e.target.parentElement).data("auth") == "Add" ? "true" : "false"
+        	 $.when(
+ 					utils.load({
+ 						url: _this.url_propose,
+ 						data: {
+ 							"address": candidate,
+ 							"istanbulPropose": auth
+ 						}
+ 					})
+ 				).done(function () {
+ 					_this.fetch();
+ 				}).fail(function(err) {
+ 						$('#myModal .modal-content').html(_this.modalConfirmation({
+ 							message: err.responseJSON.errors.map((error) => error.detail)
+ 						}) );
+ 				});
+
+         	});
+         
+         $('#widget-' + _this.shell.id).on('click', '.no-btn', function(e) {
+        	 var candidate = $(e.target.parentElement).data("candidate")
+        	 var auth = $(e.target.parentElement).data("auth") == "Remove" ? "true" : "false"
         	 $.when(
  					utils.load({
  						url: _this.url_propose,
