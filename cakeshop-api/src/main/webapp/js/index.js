@@ -30,6 +30,7 @@ window.Tower = {
 	client: null,
 	ready: false,
 	current: null,
+	consensus: null,
 	status: {
 		status: 'init'
 	},
@@ -53,6 +54,8 @@ window.Tower = {
 			// Redraw the current section
 			$('#' + Dashboard.section).click();
 		}
+		
+		Tower.consensus = status.consensus
 
 		if (status.status === 'running') {
 			$('#default-node-status').html( $('<span>', { html: 'Running' }) );
@@ -306,10 +309,13 @@ window.Tower = {
 		'peers': function() {
 			var widgets = [
 				{ widgetId: 'peers-list' },
-                { widgetId: 'peers-add' },
-                { widgetId: 'istanbul-candidates' },
-                { widgetId: 'istanbul-validators' }
+                { widgetId: 'peers-add' }
 			];
+			
+			if (Tower.consensus === 'istanbul') {	
+				widgets.push({ widgetId: 'istanbul-validators' });	
+				widgets.push({ widgetId: 'istanbul-candidates' });
+			}
 
 			Dashboard.showSection('peers', widgets);
 		},
