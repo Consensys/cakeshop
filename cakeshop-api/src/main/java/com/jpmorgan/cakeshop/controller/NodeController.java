@@ -215,7 +215,7 @@ public class NodeController extends BaseController {
     }
     
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "address", required = false, value = "Required. External node address to add", dataType = "java.lang.String", paramType = "body")
+        @ApiImplicitParam(name = "address", required = false, value = "Required. External node address to discard", dataType = "java.lang.String", paramType = "body")
     })
     @RequestMapping("/peers/cliqueDiscard")
     public ResponseEntity<APIResponse> cliqueDiscard(@RequestBody NodePostJsonRequest jsonRequest) throws APIException {
