@@ -128,7 +128,6 @@ window.Tower = {
 			'block-detail'           : require('./widgets/block-detail'),
 			'block-list'             : require('./widgets/block-list'),
 			'block-view'             : require('./widgets/block-view'),
-			'clique-proposals'		 : require('./widgets/clique-proposals'),
 			'clique-signers'		 : require('./widgets/clique-signers'),
 			'contract-current-state' : require('./widgets/contract-current-state'),
 			'contract-detail'        : require('./widgets/contract-detail'),
@@ -315,7 +314,6 @@ window.Tower = {
 			
 			if (Tower.consensus === 'clique') {	
 				widgets.push({ widgetId: 'clique-signers' });
-				widgets.push({ widgetId: 'clique-proposals' });
 			}
 
 			Dashboard.showSection('peers', widgets);
