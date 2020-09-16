@@ -19,8 +19,8 @@ module.exports = function() {
 				' <thead style="front-weight: bold;">' +
 				' <tr>' +
 				'	<td style="front-weight: bold;" class="signer"><%= type %></td>' +
-				'   <td class="vote-col"</td>' +
-				'   <td class="remove-col"</td>' +
+				'   <td class="vote-col float-right">Vote</td>' +
+				'   <td class="remove-col"></td>' +
 				' </tr>' +
 				' </thead>' +
 				'<tbody><%= rows %></tbody>' +
@@ -29,41 +29,26 @@ module.exports = function() {
 
 		templateRowSigners: _.template('<tr>' +
 				'	<td class="value signer" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= o %></td>'+
-				'<% if (buttons) { %>' +		
-				'   	<td data-signer="<%= o %>"class="vote-col">' +
-				'	<% if (proposed) { %>' +
-				'			<button class="btn btn-default keep-btn">Add</button>' +
-				'			<button style="background-color:red;" class="btn btn-default remove-btn">Remove</button>' +
+				'   <td data-signer="<%= o %>"class="vote-col float-right">' +
+				'	<% if (keep) { %>' +
+				'		<button style="background-color:#23AE89; color:white;"class="btn btn-default keep-btn"><%= add %></button>' +
+				'		<button class="btn btn-default remove-btn">Remove</button>' +
+				'	<% } else { %>' +
+				'		<button class="btn btn-default keep-btn"><%= add %></button>' +
+				'		<button style="background-color:#E94B3B; color:white;" class="btn btn-default remove-btn">Remove</button>' +
 				'	<% } %>' +
 				'   	</td>' +
 				'   <td data-signer="<%= o %>"class="remove-col">' +
-				'	<% if (proposed) { %>' +
+				'	<% if (proposal) { %>' +
 				'		<button class="btn btn-default discard-btn">Discard Vote</button>' +
-				'	<% } else { %>' +
-				'		<button class="btn btn-default remove-btn">Remove</button>' +
 				'	<% } %>' +
 				'   </td>' +
-				'<% } %>' +
-				'</tr>'),
-				
-		templateRowProposals: _.template('<tr>' +
-				'	<td class="value signer" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= o %></td>'+
-				'<% if (buttons) { %>' +
-				'   <td data-signer="<%= o %>"class="vote-col">' +
-				'		<button style="background-color:green;" class="btn btn-default keep-btn">Add</button>' +
-				'		<button class="btn btn-default remove-btn">Remove</button>' +
-				'   </td>' +
-				'   <td data-signer="<%= o %>"class="remove-col">' +
-				'		<button class="btn btn-default discard-btn">Discard Vote</button>' +
-				'   </td>' +
-				'<% } %>' +
 				'</tr>'),
 				
 		templateButton: _.template('<div class="form-group pull-right">' +
 				'	<button class="btn btn-primary add-btn">Propose New Signer</button>' +
 				'</div>'),
 				
-
 		modalConfirmation: _.template('<div class="modal-body"><%=message%></div>'),
 
 		modalSigner: _.template( '<div class="modal-header">' +
@@ -97,30 +82,39 @@ module.exports = function() {
 					}) );
 				}).done(function(res) {
 					var proposals = []
-					var proposedSigners = []
+					var signers = info.data.attributes.result
+					var proposalMap = new Map()
+					
+					var proposalRows = []
+					var signerRows = []
+										
 					if (!_.isEmpty(res.data.attributes.result)) {
 						_.each(res.data.attributes.result, function(auth, prop) {
 							proposals.push(prop)
-							proposedSigners.push(_this.templateRowProposals({o : prop, buttons: true}))
+							proposalMap.set(prop, auth)
+							const signer = signers.includes(prop)
+							if (!signer) {
+								proposalRows.push(_this.templateRowSigners({o : prop, keep: auth, add: "Add", proposal: true}))
+							}
 						});
 					} else {
-						proposedSigners.push(_this.templateRowProposals({o : "No Proposed Signers", buttons: false}))
+						proposalRows.push("<tr><td/><td>No Proposed Signers</td><td/><td/></tr>")
 					}
 
-					var signers = []
-					if (info.data.attributes.result.length > 0) {
-						_.each(info.data.attributes.result, function(signer) {
+					if (signers.length > 0) {
+						_.each(signers, function(signer) {
 							const proposed = proposals.includes(signer)
-							signers.push( _this.templateRowSigners({ o: signer, proposed: proposed, buttons: true }) );
+							const keep = proposed ? proposalMap.get(signer) : false
+							signerRows.push( _this.templateRowSigners({ o: signer, keep: keep, add: "Keep", proposal: proposed}) );
 						});
 					} else {
-						signers.push(_this.templateRowSigners({ o : "No Signers", buttons: false}))
+						signerRows.push("<tr><td/><td>No Signers</td><td/><td/></tr>")
 					}
 
 					Dashboard.Utils.emit( widget.name + '|fetch|' + JSON.stringify(info.data) );
 
-					$('#widget-' + _this.shell.id).html(_this.templateSigners({ rows: signers.join(''), type: "Signer" }) +
-							_this.templateSigners({ rows: proposedSigners.join(''), type: "Proposed Signer" }) +
+					$('#widget-' + _this.shell.id).html(_this.templateSigners({ rows: signerRows.join(''), type: "Signer" }) +
+							_this.templateSigners({ rows: proposalRows.join(''), type: "Proposed Signer" }) +
 							_this.templateButton({})
 					);	
 
