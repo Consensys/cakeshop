@@ -31,13 +31,13 @@ module.exports = function() {
 				'   <td data-signer="<%= o %>"class="action-col float-right">' +
 				'	<% if (proposal) { %>' +
 				'		<% if (keep) { %>' +
-				'			<button style="background-color:#23AE89; color:white;"class="btn btn-default keep-btn"><%= add %></button>' +
-				'			<button class="btn btn-default remove-btn">Remove</button>' +
 				'			<button class="btn btn-default discard-btn">Discard Vote</button>' +
+                '			<button class="btn btn-default remove-btn">Remove</button>' +
+                '			<button style="background-color:#23AE89; color:white;"class="btn btn-default keep-btn"><%= add %></button>' +
 				'		<% } else { %>' +
-				'			<button class="btn btn-default keep-btn"><%= add %></button>' +
-				'			<button style="background-color:#E94B3B; color:white;" class="btn btn-default remove-btn">Remove</button>' +
 				'			<button class="btn btn-default discard-btn">Discard Vote</button>' +
+                '			<button style="background-color:#E94B3B; color:white;" class="btn btn-default remove-btn">Remove</button>' +
+                '			<button class="btn btn-default keep-btn"><%= add %></button>' +
 				'		<% } %>' +
 				'	<% } else { %>' +
 				'		<button class="btn btn-default remove-btn">Propose Removal</button>' +	
