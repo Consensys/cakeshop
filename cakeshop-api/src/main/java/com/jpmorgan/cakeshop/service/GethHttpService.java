@@ -3,6 +3,7 @@ package com.jpmorgan.cakeshop.service;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Web3DefaultResponseType;
 
+import org.web3j.protocol.besu.Besu;
 import org.web3j.protocol.core.Request;
 import org.web3j.quorum.Quorum;
 
@@ -19,6 +20,9 @@ public interface GethHttpService {
     public static final Long GETH_REQUEST_ID = 42L; // We don't actually use this, so just use a constant
 
     public Quorum getQuorumService() throws APIException;
+    
+    public Besu getBesuService() throws APIException;
+    
     /**
      * Call the given Geth RPC method
      *

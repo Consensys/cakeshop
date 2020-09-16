@@ -136,7 +136,7 @@ public class NodePostJsonRequest {
         return istanbulPropose;
     }
 
-    public void setIstabulPropose(boolean istanbulPropose) {
+    public void setIstanbulPropose(boolean istanbulPropose) {
         this.istanbulPropose = istanbulPropose;
     }
 }

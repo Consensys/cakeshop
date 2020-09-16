@@ -63,10 +63,13 @@ module.exports = function() {
 			'	<div class="form-group add-org-form">' +
 			'		<label for="org-label">Org Name</label>' +
 			'		<input type="text" class="form-control" id="org-label" value="<%=orgId%>" placeholder="Enter name for new org">' +
+			'		</br> '+
 			'		<label for="enode-id">Enode id</label>' +
 			'		<input type="text" class="form-control" id="enode-id" placeholder="Enter full enode id">' +
+			'		</br> '+
 			'		<label for="account-admin">Account Admin for Org</label>' +
             '		<input type="text" class="form-control" id="account-admin" placeholder="Enter account address">' +
+            '		</br> '+
 		    '	    <label for="from-account">From Account</label>' +
             '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
 			'	</div>' +
@@ -83,10 +86,13 @@ module.exports = function() {
 			'	<div class="form-group add-org-form">' +
 			'		<label for="org-label">Org Name</label>' +
 			'		<input type="text" class="form-control" id="org-label" value="<%=orgId%>">' +
+			'		</br> '+
 		    '	    <label for="enode-id">Enode id</label>' +
             '	    <select id="enode-id" class="form-control" style="transition: none;"> </select>' +
+            '		</br> '+
 		    '	    <label for="account-admin">Account Admin for Org</label>' +
             '	    <select id="account-admin" class="form-control" style="transition: none;"> </select>' +
+            '		</br> '+
 		    '	    <label for="from-account">From Account</label>' +
             '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
 			'	</div>' +
@@ -103,10 +109,13 @@ module.exports = function() {
 			'	<div class="form-group add-org-form">' +
 			'		<label for="org-label">Org Name</label>' +
 			'		<input type="text" class="form-control" id="org-label" placeholder="Enter name for new suborg">' +
+			'		</br> '+
 			'		<label for="parent-label">Parent Org</label>' +
             '		<input type="text" class="form-control" id="parent-label" value="<%=parentOrg%>">' +
+            '		</br> '+
 			'		<label for="enode-id">Enode id</label>' +
 			'		<input type="text" class="form-control" id="enode-id" placeholder="Enter full enode id">' +
+			'		</br> '+
 		    '	    <label for="from-account">From Account</label>' +
             '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
 			'	</div>' +
@@ -123,6 +132,7 @@ module.exports = function() {
 			'	<div class="form-group">' +
 			'		<label for="stat">Change Status</label>' +
             '		<input type="text" class="form-control" id="stat" value="<%=action%>">' +
+            '		</br> '+
 		    '	    <label for="from-account">From Account</label>' +
             '	    <select id="from-account" class="form-control" style="transition: none;"> </select>' +
 			'	</div>' +

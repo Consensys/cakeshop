@@ -55,6 +55,7 @@ window.Tower = {
 			$('#' + Dashboard.section).click();
 		}
 		
+		//set consensus type
 		Tower.consensus = status.consensus
 
 		if (status.status === 'running') {
@@ -127,6 +128,7 @@ window.Tower = {
 			'block-detail'           : require('./widgets/block-detail'),
 			'block-list'             : require('./widgets/block-list'),
 			'block-view'             : require('./widgets/block-view'),
+			'clique-signers'		 : require('./widgets/clique-signers'),
 			'contract-current-state' : require('./widgets/contract-current-state'),
 			'contract-detail'        : require('./widgets/contract-detail'),
             'contract-transact'      : require('./widgets/contract-transact'),
@@ -315,6 +317,8 @@ window.Tower = {
 			if (Tower.consensus === 'istanbul') {	
 				widgets.push({ widgetId: 'istanbul-validators' });	
 				widgets.push({ widgetId: 'istanbul-candidates' });
+			} else if (Tower.consensus === 'clique') {	
+				widgets.push({ widgetId: 'clique-signers' });
 			}
 
 			Dashboard.showSection('peers', widgets);
