@@ -770,3 +770,8 @@ button.send {
     float: right;
     width: 75px;
 }
+
+.keep-btn, .remove-btn, .discard-btn {
+    float: right;
+    margin-left: 4px;
+}

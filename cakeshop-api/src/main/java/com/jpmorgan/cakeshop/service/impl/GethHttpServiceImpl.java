@@ -23,6 +23,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.web3j.quorum.Quorum;
 import org.web3j.protocol.Web3jService;
+import org.web3j.protocol.besu.Besu;
 import org.web3j.protocol.core.Request;
 import org.web3j.protocol.http.HttpService;
 import org.springframework.web.client.ResourceAccessException;
@@ -75,6 +76,8 @@ public class GethHttpServiceImpl implements GethHttpService {
     private String currentTransactionManagerUrl;
 
     private Quorum quorumService;
+    
+    private Besu besuService;
 
     private Web3jService cakeshopService;
 
@@ -112,11 +115,29 @@ public class GethHttpServiceImpl implements GethHttpService {
             throw new APIException("RPC call failed", e);
         }
     }
+    
+    public Besu getBesuService() throws APIException {
+        try {
+            if (StringUtils.isEmpty(currentRpcUrl)) {
+                throw new ResourceAccessException("Current RPC URL not set, skipping request");
+            }
+            if (besuService == null) {
+            	besuService = Besu.build(getCakeshopService());
+                LOG.info("New besu web3j service connected to " + currentRpcUrl);
+            }
+            return besuService;
+        } catch (RestClientException e) {
+            LOG.error("RPC call failed - " + ExceptionUtils.getRootCauseMessage(e));
+            throw new APIException("RPC call failed", e);
+        }
+    }
+    
 
     private void resetCakeshopService() {
 
         cakeshopService = null;
         quorumService = null;
+        besuService = null;
     }
 
     @Override
