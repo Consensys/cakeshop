@@ -19,8 +19,7 @@ module.exports = function() {
 				' <thead style="front-weight: bold;">' +
 				' <tr>' +
 				'	<td style="front-weight: bold;" class="signer"><%= type %></td>' +
-				'   <td class="vote-col float-right">Vote</td>' +
-				'   <td class="remove-col"></td>' +
+				'   <td class="action-col float-right"></td>' +
 				' </tr>' +
 				' </thead>' +
 				'<tbody><%= rows %></tbody>' +
@@ -29,18 +28,19 @@ module.exports = function() {
 
 		templateRowSigners: _.template('<tr>' +
 				'	<td class="value signer" contentEditable="false" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"><%= o %></td>'+
-				'   <td data-signer="<%= o %>"class="vote-col float-right">' +
-				'	<% if (keep) { %>' +
-				'		<button style="background-color:#23AE89; color:white;"class="btn btn-default keep-btn"><%= add %></button>' +
-				'		<button class="btn btn-default remove-btn">Remove</button>' +
-				'	<% } else { %>' +
-				'		<button class="btn btn-default keep-btn"><%= add %></button>' +
-				'		<button style="background-color:#E94B3B; color:white;" class="btn btn-default remove-btn">Remove</button>' +
-				'	<% } %>' +
-				'   	</td>' +
-				'   <td data-signer="<%= o %>"class="remove-col">' +
+				'   <td data-signer="<%= o %>"class="action-col float-right">' +
 				'	<% if (proposal) { %>' +
-				'		<button class="btn btn-default discard-btn">Discard Vote</button>' +
+				'		<% if (keep) { %>' +
+				'			<button style="background-color:#23AE89; color:white;"class="btn btn-default keep-btn"><%= add %></button>' +
+				'			<button class="btn btn-default remove-btn">Remove</button>' +
+				'			<button class="btn btn-default discard-btn">Discard Vote</button>' +
+				'		<% } else { %>' +
+				'			<button class="btn btn-default keep-btn"><%= add %></button>' +
+				'			<button style="background-color:#E94B3B; color:white;" class="btn btn-default remove-btn">Remove</button>' +
+				'			<button class="btn btn-default discard-btn">Discard Vote</button>' +
+				'		<% } %>' +
+				'	<% } else { %>' +
+				'		<button class="btn btn-default remove-btn">Propose Removal</button>' +	
 				'	<% } %>' +
 				'   </td>' +
 				'</tr>'),
