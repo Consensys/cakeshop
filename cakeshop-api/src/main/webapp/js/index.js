@@ -144,6 +144,7 @@ window.Tower = {
 			'node-info'              : require('./widgets/node-info'),
 			'peers-add'              : require('./widgets/peers-add'),
 			'peers-list'             : require('./widgets/peers-list'),
+			'istanbul-validators'             : require('./widgets/istanbul-validators'),
 			'txn-detail'             : require('./widgets/txn-detail'),
 		});
 
@@ -312,7 +313,9 @@ window.Tower = {
                 { widgetId: 'peers-add' }
 			];
 			
-			if (Tower.consensus === 'clique') {	
+			if (Tower.consensus === 'istanbul') {	
+				widgets.push({ widgetId: 'istanbul-validators' });	
+			} else if (Tower.consensus === 'clique') {	
 				widgets.push({ widgetId: 'clique-signers' });
 			}
 

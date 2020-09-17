@@ -61,7 +61,18 @@ public interface NodeService {
     public Map<String, Boolean> getProposals() throws APIException;
 
     public Boolean cliquePropose(String address, boolean auth) throws APIException;
-    
+
     public Boolean cliqueDiscard(String address) throws APIException;
+    
+    public List<String> getValidators() throws APIException;
+
+    public Map<String, Boolean> getCandidates() throws APIException;
+
+    public String propose(String address, boolean auth) throws APIException;
+
+    public String discard(String address) throws APIException;
+
+    public String istanbulGetNodeAddress() throws APIException;
+
 
 }
