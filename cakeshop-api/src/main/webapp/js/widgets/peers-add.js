@@ -17,8 +17,10 @@ module.exports = function() {
 			'    <label for="addy">Peer Node Address</label>' +
 			'    <input type="text" class="form-control" id="addy">' +
             '    <br/>' +
+            '	<% if (Tower.consensus === "raft") { %>' +
             '    <input type="checkbox" id="raftLearner">' +
             '    <label for="raftLearner">Learner Node (View-only)</label>' +
+            '	<% } %>' +
 			'  </div>'+
 			'  <div class="form-group pull-right">' +
 			'    <button type="button" class="btn btn-primary" id="peerAdd">Add</button>' +
