@@ -15,7 +15,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.web3j.quorum.methods.response.ConsensusNoResponse;
+import org.web3j.quorum.methods.response.istanbul.IstanbulCandidates;
+import org.web3j.quorum.methods.response.istanbul.IstanbulNodeAddress;
+import org.web3j.quorum.methods.response.istanbul.IstanbulValidators;
+import org.web3j.protocol.admin.methods.response.BooleanResponse;
+import org.web3j.protocol.besu.response.BesuEthAccountsMapResponse;
+import org.web3j.protocol.core.DefaultBlockParameter;
+import org.web3j.protocol.core.methods.response.EthAccounts;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -322,13 +331,142 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
             Map<String, Object> protocols = (Map<String, Object>) lastNodeInfo.get("protocols");
             if(protocols.containsKey("istanbul")) {
                 consensus = "istanbul";
-            } else {
+            } else if (protocols.containsKey("eth")){
                 Map<String, Object> eth = (Map<String, Object>) protocols.get("eth");
+                consensus = (String) eth.get("consensus");
+            } else if (protocols.containsKey("clique")) {
+            	Map<String, Object> eth = (Map<String, Object>) protocols.get("clique");
                 consensus = (String) eth.get("consensus");
             }
         } catch (Exception e) {
             LOG.debug("Could not retrieve consensus type from admin_nodeInfo", e);
         }
         return consensus;
+    }
+    
+    @Override
+    public List<String> getSigners() throws APIException {
+    	EthAccounts signers = null;
+    	try {
+    		signers = gethService.getBesuService().cliqueGetSigners(DefaultBlockParameter.valueOf("latest")).send();
+    		if (signers == null || signers.hasError()) {
+    			throw new APIException(signers.getError().getMessage());
+    		}
+    	} catch (IOException e) {
+    		throw new APIException(e.getMessage());
+    	}
+    	return signers.getAccounts();
+    }
+
+    @Override
+    public Map<String, Boolean> getProposals() throws APIException {
+    	BesuEthAccountsMapResponse proposals = null;
+    	try {
+    		proposals = gethService.getBesuService().cliqueProposals().send();
+    		if (proposals == null || proposals.hasError()) {
+    			throw new APIException(proposals.getError().getMessage());
+    		}
+    	} catch (IOException e) {
+    		throw new APIException(e.getMessage());
+    	}
+    	return proposals.getAccounts();
+    }
+
+    @Override
+    public Boolean cliquePropose(String address, boolean auth) throws APIException {
+    	BooleanResponse response = null;
+    	try {
+    		response = gethService.getBesuService().cliquePropose(address, auth).send();
+    		if (response == null || response.hasError()) {
+    			throw new APIException(response.getError().getMessage());
+    		}
+    	} catch (IOException e) {
+    		throw new APIException(e.getMessage());
+    	}
+    	return true;
+    }
+
+    @Override
+    public Boolean cliqueDiscard(String address) throws APIException {
+    	BooleanResponse response = null;
+    	try {
+    		response = gethService.getBesuService().cliqueDiscard(address).send();
+    		if (response == null || response.hasError()) {
+    			throw new APIException(response.getError().getMessage());
+    		}
+    	} catch (IOException e) {
+    		throw new APIException(e.getMessage());
+    	}
+    	return true;
+    }
+    
+    @Override
+    public List<String> getValidators() throws APIException {
+    	IstanbulValidators validators = null;
+    	try {
+    		validators = gethService.getQuorumService().istanbulGetValidators("latest").send();
+    		if (validators == null || validators.hasError()) {
+    			throw new APIException(validators.getError().getMessage());
+    		}
+    	} catch (IOException e) {
+    		throw new APIException(e.getMessage());
+    	}
+    	return validators.getValidators();
+    }
+
+    @Override
+    public Map<String, Boolean> getCandidates() throws APIException {
+    	IstanbulCandidates candidates = null;
+    	try {
+    		candidates = gethService.getQuorumService().istanbulCandidates().send();
+    		if (candidates == null || candidates.hasError()) {
+    			throw new APIException(candidates.getError().getMessage());
+    		}
+    	} catch (IOException e) {
+    		throw new APIException(e.getMessage());
+    	}
+    	return candidates.getCandidates();
+    }
+
+    @Override
+    public String propose(String address, boolean auth) throws APIException {
+    	ConsensusNoResponse response = null;
+    	try {
+    		response = gethService.getQuorumService().istanbulPropose(address, auth).send();
+    		if (response == null || response.hasError()) {
+    			throw new APIException(response.getError().getMessage());
+    		}
+    	} catch (IOException e) {
+    		throw new APIException(e.getMessage());
+    	}
+    	return response.getNoResponse();
+    }
+
+    @Override
+    public String discard(String address) throws APIException {
+    	ConsensusNoResponse response = null;
+    	try {
+    		response = gethService.getQuorumService().istanbulDiscard(address).send();
+    		if (response == null || response.hasError()) {
+    			throw new APIException(response.getError().getMessage());
+    		}
+    	} catch (IOException e) {
+    		throw new APIException(e.getMessage());
+    	}
+    	return response.getNoResponse();
+    }
+
+    @Override
+    public String istanbulGetNodeAddress() throws APIException {
+    	IstanbulNodeAddress address = null;
+    	try {
+    		address = gethService.getQuorumService().istanbulNodeAddress().send();
+    		if (address == null || address.hasError()) {
+    			throw new APIException(address.getError().getMessage());
+    		}
+    	} catch (IOException e) {
+    		throw new APIException(e.getMessage());
+    	}
+    	return address.getNodeAddress();
     }
 }

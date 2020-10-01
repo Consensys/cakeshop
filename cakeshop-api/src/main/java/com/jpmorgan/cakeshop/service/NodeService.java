@@ -5,6 +5,7 @@ import com.jpmorgan.cakeshop.model.Node;
 import com.jpmorgan.cakeshop.model.Peer;
 
 import java.util.List;
+import java.util.Map;
 
 public interface NodeService {
 
@@ -54,5 +55,24 @@ public interface NodeService {
      * @throws APIException
      */
     boolean removePeer(String address) throws APIException;
+    
+    public List<String> getSigners() throws APIException;
+
+    public Map<String, Boolean> getProposals() throws APIException;
+
+    public Boolean cliquePropose(String address, boolean auth) throws APIException;
+
+    public Boolean cliqueDiscard(String address) throws APIException;
+    
+    public List<String> getValidators() throws APIException;
+
+    public Map<String, Boolean> getCandidates() throws APIException;
+
+    public String propose(String address, boolean auth) throws APIException;
+
+    public String discard(String address) throws APIException;
+
+    public String istanbulGetNodeAddress() throws APIException;
+
 
 }

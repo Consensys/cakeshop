@@ -30,6 +30,7 @@ window.Tower = {
 	client: null,
 	ready: false,
 	current: null,
+	consensus: null,
 	status: {
 		status: 'init'
 	},
@@ -53,6 +54,9 @@ window.Tower = {
 			// Redraw the current section
 			$('#' + Dashboard.section).click();
 		}
+		
+		//set consensus type
+		Tower.consensus = status.consensus
 
 		if (status.status === 'running') {
 			$('#default-node-status').html( $('<span>', { html: 'Running' }) );
@@ -124,6 +128,7 @@ window.Tower = {
 			'block-detail'           : require('./widgets/block-detail'),
 			'block-list'             : require('./widgets/block-list'),
 			'block-view'             : require('./widgets/block-view'),
+			'clique-signers'		 : require('./widgets/clique-signers'),
 			'contract-current-state' : require('./widgets/contract-current-state'),
 			'contract-detail'        : require('./widgets/contract-detail'),
             'contract-transact'      : require('./widgets/contract-transact'),
@@ -139,6 +144,7 @@ window.Tower = {
 			'node-info'              : require('./widgets/node-info'),
 			'peers-add'              : require('./widgets/peers-add'),
 			'peers-list'             : require('./widgets/peers-list'),
+			'istanbul-validators'             : require('./widgets/istanbul-validators'),
 			'txn-detail'             : require('./widgets/txn-detail'),
             // reporting
             'reporting-contract-list': require('./widgets/reporting-contract-list'),
@@ -310,6 +316,12 @@ window.Tower = {
 				{ widgetId: 'peers-list' },
                 { widgetId: 'peers-add' }
 			];
+			
+			if (Tower.consensus === 'istanbul') {	
+				widgets.push({ widgetId: 'istanbul-validators' });	
+			} else if (Tower.consensus === 'clique') {	
+				widgets.push({ widgetId: 'clique-signers' });
+			}
 
 			Dashboard.showSection('peers', widgets);
 		},

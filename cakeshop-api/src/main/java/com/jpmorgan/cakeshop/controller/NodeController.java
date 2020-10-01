@@ -198,4 +198,72 @@ public class NodeController extends BaseController {
         }
         return new ResponseEntity<>(APIResponse.newSimpleResponse(true), HttpStatus.OK);
     }
+    
+    @RequestMapping("/peers/clique/proposals")
+    public ResponseEntity<APIResponse> getProposals() throws APIException {
+        Map<String, Boolean> proposals = nodeService.getProposals();
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(proposals), HttpStatus.OK);
+    }
+
+    @RequestMapping("/peers/clique/signers")
+    public ResponseEntity<APIResponse> getSigners() throws APIException {
+        List<String> signers = nodeService.getSigners();
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(signers), HttpStatus.OK);
+    }
+
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "address", required = false, value = "Required. External node address to add", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "istanbulPropose", required = false, value = "what action to propose", dataType = "java.lang.Boolean", paramType = "body")
+    })
+    @RequestMapping("/peers/cliquePropose")
+    public ResponseEntity<APIResponse> cliquePropose(@RequestBody NodePostJsonRequest jsonRequest) throws APIException {
+        Boolean response = nodeService.cliquePropose(jsonRequest.getAddress(), jsonRequest.isIstanbulPropose());
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(response), HttpStatus.OK);
+    }
+
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "address", required = false, value = "Required. External node address to discard", dataType = "java.lang.String", paramType = "body")
+    })
+    @RequestMapping("/peers/cliqueDiscard")
+    public ResponseEntity<APIResponse> cliqueDiscard(@RequestBody NodePostJsonRequest jsonRequest) throws APIException {
+        Boolean response = nodeService.cliqueDiscard(jsonRequest.getAddress());
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(response), HttpStatus.OK);
+    }
+    
+    @RequestMapping("/peers/istanbul/candidates")
+    public ResponseEntity<APIResponse> getCandidates() throws APIException {
+        Map<String, Boolean> candidates = nodeService.getCandidates();
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(candidates), HttpStatus.OK);
+    }
+
+    @RequestMapping("/peers/istanbul/validator")
+    public ResponseEntity<APIResponse> getValidators() throws APIException {
+        List<String> validators = nodeService.getValidators();
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(validators), HttpStatus.OK);
+    }
+
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "address", required = false, value = "Required. External node address to add", dataType = "java.lang.String", paramType = "body"),
+        @ApiImplicitParam(name = "istanbulPropose", required = false, value = "what action to propose", dataType = "java.lang.Boolean", paramType = "body")
+    })
+    @RequestMapping("/peers/istanbulPropose")
+    public ResponseEntity<APIResponse> istanbulPropose(@RequestBody NodePostJsonRequest jsonRequest) throws APIException {
+        String response = nodeService.propose(jsonRequest.getAddress(), jsonRequest.isIstanbulPropose());
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(response), HttpStatus.OK);
+    }
+
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "address", required = false, value = "Required. External node address to add", dataType = "java.lang.String", paramType = "body")
+    })
+    @RequestMapping("/peers/istanbulDiscard")
+    public ResponseEntity<APIResponse> istanbulDiscard(@RequestBody NodePostJsonRequest jsonRequest) throws APIException {
+        String response = nodeService.discard(jsonRequest.getAddress());
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(response), HttpStatus.OK);
+    }
+
+    @RequestMapping("/peers/istanbul/nodeAddress")
+    public ResponseEntity<APIResponse> getNodeAddress() throws APIException {
+        String address = nodeService.istanbulGetNodeAddress();
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(address), HttpStatus.OK);
+    }
 }
