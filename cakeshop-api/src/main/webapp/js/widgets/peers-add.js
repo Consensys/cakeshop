@@ -16,6 +16,11 @@ module.exports = function() {
 			'  <div class="form-group">' +
 			'    <label for="addy">Peer Node Address</label>' +
 			'    <input type="text" class="form-control" id="addy">' +
+            '    <br/>' +
+            '	<% if (Tower.consensus === "raft") { %>' +
+            '    <input type="checkbox" id="raftLearner">' +
+            '    <label for="raftLearner">Learner Node (View-only)</label>' +
+            '	<% } %>' +
 			'  </div>'+
 			'  <div class="form-group pull-right">' +
 			'    <button type="button" class="btn btn-primary" id="peerAdd">Add</button>' +
@@ -35,6 +40,7 @@ module.exports = function() {
 			var _this = widget,
              url = ev.target.id === "peerRemove" ? widget.removeUrl : widget.addUrl,
 			 input = $('#widget-' + _this.shell.id + ' #addy'),
+             raftLearner = $('#widget-' + _this.shell.id + ' #raftLearner').prop('checked'),
 			 notif = $('#widget-' + _this.shell.id + ' #notification');
 
 			if (!input.val()) {
@@ -42,9 +48,8 @@ module.exports = function() {
 			}
 
 			$.when(
-				utils.load({ url: url, data: { "address": input.val() } })
+				utils.load({ url: url, data: { address: input.val(), raftLearner: raftLearner } })
 			).done(function(r) {
-				console.log('peers',r)
 				notif.show();
 
 					input.val('');
@@ -58,7 +63,6 @@ module.exports = function() {
 						notif.fadeOut();
 					}, 2000);
 			}).fail(function(r) {
-			    console.log(r)
                 notif
                   .addClass('text-danger')
                   .removeClass('text-success')

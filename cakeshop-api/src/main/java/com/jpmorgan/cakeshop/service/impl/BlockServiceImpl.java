@@ -4,9 +4,10 @@ import static com.jpmorgan.cakeshop.util.AbiUtils.*;
 
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Block;
-import com.jpmorgan.cakeshop.model.RequestModel;
+import com.jpmorgan.cakeshop.model.Web3DefaultResponseType;
 import com.jpmorgan.cakeshop.service.BlockService;
 import com.jpmorgan.cakeshop.service.GethHttpService;
+import org.web3j.protocol.core.Request;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,23 +84,23 @@ public class BlockServiceImpl implements BlockService {
 
     @Override
     public List<Block> get(long start, long end) throws APIException {
-        List<RequestModel> reqs = new ArrayList<>();
+        List<Request<?, Web3DefaultResponseType>> reqs = new ArrayList<>();
         for (long i = start; i <= end; i++) {
-            reqs.add(new RequestModel("eth_getBlockByNumber", new Object[]{"0x" + Long.toHexString(i), false}, 42L));
+            reqs.add(gethService.createHttpRequestType("eth_getBlockByNumber", new Object[]{"0x" + Long.toHexString(i), false}));
         }
         return batchGet(reqs);
     }
 
     @Override
     public List<Block> get(List<Long> numbers) throws APIException {
-        List<RequestModel> reqs = new ArrayList<>();
+        List<Request<?, Web3DefaultResponseType>> reqs = new ArrayList<>();
         for (Long num : numbers) {
-            reqs.add(new RequestModel("eth_getBlockByNumber", new Object[]{"0x" + Long.toHexString(num), false}, 42L));
+            reqs.add(gethService.createHttpRequestType("eth_getBlockByNumber", new Object[]{"0x" + Long.toHexString(num), false}));
         }
         return batchGet(reqs);
     }
 
-    private List<Block> batchGet(List<RequestModel> reqs) throws APIException {
+    private List<Block> batchGet(List<Request<?, Web3DefaultResponseType>> reqs) throws APIException {
         List<Map<String, Object>> batchRes = gethService.batchExecuteGethCall(reqs);
 
         // TODO ignore return order for now

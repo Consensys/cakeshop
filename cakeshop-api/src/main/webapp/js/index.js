@@ -30,6 +30,7 @@ window.Tower = {
 	client: null,
 	ready: false,
 	current: null,
+	consensus: null,
 	status: {
 		status: 'init'
 	},
@@ -53,6 +54,9 @@ window.Tower = {
 			// Redraw the current section
 			$('#' + Dashboard.section).click();
 		}
+		
+		//set consensus type
+		Tower.consensus = status.consensus
 
 		if (status.status === 'running') {
 			$('#default-node-status').html( $('<span>', { html: 'Running' }) );
@@ -124,6 +128,7 @@ window.Tower = {
 			'block-detail'           : require('./widgets/block-detail'),
 			'block-list'             : require('./widgets/block-list'),
 			'block-view'             : require('./widgets/block-view'),
+			'clique-signers'		 : require('./widgets/clique-signers'),
 			'contract-current-state' : require('./widgets/contract-current-state'),
 			'contract-detail'        : require('./widgets/contract-detail'),
             'contract-transact'      : require('./widgets/contract-transact'),
@@ -134,15 +139,13 @@ window.Tower = {
 			'metrix-blocks-min'      : require('./widgets/metrix-blocks-min'),
 			'metrix-txn-min'         : require('./widgets/metrix-txn-min'),
 			// 'metrix-txn-sec'         : require('./widgets/metrix-txn-sec'),
-			'node-control'           : require('./widgets/node-control'),
+			'permissions-list'       : require('./widgets/permission-list'),
+			'permissions-detail'       : require('./widgets/permission-detail'),
 			'node-info'              : require('./widgets/node-info'),
-			'node-settings'          : require('./widgets/node-settings'),
 			'peers-add'              : require('./widgets/peers-add'),
 			'peers-list'             : require('./widgets/peers-list'),
-            // TODO turn this back on after fixing nodeIP issue
-			// 'peers-neighborhood'     : require('./widgets/peers-neighborhood'),
+			'istanbul-validators'             : require('./widgets/istanbul-validators'),
 			'txn-detail'             : require('./widgets/txn-detail'),
-            'transaction-manager'    : require('./widgets/transaction-manager')
 		});
 
 		Dashboard.init();
@@ -307,12 +310,13 @@ window.Tower = {
 		'peers': function() {
 			var widgets = [
 				{ widgetId: 'peers-list' },
-                { widgetId: 'transaction-manager' },
                 { widgetId: 'peers-add' }
 			];
-
-			if (Tower.client === 'quorum') {
-				widgets.push({ widgetId: 'transaction-manager' });
+			
+			if (Tower.consensus === 'istanbul') {	
+				widgets.push({ widgetId: 'istanbul-validators' });	
+			} else if (Tower.consensus === 'clique') {	
+				widgets.push({ widgetId: 'clique-signers' });
 			}
 
 			Dashboard.showSection('peers', widgets);
@@ -325,16 +329,6 @@ window.Tower = {
         //
 		// 	Dashboard.showSection('api', widgets);
 		// },
-
-        'managed': function() {
-            var widgets = [
-                { widgetId: 'node-control' },
-                { widgetId: 'node-settings' },
-                { widgetId: 'node-log' },
-            ];
-
-            Dashboard.showSection('managed', widgets);
-        },
 
 		'contracts': function() {
 			var widgets = [
@@ -352,6 +346,14 @@ window.Tower = {
 			];
 
 			Dashboard.showSection('explorer', widgets);
+		},
+
+		'permissioning': function() {
+			var widgets = [
+				{ widgetId: 'permissions-list' }
+			];
+
+			Dashboard.showSection('permissioning', widgets);
 		},
 
 		'wallet': function() {

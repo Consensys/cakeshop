@@ -1,33 +1,25 @@
 package com.jpmorgan.cakeshop.test.config;
 
-import com.jpmorgan.cakeshop.config.AppConfig;
 import com.jpmorgan.cakeshop.config.SpringBootApplication;
 import com.jpmorgan.cakeshop.config.SwaggerConfig;
 import com.jpmorgan.cakeshop.config.WebAppInit;
 import com.jpmorgan.cakeshop.config.WebConfig;
 import com.jpmorgan.cakeshop.db.BlockScanner;
 import com.jpmorgan.cakeshop.test.TestBlockScanner;
-
-import java.io.IOException;
-import java.util.concurrent.Executor;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.aop.interceptor.SimpleAsyncUncaughtExceptionHandler;
 import org.springframework.context.EnvironmentAware;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.FilterType;
-import org.springframework.context.annotation.Profile;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.context.annotation.*;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.core.task.SyncTaskExecutor;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.test.context.ActiveProfiles;
 import org.testng.annotations.BeforeClass;
+
+import java.util.concurrent.Executor;
 
 @Configuration
 @ComponentScan(basePackages = "com.jpmorgan.cakeshop",
@@ -39,6 +31,7 @@ import org.testng.annotations.BeforeClass;
         }
 )
 @ActiveProfiles("test")
+@PropertySource("classpath:config/application.properties")
 @Order(1)
 @EnableAsync
 public class TestAppConfig implements EnvironmentAware {
@@ -48,17 +41,9 @@ public class TestAppConfig implements EnvironmentAware {
 
     @BeforeClass
     public static void setUp() {
+        System.setProperty("cakeshop.config.dir", TempFileManager.getTempPath());
         System.setProperty("spring.profiles.active", "test");
         System.setProperty("cakeshop.database.vendor", "hsqldb");
-    }
-
-    @Bean
-    @Profile("test")
-    public PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() throws IOException {
-        AppConfig appConfig = new AppConfig();
-        String tempPath = TempFileManager.getTempPath();
-        AppConfig.createConfigIfNecessary(tempPath);
-        return appConfig.createPropConfigurer(tempPath);
     }
 
     @Bean(name = "asyncExecutor")

@@ -43,7 +43,7 @@ public abstract class AbstractDataSourceConfig implements ApplicationContextAwar
     @Autowired
     protected Environment env;
 
-    @Value("${config.path}")
+    @Value("${cakeshop.config.dir}")
     protected String CONFIG_ROOT;
 
     protected ApplicationContext applicationContext;

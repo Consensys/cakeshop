@@ -1,13 +1,11 @@
 package com.jpmorgan.cakeshop.config;
 
 import com.google.common.collect.Lists;
-import com.jpmorgan.cakeshop.bean.GethConfig;
-import com.jpmorgan.cakeshop.bean.GethRunner;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.error.ErrorLog;
-import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.task.InitializeNodesTask;
 import com.jpmorgan.cakeshop.util.*;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -27,8 +25,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Order(999999)
 @Service(value = "appStartup")
@@ -37,17 +33,14 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AppStartup.class);
     private final Long REQUIRED_MEMORY = 2000000L;
 
-    @Value("${config.path}")
+    @Value("${cakeshop.config.dir}")
     private String CONFIG_ROOT;
 
-    @Autowired
-    private GethHttpService geth;
+    @Value("${server.port}")
+    private String SERVER_PORT;
 
-    @Autowired
-    private GethConfig gethConfig;
-
-    @Autowired
-    private GethRunner gethRunner;
+    @Value("${nodejs.binary:node}")
+    String nodeJsBinaryName;
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -61,8 +54,6 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
     private boolean healthy = true;
 
     private String solcVer;
-
-    private String gethVer;
 
     private final List<ErrorLog> errors;
 
@@ -83,43 +74,6 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         autoStartFired = true;
         healthy = testSystemHealth();
         if (healthy) {
-            if (Boolean.valueOf(System.getProperty("geth.init.only"))) {
-                // init will generate the keys/enodeid with geth and print to console.
-                // use this to add the enode url to static_nodes/permissioned_nodes before running
-                try {
-                    gethRunner.downloadQuorumIfNeeded(); // generating enode url needs geth binary
-                    String enodeURL = gethRunner.getEnodeURL();
-                    System.err.println("Generated node keys and enode url:");
-                    System.err.println(enodeURL);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                // Exit after all system initialization has completed
-                System.err.println("initialization complete.");
-                System.exit(0);
-            }
-
-            if (Boolean.valueOf(System.getProperty("geth.init.example"))) {
-                // Exit after all system initialization has completed
-                gethConfig.setAutoStart(false);
-                gethConfig.setAutoStop(false);
-                try {
-                    gethConfig.save();
-                } catch (IOException e) {
-                    LOG.error("Error writing application.properties: " + e.getMessage());
-                    System.exit(1);
-                }
-                System.out.println("initialization complete. wrote quorum-example config. exiting.");
-                System.exit(0);
-            }
-
-            if (gethConfig.isAutoStart()) {
-                LOG.info("Autostarting geth node");
-                healthy = geth.start();
-                if (!healthy) {
-                    addError("GETH FAILED TO START");
-                }
-            }
             // Make sure initial nodes are in the DB if file provided
             executor.execute(applicationContext.getBean(InitializeNodesTask.class));
         }
@@ -170,19 +124,7 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         System.out.println("          version:     " + AppVersion.BUILD_VERSION);
         System.out.println("          build id:    " + AppVersion.BUILD_ID);
         System.out.println("          build date:  " + AppVersion.BUILD_DATE);
-        System.out.println(
-            "          Access the Cakeshop UI at: " + getSpringUrl(gethConfig.getCakeshopPort()));
-    }
-
-    // Try to determine listening URL
-    private String getSpringUrl(String port) {
-        String uri = "http://";
-        try {
-            uri = uri + EEUtils.getAllIPs().get(0).getAddr();
-        } catch (APIException e) {
-            uri = uri + "localhost";
-        }
-        return uri + ":" + port + "/";
+        System.out.println("          Access the Cakeshop UI at: http://localhost:" + SERVER_PORT);
     }
 
     public String getDebugInfo(ServletContext servletContext) {
@@ -219,20 +161,23 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         out.append("app.root: ").append(FileUtils.getClasspathPath("")).append("\n");
         out.append("eth.env: ").append(System.getProperty("eth.environment")).append("\n");
         out.append("cakeshop.config.dir: ").append(CONFIG_ROOT).append("\n");
-        out.append("\n");
-
-        out.append("geth.path: ").append(gethRunner.getGethPath()).append("\n");
-        out.append("geth.data.dir: ").append(gethConfig.getGethDataDirPath()).append("\n");
-        out.append("geth.version: ");
-        if (StringUtils.isNotBlank(gethVer)) {
-            out.append(gethVer);
-        } else {
-            out.append("!!! unable to read geth version !!!");
-        }
         out.append("\n\n");
 
-        out.append("solc.path: ").append(gethRunner.getSolcPath()).append("\n");
+        // test solc binary
+        out.append("solc.path: ").append(CakeshopUtils.getSolcPath()).append("\n");
         out.append("solc.version: ");
+        try {
+            List<String> args = Lists.newArrayList(
+                nodeJsBinaryName,
+                CakeshopUtils.getSolcPath(),
+                "--version");
+            ProcessBuilder builder = ProcessUtils.createProcessBuilder(args);
+            Process process = builder.start();
+            process.waitFor();
+            solcVer = IOUtils.toString(process.getInputStream(), Charset.defaultCharset());
+        } catch (Exception e) {
+            addError(e);
+        }
         if (StringUtils.isNotBlank(solcVer)) {
             out.append(solcVer);
         } else {
@@ -289,7 +234,6 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         // gather all errors and sort
         List<ErrorLog> allErrors = new ArrayList<>();
         allErrors.addAll(errors);
-        allErrors.addAll(geth.getStartupErrors());
 
         Collections.sort(allErrors, (ErrorLog o1, ErrorLog o2) -> {
             long result = o1.nanos - o2.nanos;
@@ -331,17 +275,6 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
         System.out.println("Running pre-flight checks...");
         System.out.println();
 
-        // test ethereum data dir
-        String dataDir = gethConfig.getGethDataDirPath();
-        System.out.println("Testing ethereum data dir path");
-        System.out.println(dataDir);
-        if (isDirAccesible(dataDir)) {
-            System.out.println("OK");
-        } else {
-            System.out.println("FAILED");
-            isHealthy = false;
-        }
-
         // test config & db data dir
         System.out.println();
         String dbDir = FileUtils.expandPath(CONFIG_ROOT, "db");
@@ -354,81 +287,10 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
             isHealthy = false;
         }
 
-        System.out.println();
-        if (isHealthy) {
-            System.out.println("ALL TESTS PASSED!");
-        } else {
-            System.out.println("!!! SYSTEM FAILED SELF-TEST !!!");
-            System.out.println("!!!    NOT STARTING GETH    !!!");
-        }
-
         System.out.println(StringUtils.repeat("*", 80));
         System.out.println();
 
-        //Check if total memory or free memory is Less than 2 GB
-        if (MemoryUtils.getMemoryData(false) < REQUIRED_MEMORY && MemoryUtils.getMemoryData(true) < REQUIRED_MEMORY) {
-            errors.add(new ErrorLog("System does not have enough total or free RAM to run cakeshop. Need at least 2 GB of free RAM"));
-            isHealthy = false;
-        }
-
         return isHealthy;
-    }
-
-    private boolean testGethBinaries() {
-        // test geth binary
-        System.out.println();
-        System.out.println("Testing geth server binary");
-        String gethOutput = testBinary(gethRunner.getGethPath(), "version");
-        gethVer = checkVersionOutput(gethOutput, gethVer);
-
-        // test solc binary
-        System.out.println();
-        System.out.println("Testing solc compiler binary");
-        String solcOutput = testBinary(gethConfig.getNodeJsBinaryName(), gethRunner.getSolcPath(), "--version");
-        solcVer = checkVersionOutput(solcOutput, solcVer);
-
-        return StringUtils.isNotEmpty(gethVer) && StringUtils.isNotEmpty(solcVer);
-    }
-
-    private String checkVersionOutput(String consoleOutput, String version) {
-        if (consoleOutput == null || !consoleOutput.contains("Version:")) {
-            System.out.println("FAILED");
-            return "";
-        } else {
-            Matcher matcher = Pattern.compile("^Version: (.*)", Pattern.MULTILINE).matcher(consoleOutput);
-            if (matcher.find()) {
-                // not requiring explicit version yet
-                version = matcher.group(1);
-            }
-            System.out.println("OK");
-            return version;
-        }
-    }
-
-    private String testBinary(String... args) {
-
-        ProcessBuilder builder = ProcessUtils.createProcessBuilder(gethRunner, args);
-        try {
-            Process proc = builder.start();
-            StreamGobbler stdout = StreamGobbler.create(proc.getInputStream());
-            StreamGobbler stderr = StreamGobbler.create(proc.getErrorStream());
-            proc.waitFor();
-
-            if (proc.exitValue() != 0) {
-                addError("Process exited with code " + proc.exitValue() + " while running " + args[0]);
-                addError(stdout.getString());
-                addError(stderr.getString());
-                return null;
-            }
-
-            return stdout.getString().trim();
-
-        } catch (IOException | InterruptedException e) {
-            LOG.error("Failed to run " + args[0], e);
-            addError("Failed to run " + args[0]);
-            addError(e);
-            return null;
-        }
     }
 
     private boolean isDirAccesible(String path) {

@@ -4,6 +4,9 @@ import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -41,12 +44,19 @@ public class Peer implements Serializable  {
     /**
      * Raft Id
      */
-    private String raftId;
+    private int raftId;
 
     /**
      * Raft leader
      */
     private boolean leader;
+
+    /**
+     * Raft role
+     */
+    @JsonInclude()
+    @Transient
+    private String role;
 
     public String getStatus() {
          return status;
@@ -88,11 +98,11 @@ public class Peer implements Serializable  {
         return nodeIP;
     }
 
-    public String getRaftId() {
+    public int getRaftId() {
         return raftId;
     }
 
-    public void setRaftId(String raftId) {
+    public void setRaftId(int raftId) {
         this.raftId = raftId;
     }
 
@@ -102,6 +112,14 @@ public class Peer implements Serializable  {
 
     public void setLeader(boolean leader) {
         this.leader = leader;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 
     @Override

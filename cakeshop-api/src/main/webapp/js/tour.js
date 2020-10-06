@@ -93,40 +93,6 @@ import 'jif-dashboard/dashboard-template'
     ])
     .concat([
       //------------------------------------------------------------------------
-      // MANAGED NODE
-      {
-        element: "#managed",
-        title: "Managed Node",
-        content: "The managed node tab gives the ability to have cakeshop run its own local Quorum node",
-        backdropContainer: ".tower-sidebar",
-          backdrop: false,
-        onShow: showMenuStep("#managed"),
-        onHide: hideMenuStep,
-      },
-      {
-        element: ".widget-shell.node-control",
-        content: "From here you can start, stop, restart and even reset the node back to a fresh state",
-        placement: "top",
-        onShow: showMenuStep("#managed"),
-        onHide: hideMenuStep,
-      },
-      {
-        element: ".widget-shell.node-settings",
-        content: "Here you can alter various settings of the underlying node",
-        placement: "top",
-        onShow: showMenuStep("#managed"),
-        onHide: hideMenuStep,
-      },
-      {
-        element: ".widget-shell.node-log",
-        content: "Here you can stream the logs of the managed node",
-        placement: "top",
-        onShow: showMenuStep("#managed"),
-        onHide: hideMenuStep,
-      },
-    ])
-    .concat([
-      //------------------------------------------------------------------------
       // CONTRACTS
       {
         element: "#contracts",
@@ -207,13 +173,6 @@ import 'jif-dashboard/dashboard-template'
       {
         element: ".widget-shell.peers-list",
         content: "A list of peers connected to the node, if any",
-        placement: "top",
-        onShow: showMenuStep("#peers"),
-        onHide: hideMenuStep,
-      },
-      {
-        element: ".widget-shell.peers-neighborhood",
-        content: "In order to make setting up a cluster as easy as possible, we scan the local subnet for available nodes and display them here",
         placement: "top",
         onShow: showMenuStep("#peers"),
         onHide: hideMenuStep,

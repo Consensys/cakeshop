@@ -1,18 +1,21 @@
 package com.jpmorgan.cakeshop.test;
 
 import com.google.common.collect.Lists;
-import com.jpmorgan.cakeshop.bean.GethConfig;
-import com.jpmorgan.cakeshop.bean.GethRunner;
 import com.jpmorgan.cakeshop.config.AppStartup;
+import com.jpmorgan.cakeshop.dao.NodeInfoDAO;
 import com.jpmorgan.cakeshop.error.APIException;
+import com.jpmorgan.cakeshop.model.NodeInfo;
 import com.jpmorgan.cakeshop.model.Transaction;
 import com.jpmorgan.cakeshop.model.TransactionResult;
+import com.jpmorgan.cakeshop.model.json.WalletPostJsonRequest;
 import com.jpmorgan.cakeshop.service.ContractService;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.TransactionService;
+import com.jpmorgan.cakeshop.service.WalletService;
 import com.jpmorgan.cakeshop.service.task.BlockchainInitializerTask;
 import com.jpmorgan.cakeshop.test.config.TempFileManager;
 import com.jpmorgan.cakeshop.test.config.TestAppConfig;
+import com.jpmorgan.cakeshop.util.CakeshopUtils;
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.ProcessUtils;
 import org.slf4j.Logger;
@@ -34,7 +37,6 @@ import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static org.testng.Assert.assertNotNull;
@@ -53,6 +55,9 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
         System.setProperty("cakeshop.database.vendor", "hsqldb");
     }
 
+    @Value("${nodejs.binary:node}")
+    String nodeJsBinaryName;
+
     @Autowired
     private ContractService contractService;
 
@@ -65,38 +70,38 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
     @Autowired
     protected GethHttpService geth;
 
-    @Value("${geth.datadir}")
-    private String ethDataDir;
-
-    @Value("${config.path}")
+    @Value("${cakeshop.config.dir}")
     private String CONFIG_ROOT;
 
     @Autowired
-    private GethRunner gethRunner;
+    private NodeInfoDAO nodeInfoDAO;
 
     @Autowired
-    private GethConfig gethConfig;
+    private GethHttpService gethHttpService;
 
     @Autowired
     @Qualifier("hsql")
     private DataSource embeddedDb;
+
+    @Autowired
+    private WalletService walletService;
 
     public BaseGethRpcTest() {
         super();
     }
 
     public boolean runGeth() {
-        return true;
+        return false;
     }
 
     @AfterSuite(alwaysRun = true)
     public void stopSolc() throws IOException {
         List<String> args = Lists.newArrayList(
-                gethConfig.getNodeJsBinaryName(),
-                gethRunner.getSolcPath(),
+                nodeJsBinaryName,
+                CakeshopUtils.getSolcPath(),
                 "--stop-ipc");
 
-        ProcessBuilder builder = ProcessUtils.createProcessBuilder(gethRunner, args);
+        ProcessBuilder builder = ProcessUtils.createProcessBuilder(args);
         builder.start();
     }
 
@@ -113,20 +118,16 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
 
     @BeforeClass
     public void startGeth() throws IOException {
-        if (!runGeth()) {
-            return;
-        }
-
-        assertTrue(appStartup.isHealthy(), "Healthcheck should pass");
-        LOG.info("Starting Ethereum at test startup");
-        assertTrue(_startGeth());
-        initializeChain();
-    }
-
-    private boolean _startGeth() throws IOException {
-        gethRunner.setGenesisBlockFilename(FileUtils.getClasspathPath("genesis_block.json").toAbsolutePath().toString());
-        gethRunner.setKeystorePath(FileUtils.getClasspathPath("keystore").toAbsolutePath().toString());
-        return geth.start();
+            NodeInfo testNode = nodeInfoDAO.getByUrls("http://localhost:22000", "http://localhost:9081");
+            if(testNode == null) {
+                testNode = new NodeInfo("test", "http://localhost:22000", "http://localhost:9081");
+                nodeInfoDAO.save(testNode);
+                LOG.debug("Created node Id {}", testNode.id);
+            }
+            if(!gethHttpService.isConnected()) {
+                gethHttpService.connectToNode(testNode.id);
+                initializeChain();
+            }
     }
 
     /**
@@ -134,20 +135,6 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
      */
     @AfterClass(alwaysRun = true)
     public void stopGeth() {
-        if (!runGeth()) {
-            return;
-        }
-        LOG.info("Stopping Ethereum at test teardown");
-        _stopGeth();
-    }
-
-    private void _stopGeth() {
-        geth.stop();
-        try {
-            FileUtils.deleteDirectory(new File(ethDataDir));
-        } catch (IOException e) {
-            logger.warn(e);
-        }
         String db = System.getProperty("cakeshop.database.vendor");
         if (db.equalsIgnoreCase("hsqldb")) {
             ((EmbeddedDatabase) embeddedDb).shutdown();
@@ -193,16 +180,26 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
         assertNotNull(result.getId());
         assertTrue(!result.getId().isEmpty());
 
-        if (gethConfig.getConsensusMode().equals("istanbul")) {
-            Map<String, Object> res = geth.executeGethCall("miner_start", new Object[]{});
-        }
-
         Transaction tx = transactionService.waitForTx(result, 50, TimeUnit.MILLISECONDS);
         return tx.getContractAddress();
     }
 
 
     void initializeChain() throws APIException {
+        walletService.list()
+            .forEach(account -> {
+            if(account.isUnlocked()) {
+                return;
+            }
+            try {
+                WalletPostJsonRequest request = new WalletPostJsonRequest();
+                request.setAccount(account.getAddress());
+                request.setAccountPassword("");
+                walletService.unlockAccount(request);
+            } catch (APIException e) {
+                e.printStackTrace();
+            }
+        });
         BlockchainInitializerTask chainInitTask =
             applicationContext.getBean(BlockchainInitializerTask.class);
         chainInitTask.run(); // run in same thread

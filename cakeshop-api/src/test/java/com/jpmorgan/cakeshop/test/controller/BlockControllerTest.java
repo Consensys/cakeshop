@@ -38,8 +38,8 @@ public class BlockControllerTest extends BaseControllerTest {
 
     @Test
     public void testGetBlockByHash() throws Exception {
-        Block block = blockService.get(null, 1L, null);
-        commonTest("{\"hash\":\"" + block.getId() + "\"}", 1L);
+        Block block = blockService.get(null, 0L, null);
+        commonTest("{\"hash\":\"" + block.getId() + "\"}", 0L);
     }
 
     @Test

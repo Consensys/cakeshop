@@ -2,9 +2,8 @@ package com.jpmorgan.cakeshop.service;
 
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Node;
-import com.jpmorgan.cakeshop.model.NodeConfig;
-import com.jpmorgan.cakeshop.model.NodeSettings;
 import com.jpmorgan.cakeshop.model.Peer;
+
 import java.util.List;
 import java.util.Map;
 
@@ -22,23 +21,6 @@ public interface NodeService {
     public Node get() throws APIException;
 
     /**
-     * Update node configuration (may trigger restart)
-     *
-     * @param settings Log level (0 = least verbose, 6 = most verbose)
-     * @return
-     * @throws APIException
-     */
-    public NodeConfig update(
-            NodeSettings settings) throws APIException;
-
-    /**
-     * Reset node back to default configuration (will restart)
-     *
-     * @return
-     */
-    public Boolean reset();
-
-    /**
      * Retrieve a list of connected peers
      *
      * @return
@@ -47,13 +29,23 @@ public interface NodeService {
     public List<Peer> peers() throws APIException;
 
     /**
-     * Connect to the given peer
+     * Add a node to the raft cluster (optionally make it a view-only learner node)
+     *
+     * @param address
+     * @param raftLearner
+     * @return
+     * @throws APIException
+     */
+    public boolean addPeer(String address, boolean raftLearner) throws APIException;
+
+    /**
+     * Promote raft learner node to full peer
      *
      * @param address
      * @return
      * @throws APIException
      */
-    public boolean addPeer(String address) throws APIException;
+    void promoteToPeer(String address) throws APIException;
 
     /**
      * Remove the given peer
@@ -63,31 +55,24 @@ public interface NodeService {
      * @throws APIException
      */
     boolean removePeer(String address) throws APIException;
+    
+    public List<String> getSigners() throws APIException;
 
-    /**
-     * Get list of transaction manager nodes
-     *
-     * @return
-     * @throws APIException
-     */
-    public Map<String, Object> getTransactionManagerNodes() throws APIException;
+    public Map<String, Boolean> getProposals() throws APIException;
 
-    /**
-     * Add new transaction manager node
-     *
-     * @param transactionManagerNode
-     * @return
-     * @throws APIException
-     */
-    public NodeConfig addTransactionManagerNode(String transactionManagerNode) throws APIException;
+    public Boolean cliquePropose(String address, boolean auth) throws APIException;
 
-    /**
-     * Remove transaction manager node from the list
-     *
-     * @param transactionManagerNode
-     * @return
-     * @throws APIException
-     */
-    public NodeConfig removeTransactionManagerNode(String transactionManagerNode) throws APIException;
+    public Boolean cliqueDiscard(String address) throws APIException;
+    
+    public List<String> getValidators() throws APIException;
+
+    public Map<String, Boolean> getCandidates() throws APIException;
+
+    public String propose(String address, boolean auth) throws APIException;
+
+    public String discard(String address) throws APIException;
+
+    public String istanbulGetNodeAddress() throws APIException;
+
 
 }

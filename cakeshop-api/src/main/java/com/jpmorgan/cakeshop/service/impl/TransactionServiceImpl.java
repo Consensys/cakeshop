@@ -7,7 +7,7 @@ import com.jpmorgan.cakeshop.model.Contract;
 import com.jpmorgan.cakeshop.model.ContractABI;
 import com.jpmorgan.cakeshop.model.DirectTransactionRequest;
 import com.jpmorgan.cakeshop.model.Event;
-import com.jpmorgan.cakeshop.model.RequestModel;
+import com.jpmorgan.cakeshop.model.Web3DefaultResponseType;
 import com.jpmorgan.cakeshop.model.Transaction;
 import com.jpmorgan.cakeshop.model.Transaction.Status;
 import com.jpmorgan.cakeshop.model.TransactionResult;
@@ -17,6 +17,8 @@ import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.TransactionService;
 import com.jpmorgan.cakeshop.service.WalletService;
 import com.jpmorgan.cakeshop.util.StringUtils;
+import com.jpmorgan.cakeshop.util.CakeshopUtils;
+import org.web3j.protocol.core.Request;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,9 +53,9 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public Transaction get(String id) throws APIException {
-        List<RequestModel> reqs = new ArrayList<>();
-        reqs.add(new RequestModel("eth_getTransactionByHash", new Object[]{id}, 1L));
-        reqs.add(new RequestModel("eth_getTransactionReceipt", new Object[]{id}, 2L));
+        List<Request<?, Web3DefaultResponseType>> reqs = new ArrayList<>();
+        reqs.add(geth.createHttpRequestType("eth_getTransactionByHash", new Object[]{id}));
+        reqs.add(geth.createHttpRequestType("eth_getTransactionReceipt", new Object[]{id}));
         List<Map<String, Object>> batchRes = geth.batchExecuteGethCall(reqs);
 
         if (batchRes.isEmpty() || batchRes.get(0) == null) {
@@ -157,8 +159,8 @@ public class TransactionServiceImpl implements TransactionService {
         try {
             // TODO use txn manager
             Map<String, Object> res = geth.executeGethCall("eth_getQuorumPayload", new Object[] { tx.getInput().substring(2) });
-            if (res.get("_result") != null) {
-                tx.setInput((String) res.get("_result")); // replace input with private payload
+            if (res.get(CakeshopUtils.SIMPLE_RESULT) != null) {
+                tx.setInput((String) res.get(CakeshopUtils.SIMPLE_RESULT)); // replace input with private payload
             }
         } catch (APIException e) {
             LOG.warn("Failed to load private payload: " + e.getMessage());
@@ -168,10 +170,10 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public List<Transaction> get(List<String> ids) throws APIException {
 
-        List<RequestModel> reqs = new ArrayList<>();
+        List<Request<?, Web3DefaultResponseType>> reqs = new ArrayList<>();
         for (String id : ids) {
-            reqs.add(new RequestModel("eth_getTransactionByHash", new Object[]{id}, 1L));
-            reqs.add(new RequestModel("eth_getTransactionReceipt", new Object[]{id}, 2L));
+            reqs.add(geth.createHttpRequestType("eth_getTransactionByHash", new Object[]{id}));
+            reqs.add(geth.createHttpRequestType("eth_getTransactionReceipt", new Object[]{id}));
         }
         List<Map<String, Object>> batchRes = geth.batchExecuteGethCall(reqs);
 
@@ -243,7 +245,7 @@ public class TransactionServiceImpl implements TransactionService {
                         ? request.getFromAddress()
                         : defaultFromAddress); // make sure we have a non-null from address
         Map<String, Object> readRes = geth.executeGethCall("eth_sendTransaction", request.toGethArgs());
-        return new TransactionResult((String) readRes.get("_result"));
+        return new TransactionResult((String) readRes.get(CakeshopUtils.SIMPLE_RESULT));
     }
 
 }
