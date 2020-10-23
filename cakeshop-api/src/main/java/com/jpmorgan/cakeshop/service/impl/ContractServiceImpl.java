@@ -74,7 +74,7 @@ public class ContractServiceImpl implements ContractService {
     @Override
     @SuppressWarnings("unchecked")
     public List<Contract> compile(String code, CodeType codeType, Boolean optimize,
-        String filename, String evmVersion) throws APIException {
+                                  String filename, String evmVersion, String version) throws APIException {
 
         if (codeType != CodeType.solidity) {
             throw new APIException("Only 'solidity' source is currently supported");
@@ -97,6 +97,10 @@ public class ContractServiceImpl implements ContractService {
                     evmVersion,
                     "--filename",
                     filename);
+            if(version != null) {
+                args.add("--sol-version");
+                args.add(version);
+            }
 
             ProcessBuilder builder = ProcessUtils.createProcessBuilder(args);
             File tempFile = new File("temp-contract.json");
@@ -174,10 +178,10 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     public TransactionResult create(String from, String code, CodeType codeType, Object[] args,
-        String binary, String privateFrom, List<String> privateFor, String filename,
-        Boolean optimize, String evmVersion) throws APIException {
+                                    String binary, String privateFrom, List<String> privateFor, String filename,
+                                    Boolean optimize, String evmVersion, String version) throws APIException {
 
-        List<Contract> contracts = compile(code, codeType, optimize, filename, evmVersion);
+        List<Contract> contracts = compile(code, codeType, optimize, filename, evmVersion, version);
 
         Contract contract = null;
         if (binary != null && binary.length() > 0) {

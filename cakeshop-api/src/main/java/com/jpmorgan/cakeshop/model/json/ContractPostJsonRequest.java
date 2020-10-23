@@ -14,7 +14,7 @@ public class ContractPostJsonRequest {
     public static final String DEFAULT_CODE_TYPE = "solidity";
     public static final String DEFAULT_EVM_VERSION = "byzantium";
 
-    private String from, code, code_type = DEFAULT_CODE_TYPE, binary, privateFrom, address, method, filename, evmVersion = DEFAULT_EVM_VERSION;
+    private String from, code, code_type = DEFAULT_CODE_TYPE, binary, privateFrom, address, method, filename, evmVersion = DEFAULT_EVM_VERSION, version;
     private Object args[];
     private Object blockNumber;
     private Boolean optimize;
@@ -204,4 +204,19 @@ public class ContractPostJsonRequest {
         this.privateFor = privateFor;
     }
 
+    /**
+     * @return version solidity compiler version to set
+     * e.g.
+     */
+    public String getVersion() {
+        return version;
+    }
+
+    /**
+     * @param version solidity compiler version to set
+     * e.g.
+     */
+    public void setVersion(String version) {
+        this.version = version;
+    }
 }
