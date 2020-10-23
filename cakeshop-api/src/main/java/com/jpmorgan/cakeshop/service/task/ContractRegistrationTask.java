@@ -70,26 +70,11 @@ public class ContractRegistrationTask implements Runnable {
         try {
             contract.setAddress(tx.getContractAddress());
             LOG.info("Registering newly mined contract at address " + contract.getAddress());
-            TransactionResult regTx = contractRegistry.register(contract.getOwner(), tx.getContractAddress(), contract.getName(), contract.getABI(),
-                    contract.getCode(), contract.getCodeType(), contract.getCreatedDate(), contract.getPrivateFor());
+            contractRegistry.register(contract.getOwner(), tx.getContractAddress(), contract.getName(), contract.getABI(),
+                    contract.getCode(), contract.getCodeType(), contract.getCreatedDate(), contract.getStorageLayout(), contract.getPrivateFor());
 
-            if (regTx == null) {
-                // evict cache for private transactions
-                cacheManager.getCache("contracts").evict(contract.getAddress());
-                return;
-            }
-
-            // invalidate cache
-
-            try {
-                transactionService.waitForTx(regTx, pollDelayMillis, TimeUnit.MILLISECONDS);
-            } catch (InterruptedException e) {
-                LOG.warn("Interrupted while waiting for registration tx to mine", e);
-                return;
-            }
-
+            // evict cache
             cacheManager.getCache("contracts").evict(contract.getAddress());
-
         } catch (APIException e) {
             LOG.warn("Failed to register contract at address " + tx.getContractAddress(), e);
         }

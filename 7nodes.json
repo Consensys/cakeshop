@@ -2,36 +2,43 @@
   {
     "name": "node1",
     "rpcUrl": "http://localhost:22000",
-    "transactionManagerUrl": "http://localhost:9081"
+    "transactionManagerUrl": "http://localhost:9081",
+    "reportingUrl": "http://localhost:4000"
   },
   {
     "name": "node2",
     "rpcUrl": "http://localhost:22001",
-    "transactionManagerUrl": "http://localhost:9082"
+    "transactionManagerUrl": "http://localhost:9082",
+      "reportingUrl": "http://localhost:4000"
   },
   {
     "name": "node3",
     "rpcUrl": "http://localhost:22002",
-    "transactionManagerUrl": "http://localhost:9083"
+    "transactionManagerUrl": "http://localhost:9083",
+      "reportingUrl": "http://localhost:4000"
   },
   {
     "name": "node4",
     "rpcUrl": "http://localhost:22003",
-    "transactionManagerUrl": "http://localhost:9084"
+    "transactionManagerUrl": "http://localhost:9084",
+      "reportingUrl": "http://localhost:4000"
   },
   {
     "name": "node5",
     "rpcUrl": "http://localhost:22004",
-    "transactionManagerUrl": "http://localhost:9085"
+    "transactionManagerUrl": "http://localhost:9085",
+      "reportingUrl": "http://localhost:4000"
   },
   {
     "name": "node6",
     "rpcUrl": "http://localhost:22005",
-    "transactionManagerUrl": "http://localhost:9086"
+    "transactionManagerUrl": "http://localhost:9086",
+      "reportingUrl": "http://localhost:4000"
   },
   {
     "name": "node7",
     "rpcUrl": "http://localhost:22006",
-    "transactionManagerUrl": "http://localhost:9087"
+    "transactionManagerUrl": "http://localhost:9087",
+      "reportingUrl": "http://localhost:4000"
   }
 ]

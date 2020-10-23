@@ -166,6 +166,7 @@ public class ContractServiceImpl implements ContractService {
                 contract.setABI(contractBundle.abi);
                 contract.setGasEstimates(contractBundle.evm.gasEstimates);
                 contract.setFunctionHashes(contractBundle.evm.methodIdentifiers);
+                contract.setStorageLayout(contractBundle.storageLayout.toString());
 
                 contracts.add(contract);
 

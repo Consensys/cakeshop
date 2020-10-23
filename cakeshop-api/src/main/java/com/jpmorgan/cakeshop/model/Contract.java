@@ -62,6 +62,8 @@ public class Contract {
      */
     private Map<String, String> functionHashes;
 
+    private String storageLayout = "";
+
     /**
      * Comma-separated public keys of in a private contract
      * This is not saved in the ContractRegistry, but is used in the front-end
@@ -76,13 +78,14 @@ public class Contract {
     }
 
     public Contract(String address, String name, String abi, String code, CodeType codeType,
-        String binary, Long createdDate, String privateFor) {
+                    String binary, Long createdDate, String storageLayout, String privateFor) {
         this.address = address;
         this.name = name;
         this.code = code;
         this.codeType = codeType;
         this.binary = binary;
         this.createdDate = createdDate;
+        this.storageLayout = storageLayout;
         this.privateFor = privateFor;
         setABI(abi);
     }
@@ -180,6 +183,14 @@ public class Contract {
         this.owner = owner;
     }
 
+    public String getStorageLayout() {
+        return storageLayout;
+    }
+
+    public void setStorageLayout(String storageLayout) {
+        this.storageLayout = storageLayout;
+    }
+
     /**
      * @return the contractAbi
      */
@@ -196,6 +207,6 @@ public class Contract {
     }
 
     public Contract shallowCopy() {
-        return new Contract(address, name, abi, code, codeType, binary, createdDate, privateFor);
+        return new Contract(address, name, abi, code, codeType, binary, createdDate, storageLayout, privateFor);
     }
 }
