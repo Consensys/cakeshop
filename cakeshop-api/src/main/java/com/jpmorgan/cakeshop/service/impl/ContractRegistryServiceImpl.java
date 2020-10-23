@@ -26,17 +26,8 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(ContractRegistryServiceImpl.class);
 
-    private static final String REGISTRY_ABI_FILE =
-            "contracts" + File.separator + "ContractRegistry.abi.json";
-
-    @Value("${cakeshop.config.dir}")
-    private String CONFIG_ROOT;
-
     @Autowired
     private ContractService contractService;
-
-    @Autowired
-    private TransactionService transactionService;
 
     @Autowired
     private ContractDAO contractDAO;
