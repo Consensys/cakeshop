@@ -1,4 +1,3 @@
-
 (function() {
 
     var Contract = window.Contract = Backbone.Model.extend({
@@ -33,7 +32,7 @@
                 var promises = [];
                 contract.abi.forEach(function(method) {
                     // read all constant methods with no inputs
-                    if (method.constant === true && method.inputs.length === 0) {
+                    if (Contract.isReadOnly(method) && method.inputs.length === 0) {
                         promises.push(new Promise(function(resolve, reject) {
                             contract.proxy[method.name]().then(function(res) {
                                 resolve({method: method, result: res});
@@ -359,6 +358,11 @@
 
         return msrc;
     };
+
+    Contract.isReadOnly = function(method) {
+        return method.constant === true || method.stateMutability === 'view' || method.stateMutability === 'pure'
+    }
+
 
 
 })();
