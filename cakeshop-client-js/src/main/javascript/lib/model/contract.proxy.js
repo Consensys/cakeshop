@@ -108,7 +108,7 @@
                     options.method = method.name;
 
                     return new Promise(function(resolve, reject) {
-                        if (method.constant === true) {
+                        if (Contract.isReadOnly(method)) {
                             contract.read(options).then(function(res) {
                                 resolve(processOutputArgs(res));
                             }, function(err) {

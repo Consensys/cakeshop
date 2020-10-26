@@ -121,7 +121,7 @@ import {releases} from "../../json/solc_versions"
   }
 
     function onTransactionSubmitted(txId, method, methodSig, methodArgs) {
-        if (method.constant === true) {
+        if (Contract.isReadOnly(method)) {
             Sandbox.addTx(
                 "[read] " + methodSig + " => " + JSON.stringify(txId));
         } else {
@@ -190,7 +190,7 @@ import {releases} from "../../json/solc_versions"
       var highlight = false;
       if (lines[i].match(new RegExp("function\\s+" + method.name + "\\s*\\("))) {
         highlight = true;
-      } else if (method.constant === true &&
+      } else if (Contract.isReadOnly(method) &&
           lines[i].match(new RegExp("^\\s*[a-z\\d\\[\\]]+\\s+public\\b.*?" + method.name + "\\s*;"))) {
 
         highlight = true;
