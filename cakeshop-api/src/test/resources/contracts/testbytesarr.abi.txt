@@ -1,15 +1,14 @@
 [
 	{
-		"constant": false,
 		"inputs": [],
 		"name": "foo",
 		"outputs": [
 			{
+				"internalType": "bytes32[]",
 				"name": "_ret",
 				"type": "bytes32[]"
 			}
 		],
-		"payable": false,
 		"stateMutability": "nonpayable",
 		"type": "function"
 	}
