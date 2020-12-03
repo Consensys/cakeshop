@@ -25,7 +25,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -34,7 +33,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.commons.io.FileUtils.forceDelete;
 
 @Service
 public class ContractServiceImpl implements ContractService {
@@ -80,10 +78,6 @@ public class ContractServiceImpl implements ContractService {
             throw new APIException("Only 'solidity' source is currently supported");
         }
 
-        if (optimize == null) {
-            optimize = true; // default to true
-        }
-
         List<Contract> contracts = new ArrayList<>();
         long createdDate = System.currentTimeMillis() / 1000;
 
@@ -97,17 +91,20 @@ public class ContractServiceImpl implements ContractService {
                     evmVersion,
                     "--filename",
                     filename);
+
+            if(optimize) {
+                args.add("--optimize");
+            }
+
             if(version != null) {
                 args.add("--sol-version");
                 args.add(version);
             }
 
             ProcessBuilder builder = ProcessUtils.createProcessBuilder(args);
-            File tempFile = new File("temp-contract.json");
-            tempFile.createNewFile();
-            builder.redirectOutput(tempFile);
             Process proc = builder.start();
 
+            StreamGobbler stdout = StreamGobbler.create(proc.getInputStream());
             StreamGobbler stderr = StreamGobbler.create(proc.getErrorStream());
 
             proc.getOutputStream().write(code.getBytes());
@@ -122,6 +119,7 @@ public class ContractServiceImpl implements ContractService {
                 for (String encoding : isoEncodings) {
                     proc = builder.start();
 
+                    stdout = StreamGobbler.create(proc.getInputStream());
                     stderr = StreamGobbler.create(proc.getErrorStream());
 
                     proc.getOutputStream().write(convertCodeToBytes(code, Charset.forName(encoding)));
@@ -138,11 +136,10 @@ public class ContractServiceImpl implements ContractService {
                 }
             }
 
-            res = objectMapper.readValue(tempFile, SolcResponse.class);
+            res = objectMapper.readValue(stdout.getString(), SolcResponse.class);
             if (proc.isAlive()) {
                 proc.destroy();
             }
-            forceDelete(tempFile);
 
         } catch (IOException | InterruptedException e) {
             LOG.error("REASON FOR CONTRACT FAILURE " + e.getMessage());

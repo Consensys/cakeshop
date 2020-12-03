@@ -13,7 +13,6 @@ import {releases} from "../../json/solc_versions"
       var versionSelector = $("#versionSelector")
           .empty();
       Object.entries(result)
-          .sort((a, b) => b[0].localeCompare(a[0]))
           .forEach(([key, value]) => {
               const opt = document.createElement('option');
               const version = value.replace('soljson-', '').replace('.js', '')
@@ -42,6 +41,7 @@ import {releases} from "../../json/solc_versions"
     $(".select_contract .compiled_contracts select").empty();
     $(".select_contract .constructor").empty();
     $(".compiled_contracts .refresh").show();
+    $("#compile-button").prop('disabled', true).text("Compiling...");
   });
 
   Sandbox.on("compiled", function(contracts) {
@@ -49,6 +49,7 @@ import {releases} from "../../json/solc_versions"
       return;
     }
 
+    $("#compile-button").prop('disabled', false).text("Compile");
     showCompiledContracts(contracts);
   });
 
@@ -467,7 +468,7 @@ import {releases} from "../../json/solc_versions"
     $(".papertape .panel-body").empty();
   });
 
-  // TODO use https://ethereum.github.io/solc-bin/bin/list.json to get the latest
+  // from https://ethereum.github.io/solc-bin/bin/list.json
   setSolidityOptions(releases, 'v0.6.12+commit.27d51765')
   shrinkify(".select_contract");
   shrinkify(".state");

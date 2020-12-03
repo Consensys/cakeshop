@@ -134,6 +134,9 @@
 
     editor.getSession().on('change', onChange);
     document.querySelector('#optimize').addEventListener('change', compile);
+    document.querySelector('#versionSelector').addEventListener('change', compile);
+    document.querySelector('#evmVersionSelector').addEventListener('change', compile);
+    $("#compile-button").on("click", compile);
 
     // ----------------- compiler output renderer ----------------------
     var detailsOpen = {};
