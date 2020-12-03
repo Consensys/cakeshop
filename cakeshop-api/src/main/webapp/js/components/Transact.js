@@ -125,7 +125,7 @@ export class TransactTable extends React.Component {
         var methodSig = method.name + "(" + _sig_params + ")";
         var methodArgs = {from: from, args: _params};
 
-        if (!method.constant) {
+        if (Contract.isReadOnly(method)) {
             // txn
             methodArgs.privateFrom = privateFrom;
             methodArgs.privateFor = privateFor;
@@ -196,7 +196,7 @@ export const TransactionInput = ({input, onChange}) => {
 const getButtonLabel = (method) => {
     if(!method.name) {
         return "Deploy";
-    } else if(method.constant) {
+    } else if(Contract.isReadOnly(method)) {
         return "Read";
     }
     return "Transact";

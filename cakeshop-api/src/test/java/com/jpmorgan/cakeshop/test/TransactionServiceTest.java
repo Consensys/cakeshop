@@ -33,7 +33,7 @@ public class TransactionServiceTest extends BaseGethRpcTest {
         String code = readTestFile("contracts/simplestorage.sol");
 
         TransactionResult result = contractService.create(null, code, ContractService.CodeType.solidity, new Object[] { 100 }, null, null, null,
-            "simplestorage.sol", true, "constantinople");
+            "simplestorage.sol", true, "constantinople", null);
         LOG.info("EXECUTING testGet ");
         assertNotNull(result);
         assertNotNull(result.getId());
@@ -52,10 +52,10 @@ public class TransactionServiceTest extends BaseGethRpcTest {
         String code = readTestFile("contracts/simplestorage.sol");
         LOG.info("EXECUTING testGetBatch 1 ");
         TransactionResult result = contractService.create(null, code, ContractService.CodeType.solidity, new Object[] { 100 }, null, null, null,
-            "simplestorage.sol", true, "constantinople");
+            "simplestorage.sol", true, "constantinople", null);
         LOG.info("EXECUTING testGetBatch 2 ");
         TransactionResult result2 = contractService.create(null, code, ContractService.CodeType.solidity, new Object[] { 100 }, null, null, null,
-            "simplestorage.sol", true, "constantinople");
+            "simplestorage.sol", true, "constantinople", null);
 
         List<Transaction> txns = transactionService.get(Lists.newArrayList(result.getId(), result2.getId()));
         assertNotNull(txns);
@@ -71,7 +71,7 @@ public class TransactionServiceTest extends BaseGethRpcTest {
 
         LOG.info("EXECUTING testGetPendingTx ");
         TransactionResult result = contractService.create(null, code, ContractService.CodeType.solidity, new Object[] { 100 }, null, null, null,
-            "simplestorage.sol", true, "constantinople");
+            "simplestorage.sol", true, "constantinople", null);
         assertNotNull(result);
         assertNotNull(result.getId());
 

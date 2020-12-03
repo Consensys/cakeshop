@@ -3,12 +3,27 @@ import ReactDOM from "react-dom";
 import NodeChooser from "../components/NodeChooser";
 import {Constructor} from "../components/Constructor";
 import {TransactTable} from "../components/Transact";
-import utils from "../utils"
+import {releases} from "../../json/solc_versions"
 
 (function() {
   var Sandbox = window.Sandbox = window.Sandbox || {};
   var activeContract, compiler_output;
 
+  function setSolidityOptions(result, initialSelection) {
+      var versionSelector = $("#versionSelector")
+          .empty();
+      Object.entries(result)
+          .forEach(([key, value]) => {
+              const opt = document.createElement('option');
+              const version = value.replace('soljson-', '').replace('.js', '')
+              opt.text = version
+              opt.value = version
+              versionSelector.append(opt)
+            })
+      if(initialSelection) {
+          versionSelector.val(initialSelection)
+      }
+  }
   function showTxView() {
       ReactDOM.render(<NodeChooser/>,
           document.getElementById('rpc-select-container')
@@ -26,6 +41,7 @@ import utils from "../utils"
     $(".select_contract .compiled_contracts select").empty();
     $(".select_contract .constructor").empty();
     $(".compiled_contracts .refresh").show();
+    $("#compile-button").prop('disabled', true).text("Compiling...");
   });
 
   Sandbox.on("compiled", function(contracts) {
@@ -33,6 +49,7 @@ import utils from "../utils"
       return;
     }
 
+    $("#compile-button").prop('disabled', false).text("Compile");
     showCompiledContracts(contracts);
   });
 
@@ -105,7 +122,7 @@ import utils from "../utils"
   }
 
     function onTransactionSubmitted(txId, method, methodSig, methodArgs) {
-        if (method.constant === true) {
+        if (Contract.isReadOnly(method)) {
             Sandbox.addTx(
                 "[read] " + methodSig + " => " + JSON.stringify(txId));
         } else {
@@ -174,7 +191,7 @@ import utils from "../utils"
       var highlight = false;
       if (lines[i].match(new RegExp("function\\s+" + method.name + "\\s*\\("))) {
         highlight = true;
-      } else if (method.constant === true &&
+      } else if (Contract.isReadOnly(method) &&
           lines[i].match(new RegExp("^\\s*[a-z\\d\\[\\]]+\\s+public\\b.*?" + method.name + "\\s*;"))) {
 
         highlight = true;
@@ -360,10 +377,11 @@ import utils from "../utils"
 
         var editorSource = Contract.preprocess(Sandbox.getEditorSource());
         var optimize = document.querySelector('#optimize').checked;
+        var version = document.querySelector('#versionSelector').value;
         var evmVersion = document.querySelector('#evmVersionSelector').value;
         var filename = Sandbox.Filer.getActiveFilename();
 
-        Contract.compile(editorSource, optimize, filename, evmVersion).then(
+        Contract.compile(editorSource, optimize, filename, evmVersion, version).then(
             function (compiler_output) {
                 var contract = _.find(compiler_output, function (c) {
                     return c.get("name") === sel;
@@ -387,7 +405,8 @@ import utils from "../utils"
                     "",
                     privateFor,
                     filename,
-                    evmVersion
+                    evmVersion,
+                    version
                 ).then(function (addr) {
 
                     addTx("Contract '" + contract.get("name") + "' deployed at "
@@ -449,6 +468,8 @@ import utils from "../utils"
     $(".papertape .panel-body").empty();
   });
 
+  // from https://ethereum.github.io/solc-bin/bin/list.json
+  setSolidityOptions(releases, 'v0.6.12+commit.27d51765')
   shrinkify(".select_contract");
   shrinkify(".state");
   shrinkify(".papertape");

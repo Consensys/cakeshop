@@ -9,7 +9,6 @@ import com.jpmorgan.cakeshop.model.json.ContractPostJsonRequest;
 import com.jpmorgan.cakeshop.service.ContractRegistryService;
 import com.jpmorgan.cakeshop.service.ContractService;
 import com.jpmorgan.cakeshop.service.ContractService.CodeType;
-import com.jpmorgan.cakeshop.service.task.BlockchainInitializerTask;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import org.bouncycastle.util.encoders.Base64;
@@ -23,7 +22,6 @@ import org.springframework.web.context.request.async.WebAsyncTask;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 
 @RestController
@@ -78,7 +76,7 @@ public class ContractController extends BaseController {
 
         List<Contract> contracts = contractService.compile(jsonRequest.getCode(),
                 CodeType.valueOf(jsonRequest.getCode_type()), jsonRequest.getOptimize(), jsonRequest.getFilename(),
-            jsonRequest.getEvmVersion());
+            jsonRequest.getEvmVersion(), jsonRequest.getVersion());
         APIResponse res = new APIResponse();
 
         if (contracts != null) {
@@ -116,7 +114,7 @@ public class ContractController extends BaseController {
         TransactionResult tx = contractService.create(jsonRequest.getFrom(), jsonRequest.getCode(),
                 CodeType.valueOf(jsonRequest.getCode_type()), jsonRequest.getArgs(), jsonRequest.getBinary(),
                 jsonRequest.getPrivateFrom(), jsonRequest.getPrivateFor(), jsonRequest.getFilename(),
-            jsonRequest.getOptimize(), jsonRequest.getEvmVersion());
+            jsonRequest.getOptimize(), jsonRequest.getEvmVersion(), jsonRequest.getVersion());
 
         APIResponse res = new APIResponse();
 
