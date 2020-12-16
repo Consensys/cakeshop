@@ -1,16 +1,10 @@
 package com.jpmorgan.cakeshop.service.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import com.jpmorgan.cakeshop.dao.BlockDAO;
 import com.jpmorgan.cakeshop.dao.NodeInfoDAO;
-import com.jpmorgan.cakeshop.dao.TransactionDAO;
-import com.jpmorgan.cakeshop.dao.WalletDAO;
 import com.jpmorgan.cakeshop.db.BlockScanner;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.NodeInfo;
-import com.jpmorgan.cakeshop.model.RequestModel;
 import com.jpmorgan.cakeshop.model.Web3DefaultResponseType;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.util.CakeshopUtils;

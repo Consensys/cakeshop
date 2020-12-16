@@ -27,9 +27,6 @@ import java.util.Map;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
-/**
- * @author Michael Kazansky
- */
 @Service
 public class ReportingHttpServiceImpl implements ReportingHttpService {
 

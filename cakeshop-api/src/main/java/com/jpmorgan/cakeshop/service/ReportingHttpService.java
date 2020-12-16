@@ -6,9 +6,6 @@ import com.jpmorgan.cakeshop.model.Contract;
 import java.util.List;
 import java.util.Map;
 
-/**
- * @author Michael Kazansky
- */
 public interface ReportingHttpService {
 
     String getReportingUrl();

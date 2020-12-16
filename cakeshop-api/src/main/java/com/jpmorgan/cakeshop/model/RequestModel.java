@@ -3,9 +3,7 @@ package com.jpmorgan.cakeshop.model;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 
 /**
- * Geth JSON-RPC request model
- *
- * @author Michael Kazansky
+ * Geth/Reporting Tool JSON-RPC request model
  */
 public class RequestModel {
 
