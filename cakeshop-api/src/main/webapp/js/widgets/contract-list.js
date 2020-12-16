@@ -89,22 +89,24 @@ module.exports = function() {
 		_handleButton: function(e) {
             e.preventDefault();
             var _this = this;
+            $(e.target).prop('disabled', true)
             const widgetId = $(e.target).data('widget')
             if(widgetId === 'contract-reporting') {
                 Contract.get($(e.target).parent().data('id')).done(function(res) {
                     const contract = res.attributes
                     if(contract.storageLayout) {
-                        Contract.register(addr).then((res) => {
+                        Contract.register(contract.address).then((res) => {
                             console.log("Successfully add new contract to reporting: ", res);
                             _this.fetch()
                         }).catch((res) => {
                             console.log("Failed to register new contract abi: ", res);
                             alert("Failed to register contract in the Reporting Tool")
+                            $(e.target).prop('disabled', false)
                         })
                     } else {
                         alert('Reporting Tool only supports contracts compiled with solc version 0.6.5 or higher. Before this version, the compiler does not provide the required Storage Layout for the contract.')
+                        $(e.target).prop('disabled', false)
                     }
-
                 })
 
             } else {

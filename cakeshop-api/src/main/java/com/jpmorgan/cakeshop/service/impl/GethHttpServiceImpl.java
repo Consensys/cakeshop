@@ -22,11 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.web3j.quorum.Quorum;
 import org.web3j.protocol.Web3jService;
 import org.web3j.protocol.besu.Besu;
@@ -39,9 +35,6 @@ import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.util.*;
 
-import static org.springframework.http.HttpMethod.POST;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-
 /**
  *
  * @author Michael Kazansky
@@ -53,35 +46,14 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     private static final Logger LOG = LoggerFactory.getLogger(GethHttpServiceImpl.class);
 
-    @Autowired(required = false)
-    private BlockDAO blockDAO;
-
-    @Autowired(required = false)
-    private TransactionDAO txDAO;
-
-    @Autowired(required = false)
-    private WalletDAO walletDAO;
-
     @Autowired()
     private NodeInfoDAO nodeInfoDao;
 
     @Autowired
     private ApplicationContext applicationContext;
 
-    @Autowired
-    private ObjectMapper jsonMapper;
-
-    @Autowired
-    private RestTemplate restTemplate;
-
     @Value("${nodejs.binary:node}")
     String nodeJsBinaryName;
-
-    @Value("${cakeshop.reporting.rpc:}")
-    String reportingRpcUrl;
-
-    @Value("${cakeshop.reporting.ui:}")
-    String reportingUiUrl;
 
     private BlockScanner blockScanner;
 
@@ -237,14 +209,6 @@ public class GethHttpServiceImpl implements GethHttpService {
         this.currentTransactionManagerUrl = transactionManagerUrl;
     }
 
-    public String getReportingUrl() {
-        return reportingRpcUrl;
-    }
-
-    public String getReportingUiUrl() {
-        return reportingUiUrl;
-    }
-
     @Override
     public void connectToNode(Long nodeId) {
         try {
@@ -285,70 +249,4 @@ public class GethHttpServiceImpl implements GethHttpService {
         }
         return false;
     }
-
-    @Override
-    public Map<String, Object> executeReportingCall(String funcName, Object... args) throws APIException {
-        LOG.info("Reporting tool call: " + funcName);
-        String response;
-        try {
-            if (StringUtils.isEmpty(currentRpcUrl)) {
-                throw new ResourceAccessException("Current Reporting URL not set, skipping request");
-            }
-
-            HttpHeaders jsonContentHeaders = new HttpHeaders();
-            jsonContentHeaders.setContentType(APPLICATION_JSON);
-
-            String request;
-            try {
-                request = jsonMapper.writeValueAsString(new RequestModel(funcName, args, GETH_API_VERSION, GETH_REQUEST_ID));
-            } catch (JsonProcessingException e) {
-                throw new APIException("Failed to serialize request(s)", e);
-            }
-            HttpEntity<String> httpEntity = new HttpEntity<>(request, jsonContentHeaders);
-
-            response = restTemplate.exchange(reportingRpcUrl, POST, httpEntity, String.class).getBody();
-
-        } catch (RestClientException e1) {
-            LOG.error("RPC call failed - " + ExceptionUtils.getRootCauseMessage(e1));
-            throw new APIException("RPC call failed", e1);
-        }
-
-        if (StringUtils.isEmpty(response)) {
-            throw new APIException("Received empty reply from server");
-        }
-
-        try {
-            Map<String, Object> data = jsonMapper.readValue(response, Map.class);
-
-            if (data.containsKey("error") && data.get("error") != null) {
-                String message;
-                Map<String, String> error = (Map<String, String>) data.get("error");
-                if (error.containsKey("message")) {
-                    message = error.get("message");
-                } else {
-                    message = "RPC call failed";
-                }
-                throw new APIException("RPC request failed: " + message);
-            }
-
-            Object result = data.get("result");
-            if (result == null) {
-                return null;
-            }
-
-            if (!(result instanceof Map)) {
-                // Handle case where a simple value is returned instead of a map (int, bool, or string)
-                Map<String, Object> res = new HashMap<>();
-                res.put(SIMPLE_RESULT, data.get("result"));
-                return res;
-            }
-
-            return (Map<String, Object>) data.get("result");
-        } catch (APIException e) {
-            throw e;
-        } catch (IOException e) {
-            throw new APIException("RPC call failed", e);
-        }
-    }
-
 }

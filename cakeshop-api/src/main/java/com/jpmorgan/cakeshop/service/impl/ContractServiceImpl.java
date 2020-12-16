@@ -248,7 +248,6 @@ public class ContractServiceImpl implements ContractService {
     @Cacheable(value = "contracts", unless = "#result.getABI() == null")
     @Override
     public Contract get(String address) throws APIException {
-        LOG.info("Contract cache miss for: " + address);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Contract cache miss for: " + address);
         }
@@ -266,7 +265,6 @@ public class ContractServiceImpl implements ContractService {
             contract = new Contract();
             contract.setAddress(address);
         }
-        LOG.info("Storage: {}", contract.getStorageLayout());
 
         contract.setBinary(bin);
 

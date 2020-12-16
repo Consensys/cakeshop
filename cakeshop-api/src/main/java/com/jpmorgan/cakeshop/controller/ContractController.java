@@ -8,7 +8,7 @@ import com.jpmorgan.cakeshop.model.SolidityType.Bytes32Type;
 import com.jpmorgan.cakeshop.model.json.ContractPostJsonRequest;
 import com.jpmorgan.cakeshop.service.ContractService;
 import com.jpmorgan.cakeshop.service.ContractService.CodeType;
-import com.jpmorgan.cakeshop.service.GethHttpService;
+import com.jpmorgan.cakeshop.service.ReportingHttpService;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import org.bouncycastle.util.encoders.Base64;
@@ -44,7 +44,7 @@ public class ContractController extends BaseController {
     private ContractService contractService;
 
     @Autowired
-    private GethHttpService gethHttpService;
+    private ReportingHttpService reportingHttpService;
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -142,14 +142,11 @@ public class ContractController extends BaseController {
     @RequestMapping("/list")
     public ResponseEntity<APIResponse> list() throws APIException {
         List<Contract> contracts = contractService.list();
-        if(!StringUtils.isEmpty(gethHttpService.getReportingUrl())) {
-            Map<String, Object> result = gethHttpService.executeReportingCall("reporting.GetAddresses");
-            LOG.info("RESULT {}", result);
-            List<String> addresses = (List<String>) result.get(SIMPLE_RESULT);
-            LOG.info("ADDRESSES {}", addresses);
+        if(!StringUtils.isEmpty(reportingHttpService.getReportingUrl())) {
+            List<String> addresses = reportingHttpService.getRegisteredAddresses();
             contracts.forEach((contract -> {
                 if(addresses.contains(contract.getAddress())) {
-                    contract.setDetails(String.format("%s/contracts/%s", gethHttpService.getReportingUiUrl(), contract.getAddress()));
+                    contract.setDetails(String.format("%s/contracts/%s", reportingHttpService.getReportingUiUrl(), contract.getAddress()));
                 }
             }));
 
@@ -299,21 +296,7 @@ public class ContractController extends BaseController {
             res.addError(err);
             return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
         }
-        Map<String, String> body = new HashMap<>();
-        String name = contract.getName() + contract.getAddress();
-        body.put("name", name);
-        body.put("abi", contract.getABI());
-        body.put("storageLayout", contract.getStorageLayout());
-        gethHttpService.executeReportingCall("reporting.AddTemplate", body);
-
-        body = new HashMap<>();
-        body.put("address", contract.getAddress());
-        gethHttpService.executeReportingCall("reporting.AddAddress", body);
-
-        body = new HashMap<>();
-        body.put("address", contract.getAddress());
-        body.put("data", name);
-        gethHttpService.executeReportingCall("reporting.AssignTemplate", body);
+        reportingHttpService.registerContract(contract);
 
         res.setData(toAPIData(contract));
         return new ResponseEntity<>(res, HttpStatus.OK);

@@ -62,9 +62,4 @@ public interface GethHttpService {
 
     String getCurrentTransactionManagerUrl();
 
-    String getReportingUrl();
-
-    String getReportingUiUrl();
-
-    Map<String, Object> executeReportingCall(String funcName, Object... args) throws APIException;
 }
