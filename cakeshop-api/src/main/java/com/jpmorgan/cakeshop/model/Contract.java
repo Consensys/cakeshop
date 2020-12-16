@@ -70,6 +70,11 @@ public class Contract {
      */
     private String privateFor = "";
 
+    /**
+     * Link to reporting tool detail page, if connected
+     */
+    private String details = "";
+
     @JsonIgnore
     private ContractABI contractAbi;
 
@@ -204,6 +209,14 @@ public class Contract {
 
     public String getPrivateFor() {
         return privateFor;
+    }
+
+    public String getDetails() {
+        return details;
+    }
+
+    public void setDetails(String details) {
+        this.details = details;
     }
 
     public Contract shallowCopy() {

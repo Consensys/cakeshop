@@ -54,7 +54,7 @@ window.Tower = {
 			// Redraw the current section
 			$('#' + Dashboard.section).click();
 		}
-		
+
 		//set consensus type
 		Tower.consensus = status.consensus
 
@@ -146,10 +146,6 @@ window.Tower = {
 			'peers-list'             : require('./widgets/peers-list'),
 			'istanbul-validators'             : require('./widgets/istanbul-validators'),
 			'txn-detail'             : require('./widgets/txn-detail'),
-            // reporting
-            'reporting-contract-list': require('./widgets/reporting-contract-list'),
-            'reporting-report': require('./widgets/reporting-report'),
-            'reporting-query-result': require('./widgets/reporting-query-result')
 		});
 
 		Dashboard.init();
@@ -316,10 +312,10 @@ window.Tower = {
 				{ widgetId: 'peers-list' },
                 { widgetId: 'peers-add' }
 			];
-			
-			if (Tower.consensus === 'istanbul') {	
-				widgets.push({ widgetId: 'istanbul-validators' });	
-			} else if (Tower.consensus === 'clique') {	
+
+			if (Tower.consensus === 'istanbul') {
+				widgets.push({ widgetId: 'istanbul-validators' });
+			} else if (Tower.consensus === 'clique') {
 				widgets.push({ widgetId: 'clique-signers' });
 			}
 
@@ -351,7 +347,7 @@ window.Tower = {
 
 			Dashboard.showSection('explorer', widgets);
 		},
-		
+
 		'permissioning': function() {
 			var widgets = [
 				{ widgetId: 'permissions-list' }
@@ -359,14 +355,6 @@ window.Tower = {
 
 			Dashboard.showSection('permissioning', widgets);
 		},
-
-        'reporting': function() {
-			var widgets = [
-				{ widgetId: 'reporting-contract-list' }
-			];
-
-			Dashboard.showSection('reporting', widgets);
-        },
 
 		'wallet': function() {
 			var widgets = [
@@ -415,33 +403,10 @@ $(function() {
         Dashboard.reset();
 	});
 
-	var reporting = $('#start-reporting');
-    reporting.on('click', function() {
-        if (reporting.html() === "Connect to Reporting Engine") {
-            reporting.html("Disconnect Reporting Engine");
-            if (window.reportingEndpointReady) {
-                window.reportingEndpoint = window.reportingEndpointReady;
-            } else {
-                window.reportingEndpoint = "http://localhost:4000";
-            }
-            console.log("connect to reporting engine endpoint at:" + window.reportingEndpoint);
-            alert("Connect to reporting engine endpoint at" + window.reportingEndpoint);
-        } else {
-            reporting.html("Connect to Reporting Engine");
-            window.reportingEndpointReady = window.reportingEndpoint;
-            window.reportingEndpoint = "";
-            console.log("disconnect reporting engine");
-            alert("Disconnect reporting engine")
-        }
-    });
     // Update current reporting URL
-    Client.get('api/node/currentReportingUrl')
+    Client.get('api/node/reportingUrl')
         .done(function (response) {
-            let currentReportingURL = response.data.attributes.result;
-            window.reportingEndpoint = currentReportingURL;
-            if (currentReportingURL) {
-                reporting.html("Disconnect Reporting Engine");
-            }
+            window.reportingEndpoint = response.data.attributes.result;
         })
 
 	// Navigation menu handler

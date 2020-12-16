@@ -179,10 +179,10 @@ public class NodeController extends BaseController {
             HttpStatus.OK);
     }
 
-    @GetMapping(path = "/currentReportingUrl")
+    @GetMapping(path = "/reportingUrl")
     protected @ResponseBody
     ResponseEntity<APIResponse> getReportingUrl() throws APIException {
-        return new ResponseEntity<>(APIResponse.newSimpleResponse(gethService.getCurrentReportingUrl()),
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(gethService.getReportingUrl()),
             HttpStatus.OK);
     }
 
@@ -198,7 +198,7 @@ public class NodeController extends BaseController {
         }
         return new ResponseEntity<>(APIResponse.newSimpleResponse(true), HttpStatus.OK);
     }
-    
+
     @RequestMapping("/peers/clique/proposals")
     public ResponseEntity<APIResponse> getProposals() throws APIException {
         Map<String, Boolean> proposals = nodeService.getProposals();
@@ -229,7 +229,7 @@ public class NodeController extends BaseController {
         Boolean response = nodeService.cliqueDiscard(jsonRequest.getAddress());
         return new ResponseEntity<>(APIResponse.newSimpleResponse(response), HttpStatus.OK);
     }
-    
+
     @RequestMapping("/peers/istanbul/candidates")
     public ResponseEntity<APIResponse> getCandidates() throws APIException {
         Map<String, Boolean> candidates = nodeService.getCandidates();

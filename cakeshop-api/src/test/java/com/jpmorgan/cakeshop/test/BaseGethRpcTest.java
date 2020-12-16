@@ -120,7 +120,7 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
     public void startGeth() throws IOException {
             NodeInfo testNode = nodeInfoDAO.getByUrls("http://localhost:22000", "http://localhost:9081");
             if(testNode == null) {
-                testNode = new NodeInfo("test", "http://localhost:22000", "http://localhost:9081", null);
+                testNode = new NodeInfo("test", "http://localhost:22000", "http://localhost:9081");
                 nodeInfoDAO.save(testNode);
                 LOG.debug("Created node Id {}", testNode.id);
             }
