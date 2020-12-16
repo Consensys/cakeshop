@@ -143,12 +143,17 @@ public class ContractController extends BaseController {
     public ResponseEntity<APIResponse> list() throws APIException {
         List<Contract> contracts = contractService.list();
         if(!StringUtils.isEmpty(reportingHttpService.getReportingUrl())) {
-            List<String> addresses = reportingHttpService.getRegisteredAddresses();
-            contracts.forEach((contract -> {
-                if(addresses.contains(contract.getAddress())) {
-                    contract.setDetails(String.format("%s/contracts/%s", reportingHttpService.getReportingUiUrl(), contract.getAddress()));
-                }
-            }));
+            try {
+                List<String> addresses = reportingHttpService.getRegisteredAddresses();
+                contracts.forEach((contract -> {
+                    if (addresses.contains(contract.getAddress())) {
+                        contract.setDetails(String.format("%s/contracts/%s", reportingHttpService.getReportingUiUrl(), contract.getAddress()));
+                    }
+                }));
+            } catch (APIException e) {
+                // log error, but allow contracts to be returned without reporting tool links
+                LOG.error("Error getting registered contracts from the reporting tool", e);
+            }
 
         }
         APIResponse res = new APIResponse();
