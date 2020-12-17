@@ -382,3 +382,8 @@ div.contracts .withRefreshLabel {
     width: 162px;
 }
 
+#first-compile-warning {
+    color: #ffc400;
+    margin: 15px 4px;
+    cursor: default;
+}

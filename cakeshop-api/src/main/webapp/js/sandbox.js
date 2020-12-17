@@ -134,7 +134,11 @@
 
     editor.getSession().on('change', onChange);
     document.querySelector('#optimize').addEventListener('change', compile);
-    document.querySelector('#versionSelector').addEventListener('change', compile);
+    document.querySelector('#versionSelector').addEventListener('change', (e) => {
+        // bring the warning back up when they choose a new version
+        $("#first-compile-warning").show();
+        compile(e)
+    });
     document.querySelector('#evmVersionSelector').addEventListener('change', compile);
     $("#compile-button").on("click", compile);
 

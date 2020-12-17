@@ -50,6 +50,7 @@ import {releases} from "../../json/solc_versions"
     }
 
     $("#compile-button").prop('disabled', false).text("Compile");
+    $("#first-compile-warning").hide();
     showCompiledContracts(contracts);
   });
 
