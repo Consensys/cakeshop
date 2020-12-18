@@ -20,9 +20,9 @@ public interface GethHttpService {
     public static final Long GETH_REQUEST_ID = 42L; // We don't actually use this, so just use a constant
 
     public Quorum getQuorumService() throws APIException;
-    
+
     public Besu getBesuService() throws APIException;
-    
+
     /**
      * Call the given Geth RPC method
      *

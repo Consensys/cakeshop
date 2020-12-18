@@ -4,6 +4,8 @@ import NodeChooser from "../components/NodeChooser";
 import {Constructor} from "../components/Constructor";
 import {TransactTable} from "../components/Transact";
 import {releases} from "../../json/solc_versions"
+import $ from 'jquery'
+import utils from '../utils'
 
 (function() {
   var Sandbox = window.Sandbox = window.Sandbox || {};
@@ -382,6 +384,9 @@ import {releases} from "../../json/solc_versions"
         var evmVersion = document.querySelector('#evmVersionSelector').value;
         var filename = Sandbox.Filer.getActiveFilename();
 
+        const addToReporting = $('#reporting-checkbox').prop('checked')
+
+        addTx("[compile] Compiling " + filename);
         Contract.compile(editorSource, optimize, filename, evmVersion, version).then(
             function (compiler_output) {
                 var contract = _.find(compiler_output, function (c) {
@@ -398,8 +403,8 @@ import {releases} from "../../json/solc_versions"
                     _args = " (" + _params.join(", ") + ")";
                 }
 
-                addTx(
-                    "[deploy] Contract '" + contract.get("name") + "'" + _args);
+                addTx("[deploy] Contract '" + contract.get("name") + "'" + _args);
+
 
                 Contract.deploy(contract.get("code"), optimize, _params,
                     contract.get("binary"),
@@ -418,7 +423,6 @@ import {releases} from "../../json/solc_versions"
                     var registered = false;
 
                     function waitForRegistration() {
-                        // TODO use contract event topic for registry ??
                         Contract.get(addr).then(function (c) {
                             if (c === null || c.get("name") === null) {
                                 setTimeout(waitForRegistration, 1000); // poll every 1s til done
@@ -428,6 +432,16 @@ import {releases} from "../../json/solc_versions"
                             registered = true;
                             setActiveContract(c);
                             loadContracts(); // refresh contract list
+                            if(addToReporting) {
+                                addTx("Adding contract to Reporting tool");
+                                Contract.register(addr).then((res) => {
+                                    console.log("Successfully add new contract to reporting: ", res);
+                                    addTx("Successfully registered contract in the Reporting Tool")
+                                }).catch((res) => {
+                                    console.log("Failed to register new contract abi: ", res);
+                                    addTx("Failed to register contract in the Reporting Tool")
+                                })
+                            }
                         });
                     }
 
@@ -478,14 +492,24 @@ import {releases} from "../../json/solc_versions"
   shrinkify(".accounts");
 
   Sandbox.showTxView = showTxView;
-    Sandbox.addTx = addTx;
-    Sandbox.wrapTx = wrapTx;
-    Sandbox.wrapBlock = wrapBlock;
-    Sandbox.showCurrentState = showCurrentState;
+  Sandbox.addTx = addTx;
+  Sandbox.wrapTx = wrapTx;
+  Sandbox.wrapBlock = wrapBlock;
+  Sandbox.showCurrentState = showCurrentState;
   Sandbox.accounts = [];
 
   $(function() {
     showTxView(); // default view
+      // Update current reporting URL
+      Client.get('api/node/reportingUrl')
+          .done(function (response) {
+              window.reportingEndpoint = response.data.attributes.result;
+              if(window.reportingEndpoint) {
+                  $('#reporting-checkbox-container').removeClass('hidden')
+              } else {
+                  $('#reporting-checkbox-container').addClass('hidden')
+              }
+          })
   });
 
 })();

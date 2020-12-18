@@ -54,7 +54,7 @@ window.Tower = {
 			// Redraw the current section
 			$('#' + Dashboard.section).click();
 		}
-		
+
 		//set consensus type
 		Tower.consensus = status.consensus
 
@@ -312,10 +312,10 @@ window.Tower = {
 				{ widgetId: 'peers-list' },
                 { widgetId: 'peers-add' }
 			];
-			
-			if (Tower.consensus === 'istanbul') {	
-				widgets.push({ widgetId: 'istanbul-validators' });	
-			} else if (Tower.consensus === 'clique') {	
+
+			if (Tower.consensus === 'istanbul') {
+				widgets.push({ widgetId: 'istanbul-validators' });
+			} else if (Tower.consensus === 'clique') {
 				widgets.push({ widgetId: 'clique-signers' });
 			}
 
@@ -400,8 +400,14 @@ $(function() {
 	});
 
 	$('#reset-all').on('click', function() {
-		Dashboard.reset();
+        Dashboard.reset();
 	});
+
+    // Update current reporting URL
+    Client.get('api/node/reportingUrl')
+        .done(function (response) {
+            window.reportingEndpoint = response.data.attributes.result;
+        })
 
 	// Navigation menu handler
 	$('.tower-sidebar li').click(function(e) {

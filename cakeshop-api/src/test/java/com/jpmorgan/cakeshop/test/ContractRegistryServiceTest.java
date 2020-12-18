@@ -60,20 +60,7 @@ public class ContractRegistryServiceTest extends BaseGethRpcTest {
 	    assertNull(contract);
 	}
 
-    private void registerContract(String addr, String abi, String code, Long createdDate)
-            throws APIException, InterruptedException {
-	    LOG.info("Registering {} {} ", addr, "SimpleStorage");
-        TransactionResult tr = contractRegistry.register(null, addr, "SimpleStorage", abi, code, CodeType.solidity, createdDate,
-            "");
-	    assertNotNull(tr);
-	    assertNotNull(tr.getId());
-	    assertTrue(!tr.getId().isEmpty());
-
-	    Transaction tx = transactionService.waitForTx(tr, 50, TimeUnit.MILLISECONDS);
-	    assertNotNull(tx);
-    }
-
-	@Test
+    @Test
 	public void testList() throws IOException, InterruptedException {
 
 	    Long createdDate = (System.currentTimeMillis() / 1000);

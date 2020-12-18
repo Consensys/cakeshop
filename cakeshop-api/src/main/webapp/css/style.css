@@ -775,3 +775,7 @@ button.send {
     float: right;
     margin-left: 4px;
 }
+
+.actions {
+    margin-left: 2px;
+}
