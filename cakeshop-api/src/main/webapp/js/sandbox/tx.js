@@ -52,6 +52,7 @@ import utils from '../utils'
     }
 
     $("#compile-button").prop('disabled', false).text("Compile");
+    $("#first-compile-warning").hide();
     showCompiledContracts(contracts);
   });
 
