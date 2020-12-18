@@ -221,6 +221,20 @@
             });
     };
 
+    Contract.register = function(id) {
+        return new Promise(function(resolve, reject) {
+            Client.post(Contract.prototype.url('register'), { address: id }).
+            done(function(res, status, xhr) {
+                console.log('Done Registering', res.data)
+                resolve(res.data);
+            }).
+            fail(function(xhr, status, errThrown) {
+                console.log('Contract registration FAILED!!', status, errThrown);
+                reject(errThrown);
+            });
+        });
+    };
+
     Contract.compile = function(code, optimize, filename, evmVersion, version) {
         return new Promise(function(resolve, reject) {
             Client.post(Contract.prototype.url('compile'),

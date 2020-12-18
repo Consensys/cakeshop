@@ -1,11 +1,7 @@
 package com.jpmorgan.cakeshop.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import com.jpmorgan.cakeshop.dao.BlockDAO;
 import com.jpmorgan.cakeshop.dao.NodeInfoDAO;
-import com.jpmorgan.cakeshop.dao.TransactionDAO;
-import com.jpmorgan.cakeshop.dao.WalletDAO;
 import com.jpmorgan.cakeshop.db.BlockScanner;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.NodeInfo;
@@ -31,10 +27,7 @@ import org.springframework.web.client.RestClientException;
 
 import javax.annotation.PreDestroy;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  *
@@ -47,23 +40,11 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     private static final Logger LOG = LoggerFactory.getLogger(GethHttpServiceImpl.class);
 
-    @Autowired(required = false)
-    private BlockDAO blockDAO;
-
-    @Autowired(required = false)
-    private TransactionDAO txDAO;
-
-    @Autowired(required = false)
-    private WalletDAO walletDAO;
-
     @Autowired()
     private NodeInfoDAO nodeInfoDao;
 
     @Autowired
     private ApplicationContext applicationContext;
-
-    @Autowired
-    private ObjectMapper jsonMapper;
 
     @Value("${nodejs.binary:node}")
     String nodeJsBinaryName;
@@ -76,7 +57,7 @@ public class GethHttpServiceImpl implements GethHttpService {
     private String currentTransactionManagerUrl;
 
     private Quorum quorumService;
-    
+
     private Besu besuService;
 
     private Web3jService cakeshopService;
@@ -115,7 +96,7 @@ public class GethHttpServiceImpl implements GethHttpService {
             throw new APIException("RPC call failed", e);
         }
     }
-    
+
     public Besu getBesuService() throws APIException {
         try {
             if (StringUtils.isEmpty(currentRpcUrl)) {
@@ -131,7 +112,7 @@ public class GethHttpServiceImpl implements GethHttpService {
             throw new APIException("RPC call failed", e);
         }
     }
-    
+
 
     private void resetCakeshopService() {
 
@@ -262,5 +243,4 @@ public class GethHttpServiceImpl implements GethHttpService {
         }
         return false;
     }
-
 }

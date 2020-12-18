@@ -36,7 +36,7 @@ public class ContractDAO extends BaseDAO {
     @Transactional
     public void save(Contract contract) throws IOException {
         if (null != getCurrentSession()) {
-            LOG.info("Saving private contract");
+            LOG.info("Saving contract");
             String contractJson = jsonMapper.writeValueAsString(contract);
             getCurrentSession().save(new ContractInfo(contract.getAddress(), contractJson));
         }

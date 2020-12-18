@@ -1,4 +1,5 @@
 import utils from '../utils';
+import { utils as etherUtils } from 'ethers'
 
 module.exports = function() {
 	var extended = {
@@ -66,26 +67,14 @@ module.exports = function() {
 				var rows = [];
 				_.each(accounts.data, function(acct) {
 					acct = acct.attributes;
-					var b = _this.humanBalance(acct.balance);
-
-					if (b > 1000000000) {
-						b = 'Unlimited';
-					} else {
-						b = b.toFixed(2);
-					}
-
-					acct.balance = b + ' ETH';
+					var b = etherUtils.parseUnits(acct.balance, 'wei')
+					acct.balance = etherUtils.formatEther(b) + ' ETH';
 					rows.push( _this.templateRow({ o: acct }) );
 				});
 				$('#widget-' + _this.shell.id).html( _this.template({ rows: rows.join('') }) );
 				utils.makeAreaEditable('#widget-' + _this.shell.id + ' .value');
 			});
 		},
-
-        humanBalance: function(balance) {
-            var b = parseInt(balance, 10) / 1000000000000000000;
-            return (b > 1000000000) ? '∞' : Math.round(b * 100) / 100;
-        },
 
 		subscribe: function() {
 			//fetch when account funds are transferred
