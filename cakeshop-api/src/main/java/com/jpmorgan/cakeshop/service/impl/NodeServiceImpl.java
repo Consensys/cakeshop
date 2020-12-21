@@ -154,14 +154,6 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
                 }
             }
 
-            if(gethConfig.isAutoStart()) {
-                try {
-                    node.setConfig(createNodeConfig());
-                } catch (IOException e) {
-                    throw new APIException("Failed to read genesis block file", e);
-                }
-            }
-
             try {
                 node.setPeers(peers());
             } catch (APIException ex) {
@@ -399,7 +391,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
         }
         return consensus;
     }
-    
+
     @Override
     public List<String> getSigners() throws APIException {
     	EthAccounts signers = null;
@@ -455,7 +447,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
     	}
     	return true;
     }
-    
+
     @Override
     public List<String> getValidators() throws APIException {
     	IstanbulValidators validators = null;

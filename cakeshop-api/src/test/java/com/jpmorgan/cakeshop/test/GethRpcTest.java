@@ -14,7 +14,6 @@ import static org.testng.Assert.assertNotNull;
 
 public class GethRpcTest extends BaseGethRpcTest {
 
-    private final String expectedHash = "0xb89f8664868b71eee61daf6eb8f709e3800b77501172430cb3167cd6692a878e";
 
     @Test
     public void testExecWithParams() throws APIException {
@@ -24,10 +23,11 @@ public class GethRpcTest extends BaseGethRpcTest {
         assertNotNull(data.get("hash"));
 
         data = geth.executeGethCall(method, new Object[]{"0x" + Long.toHexString(0), false});
-        assertEquals(data.get("hash"), expectedHash);
+        String zeroBlockHash = (String) data.get("hash");
+        assertNotNull(zeroBlockHash);
 
-        data = geth.executeGethCall("eth_getBlockByHash", new Object[]{expectedHash, false});
-        assertEquals(data.get("hash"), expectedHash);
+        data = geth.executeGethCall("eth_getBlockByHash", new Object[]{zeroBlockHash, false});
+        assertEquals(data.get("hash"), zeroBlockHash);
     }
 
     @Test
@@ -43,9 +43,7 @@ public class GethRpcTest extends BaseGethRpcTest {
         assertEquals(batchRes.size(), 2);
 
         for (Map<String, Object> data : batchRes) {
-            assertEquals(data.get("hash"), expectedHash);
+            assertNotNull(data.get("hash"));
         }
-
     }
-
 }
