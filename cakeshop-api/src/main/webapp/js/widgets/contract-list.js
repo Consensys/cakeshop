@@ -89,9 +89,9 @@ module.exports = function() {
 		_handleButton: function(e) {
             e.preventDefault();
             var _this = this;
-            $(e.target).prop('disabled', true)
             const widgetId = $(e.target).data('widget')
             if(widgetId === 'contract-reporting') {
+                $(e.target).prop('disabled', true)
                 Contract.get($(e.target).parent().data('id')).done(function(res) {
                     const contract = res.attributes
                     if(contract.storageLayout) {
