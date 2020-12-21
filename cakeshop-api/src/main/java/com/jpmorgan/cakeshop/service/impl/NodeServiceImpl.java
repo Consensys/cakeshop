@@ -89,32 +89,80 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
                 }
             }
 
-            data = gethService.executeGethCall(ADMIN_MINER_MINING);
-            Boolean mining = (Boolean) data.get(SIMPLE_RESULT);
-            node.setMining(mining == null ? false : mining);
-
-            // peer count
-            data = gethService.executeGethCall(ADMIN_NET_PEER_COUNT);
-            String peerCount = (String) data.get(SIMPLE_RESULT);
-            node.setPeerCount(peerCount == null ? 0 : Integer.decode(peerCount));
-
-            // get last block number
-            data = gethService.executeGethCall(ADMIN_ETH_BLOCK_NUMBER);
-            String blockNumber = (String) data.get(SIMPLE_RESULT);
-            node.setLatestBlock(blockNumber == null ? 0 : Integer.decode(blockNumber));
-
-            // get pending transactions
-            data = gethService.executeGethCall(ADMIN_TXPOOL_STATUS);
-            Integer pending = AbiUtils.hexToBigInteger((String) data.get("pending")).intValue();
-            node.setPendingTxn(pending == null ? 0 : pending);
-
-            if (isRaft()) {
-                // get raft role
-                data = gethService.executeGethCall(RAFT_ROLE);
-                node.setRole((String) data.get(SIMPLE_RESULT));
+            try {
+                data = gethService.executeGethCall(ADMIN_MINER_MINING);
+                Boolean mining = (Boolean) data.get(SIMPLE_RESULT);
+                node.setMining(mining == null ? false : mining);
+            } catch (APIException ex) {
+                // allow other calls to carry on and collect partial state such
+                // as in cases when some RPC calls aren't supported
+                if (ex.getCause() != null) {
+                    throw ex;
+                }
             }
 
-            node.setPeers(peers());
+            try {
+                // peer count
+                data = gethService.executeGethCall(ADMIN_NET_PEER_COUNT);
+                String peerCount = (String) data.get(SIMPLE_RESULT);
+                node.setPeerCount(peerCount == null ? 0 : Integer.decode(peerCount));
+            } catch (APIException ex) {
+                // allow other calls to carry on and collect partial state such
+                // as in cases when some RPC calls aren't supported
+                if (ex.getCause() != null) {
+                    throw ex;
+                }
+            }
+
+            try {
+                // get last block number
+                data = gethService.executeGethCall(ADMIN_ETH_BLOCK_NUMBER);
+                String blockNumber = (String) data.get(SIMPLE_RESULT);
+                node.setLatestBlock(blockNumber == null ? 0 : Integer.decode(blockNumber));
+            } catch (APIException ex) {
+                // allow other calls to carry on and collect partial state such
+                // as in cases when some RPC calls aren't supported
+                if (ex.getCause() != null) {
+                    throw ex;
+                }
+            }
+
+            try {
+                // get pending transactions
+                data = gethService.executeGethCall(ADMIN_TXPOOL_STATUS);
+                Integer pending = AbiUtils.hexToBigInteger((String) data.get("pending")).intValue();
+                node.setPendingTxn(pending == null ? 0 : pending);
+            } catch (APIException ex) {
+                // allow other calls to carry on and collect partial state such
+                // as in cases when some RPC calls aren't supported
+                if (ex.getCause() != null) {
+                    throw ex;
+                }
+            }
+
+            if (isRaft()) {
+                try {
+                    // get raft role
+                    data = gethService.executeGethCall(RAFT_ROLE);
+                    node.setRole((String) data.get(SIMPLE_RESULT));
+                } catch (APIException ex) {
+                    // allow other calls to carry on and collect partial state such
+                    // as in cases when some RPC calls aren't supported
+                    if (ex.getCause() != null) {
+                        throw ex;
+                    }
+                }
+            }
+
+            try {
+                node.setPeers(peers());
+            } catch (APIException ex) {
+                // allow other calls to carry on and collect partial state such
+                // as in cases when some RPC calls aren't supported
+                if (ex.getCause() != null) {
+                    throw ex;
+                }
+            }
 
         } catch (APIException ex) {
             gethService.setConnected(false);
@@ -343,7 +391,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
         }
         return consensus;
     }
-    
+
     @Override
     public List<String> getSigners() throws APIException {
     	EthAccounts signers = null;
@@ -399,7 +447,7 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
     	}
     	return true;
     }
-    
+
     @Override
     public List<String> getValidators() throws APIException {
     	IstanbulValidators validators = null;
