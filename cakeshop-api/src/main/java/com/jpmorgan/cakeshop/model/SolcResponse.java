@@ -1,5 +1,7 @@
 package com.jpmorgan.cakeshop.model;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import java.util.List;
 import java.util.Map;
 
@@ -13,6 +15,7 @@ public class SolcResponse {
 
         public ContractABI abi;
         public Evm evm;
+        public JsonNode storageLayout;
     }
 
     public static class Evm {

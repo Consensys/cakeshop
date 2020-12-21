@@ -1,4 +1,3 @@
-
 (function() {
 
     var Contract = window.Contract = Backbone.Model.extend({
@@ -33,7 +32,7 @@
                 var promises = [];
                 contract.abi.forEach(function(method) {
                     // read all constant methods with no inputs
-                    if (method.constant === true && method.inputs.length === 0) {
+                    if (Contract.isReadOnly(method) && method.inputs.length === 0) {
                         promises.push(new Promise(function(resolve, reject) {
                             contract.proxy[method.name]().then(function(res) {
                                 resolve({method: method, result: res});
@@ -161,7 +160,7 @@
         }
     });
 
-    Contract.deploy = function(code, optimize, args, binary, privateFrom, privateFor, filename, evmVersion) {
+    Contract.deploy = function(code, optimize, args, binary, privateFrom, privateFor, filename, evmVersion, version) {
         return new Promise(function(resolve, reject) {
             Client.post(Contract.prototype.url('create'),
                 {
@@ -173,7 +172,8 @@
                     privateFrom: privateFrom,
                     privateFor: privateFor,
                     filename: filename,
-                    evmVersion: evmVersion
+                    evmVersion: evmVersion,
+                    version: version
                 }
             ).done(function(res, status, xhr) {
                 var txid = res.data.id;
@@ -221,7 +221,21 @@
             });
     };
 
-    Contract.compile = function(code, optimize, filename, evmVersion) {
+    Contract.register = function(id) {
+        return new Promise(function(resolve, reject) {
+            Client.post(Contract.prototype.url('register'), { address: id }).
+            done(function(res, status, xhr) {
+                console.log('Done Registering', res.data)
+                resolve(res.data);
+            }).
+            fail(function(xhr, status, errThrown) {
+                console.log('Contract registration FAILED!!', status, errThrown);
+                reject(errThrown);
+            });
+        });
+    };
+
+    Contract.compile = function(code, optimize, filename, evmVersion, version) {
         return new Promise(function(resolve, reject) {
             Client.post(Contract.prototype.url('compile'),
                 {
@@ -230,6 +244,7 @@
                     optimize: optimize,
                     filename: filename,
                     evmVersion: evmVersion,
+                    version: version,
                 }
             ).done(function(res, status, xhr) {
                 if (res.data && _.isArray(res.data)) {
@@ -357,6 +372,11 @@
 
         return msrc;
     };
+
+    Contract.isReadOnly = function(method) {
+        return method.constant === true || method.stateMutability === 'view' || method.stateMutability === 'pure'
+    }
+
 
 
 })();

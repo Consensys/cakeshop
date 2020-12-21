@@ -30,11 +30,12 @@ public interface ContractService {
 	 * @param optimize
 	 * @param filename
      * @param evmVersion
+     * @param version
      * @return
 	 * @throws APIException
 	 */
 	public List<Contract> compile(String code, CodeType codeType, Boolean optimize,
-        String filename, String evmVersion) throws APIException;
+                                  String filename, String evmVersion, String version) throws APIException;
 
 	/**
 	 * Deploy the given contract onto the chain and add it to the Contract Registry
@@ -50,12 +51,13 @@ public interface ContractService {
 	 * @param filename
      * @param optimize
      * @param evmVersion
+     * @param version
      * @return
 	 * @throws APIException
 	 */
 	public TransactionResult create(String from, String code, CodeType codeType, Object[] args,
-        String binary, String privateFrom, List<String> privateFor, String filename,
-        Boolean optimize, String evmVersion) throws APIException;
+                                    String binary, String privateFrom, List<String> privateFor, String filename,
+                                    Boolean optimize, String evmVersion, String version) throws APIException;
 
 	/**
 	 * Delete the given contract. Not yet implemented.

@@ -41,7 +41,7 @@ module.exports = function() {
         onResponse: (res, method, methodSig, methodArgs, data) => {
             let message,
                 _this = this;
-		    if(method.constant) {
+		    if(Contract.isReadOnly(method)) {
                 message = `[read] ${method.name} => ${JSON.stringify(res)}`;
             } else {
                 message = "[txn] " + methodSig + " => created tx " + res;

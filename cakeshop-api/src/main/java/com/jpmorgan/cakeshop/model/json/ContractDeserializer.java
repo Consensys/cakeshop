@@ -86,6 +86,10 @@ public class ContractDeserializer extends JsonDeserializer<ContractPostJsonReque
             request.setEvmVersion(node.get("evmVersion").textValue());
         }
 
+        if (null != node.get("version")) {
+            request.setVersion(node.get("version").textValue());
+        }
+
         if (null != node.get("args")) {
             JsonNode argsNode = node.get("args");
             List<Object> args = null;

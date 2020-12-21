@@ -6,24 +6,25 @@ import com.jpmorgan.cakeshop.model.ContractABI.Entry.Param;
 import com.jpmorgan.cakeshop.model.ContractABI.Function;
 import com.jpmorgan.cakeshop.model.SolidityType.Bytes32Type;
 import com.jpmorgan.cakeshop.model.json.ContractPostJsonRequest;
-import com.jpmorgan.cakeshop.service.ContractRegistryService;
 import com.jpmorgan.cakeshop.service.ContractService;
 import com.jpmorgan.cakeshop.service.ContractService.CodeType;
-import com.jpmorgan.cakeshop.service.task.BlockchainInitializerTask;
+import com.jpmorgan.cakeshop.service.ReportingHttpService;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import org.bouncycastle.util.encoders.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.WebAsyncTask;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 
 @RestController
@@ -33,11 +34,13 @@ import java.util.concurrent.Callable;
         produces = MediaType.APPLICATION_JSON_VALUE)
 public class ContractController extends BaseController {
 
+    private static final Logger LOG = LoggerFactory.getLogger(ContractController.class);
+
     @Autowired
     private ContractService contractService;
 
     @Autowired
-    private ContractRegistryService contractRegistryService;
+    private ReportingHttpService reportingHttpService;
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -78,7 +81,7 @@ public class ContractController extends BaseController {
 
         List<Contract> contracts = contractService.compile(jsonRequest.getCode(),
                 CodeType.valueOf(jsonRequest.getCode_type()), jsonRequest.getOptimize(), jsonRequest.getFilename(),
-            jsonRequest.getEvmVersion());
+            jsonRequest.getEvmVersion(), jsonRequest.getVersion());
         APIResponse res = new APIResponse();
 
         if (contracts != null) {
@@ -116,7 +119,7 @@ public class ContractController extends BaseController {
         TransactionResult tx = contractService.create(jsonRequest.getFrom(), jsonRequest.getCode(),
                 CodeType.valueOf(jsonRequest.getCode_type()), jsonRequest.getArgs(), jsonRequest.getBinary(),
                 jsonRequest.getPrivateFrom(), jsonRequest.getPrivateFor(), jsonRequest.getFilename(),
-            jsonRequest.getOptimize(), jsonRequest.getEvmVersion());
+            jsonRequest.getOptimize(), jsonRequest.getEvmVersion(), jsonRequest.getVersion());
 
         APIResponse res = new APIResponse();
 
@@ -135,6 +138,20 @@ public class ContractController extends BaseController {
     @RequestMapping("/list")
     public ResponseEntity<APIResponse> list() throws APIException {
         List<Contract> contracts = contractService.list();
+        if(!StringUtils.isEmpty(reportingHttpService.getReportingUrl())) {
+            try {
+                List<String> addresses = reportingHttpService.getRegisteredAddresses();
+                contracts.forEach((contract -> {
+                    if (addresses.contains(contract.getAddress())) {
+                        contract.setDetails(String.format("%s/contracts/%s", reportingHttpService.getReportingUiUrl(), contract.getAddress()));
+                    }
+                }));
+            } catch (APIException e) {
+                // log error, but allow contracts to be returned without reporting tool links
+                LOG.error("Error getting registered contracts from the reporting tool", e);
+            }
+
+        }
         APIResponse res = new APIResponse();
         res.setData(toAPIData(contracts));
 
@@ -252,6 +269,37 @@ public class ContractController extends BaseController {
         APIResponse res = new APIResponse();
         res.setData(data);
 
+        return new ResponseEntity<>(res, HttpStatus.OK);
+    }
+
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "address", required = true, value = "Contract address", dataType = "java.lang.String", paramType = "body")
+    })
+    @RequestMapping("/register")
+    public ResponseEntity<APIResponse> registerContract(@RequestBody ContractPostJsonRequest jsonRequest) throws APIException {
+
+        Contract contract = contractService.get(jsonRequest.getAddress());
+
+        APIResponse res = new APIResponse();
+
+        if (contract == null) {
+            APIError err = new APIError();
+            err.setStatus("404");
+            err.setTitle("Contract not found");
+            res.addError(err);
+            return new ResponseEntity<>(res, HttpStatus.NOT_FOUND);
+        }
+
+        if(StringUtils.isEmpty(contract.getStorageLayout())) {
+            APIError err = new APIError();
+            err.setStatus("400");
+            err.setTitle("Contract does not have the required storageLayout value.");
+            res.addError(err);
+            return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
+        }
+        reportingHttpService.registerContract(contract);
+
+        res.setData(toAPIData(contract));
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 

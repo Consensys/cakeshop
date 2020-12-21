@@ -61,6 +61,13 @@
 
               <!-- current node & block number widgets -->
               <ul class="nav navbar-nav navbar-right">
+
+                  <li>
+                      <i id="first-compile-warning" class="fa fa-exclamation-circle" title="The first compilation may take longer while it loads the solc compiler for the first time."></i>
+                  </li>
+                  <li>
+                      <button id="compile-button" class="btn btn-default" style="margin: 5px;">Compile</button>
+                  </li>
                   <li>
                       <div id="rpc-select-container">
                       </div>
@@ -94,6 +101,12 @@
                         <label class="withRefreshLabel">Or Deploy From Editor:</label>
 						<i class="refresh fa fa-refresh fa-2x fa-spin start_hidden"></i>
 						<select class="form-control"></select>
+                        <div id="reporting-checkbox-container" class="checkbox hidden">
+                          <label>
+                              <input type="checkbox" id="reporting-checkbox">
+                              Add to Reporting
+                          </label>
+                        </div>
                         <table id="constructor-react" class="table">
                         </table>
                       </div>
@@ -189,15 +202,21 @@
                     </label>
                   </div>
 
+                  <h4>Solidity Version:</h4>
+                  <select id="versionSelector" class="custom-select">
+                  </select>
+
                   <h4>EVM Version:</h4>
                   <select id="evmVersionSelector" class="custom-select">
+                      <option>istanbul</option>
                       <option>petersburg</option>
-                      <option>constantinople</option>
-                      <option selected>byzantium</option>
+                      <option selected>constantinople</option>
+                      <option>byzantium</option>
                       <option>spuriousDragon</option>
                       <option>tangerineWhistle</option>
                       <option>homestead</option>
-                  </select></div>
+                  </select>
+                </div>
               </div>
             </div>
           </div>

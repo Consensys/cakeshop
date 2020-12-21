@@ -4,9 +4,9 @@ import com.jpmorgan.cakeshop.dao.NodeInfoDAO;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.*;
 import com.jpmorgan.cakeshop.model.json.NodePostJsonRequest;
-import com.jpmorgan.cakeshop.service.ContractService;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.NodeService;
+import com.jpmorgan.cakeshop.service.ReportingHttpService;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import org.apache.commons.lang3.StringUtils;
@@ -44,7 +44,7 @@ public class NodeController extends BaseController {
     private NodeService nodeService;
 
     @Autowired
-    private ContractService contractService;
+    private ReportingHttpService reportingService;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -181,7 +181,7 @@ public class NodeController extends BaseController {
 
     @PostMapping(path = "/url")
     protected @ResponseBody
-    ResponseEntity<APIResponse> setNodeUrls(@RequestBody NodeInfo nodeInfo)
+    ResponseEntity<APIResponse> setNodeUrl(@RequestBody NodeInfo nodeInfo)
         throws APIException {
         gethService.connectToNode(nodeInfo.id);
         // clear cache for contracts so that we don't keep private contracts for the wrong node
@@ -191,7 +191,14 @@ public class NodeController extends BaseController {
         }
         return new ResponseEntity<>(APIResponse.newSimpleResponse(true), HttpStatus.OK);
     }
-    
+
+    @GetMapping(path = "/reportingUrl")
+    protected @ResponseBody
+    ResponseEntity<APIResponse> getReportingUrl() throws APIException {
+        return new ResponseEntity<>(APIResponse.newSimpleResponse(reportingService.getReportingUrl()),
+            HttpStatus.OK);
+    }
+
     @RequestMapping("/peers/clique/proposals")
     public ResponseEntity<APIResponse> getProposals() throws APIException {
         Map<String, Boolean> proposals = nodeService.getProposals();
@@ -222,7 +229,7 @@ public class NodeController extends BaseController {
         Boolean response = nodeService.cliqueDiscard(jsonRequest.getAddress());
         return new ResponseEntity<>(APIResponse.newSimpleResponse(response), HttpStatus.OK);
     }
-    
+
     @RequestMapping("/peers/istanbul/candidates")
     public ResponseEntity<APIResponse> getCandidates() throws APIException {
         Map<String, Boolean> candidates = nodeService.getCandidates();

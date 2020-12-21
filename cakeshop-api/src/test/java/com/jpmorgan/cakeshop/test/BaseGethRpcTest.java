@@ -175,7 +175,7 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
      */
     protected String createContract(String code, Object[] args, String filename) throws APIException, InterruptedException {
         TransactionResult result = contractService.create(null, code, ContractService.CodeType.solidity, args, null, null, null,
-            filename, true, "byzantium");
+            filename, true, "byzantium", null);
         assertNotNull(result);
         assertNotNull(result.getId());
         assertTrue(!result.getId().isEmpty());
