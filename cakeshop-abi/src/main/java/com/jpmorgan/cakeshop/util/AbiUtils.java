@@ -3,7 +3,7 @@ package com.jpmorgan.cakeshop.util;
 import java.math.BigInteger;
 import java.util.Map;
 
-import org.bouncycastle.jcajce.provider.digest.SHA3.DigestSHA3;
+import org.bouncycastle.jcajce.provider.digest.Keccak.Digest256;
 import org.bouncycastle.util.encoders.Hex;
 
 public class AbiUtils {
@@ -24,7 +24,7 @@ public class AbiUtils {
 		}
 		return Long.decode(str);
 	}
-    
+
     public static BigInteger toBigInt(String key, Map<String, Object> blockData) {
 		String str = (String)blockData.get(key);
 		if (str == null) {
@@ -41,7 +41,7 @@ public class AbiUtils {
 	}
 
 	public static byte[] sha3(byte[] input) {
-        return new DigestSHA3(SHA3_DEFAULT_SIZE).digest(input);
+        return new Digest256().digest(input);
 	}
 
 	public static String sha3AsHex(String input) {
@@ -97,7 +97,7 @@ public class AbiUtils {
 	public static String toHexWithNoLeadingZeros(BigInteger input) {
 		// Convert BigInteger to String based hex representtion
 		String hex = Hex.toHexString(input.toByteArray());
-		
+
 		// Remove leading 0s in string from non-zero hex values
 		if (hex.startsWith("0") && hex.length() > 1) {
 			hex = hex.replaceFirst("^0+", "");
