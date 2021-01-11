@@ -3,6 +3,8 @@ package com.jpmorgan.cakeshop.service;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Contract;
 import com.jpmorgan.cakeshop.service.ContractService.CodeType;
+
+import java.io.IOException;
 import java.util.List;
 
 public interface ContractRegistryService {
@@ -17,12 +19,11 @@ public interface ContractRegistryService {
      * @param abi
      * @param code
      * @param codeType
-     * @param createdDate
      * @param storageLayout
      * @throws APIException
      */
     public void register(String from, String id, String name, String abi, String code,
-                         CodeType codeType, Long createdDate, String storageLayout, String privateFor) throws APIException;
+                         CodeType codeType, String storageLayout, String privateFor) throws APIException;
 
     /**
      * Lookup a contract in the registry by ID (address hash)
@@ -50,7 +51,7 @@ public interface ContractRegistryService {
      * @return
      * @throws APIException
      */
-    public List<Contract> list() throws APIException;
+    public List<Contract> list() throws IOException;
 
     /**
      * List all contracts registered by the given address

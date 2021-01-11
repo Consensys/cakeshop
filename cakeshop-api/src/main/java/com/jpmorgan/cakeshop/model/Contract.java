@@ -23,11 +23,6 @@ public class Contract {
     private String name;
 
     /**
-     * Contract owner (address)
-     */
-    private String owner;
-
-    /**
      * Original source code (not yet supported)
      */
     private String code;
@@ -75,10 +70,6 @@ public class Contract {
      */
     private String details = "";
 
-    @JsonIgnore
-    private ContractABI contractAbi;
-
-
     public Contract() {
     }
 
@@ -92,9 +83,8 @@ public class Contract {
         this.createdDate = createdDate;
         this.storageLayout = storageLayout;
         this.privateFor = privateFor;
-        setABI(abi);
+        this.abi = abi;
     }
-
 
     public String getCode() {
         return code;
@@ -139,14 +129,11 @@ public class Contract {
 
     public void setABI(String abi) {
         this.abi = abi;
-        this.contractAbi = ContractABI.fromJson(this.abi);
     }
 
     public void setABI(ContractABI contractABI) {
         this.abi = contractABI.toJson();
-        this.contractAbi = contractABI;
     }
-
 
     public Long getCreatedDate() {
         return createdDate;
@@ -180,14 +167,6 @@ public class Contract {
         this.functionHashes = functionHashes;
     }
 
-    public String getOwner() {
-        return owner;
-    }
-
-    public void setOwner(String owner) {
-        this.owner = owner;
-    }
-
     public String getStorageLayout() {
         return storageLayout;
     }
@@ -199,8 +178,9 @@ public class Contract {
     /**
      * @return the contractAbi
      */
+    @JsonIgnore
     public ContractABI getContractAbi() {
-        return contractAbi;
+        return ContractABI.fromJson(this.abi);
     }
 
     public void setPrivateFor(String privateFor) {

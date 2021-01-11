@@ -5,6 +5,7 @@ import com.jpmorgan.cakeshop.model.APIError;
 import com.jpmorgan.cakeshop.model.APIResponse;
 import com.jpmorgan.cakeshop.model.Block;
 import com.jpmorgan.cakeshop.model.json.BlockPostJsonRequest;
+import com.jpmorgan.cakeshop.repo.BlockRepository;
 import com.jpmorgan.cakeshop.service.BlockService;
 import com.jpmorgan.cakeshop.util.StringUtils;
 import io.swagger.annotations.ApiImplicitParam;
@@ -19,12 +20,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigInteger;
+
 @RestController
 @RequestMapping(value = "/api/block",
         method = RequestMethod.POST,
         consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE)
 public class BlockController extends BaseController {
+
+    @Autowired
+    BlockRepository blockRepository;
 
     @Autowired
     BlockService blockService;
@@ -45,7 +51,17 @@ public class BlockController extends BaseController {
             jsonRequest.setId(jsonRequest.getHash());  // backwards compat
         }
 
-        Block block = blockService.get(jsonRequest.getId(), jsonRequest.getNumber(), jsonRequest.getTag());
+        Block block = null;
+        if (jsonRequest.getId() != null && !jsonRequest.getId().isEmpty()) {
+            block = blockRepository.findById(jsonRequest.getId()).orElse(null);
+        } else if (jsonRequest.getNumber() != null && jsonRequest.getNumber() >= 0) {
+            block = blockRepository.findByNumber(BigInteger.valueOf(jsonRequest.getNumber())).orElse(null);
+        }
+
+        if (block == null) {
+            // fall back to calling the node directly
+            block = blockService.get(jsonRequest.getId(), jsonRequest.getNumber(), jsonRequest.getTag());
+        }
 
         APIResponse res = new APIResponse();
 

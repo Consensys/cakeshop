@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static com.jpmorgan.cakeshop.test.Assert.assertNotEmptyString;
+import static java.lang.Thread.sleep;
 import static org.testng.Assert.*;
 
 public class ContractServiceTest extends BaseGethRpcTest {
@@ -63,8 +64,6 @@ public class ContractServiceTest extends BaseGethRpcTest {
         assertNotEmptyString(c.getCode());
         assertNotEmptyString(c.getName());
         assertEquals(c.getCodeType(), CodeType.solidity);
-        assertNotNull(c.getCreatedDate());
-        assertTrue(c.getCreatedDate() >= time);
 
         assertNotNull(c.getFunctionHashes());
         assertNotNull(c.getGasEstimates());
@@ -236,7 +235,8 @@ public class ContractServiceTest extends BaseGethRpcTest {
         TransactionResult tr = contractService.transact(contractAddress, abi, null, "set", new Object[]{200});
         Transaction tx = transactionService.waitForTx(tr, 50, TimeUnit.MILLISECONDS);
 
-        ((TestBlockScanner) blockScanner).manualRun();
+        // wait for it to be saved in the db
+        sleep(2000);
 
         Contract contract = contractService.get(contractAddress);
         List<Transaction> txns = contractService.listTransactions(contract);

@@ -1,7 +1,9 @@
 package com.jpmorgan.cakeshop.db;
 
-import com.jpmorgan.cakeshop.dao.BlockDAO;
-import com.jpmorgan.cakeshop.dao.TransactionDAO;
+import com.jpmorgan.cakeshop.repo.BlockRepository;
+import com.jpmorgan.cakeshop.repo.ContractRepository;
+import com.jpmorgan.cakeshop.repo.EventRepository;
+import com.jpmorgan.cakeshop.repo.TransactionRepository;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Block;
 import com.jpmorgan.cakeshop.service.BlockService;
@@ -36,10 +38,16 @@ public class BlockScanner extends Thread {
     private static final Logger LOG = LoggerFactory.getLogger(BlockScanner.class);
 
     @Autowired
-    private BlockDAO blockDAO;
+    private BlockRepository blockRepository;
 
     @Autowired
-    private TransactionDAO txDAO;
+    private TransactionRepository transactionRepository;
+
+    @Autowired
+    private EventRepository eventRepository;
+
+    @Autowired
+    private ContractRepository contractRepository;
 
     @Autowired
     private NodeService nodeService;
@@ -101,7 +109,7 @@ public class BlockScanner extends Thread {
 
         LOG.info("Catching database up to latest block");
         // get the max block at startup
-        Block largestSavedBlock = blockDAO.getLatest();
+        Block largestSavedBlock = blockRepository.findTopByOrderByTimestampDesc();
         Block chainBlock = null;
         try {
             chainBlock = blockService.get(null, null, "latest");
@@ -166,16 +174,17 @@ public class BlockScanner extends Thread {
     private void handleChainReorg() {
         // flush db
         LOG.info("Flushing DB");
-//        dbConfig.reset();
-        blockDAO.reset();
-        txDAO.reset();
+        blockRepository.deleteAll();
+        transactionRepository.deleteAll();
+        contractRepository.deleteAll();
+        eventRepository.deleteAll();
 
         // fill
         long maxBlock = backfillBlocks();
         long maxDBBlock = 0L;
 
         while (maxDBBlock < maxBlock) {
-            Block latest = blockDAO.getLatest();
+            Block latest = blockRepository.findTopByOrderByTimestampDesc();
             maxDBBlock = latest == null ? 0 : latest.getNumber().longValue();
             LOG.debug("Wait to sync up with database");
             try {
@@ -188,7 +197,7 @@ public class BlockScanner extends Thread {
 
     private void checkDbSync() throws APIException {
         Block firstChainBlock = blockService.get(null, 1L, null);
-        Block firstKnownBlock = blockDAO.getByNumber(new BigInteger("1"));
+        Block firstKnownBlock = blockRepository.findByNumber(new BigInteger("1")).orElse(null);
         if ((firstKnownBlock != null && firstChainBlock.getId() != null && !firstKnownBlock.equals(firstChainBlock))
                 || (firstChainBlock.getId() == null && firstKnownBlock != null)) {
 
@@ -225,6 +234,10 @@ public class BlockScanner extends Thread {
             if (!sleep(5)) { // delayed startup
                 return;
             }
+
+            // make first request to test connection
+            nodeService.get();
+
             checkDbSync();
 
             backfillBlocks();
@@ -264,7 +277,7 @@ public class BlockScanner extends Thread {
 
                 Block latestBlock = blockService.get(null, null, "latest");
                 if (previousBlock == null) {
-                    previousBlock = blockDAO.getLatest();
+                    previousBlock = blockRepository.findTopByOrderByTimestampDesc();
                 }
 
                 if (previousBlock == null || !previousBlock.equals(latestBlock)) {

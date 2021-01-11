@@ -22,6 +22,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.WebAsyncTask;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -132,7 +133,7 @@ public class ContractController extends BaseController {
     }
 
     @RequestMapping("/list")
-    public ResponseEntity<APIResponse> list() throws APIException {
+    public ResponseEntity<APIResponse> list() throws IOException {
         List<Contract> contracts = contractService.list();
         if(!StringUtils.isEmpty(reportingHttpService.getReportingUrl())) {
             try {

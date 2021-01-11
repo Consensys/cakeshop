@@ -49,10 +49,7 @@ public class WalletServiceImpl implements WalletService, GethRpcConstants {
             if (accountList != null) {
                 accounts = new ArrayList<>();
                 for (String address : accountList) {
-                    Map<String, Object> accountData = gethService.executeGethCall(
-                            PERSONAL_GET_ACCOUNT_BALANCE, new Object[]{address, "latest"});
-                    String strBal = (String) accountData.get(CakeshopUtils.SIMPLE_RESULT);
-                    BigInteger bal = AbiUtils.hexToBigInteger(strBal);
+                    BigInteger bal = gethService.getBalance(address);
                     account = new Account();
                     account.setAddress(address);
                     account.setBalance(bal.toString());

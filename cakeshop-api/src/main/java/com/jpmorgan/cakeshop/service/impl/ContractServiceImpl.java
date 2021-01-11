@@ -2,7 +2,7 @@ package com.jpmorgan.cakeshop.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import com.jpmorgan.cakeshop.dao.TransactionDAO;
+import com.jpmorgan.cakeshop.repo.TransactionRepository;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.error.CompilerException;
 import com.jpmorgan.cakeshop.model.*;
@@ -51,8 +51,8 @@ public class ContractServiceImpl implements ContractService {
     @Autowired
     private ContractRegistryService contractRegistry;
 
-    @Autowired(required = false)
-    private TransactionDAO transactionDAO;
+    @Autowired
+    private TransactionRepository transactionRepository;
 
     @Autowired
     private TransactionService txnService;
@@ -79,7 +79,6 @@ public class ContractServiceImpl implements ContractService {
         }
 
         List<Contract> contracts = new ArrayList<>();
-        long createdDate = System.currentTimeMillis() / 1000;
 
         SolcResponse res = null;
         try {
@@ -156,7 +155,6 @@ public class ContractServiceImpl implements ContractService {
             classContractBundleMap.forEach((classname, contractBundle) -> {
                 Contract contract = new Contract();
                 contract.setName(classname);
-                contract.setCreatedDate(createdDate);
                 contract.setCode(code);
                 contract.setCodeType(codeType);
                 contract.setBinary(contractBundle.evm.bytecode.object);
@@ -199,8 +197,6 @@ public class ContractServiceImpl implements ContractService {
         } else {
             contract = contracts.get(0);
         }
-
-        contract.setOwner(from);
 
         // handle constructor args
         String data = contract.getBinary();
@@ -272,7 +268,7 @@ public class ContractServiceImpl implements ContractService {
     }
 
     @Override
-    public List<Contract> list() throws APIException {
+    public List<Contract> list() throws IOException {
         return contractRegistry.list();
     }
 
@@ -338,7 +334,9 @@ public class ContractServiceImpl implements ContractService {
 
         ContractABI abi = ContractABI.fromJson(contract.getABI());
 
-        List<Transaction> txns = transactionDAO.listForContractId(contract.getAddress());
+        List<Transaction> txns = transactionRepository.findAllByTo(contract.getAddress());
+        Transaction creationTx = transactionRepository.findByContractAddress(contract.getAddress());
+        txns.add(0, creationTx);
 
         for (Transaction tx : txns) {
             txnService.loadPrivatePayload(tx);
@@ -357,7 +355,7 @@ public class ContractServiceImpl implements ContractService {
 
     private ContractABI lookupABI(String id) throws APIException {
         Contract contract = contractRegistry.getById(id);
-        if (contract != null) {
+        if (contract != null && contract.getABI() != null) {
             return contract.getContractAbi();
         }
         return null;

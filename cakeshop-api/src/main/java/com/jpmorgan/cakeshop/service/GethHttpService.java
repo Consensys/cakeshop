@@ -2,11 +2,11 @@ package com.jpmorgan.cakeshop.service;
 
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Web3DefaultResponseType;
-
 import org.web3j.protocol.besu.Besu;
 import org.web3j.protocol.core.Request;
 import org.web3j.quorum.Quorum;
 
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 
@@ -61,5 +61,7 @@ public interface GethHttpService {
     String getCurrentRpcUrl();
 
     String getCurrentTransactionManagerUrl();
+
+    BigInteger getBalance(String address) throws APIException;
 
 }

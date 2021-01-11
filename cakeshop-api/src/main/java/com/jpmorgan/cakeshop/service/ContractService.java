@@ -6,6 +6,8 @@ import com.jpmorgan.cakeshop.model.ContractABI;
 import com.jpmorgan.cakeshop.model.Transaction;
 import com.jpmorgan.cakeshop.model.TransactionRequest;
 import com.jpmorgan.cakeshop.model.TransactionResult;
+
+import java.io.IOException;
 import java.util.List;
 
 public interface ContractService {
@@ -82,7 +84,7 @@ public interface ContractService {
 	 * @return
 	 * @throws APIException
 	 */
-	public List<Contract> list() throws APIException;
+	public List<Contract> list() throws IOException;
 
 	/**
 	 * List all transacrtions for the given contract

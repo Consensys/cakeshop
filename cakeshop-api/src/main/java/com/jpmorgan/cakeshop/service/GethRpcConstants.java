@@ -23,7 +23,8 @@ public interface GethRpcConstants {
     public static final String ADMIN_TXPOOL_STATUS = "txpool_status";
 
     public static final String PERSONAL_LIST_ACCOUNTS = "personal_listAccounts";
-    public static final String PERSONAL_GET_ACCOUNT_BALANCE = "eth_getBalance";
+
+    public static final String ETH_GET_ACCOUNT_BALANCE = "eth_getBalance";
 
     public static final String RAFT_CLUSTER = "raft_cluster";
     public static final String RAFT_ADD_PEER = "raft_addPeer";
