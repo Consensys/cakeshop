@@ -29,7 +29,6 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -41,13 +40,13 @@ public class TransactionServiceImpl implements TransactionService {
     private GethHttpService geth;
 
     @Autowired
+    private ContractService contractService;
+
+    @Autowired
     private EventService eventService;
 
     @Autowired
     private WalletService walletService;
-
-    @Autowired
-    private ApplicationContext applicationContext;
 
     private String defaultFromAddress;
 
@@ -112,7 +111,6 @@ public class TransactionServiceImpl implements TransactionService {
         if (tx.getContractAddress() == null && tx.getStatus() == Status.committed) {
 
             // lookup contract
-            ContractService contractService = applicationContext.getBean(ContractService.class);
             Contract contract = null;
             try {
                 contract = contractService.get(tx.getTo());
