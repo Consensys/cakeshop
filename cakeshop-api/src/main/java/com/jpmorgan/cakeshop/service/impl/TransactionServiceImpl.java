@@ -11,6 +11,7 @@ import com.jpmorgan.cakeshop.model.Web3DefaultResponseType;
 import com.jpmorgan.cakeshop.model.Transaction;
 import com.jpmorgan.cakeshop.model.Transaction.Status;
 import com.jpmorgan.cakeshop.model.TransactionResult;
+import com.jpmorgan.cakeshop.repo.TransactionRepository;
 import com.jpmorgan.cakeshop.service.ContractService;
 import com.jpmorgan.cakeshop.service.EventService;
 import com.jpmorgan.cakeshop.service.GethHttpService;
@@ -47,6 +48,9 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Autowired
     private WalletService walletService;
+
+    @Autowired
+    private TransactionRepository transactionRepository;
 
     private String defaultFromAddress;
 
@@ -228,6 +232,18 @@ public class TransactionServiceImpl implements TransactionService {
             if (tx.getStatus() == null ? Status.committed.toString() == null : tx.getStatus().equals(Status.committed)) {
                 break;
             }
+            LOG.debug("Waiting {}ms for tx", pollDelay);
+            pollDelayUnit.sleep(pollDelay);
+        }
+
+        // wait for the tx to be in the db as well
+        Transaction dbTx = null;
+        while (true) {
+            dbTx = transactionRepository.findById(result.getId()).orElse(null);
+            if (dbTx != null) {
+                break;
+            }
+            LOG.debug("Waiting {}ms for tx to be addded to database", pollDelay);
             pollDelayUnit.sleep(pollDelay);
         }
         return tx;

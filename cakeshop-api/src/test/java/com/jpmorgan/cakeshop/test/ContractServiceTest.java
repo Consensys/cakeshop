@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static com.jpmorgan.cakeshop.test.Assert.assertNotEmptyString;
-import static java.lang.Thread.sleep;
 import static org.testng.Assert.*;
 
 public class ContractServiceTest extends BaseGethRpcTest {
@@ -34,12 +33,6 @@ public class ContractServiceTest extends BaseGethRpcTest {
 
     @Autowired
     private TransactionService transactionService;
-
-    @Autowired
-    private GethHttpService geth;
-
-    @Autowired
-    private BlockScanner blockScanner;
 
     @Autowired
     private WalletService walletService;
@@ -234,9 +227,6 @@ public class ContractServiceTest extends BaseGethRpcTest {
         // modify value
         TransactionResult tr = contractService.transact(contractAddress, abi, null, "set", new Object[]{200});
         Transaction tx = transactionService.waitForTx(tr, 50, TimeUnit.MILLISECONDS);
-
-        // wait for it to be saved in the db
-        sleep(2000);
 
         Contract contract = contractService.get(contractAddress);
         List<Transaction> txns = contractService.listTransactions(contract);

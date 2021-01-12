@@ -21,13 +21,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
-import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeClass;
 
@@ -37,13 +35,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static java.lang.Thread.sleep;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 @ActiveProfiles("test")
 @ContextConfiguration(classes = {TestAppConfig.class})
-//@Listeners(CleanConsoleListener.class) // uncomment for extra debug help
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS)
 public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
 
@@ -85,10 +81,6 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
 
     public BaseGethRpcTest() {
         super();
-    }
-
-    public boolean runGeth() {
-        return false;
     }
 
     @AfterSuite(alwaysRun = true)
@@ -167,9 +159,6 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
         assertTrue(!result.getId().isEmpty());
 
         Transaction tx = transactionService.waitForTx(result, 50, TimeUnit.MILLISECONDS);
-
-        // wait for the database to add the block
-        sleep(1500);
 
         return tx.getContractAddress();
     }
