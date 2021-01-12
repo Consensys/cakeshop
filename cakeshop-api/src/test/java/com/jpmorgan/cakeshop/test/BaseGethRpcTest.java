@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static java.lang.Thread.sleep;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
@@ -166,6 +167,10 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
         assertTrue(!result.getId().isEmpty());
 
         Transaction tx = transactionService.waitForTx(result, 50, TimeUnit.MILLISECONDS);
+
+        // wait for the database to add the block
+        sleep(1500);
+
         return tx.getContractAddress();
     }
 

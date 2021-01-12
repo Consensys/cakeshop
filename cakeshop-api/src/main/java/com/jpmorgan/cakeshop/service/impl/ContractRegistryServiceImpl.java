@@ -49,7 +49,7 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
             LOG.info("Updating existing contract with id {}", contractInfo.address);
             contractRepository.save(contractInfo);
         } catch (Exception e) {
-            throw new APIException("error saving private contract to database", e);
+            throw new APIException("error saving contract to database", e);
         }
     }
 
