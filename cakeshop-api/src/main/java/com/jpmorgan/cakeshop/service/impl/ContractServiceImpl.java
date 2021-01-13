@@ -79,6 +79,7 @@ public class ContractServiceImpl implements ContractService {
         }
 
         List<Contract> contracts = new ArrayList<>();
+        long createdDate = System.currentTimeMillis() / 1000;
 
         SolcResponse res = null;
         try {
@@ -155,6 +156,7 @@ public class ContractServiceImpl implements ContractService {
             classContractBundleMap.forEach((classname, contractBundle) -> {
                 Contract contract = new Contract();
                 contract.setName(classname);
+                contract.setCreatedDate(createdDate);
                 contract.setCode(code);
                 contract.setCodeType(codeType);
                 contract.setBinary(contractBundle.evm.bytecode.object);
@@ -197,6 +199,8 @@ public class ContractServiceImpl implements ContractService {
         } else {
             contract = contracts.get(0);
         }
+
+        contract.setOwner(from);
 
         // handle constructor args
         String data = contract.getBinary();

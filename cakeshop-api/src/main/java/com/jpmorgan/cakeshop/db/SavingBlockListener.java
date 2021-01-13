@@ -123,24 +123,6 @@ public class SavingBlockListener implements BlockListener {
                     eventRepository.saveAll(transaction.getLogs());
                 }
                 transactionRepository.save(transaction);
-                if (transaction.getContractAddress() != null) {
-                    long createdDate = block.getTimestamp().longValue();
-                    LOG.info("Transaction is a contract creation transaction, adding to database with empty details, {}", transaction.getContractAddress());
-                    Contract contract = new Contract(transaction.getContractAddress(), null, null, null, null, null, createdDate, null, null);
-                    String contractJson = null;
-                    try {
-                        contractJson = jsonMapper.writeValueAsString(contract);
-                        ContractInfo contractInfo = new ContractInfo(
-                            transaction.getContractAddress(),
-                            null,
-                            transaction.getFrom(),
-                            createdDate,
-                            contractJson);
-                        contractRepository.save(contractInfo);
-                    } catch (JsonProcessingException e) {
-                        LOG.error("Error saving contract {}", transaction.getContractAddress(), e);
-                    }
-                }
             });
         pushBlockNumber(block.getNumber().longValue()); // push to subscribers after saving
     }

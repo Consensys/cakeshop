@@ -36,17 +36,14 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
 
     @Override
     public void register(String from, String id, String name, String abi, String code,
-                         CodeType codeType, String storageLayout, String privateFor) throws APIException {
+                         CodeType codeType, Long createdDate, String storageLayout, String privateFor) throws APIException {
 
         LOG.info("Registering contract details for {} with address {}", name, id);
 
         try {
-            ContractInfo contractInfo = contractRepository.findById(id).orElseThrow();
-            Contract contract = new Contract(id, name, abi, code, codeType, null, contractInfo.createdDate,
+            Contract contract = new Contract(id, name, abi, code, codeType, null, createdDate,
                 storageLayout, privateFor);
-            contractInfo.name = name;
-            contractInfo.contractJson = jsonMapper.writeValueAsString(contract);
-            LOG.info("Updating existing contract with id {}", contractInfo.address);
+            ContractInfo contractInfo = new ContractInfo(id, jsonMapper.writeValueAsString(contract));
             contractRepository.save(contractInfo);
         } catch (Exception e) {
             throw new APIException("error saving contract to database", e);
@@ -76,7 +73,7 @@ public class ContractRegistryServiceImpl implements ContractRegistryService {
     public List<Contract> list() throws IOException {
 
         List<Contract> contracts = new ArrayList<>();
-        for (ContractInfo contractInfo : contractRepository.findAllByNameIsNotNullOrderByCreatedDateDesc()) {
+        for (ContractInfo contractInfo : contractRepository.findAll()) {
             Contract contract = jsonMapper.readValue(contractInfo.contractJson, Contract.class);
             if (StringUtils.isNotBlank(contract.getPrivateFor())) {
                 try {

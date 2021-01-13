@@ -14,7 +14,5 @@ import java.util.List;
 @RepositoryRestResource(collectionResourceRel = "contracts", path = "contracts")
 @Repository
 public interface ContractRepository extends PagingAndSortingRepository<ContractInfo, String> {
-    List<ContractInfo> findAllByOrderByCreatedDateDesc();
-
-    List<ContractInfo> findAllByNameIsNotNullOrderByCreatedDateDesc();
+    List<ContractInfo> findAll();
 }

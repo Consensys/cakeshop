@@ -19,11 +19,12 @@ public interface ContractRegistryService {
      * @param abi
      * @param code
      * @param codeType
+     * @param createdDate
      * @param storageLayout
      * @throws APIException
      */
     public void register(String from, String id, String name, String abi, String code,
-                         CodeType codeType, String storageLayout, String privateFor) throws APIException;
+                         CodeType codeType, Long createdDate, String storageLayout, String privateFor) throws APIException;
 
     /**
      * Lookup a contract in the registry by ID (address hash)

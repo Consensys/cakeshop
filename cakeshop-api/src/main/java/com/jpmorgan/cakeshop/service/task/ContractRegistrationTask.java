@@ -70,8 +70,8 @@ public class ContractRegistrationTask implements Runnable {
         try {
             contract.setAddress(tx.getContractAddress());
             LOG.info("Registering newly mined contract at address " + contract.getAddress());
-            contractRegistry.register(tx.getFrom(), tx.getContractAddress(), contract.getName(), contract.getABI(),
-                    contract.getCode(), contract.getCodeType(), contract.getStorageLayout(), contract.getPrivateFor());
+            contractRegistry.register(contract.getOwner(), tx.getContractAddress(), contract.getName(), contract.getABI(),
+                    contract.getCode(), contract.getCodeType(), contract.getCreatedDate(), contract.getStorageLayout(), contract.getPrivateFor());
 
             // evict cache
             cacheManager.getCache("contracts").evict(contract.getAddress());
