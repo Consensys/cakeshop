@@ -21,7 +21,7 @@ import org.testng.annotations.Test;
 
 public class EventServiceTest extends BaseGethRpcTest {
 
-	@Autowired
+    @Autowired
 	private ContractService contractService;
 
 	@Autowired
@@ -54,8 +54,7 @@ public class EventServiceTest extends BaseGethRpcTest {
         assertNotNull(data);
 		assertEquals(data.length, 2);
 		assertEquals(data[0], "change val");
-		assertEquals(data[1], BigInteger.valueOf(100L));
-
+		assertEquals(((BigInteger) data[1]), BigInteger.valueOf(100L));
     }
 
 }

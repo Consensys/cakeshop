@@ -15,7 +15,6 @@ import org.bouncycastle.util.encoders.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +22,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.WebAsyncTask;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -41,9 +41,6 @@ public class ContractController extends BaseController {
 
     @Autowired
     private ReportingHttpService reportingHttpService;
-
-    @Autowired
-    private ApplicationContext applicationContext;
 
     @ApiImplicitParams({
         @ApiImplicitParam(name = "address", required = true, value = "Contract address", dataType = "java.lang.String", paramType = "body")
@@ -136,7 +133,7 @@ public class ContractController extends BaseController {
     }
 
     @RequestMapping("/list")
-    public ResponseEntity<APIResponse> list() throws APIException {
+    public ResponseEntity<APIResponse> list() throws IOException {
         List<Contract> contracts = contractService.list();
         if(!StringUtils.isEmpty(reportingHttpService.getReportingUrl())) {
             try {

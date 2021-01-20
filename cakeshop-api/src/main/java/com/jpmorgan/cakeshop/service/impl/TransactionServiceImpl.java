@@ -11,6 +11,7 @@ import com.jpmorgan.cakeshop.model.Web3DefaultResponseType;
 import com.jpmorgan.cakeshop.model.Transaction;
 import com.jpmorgan.cakeshop.model.Transaction.Status;
 import com.jpmorgan.cakeshop.model.TransactionResult;
+import com.jpmorgan.cakeshop.repo.TransactionRepository;
 import com.jpmorgan.cakeshop.service.ContractService;
 import com.jpmorgan.cakeshop.service.EventService;
 import com.jpmorgan.cakeshop.service.GethHttpService;
@@ -29,7 +30,6 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -41,13 +41,16 @@ public class TransactionServiceImpl implements TransactionService {
     private GethHttpService geth;
 
     @Autowired
+    private ContractService contractService;
+
+    @Autowired
     private EventService eventService;
 
     @Autowired
     private WalletService walletService;
 
     @Autowired
-    private ApplicationContext applicationContext;
+    private TransactionRepository transactionRepository;
 
     private String defaultFromAddress;
 
@@ -112,7 +115,6 @@ public class TransactionServiceImpl implements TransactionService {
         if (tx.getContractAddress() == null && tx.getStatus() == Status.committed) {
 
             // lookup contract
-            ContractService contractService = applicationContext.getBean(ContractService.class);
             Contract contract = null;
             try {
                 contract = contractService.get(tx.getTo());
@@ -230,6 +232,18 @@ public class TransactionServiceImpl implements TransactionService {
             if (tx.getStatus() == null ? Status.committed.toString() == null : tx.getStatus().equals(Status.committed)) {
                 break;
             }
+            LOG.debug("Waiting {}ms for tx", pollDelay);
+            pollDelayUnit.sleep(pollDelay);
+        }
+
+        // wait for the tx to be in the db as well
+        Transaction dbTx = null;
+        while (true) {
+            dbTx = transactionRepository.findById(result.getId()).orElse(null);
+            if (dbTx != null) {
+                break;
+            }
+            LOG.debug("Waiting {}ms for tx to be addded to database", pollDelay);
             pollDelayUnit.sleep(pollDelay);
         }
         return tx;

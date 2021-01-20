@@ -2,11 +2,6 @@ package com.jpmorgan.cakeshop.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.jpmorgan.cakeshop.util.FileUtils;
-import com.jpmorgan.cakeshop.util.SortedProperties;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 import org.apache.commons.lang3.StringUtils;
@@ -16,9 +11,6 @@ import org.springframework.aop.interceptor.SimpleAsyncUncaughtExceptionHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.jmx.export.annotation.AnnotationMBeanExporter;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -47,13 +39,6 @@ public class AppConfig implements AsyncConfigurer {
         exec.setThreadNamePrefix("cake-");
         exec.afterPropertiesSet();
         return exec;
-    }
-
-    @Bean
-    public AnnotationMBeanExporter annotationMBeanExporter() {
-        AnnotationMBeanExporter annotationMBeanExporter = new AnnotationMBeanExporter();
-        annotationMBeanExporter.addExcludedBean("dataSource");
-        return annotationMBeanExporter;
     }
 
     @Override

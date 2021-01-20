@@ -1,12 +1,13 @@
 package com.jpmorgan.cakeshop.service.impl;
 
 import com.google.common.collect.Lists;
-import com.jpmorgan.cakeshop.dao.NodeInfoDAO;
+import com.jpmorgan.cakeshop.repo.NodeInfoRepository;
 import com.jpmorgan.cakeshop.db.BlockScanner;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.NodeInfo;
 import com.jpmorgan.cakeshop.model.Web3DefaultResponseType;
 import com.jpmorgan.cakeshop.service.GethHttpService;
+import com.jpmorgan.cakeshop.util.AbiUtils;
 import com.jpmorgan.cakeshop.util.CakeshopUtils;
 import com.jpmorgan.cakeshop.util.ProcessUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -27,7 +28,10 @@ import org.springframework.web.client.RestClientException;
 
 import javax.annotation.PreDestroy;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.*;
+
+import static com.jpmorgan.cakeshop.service.GethRpcConstants.ETH_GET_ACCOUNT_BALANCE;
 
 /**
  *
@@ -40,8 +44,8 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     private static final Logger LOG = LoggerFactory.getLogger(GethHttpServiceImpl.class);
 
-    @Autowired()
-    private NodeInfoDAO nodeInfoDao;
+    @Autowired
+    private NodeInfoRepository nodeInfoRepository;
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -199,6 +203,13 @@ public class GethHttpServiceImpl implements GethHttpService {
         return currentTransactionManagerUrl;
     }
 
+    @Override
+    public BigInteger getBalance(String address) throws APIException {
+        Map<String, Object> accountData = executeGethCall(ETH_GET_ACCOUNT_BALANCE, new Object[]{address, "latest"});
+        String strBal = (String) accountData.get(CakeshopUtils.SIMPLE_RESULT);
+        return AbiUtils.hexToBigInteger(strBal);
+    }
+
     private void setCurrentTransactionManagerUrl(String transactionManagerUrl) {
         this.currentTransactionManagerUrl = transactionManagerUrl;
     }
@@ -206,7 +217,7 @@ public class GethHttpServiceImpl implements GethHttpService {
     @Override
     public void connectToNode(Long nodeId) {
         try {
-            NodeInfo node = nodeInfoDao.getById(nodeId);
+            NodeInfo node = nodeInfoRepository.findById(nodeId).orElse(null);
             if (node != null) {
                 setCurrentRpcUrl(node.rpcUrl);
                 setCurrentTransactionManagerUrl(node.transactionManagerUrl);
@@ -214,9 +225,11 @@ public class GethHttpServiceImpl implements GethHttpService {
                 runPostConnectTasks();
             } else {
                 LOG.info("Node with id {} does not exist", nodeId);
+                setConnected(false);
             }
-        } catch (IOException e) {
-            LOG.error("Could not connect to node with ID: {}", nodeId);
+        } catch (Exception e) {
+            LOG.error("Could not connect to node with ID: {}", nodeId, e);
+            setConnected(false);
         }
     }
 

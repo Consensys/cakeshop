@@ -15,7 +15,6 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.annotation.Order;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.ServletContext;
@@ -25,6 +24,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 @Order(999999)
 @Service(value = "appStartup")
@@ -47,7 +47,7 @@ public class AppStartup implements ApplicationListener<ApplicationEvent> {
 
     @Autowired
     @Qualifier("asyncExecutor")
-    private TaskExecutor executor;
+    private Executor executor;
 
     private boolean autoStartFired;
 

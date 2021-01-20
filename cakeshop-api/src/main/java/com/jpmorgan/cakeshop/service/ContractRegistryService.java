@@ -3,6 +3,8 @@ package com.jpmorgan.cakeshop.service;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Contract;
 import com.jpmorgan.cakeshop.service.ContractService.CodeType;
+
+import java.io.IOException;
 import java.util.List;
 
 public interface ContractRegistryService {
@@ -50,7 +52,7 @@ public interface ContractRegistryService {
      * @return
      * @throws APIException
      */
-    public List<Contract> list() throws APIException;
+    public List<Contract> list() throws IOException;
 
     /**
      * List all contracts registered by the given address

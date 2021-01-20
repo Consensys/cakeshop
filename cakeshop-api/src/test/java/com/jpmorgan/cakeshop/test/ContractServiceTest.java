@@ -35,12 +35,6 @@ public class ContractServiceTest extends BaseGethRpcTest {
     private TransactionService transactionService;
 
     @Autowired
-    private GethHttpService geth;
-
-    @Autowired
-    private BlockScanner blockScanner;
-
-    @Autowired
     private WalletService walletService;
 
     @Test
@@ -63,8 +57,6 @@ public class ContractServiceTest extends BaseGethRpcTest {
         assertNotEmptyString(c.getCode());
         assertNotEmptyString(c.getName());
         assertEquals(c.getCodeType(), CodeType.solidity);
-        assertNotNull(c.getCreatedDate());
-        assertTrue(c.getCreatedDate() >= time);
 
         assertNotNull(c.getFunctionHashes());
         assertNotNull(c.getGasEstimates());
@@ -235,8 +227,6 @@ public class ContractServiceTest extends BaseGethRpcTest {
         // modify value
         TransactionResult tr = contractService.transact(contractAddress, abi, null, "set", new Object[]{200});
         Transaction tx = transactionService.waitForTx(tr, 50, TimeUnit.MILLISECONDS);
-
-        ((TestBlockScanner) blockScanner).manualRun();
 
         Contract contract = contractService.get(contractAddress);
         List<Transaction> txns = contractService.listTransactions(contract);

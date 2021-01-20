@@ -61,7 +61,7 @@ public class BlockControllerTest extends BaseControllerTest {
         mockMvc.perform(post("/api/block/get")
                 .contentType(MediaType.APPLICATION_JSON_VALUE).content(postBody))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(content().string(containsString("\"number\":" + blockNum)));
     }
 

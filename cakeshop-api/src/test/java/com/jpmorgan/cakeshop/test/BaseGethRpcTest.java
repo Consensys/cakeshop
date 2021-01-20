@@ -2,17 +2,16 @@ package com.jpmorgan.cakeshop.test;
 
 import com.google.common.collect.Lists;
 import com.jpmorgan.cakeshop.config.AppStartup;
-import com.jpmorgan.cakeshop.dao.NodeInfoDAO;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.NodeInfo;
 import com.jpmorgan.cakeshop.model.Transaction;
 import com.jpmorgan.cakeshop.model.TransactionResult;
 import com.jpmorgan.cakeshop.model.json.WalletPostJsonRequest;
+import com.jpmorgan.cakeshop.repo.NodeInfoRepository;
 import com.jpmorgan.cakeshop.service.ContractService;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.TransactionService;
 import com.jpmorgan.cakeshop.service.WalletService;
-import com.jpmorgan.cakeshop.service.task.BlockchainInitializerTask;
 import com.jpmorgan.cakeshop.test.config.TempFileManager;
 import com.jpmorgan.cakeshop.test.config.TestAppConfig;
 import com.jpmorgan.cakeshop.util.CakeshopUtils;
@@ -21,15 +20,12 @@ import com.jpmorgan.cakeshop.util.ProcessUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
-import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeClass;
 
@@ -44,7 +40,6 @@ import static org.testng.Assert.assertTrue;
 
 @ActiveProfiles("test")
 @ContextConfiguration(classes = {TestAppConfig.class})
-//@Listeners(CleanConsoleListener.class) // uncomment for extra debug help
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS)
 public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
 
@@ -52,7 +47,6 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
 
     static {
         System.setProperty("spring.profiles.active", "test");
-        System.setProperty("cakeshop.database.vendor", "hsqldb");
     }
 
     @Value("${nodejs.binary:node}")
@@ -74,13 +68,12 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
     private String CONFIG_ROOT;
 
     @Autowired
-    private NodeInfoDAO nodeInfoDAO;
+    private NodeInfoRepository nodeInfoRepository;
 
     @Autowired
     private GethHttpService gethHttpService;
 
     @Autowired
-    @Qualifier("hsql")
     private DataSource embeddedDb;
 
     @Autowired
@@ -88,10 +81,6 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
 
     public BaseGethRpcTest() {
         super();
-    }
-
-    public boolean runGeth() {
-        return false;
     }
 
     @AfterSuite(alwaysRun = true)
@@ -117,28 +106,17 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
     }
 
     @BeforeClass
-    public void startGeth() throws IOException {
-            NodeInfo testNode = nodeInfoDAO.getByUrls("http://localhost:22000", "http://localhost:9081");
+    public void connectGeth() throws IOException {
+            NodeInfo testNode = nodeInfoRepository.findByRpcUrlAndTransactionManagerUrl("http://localhost:22000", "http://localhost:9081").orElse(null);
             if(testNode == null) {
                 testNode = new NodeInfo("test", "http://localhost:22000", "http://localhost:9081");
-                nodeInfoDAO.save(testNode);
+                nodeInfoRepository.save(testNode);
                 LOG.debug("Created node Id {}", testNode.id);
             }
             if(!gethHttpService.isConnected()) {
                 gethHttpService.connectToNode(testNode.id);
                 initializeChain();
             }
-    }
-
-    /**
-     * Stop geth & delete data dir
-     */
-    @AfterClass(alwaysRun = true)
-    public void stopGeth() {
-        String db = System.getProperty("cakeshop.database.vendor");
-        if (db.equalsIgnoreCase("hsqldb")) {
-            ((EmbeddedDatabase) embeddedDb).shutdown();
-        }
     }
 
     /**
@@ -181,6 +159,7 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
         assertTrue(!result.getId().isEmpty());
 
         Transaction tx = transactionService.waitForTx(result, 50, TimeUnit.MILLISECONDS);
+
         return tx.getContractAddress();
     }
 
@@ -200,8 +179,5 @@ public abstract class BaseGethRpcTest extends AbstractTestNGSpringContextTests {
                 e.printStackTrace();
             }
         });
-        BlockchainInitializerTask chainInitTask =
-            applicationContext.getBean(BlockchainInitializerTask.class);
-        chainInitTask.run(); // run in same thread
     }
 }

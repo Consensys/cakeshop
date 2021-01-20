@@ -65,7 +65,6 @@
     	<dependency>
       		<groupId>com.fasterxml.jackson.module</groupId>
       		<artifactId>jackson-module-kotlin</artifactId>
-      		<version>2.9.2</version>
     	</dependency>
     	<dependency>
     		  <groupId>io.reactivex.rxjava2</groupId>
@@ -110,7 +109,17 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- SPRING WEBSOCKET -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-rest</artifactId>
+        </dependency>
+
+      <!-- SPRING WEBSOCKET -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-messaging</artifactId>
@@ -122,21 +131,18 @@
 
         <!-- SPRING DB, HIBERNATE, HSQL -->
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-tx</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-orm</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-jdbc</artifactId>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <version>5.1.17.Final</version>
+            <artifactId>hibernate-validator</artifactId>
+            <version>6.0.2.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.hsqldb</groupId>
@@ -147,9 +153,8 @@
             <artifactId>mysql-connector-java</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>${postgres.version}</version>
+          <groupId>org.postgresql</groupId>
+          <artifactId>postgresql</artifactId>
         </dependency>
 
         <!-- UNCOMMENT IF USING ORACLE JDBC
@@ -181,12 +186,7 @@
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
-            <version>${dropwizard-metrics.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20180130</version>
+            <version>3.1.5</version>
         </dependency>
 
         <!-- COMMONS / UTILS -->
@@ -221,7 +221,7 @@
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-            <version>4.3.1</version>
+            <version>4.9.0</version>
         </dependency>
         <dependency>
             <groupId>com.jcabi</groupId>
@@ -233,7 +233,7 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.52</version>
+            <version>1.67</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.aspectj/aspectjweaver -->
@@ -243,37 +243,13 @@
         </dependency>
         <dependency>
             <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
-            <version>2.6.1</version>
+            <artifactId>springfox-boot-starter</artifactId>
+            <version>3.0.0</version>
         </dependency>
         <dependency>
             <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-            <version>2.6.1</version>
-        </dependency>
-
-        <!-- TESSERA -->
-        <dependency>
-            <groupId>com.jpmorgan.quorum</groupId>
-            <version>${tessera.version}</version>
-            <artifactId>config</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>ch.qos.logback</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.jpmorgan.quorum</groupId>
-            <version>${tessera.version}</version>
-            <artifactId>config-migration</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
+            <artifactId>springfox-data-rest</artifactId>
+            <version>3.0.0</version>
         </dependency>
 
         <!-- ############################################# -->
@@ -300,7 +276,7 @@
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
-            <version>6.9.6</version>
+            <version>6.14.3</version>
             <scope>test</scope>
         </dependency>
         <!-- junit included for extended matchers -->
@@ -315,28 +291,8 @@
             <artifactId>gson</artifactId>
         </dependency>
 
-        <!-- bean validator api impl -->
-        <dependency>
-            <groupId>org.apache.bval</groupId>
-            <artifactId>org.apache.bval.bundle</artifactId>
-            <version>0.5</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.geronimo.specs</groupId>
-            <artifactId>geronimo-validation_1.0_spec</artifactId>
-            <version>1.1</version>
-            <scope>test</scope>
-        </dependency>
 
         <!-- must be last (not sure why) -->
-        <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-jpa</artifactId>
-            <version>1.11.23.RELEASE</version>
-            <scope>test</scope>
-            <type>jar</type>
-        </dependency>
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>

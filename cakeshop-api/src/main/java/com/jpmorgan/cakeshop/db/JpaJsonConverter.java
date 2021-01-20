@@ -32,7 +32,7 @@ public class JpaJsonConverter implements AttributeConverter<Object[], String> {
     public Object[] convertToEntityAttribute(String dbData) {
         try {
             List<Object> vals = (List<Object>) objectMapper.readValue(dbData, Object.class);
-            return vals.toArray();
+            return vals == null ? null : vals.toArray();
         } catch (IOException ex) {
             ex.printStackTrace();
             // logger.error("Unexpected IOEx decoding json from database: " +

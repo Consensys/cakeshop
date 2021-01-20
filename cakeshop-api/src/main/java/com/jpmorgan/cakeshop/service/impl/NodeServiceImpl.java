@@ -1,6 +1,5 @@
 package com.jpmorgan.cakeshop.service.impl;
 
-import com.jpmorgan.cakeshop.dao.PeerDAO;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Node;
 import com.jpmorgan.cakeshop.model.Peer;
@@ -38,9 +37,6 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
 
     @Autowired
     private GethHttpService gethService;
-
-    @Autowired
-    private PeerDAO peerDAO;
 
     private Map<String, Object> lastNodeInfo;
 
@@ -267,7 +263,6 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
             peer.setId(uri.getUserInfo());
             peer.setNodeIP(uri.getHost());
             peer.setNodeUrl(address);
-            peerDAO.save(peer);
         }
 
         return added;
@@ -330,14 +325,6 @@ public class NodeServiceImpl implements NodeService, GethRpcConstants {
         }
 
         boolean removed = (boolean) res.get(SIMPLE_RESULT);
-
-        if (removed) {
-            Peer peerInDb = peerDAO.getById(uri.getUserInfo());
-            if (peerInDb != null) {
-                peerDAO.delete(peerInDb);
-            }
-
-        }
 
         return removed;
     }

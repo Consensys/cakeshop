@@ -59,7 +59,7 @@ module.exports = function() {
                 _.each(contracts, function (c) {
                     var co = {
                         name: c.get('name'),
-                        date: moment.unix(c.get('createdDate')).format(
+                        date: moment(utils.convertTimestampToMillis(c.get('createdDate'))).format(
                             'YYYY-MM-DD hh:mm A'),
                         id: c.id,
                         privateFor: c.attributes.privateFor,

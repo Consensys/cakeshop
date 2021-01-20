@@ -1,13 +1,14 @@
 package com.jpmorgan.cakeshop.db;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import com.jpmorgan.cakeshop.dao.BlockDAO;
-import com.jpmorgan.cakeshop.dao.TransactionDAO;
 import com.jpmorgan.cakeshop.error.APIException;
-import com.jpmorgan.cakeshop.model.APIData;
-import com.jpmorgan.cakeshop.model.APIResponse;
-import com.jpmorgan.cakeshop.model.Block;
-import com.jpmorgan.cakeshop.model.Transaction;
+import com.jpmorgan.cakeshop.model.*;
+import com.jpmorgan.cakeshop.repo.BlockRepository;
+import com.jpmorgan.cakeshop.repo.ContractRepository;
+import com.jpmorgan.cakeshop.repo.EventRepository;
+import com.jpmorgan.cakeshop.repo.TransactionRepository;
 import com.jpmorgan.cakeshop.service.TransactionService;
 import com.jpmorgan.cakeshop.service.WebSocketPushService;
 import org.slf4j.Logger;
@@ -23,6 +24,7 @@ import javax.annotation.PreDestroy;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 @Service
 @Scope("prototype")
@@ -56,13 +58,22 @@ public class SavingBlockListener implements BlockListener {
     private static final Logger LOG = LoggerFactory.getLogger(SavingBlockListener.class);
 
     @Autowired
-    private BlockDAO blockDAO;
+    private BlockRepository blockRepository;
 
     @Autowired
-    private TransactionDAO txDAO;
+    private TransactionRepository transactionRepository;
+
+    @Autowired
+    private EventRepository eventRepository;
+
+    @Autowired
+    private ContractRepository contractRepository;
 
     @Autowired
     private TransactionService txService;
+
+    @Autowired
+    private ObjectMapper jsonMapper;
 
     private final ArrayBlockingQueue<Block> blockQueue;
 
@@ -94,21 +105,26 @@ public class SavingBlockListener implements BlockListener {
     }
 
     protected void saveBlock(Block block) {
-        LOG.debug("Persisting block #" + block.getNumber());
-        blockDAO.save(block);
-        if (!block.getTransactions().isEmpty()) {
-            List<String> transactions = block.getTransactions();
-            List<List<String>> txnChunks = Lists.partition(transactions, 256);
-            for (List<String> txnChunk : txnChunks) {
+        LOG.info("Persisting block #" + block.getNumber());
+        blockRepository.save(block);
+        Lists.partition(block.getTransactions(), 256).stream()
+            .flatMap(txnChunk -> {
                 try {
-                    List<Transaction> txns = txService.get(txnChunk);
-                    txDAO.save(txns);
+                    return txService.get(txnChunk).stream();
                 } catch (APIException e) {
                     LOG.warn("Failed to load transaction details for tx", e);
+                    return Stream.empty();
                 }
-            }
-            pushBlockNumber(block.getNumber().longValue()); // push to subscribers after saving
-        }
+            })
+            .forEach(transaction -> {
+                // because everything has IDs already, cascading doesn't seem to work. Save child events first
+                if (transaction.getLogs() != null) {
+                    transaction.getLogs().forEach(event -> LOG.info("Saving event {}", event));
+                    eventRepository.saveAll(transaction.getLogs());
+                }
+                transactionRepository.save(transaction);
+            });
+        pushBlockNumber(block.getNumber().longValue()); // push to subscribers after saving
     }
 
     private void pushBlockNumber(Long blockNumber) {

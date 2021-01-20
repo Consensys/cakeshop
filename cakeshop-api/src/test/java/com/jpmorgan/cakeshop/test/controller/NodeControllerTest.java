@@ -39,7 +39,7 @@ public class NodeControllerTest extends BaseControllerTest {
         mockMvc.perform(post("/api/node/get")
                 .contentType(MediaType.APPLICATION_JSON_VALUE).content(""))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE));
     }
 
 }

@@ -6,14 +6,7 @@ import com.jpmorgan.cakeshop.util.StringUtils;
 import java.io.Serializable;
 import java.math.BigInteger;
 
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table(name="EVENTS")
@@ -22,7 +15,6 @@ public class Event implements Serializable {
     public static final String API_DATA_TYPE = "event";
 
     @Id
-    @GeneratedValue(strategy=GenerationType.SEQUENCE)
     private BigInteger id;
 
     private String blockId;
@@ -34,10 +26,9 @@ public class Event implements Serializable {
 
     private String name;
 
-    //@Lob // does not work, not sure why. hibernate issue.
     @Basic
-    @Column(name = "event_data", length = Integer.MAX_VALUE)
-    @Convert(converter = JpaJsonConverter.class)    
+    @Column(name = "event_data", length = 10485760)
+    @Convert(converter = JpaJsonConverter.class)
     private Object[] data;
 
     public BigInteger getId() {

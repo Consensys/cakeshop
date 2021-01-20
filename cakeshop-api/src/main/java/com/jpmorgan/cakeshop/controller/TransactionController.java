@@ -8,6 +8,7 @@ import com.jpmorgan.cakeshop.model.DirectTransactionRequest;
 import com.jpmorgan.cakeshop.model.Transaction;
 import com.jpmorgan.cakeshop.model.TransactionResult;
 import com.jpmorgan.cakeshop.model.json.TransPostJsonResquest;
+import com.jpmorgan.cakeshop.repo.TransactionRepository;
 import com.jpmorgan.cakeshop.service.TransactionService;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -35,6 +36,9 @@ import org.springframework.web.context.request.async.WebAsyncTask;
 public class TransactionController extends BaseController {
 
     @Autowired
+    private TransactionRepository transactionRepository;
+
+    @Autowired
     private TransactionService transactionService;
 
     @ApiImplicitParams({
@@ -49,7 +53,7 @@ public class TransactionController extends BaseController {
                     HttpStatus.BAD_REQUEST);
         }
 
-        Transaction tx = transactionService.get(jsonRequest.getId());
+        Transaction tx = transactionRepository.findById(jsonRequest.getId()).orElse(null);
 
         APIResponse res = new APIResponse();
 
@@ -77,14 +81,15 @@ public class TransactionController extends BaseController {
             return new ResponseEntity<>(new APIResponse().error(new APIError().title("Missing param 'id'")),
                     HttpStatus.BAD_REQUEST);
         }
-        List<Transaction> txns = transactionService.get(jsonRequest.getIds());
+
         List<APIData> data = new ArrayList<>();
         APIResponse res = new APIResponse();
 
-        if (txns != null && !txns.isEmpty()) {
-            txns.forEach((txn) -> {
-                data.add(txn.toAPIData());
-            });
+        transactionRepository
+            .findAllById(jsonRequest.getIds())
+            .forEach((txn) -> data.add(txn.toAPIData()));
+
+        if (!data.isEmpty()) {
             res.setData(data);
             return new ResponseEntity<>(res, HttpStatus.OK);
         }

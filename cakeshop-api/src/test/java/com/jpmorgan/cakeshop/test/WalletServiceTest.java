@@ -1,6 +1,5 @@
 package com.jpmorgan.cakeshop.test;
 
-import com.jpmorgan.cakeshop.dao.WalletDAO;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.Account;
 import com.jpmorgan.cakeshop.model.json.WalletPostJsonRequest;
@@ -20,8 +19,6 @@ public class WalletServiceTest extends BaseGethRpcTest {
     @Autowired
     private WalletService wallet;
 
-    @Autowired
-    private WalletDAO walletDAO;
     private int startingAccounts;
 
     @BeforeClass
@@ -36,7 +33,6 @@ public class WalletServiceTest extends BaseGethRpcTest {
         assertNotNull(accounts);
         assertEquals(accounts.size(), startingAccounts);
         assertTrue(StringUtils.isNotBlank(accounts.get(0).getAddress()));
-        assertEquals(walletDAO.list().size(), startingAccounts);
     }
 
     @Test(priority = 3)
@@ -59,8 +55,6 @@ public class WalletServiceTest extends BaseGethRpcTest {
         accounts = wallet.list();
         assertNotNull(accounts);
         assertEquals(accounts.size(), startingAccounts + 1);
-
-        assertEquals(walletDAO.list().size(), startingAccounts + 1);
     }
 
 }

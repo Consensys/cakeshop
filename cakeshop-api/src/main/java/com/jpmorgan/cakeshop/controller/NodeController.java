@@ -1,14 +1,15 @@
 package com.jpmorgan.cakeshop.controller;
 
-import com.jpmorgan.cakeshop.dao.NodeInfoDAO;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.*;
 import com.jpmorgan.cakeshop.model.json.NodePostJsonRequest;
+import com.jpmorgan.cakeshop.repo.NodeInfoRepository;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.service.NodeService;
 import com.jpmorgan.cakeshop.service.ReportingHttpService;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
+import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +55,7 @@ public class NodeController extends BaseController {
     private CacheManager cacheManager;
 
     @Autowired
-    private NodeInfoDAO nodeInfoDAO;
+    private NodeInfoRepository nodeInfoRepository;
 
     public NodeController() throws IOException {
     }
@@ -142,7 +144,7 @@ public class NodeController extends BaseController {
     @GetMapping(path = "/nodes")
     protected @ResponseBody
     ResponseEntity<APIResponse> getNodes() throws APIException {
-        List<NodeInfo> list = nodeInfoDAO.list();
+        List<NodeInfo> list = IterableUtils.toList(nodeInfoRepository.findAll());
         list.forEach((nodeInfo -> {
             if(nodeInfo.rpcUrl.equals(gethService.getCurrentRpcUrl())) {
                 nodeInfo.isSelected = true;
@@ -154,21 +156,21 @@ public class NodeController extends BaseController {
     @PostMapping(path = "/add")
     protected @ResponseBody
     ResponseEntity<APIResponse> addNode(@RequestBody NodeInfo nodeInfo) throws IOException {
-        nodeInfoDAO.save(nodeInfo);
+        nodeInfoRepository.save(nodeInfo);
         return new ResponseEntity<>(APIResponse.newSimpleResponse(nodeInfo), HttpStatus.CREATED);
     }
 
     @PostMapping(path = "/addAll")
     protected @ResponseBody
     ResponseEntity<APIResponse> addAllNodes(@RequestBody List<NodeInfo> nodeInfos) throws IOException {
-        nodeInfoDAO.save(nodeInfos);
+        nodeInfoRepository.saveAll(nodeInfos);
         return new ResponseEntity<>(APIResponse.newSimpleResponse(nodeInfos), HttpStatus.CREATED);
     }
 
     @PostMapping(path = "/remove")
     protected @ResponseBody
     ResponseEntity<APIResponse> removeNode(@RequestBody NodeInfo nodeInfo) throws IOException {
-        nodeInfoDAO.delete(nodeInfo);
+        nodeInfoRepository.delete(nodeInfo);
         return new ResponseEntity<>(APIResponse.newSimpleResponse(nodeInfo), HttpStatus.NO_CONTENT);
     }
 

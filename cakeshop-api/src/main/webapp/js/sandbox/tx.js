@@ -94,7 +94,7 @@ import utils from '../utils'
     // $("div.contracts .refresh").show();
     Contract.list(function(contracts) {
       contracts.forEach(function(c) {
-        var ts = moment.unix(c.get("createdDate")).format("YYYY-MM-DD hh:mm A");
+        var ts = moment(utils.convertTimestampToMillis(c.get('createdDate'))).format('YYYY-MM-DD hh:mm A')
         var name = c.get("name") + " (" + trunc(c.id) + ", " + ts + ")";
         sel.append("<option value='" + c.id + "'>" + name + "</option>");
       });

@@ -75,10 +75,6 @@ public class Contract {
      */
     private String details = "";
 
-    @JsonIgnore
-    private ContractABI contractAbi;
-
-
     public Contract() {
     }
 
@@ -92,9 +88,8 @@ public class Contract {
         this.createdDate = createdDate;
         this.storageLayout = storageLayout;
         this.privateFor = privateFor;
-        setABI(abi);
+        this.abi = abi;
     }
-
 
     public String getCode() {
         return code;
@@ -139,14 +134,11 @@ public class Contract {
 
     public void setABI(String abi) {
         this.abi = abi;
-        this.contractAbi = ContractABI.fromJson(this.abi);
     }
 
     public void setABI(ContractABI contractABI) {
         this.abi = contractABI.toJson();
-        this.contractAbi = contractABI;
     }
-
 
     public Long getCreatedDate() {
         return createdDate;
@@ -199,8 +191,9 @@ public class Contract {
     /**
      * @return the contractAbi
      */
+    @JsonIgnore
     public ContractABI getContractAbi() {
-        return contractAbi;
+        return ContractABI.fromJson(this.abi);
     }
 
     public void setPrivateFor(String privateFor) {

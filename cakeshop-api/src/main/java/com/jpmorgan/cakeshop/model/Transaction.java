@@ -2,6 +2,8 @@ package com.jpmorgan.cakeshop.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.jpmorgan.cakeshop.model.ContractABI.Function;
 import com.jpmorgan.cakeshop.util.StringUtils;
 import org.apache.commons.collections4.Predicate;
@@ -24,7 +26,6 @@ import java.util.List;
             @Index(name = "tr_to_addr_idx", columnList = "to_address")
         }
 )
-
 public class Transaction implements Serializable {
 
     public static final String PRIVATE_TXN_V1 = "0x25";
@@ -83,6 +84,7 @@ public class Transaction implements Serializable {
     @Column(name = "to_address")
 	private String to;
     @Column(name = "trans_value", precision = 27)
+    @JsonSerialize(using = ToStringSerializer.class)
 	private BigInteger value;
 	private BigInteger gas;
 	private BigInteger gasPrice;

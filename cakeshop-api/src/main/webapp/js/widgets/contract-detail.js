@@ -61,7 +61,7 @@ module.exports = function() {
 					}
 
 					if (val === 'createdDate') {
-						contract.attributes[val] = moment.unix(contract.attributes[val]).format('YYYY-MM-DD hh:mm A');
+						contract.attributes[val] = moment(utils.convertTimestampToMillis(contract.attributes[val])).format('YYYY-MM-DD hh:mm A')
 					}
 
 					rows.push( template({ key: utils.camelToRegularForm(val), value: contract.attributes[val] }) );

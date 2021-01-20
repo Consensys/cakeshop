@@ -1,4 +1,4 @@
-package com.jpmorgan.cakeshop.config;
+package com.jpmorgan.cakeshop;
 
 import com.jpmorgan.cakeshop.util.FileUtils;
 import com.jpmorgan.cakeshop.util.StringUtils;
@@ -12,24 +12,21 @@ import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.Banner;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.embedded.jetty.JettyServletWebServerFactory;
 import org.springframework.boot.web.server.ErrorPage;
 import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.HttpStatus;
 
-@Configuration
-@EnableAutoConfiguration
-@ComponentScan(basePackages = "com.jpmorgan.cakeshop")
-@Profile("spring-boot")
-public class SpringBootApplication {
+@SpringBootApplication
+@EnableJpaRepositories(basePackages = "com.jpmorgan.cakeshop.repo")
+public class CakeshopApplication {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SpringBootApplication.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CakeshopApplication.class);
 
     public static void main(String[] args) throws IOException {
 
@@ -52,14 +49,14 @@ public class SpringBootApplication {
         }
 
         // boot app
-        new SpringApplicationBuilder(SpringBootApplication.class)
+        new SpringApplicationBuilder(CakeshopApplication.class)
                 .profiles("container", "spring-boot")
                 .bannerMode(Banner.Mode.OFF) // we manually display the banner once everything is ready
                 .run(args);
     }
 
     private static void extractBinaries(String configDir) throws IOException {
-        URL url = SpringBootApplication.class.getClassLoader().getResource("");
+        URL url = CakeshopApplication.class.getClassLoader().getResource("");
         String warUrl = null;
 
         if (url.getProtocol().equals("jar")) {
