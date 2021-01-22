@@ -6,13 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Lob;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -42,7 +36,7 @@ public class Block implements Serializable {
     private String miner;
     private BigInteger difficulty;
     private BigInteger totalDifficulty;
-    
+
     @Column(length=2048)
     private String extraData;
     private BigInteger gasLimit;
@@ -52,14 +46,22 @@ public class Block implements Serializable {
     private BigInteger timestamp;
 
     @ElementCollection
+    @CollectionTable(
+        name = "BLOCK_TRANSACTIONS",
+        joinColumns = @JoinColumn(name = "BLOCK_ID")
+    )
     private List<String> transactions = new ArrayList<>();
 
     @ElementCollection
+    @CollectionTable(
+        name = "BLOCK_UNCLES",
+        joinColumns = @JoinColumn(name = "BLOCK_ID")
+    )
     private List<String> uncles = new ArrayList<>();
 
     /**
      * Block number
-     * @return 
+     * @return
      **/
     public BigInteger getNumber() {
         return number;
@@ -71,7 +73,7 @@ public class Block implements Serializable {
 
     /**
      * id of the block
-     * @return 
+     * @return
      **/
     public String getId() {
         return id;
@@ -83,7 +85,7 @@ public class Block implements Serializable {
 
     /**
      * id of the parent block
-     * @return 
+     * @return
      **/
     public String getParentId() {
         return parentId;
@@ -95,7 +97,7 @@ public class Block implements Serializable {
 
     /**
      * hash of the generated proof-of-work (if avail)
-     * @return 
+     * @return
      **/
     public String getNonce() {
         return nonce;
@@ -107,7 +109,7 @@ public class Block implements Serializable {
 
     /**
      * SHA3 of the uncles data in the block (32 bytes)
-     * @return 
+     * @return
      **/
     public String getSha3Uncles() {
         return sha3Uncles;
@@ -119,7 +121,7 @@ public class Block implements Serializable {
 
     /**
      * the bloom filter for the logs of the block (256 bytes)
-     * @return 
+     * @return
      **/
     public String getLogsBloom() {
         return logsBloom;
@@ -131,7 +133,7 @@ public class Block implements Serializable {
 
     /**
      * the root of the transaction trie of the block (32 bytes)
-     * @return 
+     * @return
      **/
     public String getTransactionsRoot() {
         return transactionsRoot;
@@ -143,7 +145,7 @@ public class Block implements Serializable {
 
     /**
      * the root of the final state trie of the block (32 bytes)
-     * @return 
+     * @return
      **/
     public String getStateRoot() {
         return stateRoot;
@@ -156,7 +158,7 @@ public class Block implements Serializable {
     /**
      * the address of the beneficiary to whom the mining rewards were given (20
      * bytes)
-     * @return 
+     * @return
      **/
     public String getMiner() {
         return miner;
@@ -168,7 +170,7 @@ public class Block implements Serializable {
 
     /**
      * integer of the difficulty of this block
-     * @return 
+     * @return
      **/
     public BigInteger getDifficulty() {
         return difficulty;
@@ -180,7 +182,7 @@ public class Block implements Serializable {
 
     /**
      * integer of the total difficulty of the chain until this block
-     * @return 
+     * @return
      **/
     public BigInteger getTotalDifficulty() {
         return totalDifficulty;
@@ -192,7 +194,7 @@ public class Block implements Serializable {
 
     /**
      * the \"extra data\" field for this block
-     * @return 
+     * @return
      **/
     public String getExtraData() {
         return extraData;
@@ -204,7 +206,7 @@ public class Block implements Serializable {
 
     /**
      * the maximum gas allowed in this block
-     * @return 
+     * @return
      **/
     public BigInteger getGasLimit() {
         return gasLimit;
@@ -216,7 +218,7 @@ public class Block implements Serializable {
 
     /**
      * the total gas used by all transactions in this block
-     * @return 
+     * @return
      **/
     public BigInteger getGasUsed() {
         return gasUsed;
@@ -228,7 +230,7 @@ public class Block implements Serializable {
 
     /**
      * the unix timestamp for when the block was collated
-     * @return 
+     * @return
      **/
     public BigInteger getTimestamp() {
         return timestamp;
@@ -240,7 +242,7 @@ public class Block implements Serializable {
 
     /**
      * Array of transaction hashes
-     * @return 
+     * @return
      **/
     public List<String> getTransactions() {
         return transactions;
@@ -252,7 +254,7 @@ public class Block implements Serializable {
 
     /**
      * Array of uncle hashes
-     * @return 
+     * @return
      **/
     public List<String> getUncles() {
         return uncles;

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Optional;
 
 @Api
 @RestController
@@ -20,5 +21,5 @@ public interface TransactionRepository extends PagingAndSortingRepository<Transa
 
     Page<Transaction> findAllByToOrFrom(Pageable pageable, String to, String from);
 
-    Transaction findByContractAddress(String address);
+    Optional<Transaction> findByContractAddress(String address);
 }

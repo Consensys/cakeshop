@@ -62,4 +62,6 @@ public interface ContractRegistryService {
      * @throws APIException
      */
     public List<Contract> listByOwner(String owner) throws APIException;
+
+    void migrateContracts(String contractRegistryAddress);
 }

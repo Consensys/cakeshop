@@ -38,6 +38,14 @@ public class CakeshopApplication {
         }
         LOG.info("cakeshop.config.dir=" + configDir);
 
+        String additionalConfig = System.getProperty("spring.config.additional-location");
+        // don't overwrite if user set this property
+        if (StringUtils.isBlank(additionalConfig)) {
+            String oldLocations = "file:./data/local/,file:./qdata/cakeshop/local/";
+            LOG.info("Adding data/local/ and qdata/cakeshop/local to config file search locations for backwards compatibility: {}", oldLocations);
+            System.setProperty("spring.config.additional-location", oldLocations);
+        }
+
         // extract binaries from WAR (if necessary)
         try {
             extractBinaries(configDir);
