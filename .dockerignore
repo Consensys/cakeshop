@@ -1,3 +1,5 @@
+.git/
+.github/
 
 # IDE-specific files and folders
 .classpath
@@ -12,6 +14,7 @@ nb-configuration.xml
 # temp build files
 data
 target
+*/**/target
 test-output
 /test.json
 logs/
@@ -27,9 +30,9 @@ dependency-reduced-pom.xml
 # node stuff
 npm-debug.log*
 .grunt
-node_modules
+*/**/node_modules
 .npm
-bower_components/
+*/**/bower_components/
 dist/
 node/
 

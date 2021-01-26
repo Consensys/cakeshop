@@ -392,7 +392,7 @@
             <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
-                <version>1.2</version>
+                <version>1.11.0</version>
 
                 <configuration>
                     <workingDirectory>src/main/webapp</workingDirectory>
@@ -536,7 +536,7 @@
                                     <pluginExecutionFilter>
                                         <groupId>com.github.eirslett</groupId>
                                         <artifactId>frontend-maven-plugin</artifactId>
-                                        <versionRange>[1.2,)</versionRange>
+                                        <versionRange>[1.11.0,)</versionRange>
                                         <goals>
                                             <!-- use 'webpack watch' for incremental building -->
                                             <goal>install-node-and-npm</goal>
