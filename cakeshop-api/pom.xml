@@ -433,7 +433,7 @@
                             <goal>npm</goal>
                         </goals>
                         <configuration>
-                            <workingDirectory>src/main/resources/bin/solc</workingDirectory>
+                            <workingDirectory>src/main/resources/bin/solc-cli</workingDirectory>
                         </configuration>
                     </execution>
 
@@ -449,7 +449,7 @@
                             <followSymlinks>false</followSymlinks>
                         </fileset>
                         <fileset>
-                            <directory>src/main/resources/bin/solc/node_modules</directory>
+                            <directory>src/main/resources/bin/solc-cli/node_modules</directory>
                             <followSymlinks>false</followSymlinks>
                         </fileset>
                         <fileset>

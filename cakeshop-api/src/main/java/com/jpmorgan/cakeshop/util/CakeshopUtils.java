@@ -7,8 +7,6 @@ import com.jpmorgan.cakeshop.error.APIException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.web3j.protocol.core.Response.Error;
-
 import static com.jpmorgan.cakeshop.util.FileUtils.expandPath;
 
 public class CakeshopUtils {
@@ -32,7 +30,7 @@ public class CakeshopUtils {
         if (StringUtils.isBlank(binPath)) {
             binPath = FileUtils.getClasspathName("bin");
         }
-        return expandPath(binPath, "solc", "node_modules", "solc-cakeshop-cli", "bin", "solc");
+        return expandPath(binPath, "solc-cli", "node_modules", "solc-cakeshop-cli", "bin", "solc");
     }
 
     @SuppressWarnings("unchecked")

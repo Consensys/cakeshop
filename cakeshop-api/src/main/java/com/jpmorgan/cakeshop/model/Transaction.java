@@ -102,6 +102,10 @@ public class Transaction implements Serializable {
 	private String contractAddress;
 
 	@ElementCollection(fetch=FetchType.EAGER)
+    @CollectionTable(
+        name = "TRANSACTIONS_EVENTS",
+        joinColumns = @JoinColumn(name = "TRANSACTION_ID")
+    )
 	private List<Event> logs;
 
 	// signature fields (avail in quorum)

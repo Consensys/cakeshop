@@ -6,6 +6,7 @@ import com.jpmorgan.cakeshop.db.BlockScanner;
 import com.jpmorgan.cakeshop.error.APIException;
 import com.jpmorgan.cakeshop.model.NodeInfo;
 import com.jpmorgan.cakeshop.model.Web3DefaultResponseType;
+import com.jpmorgan.cakeshop.service.ContractRegistryService;
 import com.jpmorgan.cakeshop.service.GethHttpService;
 import com.jpmorgan.cakeshop.util.AbiUtils;
 import com.jpmorgan.cakeshop.util.CakeshopUtils;
@@ -49,6 +50,12 @@ public class GethHttpServiceImpl implements GethHttpService {
 
     @Autowired
     private ApplicationContext applicationContext;
+
+    @Autowired
+    private ContractRegistryService contractRegistryService;
+
+    @Value("${contract.registry.addr:}")
+    private String contractRegistryAddress;
 
     @Value("${nodejs.binary:node}")
     String nodeJsBinaryName;
@@ -242,6 +249,10 @@ public class GethHttpServiceImpl implements GethHttpService {
         LOG.info("Starting new BlockScanner");
         blockScanner = applicationContext.getBean(BlockScanner.class);
         blockScanner.start();
+
+        if(StringUtils.isNotEmpty(contractRegistryAddress)) {
+            contractRegistryService.migrateContracts(contractRegistryAddress);
+        }
     }
 
     private Boolean checkConnection() {

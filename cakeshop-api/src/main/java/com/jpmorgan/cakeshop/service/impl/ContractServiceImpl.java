@@ -339,7 +339,7 @@ public class ContractServiceImpl implements ContractService {
         ContractABI abi = ContractABI.fromJson(contract.getABI());
 
         List<Transaction> txns = transactionRepository.findAllByTo(contract.getAddress());
-        Transaction creationTx = transactionRepository.findByContractAddress(contract.getAddress());
+        Transaction creationTx = transactionRepository.findByContractAddress(contract.getAddress()).orElseThrow();
         txns.add(0, creationTx);
 
         for (Transaction tx : txns) {
