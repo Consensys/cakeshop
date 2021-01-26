@@ -20,7 +20,7 @@
       <plugin>
         <groupId>com.github.eirslett</groupId>
         <artifactId>frontend-maven-plugin</artifactId>
-        <version>1.2</version>
+        <version>1.11.0</version>
 
         <configuration>
           <workingDirectory>src/main/javascript</workingDirectory>
@@ -50,6 +50,9 @@
             <goals>
               <goal>bower</goal>
             </goals>
+            <configuration>
+              <arguments>install --allow-root</arguments>
+            </configuration>
           </execution>
 
           <execution>
