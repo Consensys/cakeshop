@@ -1,8 +1,8 @@
-pragma solidity ^0.6.4;
+pragma solidity ^0.8.0;
 contract SimpleStorage {
 	event Debug(string msg, uint val);
     uint storedData;
-    constructor(uint _storedData) public {
+    constructor(uint _storedData) {
     	emit Debug("init storage", _storedData);
         storedData = _storedData;
     }
