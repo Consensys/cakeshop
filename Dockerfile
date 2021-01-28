@@ -16,8 +16,6 @@ RUN apk add nodejs
 # survive image upgrades
 VOLUME /cakeshop/data
 
-WORKDIR /cakeshop
-
 COPY --from=builder /home/cakeshop/cakeshop-api/target/cakeshop*.war /cakeshop/cakeshop.war
 
 # for main web interface
