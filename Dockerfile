@@ -21,4 +21,4 @@ COPY --from=builder /home/cakeshop/cakeshop-api/target/cakeshop*.war /cakeshop/c
 # for main web interface
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "/cakeshop/cakeshop.war"]
+ENTRYPOINT ["java", "-Dcakeshop.config.dir=/cakeshop/data", "-Dspring.config.additional-location=file:/cakeshop/data/local/", "-jar", "/cakeshop/cakeshop.war"]
