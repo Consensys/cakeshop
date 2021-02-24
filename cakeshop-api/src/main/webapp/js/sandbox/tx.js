@@ -483,8 +483,8 @@ import utils from '../utils'
     $(".papertape .panel-body").empty();
   });
 
-  // from https://ethereum.github.io/solc-bin/bin/list.json
-  setSolidityOptions(releases, 'v0.6.12+commit.27d51765')
+  // from http://binaries.soliditylang.org/bin/list.json
+  setSolidityOptions(releases, 'v0.8.1+commit.df193b15')
   shrinkify(".select_contract");
   shrinkify(".state");
   shrinkify(".papertape");
