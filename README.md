@@ -6,17 +6,17 @@
 
 ## What is it?
 
-_Cakeshop_ is a set of tools and APIs for working with Quorum nodes, packaged as a Java web application archive (WAR) that gets you up and running in under 60 seconds.
+_Cakeshop_ is a set of tools and APIs for working with GoQuorum nodes, packaged as a Java web application archive (WAR) that gets you up and running in under 60 seconds.
 
-It provides tools for attaching to and managing a quorum node, exploring the state of the chain, and working with contracts.
+It provides tools for attaching to GoQuorum nodes, exploring the state of the chain, and working with contracts.
 
 ## Download
 
-Binary packages are available on the [Github releases page](https://github.com/jpmorganchase/cakeshop/releases).
+Binary packages are available on the [Github releases page](https://github.com/ConsenSys/cakeshop/releases).
 
-## Running via Quorum Wizard
+## Running via GoQuorum Wizard
 
-The easiest way to use Cakeshop is to generate a Quorum network with [Quorum Wizard](https://docs.goquorum.com/en/latest/Wizard/GettingStarted/) and choose to deploy Cakeshop alongside the network.
+The easiest way to use Cakeshop is to generate a GoQuorum network with [GoQuorum Wizard](https://docs.goquorum.consensys.net/en/stable/HowTo/GetStarted/Wizard/GettingStarted/) and choose to deploy Cakeshop alongside the network.
 
 ## Running via Spring Boot
 
@@ -63,25 +63,25 @@ docker run -p 8080:8080 -v "$PWD/data":/opt/cakeshop/data \
 
 ## Further Reading
 
-Further documentation can be found [here](http://docs.goquorum.com/en/latest/Cakeshop/Overview/).
+Further documentation can be found [here](https://docs.goquorum.consensys.net/en/stable/Concepts/Cakeshop/).
 
 ## See Also
 
 * [JIF Dashboard](https://github.com/jpmorganchase/jif-dashboard) - The Cakeshop UI was built using the JIF Dashboard framework.
 
-* [solc-cakeshop-cli](https://github.com/jpmorganchase/solc-cakeshop-cli) - The solidity compiler used behind the scenes is `solc-cakeshop-cli`, a thin wrapper atop the [solc](https://github.com/ethereum/solc-js) JS binding.
+* [solc-cakeshop-cli](https://github.com/ConsenSys/solc-cakeshop-cli) - The solidity compiler used behind the scenes is `solc-cakeshop-cli`, a thin wrapper atop the [solc](https://github.com/ethereum/solc-js) JS binding.
 
 ## Contributing
 
 Thank you for your interest in contributing to Cakeshop!
 
-Cakeshop is built on open source and we invite you to contribute enhancements. Upon review you will be required to complete a Contributor License Agreement (CLA) before we are able to merge. If you have any questions about the contribution process, please feel free to send an email to [quorum_info@jpmorgan.com](mailto:quorum_info@jpmorgan.com).
+Cakeshop is built on open source and we invite you to contribute enhancements. Upon review you will be required to complete a Contributor License Agreement (CLA) before we are able to merge. If you have any questions about the contribution process, please feel free to send an email to [info@goquorum.com](mailto:info@goquorum.com).
 
 
 ## Reporting Security Bugs
 Security is part of our commitment to our users. At Quorum we have a close relationship with the security community, we understand the realm, and encourage security researchers to become part of our mission of building secure reliable software. This section explains how to submit security bugs, and what to expect in return.
 
-All security bugs in [Quorum](https://github.com/jpmorganchase/quorum) and its ecosystem ([Tessera](https://github.com/jpmorganchase/tessera), [Constellation](https://github.com/jpmorganchase/constellation), [Cakeshop](https://github.com/jpmorganchase/cakeshop), ..etc)  should be reported by email to [info@goquorum.com](mailto:info@goquorum.com). Please use the prefix **[security]** in your subject. This email is delivered to Quorum security team. Your email will be acknowledged, and you'll receive a more detailed response to your email as soon as possible indicating the next steps in handling your report. After the initial reply to your report, the security team will endeavor to keep you informed of the progress being made towards a fix and full announcement.
+All security bugs in [GoQuorum](https://github.com/ConsenSys/quorum) and its ecosystem ([Tessera](https://github.com/ConsenSys/tessera), [Constellation](https://github.com/ConsenSys/constellation), [Cakeshop](https://github.com/ConsenSys/cakeshop), ..etc)  should be reported by email to [info@goquorum.com](mailto:info@goquorum.com). Please use the prefix **[security]** in your subject. This email is delivered to the Quorum security team. Your email will be acknowledged, and you'll receive a more detailed response to your email as soon as possible indicating the next steps in handling your report. After the initial reply to your report, the security team will endeavor to keep you informed of the progress being made towards a fix and full announcement.
 
 If you have not received a reply to your email or you have not heard from the security team please contact any team member through quorum slack security channel. **Please note that Quorum slack channels are public discussion forum**. When escalating to this medium, please do not disclose the details of the issue. Simply state that you're trying to reach a member of the security team.
 
@@ -103,9 +103,10 @@ The best way to receive security announcements is to subscribe to the Quorum-ann
 
 Comments on This Policy
 If you have any suggestions to improve this policy, please send an email to info@goquorum.com for discussion.
+
 ## License
 
-Copyright (c) 2016-2019 JPMorgan Chase and/or applicable contributors
+Copyright (c) 2016-2021 Consensys and/or applicable contributors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

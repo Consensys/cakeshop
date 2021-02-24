@@ -18,7 +18,7 @@ Cakeshop version or commit hash: [version]
 
 Cakeshop runtime configuration: [stand alone or attach mode]
 
-Geth/Quorum version testing against: [run `geth version` or copy from Node Info in UI]
+Geth/GoQuorum version testing against: [run `geth version` or copy from Node Info in UI]
 
 Cakeshop OS & Version: Windows/Linux/OSX
 

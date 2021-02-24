@@ -38,7 +38,7 @@ The format of the JSON file is as follows:
 ]
 ```
 
-The rpcUrl field should be the RPC endpoint on the Quorum (geth) node, and the transactionManagerUrl should be the Tessera 3rd Party API endpoint. 
+The rpcUrl field should be the RPC endpoint on the GoQuorum (geth) node, and the transactionManagerUrl should be the Tessera 3rd Party API endpoint. 
 
 Provide the location of the initial nodes file through application.properties or by using the `-D` flag mentioned above.
 ```sh
