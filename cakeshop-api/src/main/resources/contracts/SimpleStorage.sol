@@ -1,11 +1,11 @@
-pragma solidity ^0.6.6;
+pragma solidity ^0.8.0;
 contract SimpleStorage {
 
     uint public storedData;
 
     event Change(string message, uint newVal);
 
-    constructor(uint initVal) public {
+    constructor(uint initVal) {
         emit Change("initialized", initVal);
         storedData = initVal;
     }

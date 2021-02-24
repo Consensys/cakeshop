@@ -1,10 +1,10 @@
-pragma solidity ^0.6.4;
+pragma solidity ^0.8.0;
 contract SimpleStorage {
 
     uint public storedData;
     address public owner;
 
-    constructor(uint initVal) public {
+    constructor(uint initVal) {
       owner = msg.sender;
       storedData = initVal;
     }

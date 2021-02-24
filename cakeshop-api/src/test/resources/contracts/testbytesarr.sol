@@ -1,4 +1,4 @@
-pragma solidity ^0.6.4;
+pragma solidity ^0.8.0;
 contract TestBytesArr {
 
   bytes32[] data;

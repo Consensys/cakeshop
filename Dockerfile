@@ -16,11 +16,9 @@ RUN apk add nodejs
 # survive image upgrades
 VOLUME /cakeshop/data
 
-WORKDIR /cakeshop
-
 COPY --from=builder /home/cakeshop/cakeshop-api/target/cakeshop*.war /cakeshop/cakeshop.war
 
 # for main web interface
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "/cakeshop/cakeshop.war"]
+ENTRYPOINT ["java", "-Dcakeshop.config.dir=/cakeshop/data", "-Dspring.config.additional-location=file:/cakeshop/data/local/", "-jar", "/cakeshop/cakeshop.war"]
