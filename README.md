@@ -83,7 +83,7 @@ For (3), most of the original config values were related to this feature, and ca
 
 (4) means that you will need to update the db-related config values to use spring data. So the old `cakeshop.database`, `cakeshop.hibernate`, and `cakeshop.jdbc` settings should change to use `spring.data`, `spring.jpa`, etc. See the [configuration](docs/configuration.md#database) doc for more info.
 
-Note: Due to an bug that happens when you update from Hibernate 4 to 5, when auto-updating the database it will try to recreate some indexes that don't need to be recreated. These will fail and print a stack trace in the logs because the index already exists. There are no negative effects from this error, so the best thing to do is to run with `spring.jpa.hibernate.ddl-auto=update` once and then change `update` to `none` on subsequent runs. In production, it is not recommended to use auto-update to migrate your database at all, but instead run migrations on the database yourself.
+Note: Due to an bug that happens when you update from Hibernate 4 to 5, when auto-updating the database it will try to recreate some column constraints that don't need to be recreated. These will fail and print a stack trace in the logs because they already exist. There are no negative effects from this error, so the best thing to do is to run with `spring.jpa.hibernate.ddl-auto=update` once and then change `update` to `none` on subsequent runs to avoid error logs. In production, it is not recommended to use auto-update to migrate your database at all, but instead run migrations on the database yourself.
 
 ## Further Reading
 
