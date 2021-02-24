@@ -30,7 +30,7 @@ sudo apt-get install libtinfo-dev
 ```shell
 mkdir ~/Projects/cakeshop.git
 cd ~/Projects/cakeshop.git
-git clone https://github.com/jpmorganchase/cakeshop.git
+git clone https://github.com/ConsenSys/cakeshop.git
 ```
 
 ```shell
@@ -52,13 +52,13 @@ git clone -b master --single-branch https://github.com/getamis/istanbul-tools.gi
 ```shell
 mkdir ~/Projects/constellation.git
 cd ~/Projects/constellation.git
-git clone -b master --single-branch https://github.com/jpmorganchase/constellation.git
+git clone -b master --single-branch https://github.com/ConsenSys/constellation.git
 ```
 
 ```shell
 mkdir ~/Projects/quorum.git
 cd ~/Projects/quorum.git
-git clone -b master --single-branch https://github.com/jpmorganchase/quorum.git
+git clone -b master --single-branch https://github.com/ConsenSys/quorum.git
 ```
 
 ## Related builds

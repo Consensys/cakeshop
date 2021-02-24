@@ -17,8 +17,8 @@
   <name>cakeshop</name>
 
   <scm>
-    <url>https://github.com/jpmorganchase/cakeshop</url>
-    <connection>scm:git:https://github.com/jpmorganchase/cakeshop.git</connection>
+    <url>https://github.com/ConsenSys/cakeshop</url>
+    <connection>scm:git:https://github.com/ConsenSys/cakeshop.git</connection>
   </scm>
 
   <properties>

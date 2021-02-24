@@ -1,93 +1,111 @@
 # Cakeshop
 
-[![Build Status](https://travis-ci.com/jpmorganchase/cakeshop.svg?branch=master)](https://travis-ci.com/jpmorganchase/cakeshop)
-
-An integrated development environment and SDK for Ethereum-like ledgers
-
 ![screenshot](docs/images/console.png "screenshot")
 
 ![screenshot](docs/images/sandbox.png "sandbox screenshot")
 
 ## What is it?
 
-_Cakeshop_ is a set of tools and APIs for working with [Ethereum](https://ethereum.org/)-like ledgers, packaged as a Java web application archive (WAR) that gets you up and running in under 60 seconds.
+_Cakeshop_ is a set of tools and APIs for working with GoQuorum nodes, packaged as a Java web application archive (WAR) that gets you up and running in under 60 seconds.
 
-Cakeshop will download the latest version of [quorum](https://github.com/jpmorganchase/quorum) and bootnode from [geth](https://github.com/ethereum/go-ethereum) (to use a different version, see [here](docs/configuration.md#custom-quorum-binaries)). The cakeshop package includes the [tessera](https://github.com/jpmorganchase/tessera) and [constellation](https://github.com/jpmorganchase/constellation) transaction managers, a [Solidity](https://solidity.readthedocs.org/en/latest/)
-compiler, and all dependencies.
-
-It provides tools for managing a local blockchain node, setting up clusters,
-exploring the state of the chain, and working with contracts.
+It provides tools for attaching to GoQuorum nodes, exploring the state of the chain, and working with contracts.
 
 ## Download
 
-Binary packages are available for macOS and Linux platforms on the [releases](https://github.com/jpmorganchase/cakeshop/releases) page.
+Binary packages are available on the [Github releases page](https://github.com/ConsenSys/cakeshop/releases).
 
-## Quickstart
+## Configuration
+
+Cakeshop is a Spring Boot application, so you may place an `application.properties` file in the working directory to override any default configuration values. For more info, see the [configuration page](docs/configuration.md).
+
+## Running via GoQuorum Wizard
+
+The easiest way to use Cakeshop is to generate a GoQuorum network with [GoQuorum Wizard](https://docs.goquorum.consensys.net/en/stable/HowTo/GetStarted/Wizard/GettingStarted/) and choose to deploy Cakeshop alongside the network.
+
+## Running via Spring Boot
 
 ### Requirements
 
-* Java 8+
-* NodeJS (if the nodejs binary on your machine isn't called 'node', see [here](docs/configuration.md#nodejs-binary))
+* Java 11+
+* NodeJS (if the nodejs binary on your machine isn't called 'node', see [here](docs/configuration.md#cakeshop-internals))
 
-### Running via Spring Boot
+### Running
 
 * Download WAR file
 * Run `java -jar cakeshop.war`
 * Navigate to [http://localhost:8080/](http://localhost:8080/)
 
 
-### Running via Docker -- NEEDS UPDATE
+## Running via Docker
 
-Run via docker and access UI on [http://localhost:8080/](http://localhost:8080/)
+Simple example of running via docker on port 8080:
 
 ```sh
 docker run -p 8080:8080 quorumengineering/cakeshop
 ```
 
-You'll probably want to mount a data volume:
+Then access the UI at [http://localhost:8080/](http://localhost:8080/)
+
+### Docker Customizations
+You can add some extra flags to the run command to further customize cakeshop.
+
+Here is an example where you mount `./data` as a data volume for the container to use:
 
 ```sh
 mkdir data
 docker run -p 8080:8080 -v "$PWD/data":/opt/cakeshop/data quorumengineering/cakeshop
 ```
 
-Running under a specific environment
+An example providing an initial nodes.json in the data directory and configuring it to be used:
 
 ```sh
+# makes sure you have nodes.json at $PWD/data/nodes.json
 docker run -p 8080:8080 -v "$PWD/data":/opt/cakeshop/data \
-    -e JAVA_OPTS="-Dspring.profiles.active=local" \
+    -e JAVA_OPTS="-Dcakeshop.initialnodes=/opt/cakeshop/data/nodes.json" \
     quorumengineering/cakeshop
 ```
 
-Note that DAG generation will take time and Cakeshop will not be available until it's complete. If you already have a DAG for epoch 0 in your `$HOME/.ethash` folder, then you can expose that to your container (or just cache it for later):
+## Migrating from Cakeshop v0.11.0
 
-```sh
-docker run -p 8080:8080 -v "$PWD/data":/opt/cakeshop/data \
-    -v $HOME/.ethash:/opt/cakeshop/.ethash \
-    quorumengineering/cakeshop
-```
+The following big changes were made in v0.12.0:
+1. Simplification of config file to better follow Spring Boot standards.
+1. Moved Contract Registry from being stored in a combination of a smart contract and the database to being in the database only.
+1. Elimination of cakeshop's managed node in favor of only attaching to existing nodes.
+1. Simplified DB configuration by using Spring Data.
+
+To ensure easy transition, Cakeshop will still look in the locations where v0.11.0 commonly stored the config file. But (1) allows you to now place your config in the folder where you run cakeshop, or specify a different location using standard spring boot flags, for easier customization.
+
+Cakeshop had custom logging location logic in the config before this change, which was removed. You may now redirect logs yourself or use Spring's logging config settings.
+
+For (2), if you had contracts deployed and stored in the old Contract Registry, you may leave the `contract.registry.addr` line in your config file. Cakeshop will look for that contract address when it connects to the network and add those contracts to the database.
+
+For (3), most of the original config values were related to this feature, and can be safely removed. See the [default config file](../cakeshop-api/src/main/resources/config/application.properties) for all the values that are actually used.
+
+(4) means that you will need to update the db-related config values to use spring data. So the old `cakeshop.database`, `cakeshop.hibernate`, and `cakeshop.jdbc` settings should change to use `spring.data`, `spring.jpa`, etc. See the [configuration](docs/configuration.md#database) doc for more info.
+
+Note: Due to an bug that happens when you update from Hibernate 4 to 5, when auto-updating the database it will try to recreate some column constraints that don't need to be recreated. These will fail and print a stack trace in the logs because they already exist. There are no negative effects from this error, so the best thing to do is to run with `spring.jpa.hibernate.ddl-auto=update` once and then change `update` to `none` on subsequent runs to avoid error logs. In production, it is not recommended to use auto-update to migrate your database at all, but instead run migrations on the database yourself.
 
 ## Further Reading
 
-Further documentation can be found on the [wiki](https://github.com/jpmorganchase/cakeshop/wiki/) and in the [docs](docs/) folder.
+Further documentation can be found [here](https://docs.goquorum.consensys.net/en/stable/Concepts/Cakeshop/).
 
 ## See Also
 
 * [JIF Dashboard](https://github.com/jpmorganchase/jif-dashboard) - The Cakeshop UI was built using the JIF Dashboard framework.
 
-* [solc-cakeshop-cli](https://github.com/jpmorganchase/solc-cakeshop-cli) - The solidity compiler used behind the scenes is `solc-cakeshop-cli`, a thin wrapper atop the [solc](https://github.com/ethereum/solc-js) JS binding.
+* [solc-cakeshop-cli](https://github.com/ConsenSys/solc-cakeshop-cli) - The solidity compiler used behind the scenes is `solc-cakeshop-cli`, a thin wrapper atop the [solc](https://github.com/ethereum/solc-js) JS binding.
 
 ## Contributing
 
 Thank you for your interest in contributing to Cakeshop!
 
-Cakeshop is built on open source and we invite you to contribute enhancements. Upon review you will be required to complete a Contributor License Agreement (CLA) before we are able to merge. If you have any questions about the contribution process, please feel free to send an email to [quorum_info@jpmorgan.com](mailto:quorum_info@jpmorgan.com).
+Cakeshop is built on open source and we invite you to contribute enhancements. Upon review you will be required to complete a Contributor License Agreement (CLA) before we are able to merge. If you have any questions about the contribution process, please feel free to send an email to [info@goquorum.com](mailto:info@goquorum.com).
 
 
 ## Reporting Security Bugs
 Security is part of our commitment to our users. At Quorum we have a close relationship with the security community, we understand the realm, and encourage security researchers to become part of our mission of building secure reliable software. This section explains how to submit security bugs, and what to expect in return.
 
-All security bugs in [Quorum](https://github.com/jpmorganchase/quorum) and its ecosystem ([Tessera](https://github.com/jpmorganchase/tessera), [Constellation](https://github.com/jpmorganchase/constellation), [Cakeshop](https://github.com/jpmorganchase/cakeshop), ..etc)  should be reported by email to [info@goquorum.com](mailto:info@goquorum.com). Please use the prefix **[security]** in your subject. This email is delivered to Quorum security team. Your email will be acknowledged, and you'll receive a more detailed response to your email as soon as possible indicating the next steps in handling your report. After the initial reply to your report, the security team will endeavor to keep you informed of the progress being made towards a fix and full announcement.
+All security bugs in [GoQuorum](https://github.com/ConsenSys/quorum) and its ecosystem ([Tessera](https://github.com/ConsenSys/tessera), [Constellation](https://github.com/ConsenSys/constellation), [Cakeshop](https://github.com/ConsenSys/cakeshop), ..etc)  should be reported by email to [info@goquorum.com](mailto:info@goquorum.com). Please use the prefix **[security]** in your subject. This email is delivered to the Quorum security team. Your email will be acknowledged, and you'll receive a more detailed response to your email as soon as possible indicating the next steps in handling your report. After the initial reply to your report, the security team will endeavor to keep you informed of the progress being made towards a fix and full announcement.
 
 If you have not received a reply to your email or you have not heard from the security team please contact any team member through quorum slack security channel. **Please note that Quorum slack channels are public discussion forum**. When escalating to this medium, please do not disclose the details of the issue. Simply state that you're trying to reach a member of the security team.
 
@@ -109,9 +127,10 @@ The best way to receive security announcements is to subscribe to the Quorum-ann
 
 Comments on This Policy
 If you have any suggestions to improve this policy, please send an email to info@goquorum.com for discussion.
+
 ## License
 
-Copyright (c) 2016-2019 JPMorgan Chase and/or applicable contributors
+Copyright (c) 2016-2021 Consensys and/or applicable contributors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
