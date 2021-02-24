@@ -14,6 +14,10 @@ It provides tools for attaching to GoQuorum nodes, exploring the state of the ch
 
 Binary packages are available on the [Github releases page](https://github.com/ConsenSys/cakeshop/releases).
 
+## Configuration
+
+Cakeshop is a Spring Boot application, so you may place an `application.properties` file in the working directory to override any default configuration values. For more info, see the [configuration page](docs/configuration.md).
+
 ## Running via GoQuorum Wizard
 
 The easiest way to use Cakeshop is to generate a GoQuorum network with [GoQuorum Wizard](https://docs.goquorum.consensys.net/en/stable/HowTo/GetStarted/Wizard/GettingStarted/) and choose to deploy Cakeshop alongside the network.
@@ -60,6 +64,26 @@ docker run -p 8080:8080 -v "$PWD/data":/opt/cakeshop/data \
     -e JAVA_OPTS="-Dcakeshop.initialnodes=/opt/cakeshop/data/nodes.json" \
     quorumengineering/cakeshop
 ```
+
+## Migrating from Cakeshop v0.11.0
+
+The following big changes were made in v0.12.0:
+1. Simplification of config file to better follow Spring Boot standards.
+1. Moved Contract Registry from being stored in a combination of a smart contract and the database to being in the database only.
+1. Elimination of cakeshop's managed node in favor of only attaching to existing nodes.
+1. Simplified DB configuration by using Spring Data.
+
+To ensure easy transition, Cakeshop will still look in the locations where v0.11.0 commonly stored the config file. But (1) allows you to now place your config in the folder where you run cakeshop, or specify a different location using standard spring boot flags, for easier customization.
+
+Cakeshop had custom logging location logic in the config before this change, which was removed. You may now redirect logs yourself or use Spring's logging config settings.
+
+For (2), if you had contracts deployed and stored in the old Contract Registry, you may leave the `contract.registry.addr` line in your config file. Cakeshop will look for that contract address when it connects to the network and add those contracts to the database.
+
+For (3), most of the original config values were related to this feature, and can be safely removed. See the [default config file](../cakeshop-api/src/main/resources/config/application.properties) for all the values that are actually used.
+
+(4) means that you will need to update the db-related config values to use spring data. So the old `cakeshop.database`, `cakeshop.hibernate`, and `cakeshop.jdbc` settings should change to use `spring.data`, `spring.jpa`, etc. See the [configuration](docs/configuration.md#database) doc for more info.
+
+Note: Due to an bug that happens when you update from Hibernate 4 to 5, when auto-updating the database it will try to recreate some indexes that don't need to be recreated. These will fail and print a stack trace in the logs because the index already exists. There are no negative effects from this error, so the best thing to do is to run with `spring.jpa.hibernate.ddl-auto=update` once and then change `update` to `none` on subsequent runs. In production, it is not recommended to use auto-update to migrate your database at all, but instead run migrations on the database yourself.
 
 ## Further Reading
 

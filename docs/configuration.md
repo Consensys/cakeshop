@@ -46,6 +46,20 @@ Provide the location of the initial nodes file through application.properties or
 cakeshop.initialnodes=path/to/nodes.json
 ```
 
+### Database
+
+Cakeshop uses Spring Data for its database connection. By default, it uses an in-memory/file-based HSQLDB, but you may customize using standard Spring Data config values:
+
+```sh
+# spring data settings
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+spring.datasource.url=jdbc:postgresql://localhost:5432/cakeshop
+spring.jpa.hibernate.ddl-auto=update
+spring.datasource.hikari.auto-commit=false
+spring.datasource.username=sdk
+spring.datasource.password=sdk
+```
+
 ### Cakeshop Internals
 
 Some other options that may be customized in application.properties:
@@ -54,58 +68,21 @@ Some other options that may be customized in application.properties:
 # some systems don't call the nodejs binary 'node', in that change you can change this value
 nodejs.binary=node
 
-# Timeout between polls on contract deploy
-contract.poll.delay.millis=5000
+# if you are migrating from an older version of cakeshop, you can migrate registered contracts
+# from the old smart contract storage to the cakeshop database
+contract.registry.addr=0xCONTRACT_ADDRESS_HERE
 
-# Various internal queues and thread pools
-# Defaults are probably fine, modify at your own risk
-cakeshop.mvc.async.pool.threads.core=250
-cakeshop.mvc.async.pool.threads.max=1000
-cakeshop.mvc.async.pool.queue.max=2000
+# if you are using the quorum reporting engine, you may tell cakeshop the location of its rpc and ui endpoints.
+cakeshop.reporting.rpc=http://localhost:4000
+cakeshop.reporting.ui=http://localhost:3000
+
+# port to run on
+server.port=8080
+
+#logging levels
+logging.level.root=WARN
+logging.level.org.springframework=INFO
+logging.level.com.jpmorgan.cakeshop=INFO
 ```
 
-### Database
-
-Cakeshop stores and indexes certain information in a relational database (RDBMS) to support certain features, namely displaying transaction history for a given contract. An embedded HSQLDB is used by default for development purposes and is sufficient for most use cases.
-
-The ability to use an external database is also available. Currently supported are Oracle, PostgreSQL, MySQL, and HSQLDB.
-
-The following properties can be set either in `application.properties` or via Java system properties:
-
-```
-cakeshop.database.vendor              Enables the preferred db driver.
-                                      Allowed options are:
-                                      hsqldb|oracle|mysql|postgres
-                                      Default: hsqldb
-
-cakeshop.jndi.name                    Used for configuring an external
-                                      connection pool (usually container-
-                                      managed) with oracle, mysql or postgres.
-
-cakeshop.jdbc.url                     JDBC URL
-cakeshop.jdbc.user                    JDBC username
-cakeshop.jdbc.pass                    JDBC password
-
-cakeshop.hibernate.jdbc.batch_size    Hibernate tuneables
-cakeshop.hibernate.hbm2ddl.auto
-
-cakeshop.hibernate.dialect            Hibernate dialect. Will usually be set
-                                      automatically by your db pref. Override
-                                      it here.
-```
-
-### Spring Framework Internals
-
-The settings below control the behavior of Spring. For detailed information, please refer to the [Spring Framework](http://docs.spring.io/spring/docs/4.2.5.RELEASE/spring-framework-reference/htmlsingle/) and [Spring Boot Actuator](http://docs.spring.io/spring-boot/docs/1.3.3.RELEASE/reference/htmlsingle/#production-ready) documentation.
-
-```config
-# spring config
-spring.main.banner-mode=off
-
-server.compression.enabled=true
-server.compression.mime-types=application/json,application/xml,text/html,text/xml,text/plain
-
-# spring boot actuator
-management.context-path=/manage
-endpoints.actuator.enabled=true
-```
+See the [default config file](../cakeshop-api/src/main/resources/config/application.properties) for more. 
