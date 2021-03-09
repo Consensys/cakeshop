@@ -123,13 +123,12 @@ export class TransactTable extends React.Component {
             return JSON.stringify(v);
         }).join(", ");
         var methodSig = method.name + "(" + _sig_params + ")";
-        var methodArgs = {from: from, args: _params};
-
-        if (Contract.isReadOnly(method)) {
-            // txn
-            methodArgs.privateFrom = privateFrom;
-            methodArgs.privateFor = privateFor;
-        }
+        var methodArgs = {
+          from: from,
+          args: _params,
+          privateFrom: privateFrom,
+          privateFor: privateFor,
+        };
 
         console.log("test", method.name, methodArgs);
         contract.proxy[method.name](methodArgs).then((res) => {
