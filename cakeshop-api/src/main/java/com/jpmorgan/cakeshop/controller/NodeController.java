@@ -194,6 +194,19 @@ public class NodeController extends BaseController {
         return new ResponseEntity<>(APIResponse.newSimpleResponse(true), HttpStatus.OK);
     }
 
+    @RequestMapping("/address/{address}")
+    public ResponseEntity<APIResponse> getAddressDetail(@PathVariable String address) throws APIException {
+        BigInteger balance = gethService.getBalance(address);
+        Account account = new Account();
+        account.setAddress(address);
+        account.setBalance(balance.toString());
+
+        APIResponse res = new APIResponse();
+        res.data(account);
+        return new ResponseEntity<>(res, HttpStatus.OK);
+    }
+
+
     @GetMapping(path = "/reportingUrl")
     protected @ResponseBody
     ResponseEntity<APIResponse> getReportingUrl() throws APIException {

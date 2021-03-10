@@ -95,20 +95,21 @@ public class WebSocketPushServiceImpl implements WebSocketPushService {
             return;
         }
 
+        Node node = nodeService.get();
+
         if (!geth.isConnected()) {
             // send back a node-down response
-            Node node = new Node();
+            node = new Node();
             node.setStatus(NodeService.NODE_NOT_RUNNING_STATUS);
             template.convertAndSend(NODE_TOPIC,
                     new APIResponse().data(new APIData(node.getId(), "node", node)));
             return;
         }
 
-        Node node = nodeService.get();
-
-        if (previousNodeStatus != null && node.equals(previousNodeStatus)) {
-            return; // status has not changed...
-        }
+        // TODO figure out the best way to optimize this when there are no changes
+//        if (node.equals(previousNodeStatus)) {
+//            return; // status has not changed...
+//        }
         previousNodeStatus = node;
 
         APIResponse apiResponse = new APIResponse();
@@ -117,7 +118,7 @@ public class WebSocketPushServiceImpl implements WebSocketPushService {
     }
 
     @Override
-    @Scheduled(fixedDelay = 5000)
+    @Scheduled(fixedDelay = 100)
     public void pushLatestBlocks() throws APIException {
         if (openedSessions <= 0 || !geth.isConnected()) {
             return;
