@@ -38,7 +38,7 @@ cd ~/Projects/cakeshop.git/cakeshop
 mvn clean install -DskipTests
 cd cakeshop-api
 mvn install -DskipTests
-java -jar target/cakeshop-0.12.0.war
+java -jar target/cakeshop-0.12.1.war
 ```
 
 ## Related projects
