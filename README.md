@@ -10,6 +10,16 @@ _Cakeshop_ is a set of tools and APIs for working with GoQuorum nodes, packaged 
 
 It provides tools for attaching to GoQuorum nodes, exploring the state of the chain, and working with contracts.
 
+## Features
+
+- Connect to GoQuorum and Tessera nodes
+- Chain Explorer for viewing the details of blocks and transactions
+- Sandbox for writing, deploying, and interacting with smart contracts
+- Contract Registry to keep track of deployed contracts, along with their code, interfaces, and state
+- UI for managing accounts and ETH balances
+- Interface to add, remove, and vote on network peers (Raft, IBFT, or Clique)
+- Permission management UI for smart contract-based [Enhanced Permissioning](https://docs.goquorum.consensys.net/en/stable/Concepts/Permissioning/Enhanced/ContractDesign/) 
+
 ## Download
 
 Binary packages are available on the [Github releases page](https://github.com/ConsenSys/cakeshop/releases).
