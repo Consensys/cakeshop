@@ -6,19 +6,19 @@
 
 ## What is it?
 
-_Cakeshop_ is a set of tools and APIs for working with GoQuorum nodes, packaged as a Java web application archive (WAR) that gets you up and running in under 60 seconds.
+_Cakeshop_ is a set of tools and APIs for working with [Ethereum](https://ethereum.org/),
+packaged as a Java web application archive (WAR) that gets you up and running quickly.
 
-It provides tools for attaching to GoQuorum nodes, exploring the state of the chain, and working with contracts.
+Cakeshop can be connected to Ethereum-like nodes, such as Quorum, which you can then interact with using the Cakeshop front-end.
 
 ## Features
 
-- Connect to GoQuorum and Tessera nodes
-- Chain Explorer for viewing the details of blocks and transactions
-- Sandbox for writing, deploying, and interacting with smart contracts
-- Contract Registry to keep track of deployed contracts, along with their code, interfaces, and state
-- UI for managing accounts and ETH balances
-- Interface to add, remove, and vote on network peers (Raft, IBFT, or Clique)
-- Permission management UI for smart contract-based [Enhanced Permissioning](https://docs.goquorum.consensys.net/en/stable/Concepts/Permissioning/Enhanced/ContractDesign/) 
+* **Blockchain Explorer** - view transactions, blocks and contracts, and see historical contract state at a point in time
+* **Contract Registry** - keep track of deployed contracts, along with their code, interfaces, and state
+* **Node Info** - view the overall status of your network
+* **Peer Management** - easily discover, add, and remove peers
+* **Enhanced Permissions UI** - manage smart contract-based [Enhanced Permissioning](https://docs.goquorum.consensys.net/en/stable/Concepts/Permissioning/Enhanced/ContractDesign/) 
+* **Solidity Sandbox** - develop, compile, deploy, and interact with Solidity smart contracts
 
 ## Download
 
@@ -37,13 +37,13 @@ The easiest way to use Cakeshop is to generate a GoQuorum network with [GoQuorum
 ### Requirements
 
 * Java 11+
-* NodeJS (if the nodejs binary on your machine isn't called 'node', see [here](docs/configuration.md#cakeshop-internals))
+* NodeJS 10+ (if the nodejs binary on your machine isn't called 'node', see [here](docs/configuration.md#cakeshop-internals))
 
 ### Running
 
 * Download WAR file
 * Run `java -jar cakeshop.war`
-* Navigate to [http://localhost:8080/](http://localhost:8080/)
+* Navigate to [`http://localhost:8080/`](http://localhost:8080/)
 
 
 ## Running via Docker
@@ -54,7 +54,7 @@ Simple example of running via docker on port 8080:
 docker run -p 8080:8080 quorumengineering/cakeshop
 ```
 
-Then access the UI at [http://localhost:8080/](http://localhost:8080/)
+Then access the UI at [`http://localhost:8080/`](http://localhost:8080/)
 
 ### Docker Customizations
 You can add some extra flags to the run command to further customize cakeshop.
@@ -78,22 +78,17 @@ docker run -p 8080:8080 -v "$PWD/data":/opt/cakeshop/data \
 ## Migrating from Cakeshop v0.11.0
 
 The following big changes were made in v0.12.0:
+
 1. Simplification of config file to better follow Spring Boot standards.
+    * To ensure easy transition, Cakeshop will still look in the locations where v0.11.0 commonly stored the config file. But the new version allows you to now place your config in the folder where you run Cakeshop, or specify a different location using standard spring boot flags, for easier customization.
+    * Cakeshop had custom logging location logic in the config before this change, which was removed. You may now redirect logs yourself or use Spring's logging config settings.
 1. Moved Contract Registry from being stored in a combination of a smart contract and the database to being in the database only.
-1. Elimination of cakeshop's managed node in favor of only attaching to existing nodes.
+    * If you had contracts deployed and stored in the old Contract Registry, you may leave the `contract.registry.addr` line in your config file. Cakeshop will look for that contract address when it connects to the network and add those contracts to the database.
+1. Elimination of Cakeshop's managed node in favor of only attaching to existing nodes.
+    * Most of the original config values were related to this feature, and can be safely removed. See the [default config file](../cakeshop-api/src/main/resources/config/application.properties) for all the values that are actually used.
 1. Simplified DB configuration by using Spring Data.
-
-To ensure easy transition, Cakeshop will still look in the locations where v0.11.0 commonly stored the config file. But (1) allows you to now place your config in the folder where you run cakeshop, or specify a different location using standard spring boot flags, for easier customization.
-
-Cakeshop had custom logging location logic in the config before this change, which was removed. You may now redirect logs yourself or use Spring's logging config settings.
-
-For (2), if you had contracts deployed and stored in the old Contract Registry, you may leave the `contract.registry.addr` line in your config file. Cakeshop will look for that contract address when it connects to the network and add those contracts to the database.
-
-For (3), most of the original config values were related to this feature, and can be safely removed. See the [default config file](../cakeshop-api/src/main/resources/config/application.properties) for all the values that are actually used.
-
-(4) means that you will need to update the db-related config values to use spring data. So the old `cakeshop.database`, `cakeshop.hibernate`, and `cakeshop.jdbc` settings should change to use `spring.data`, `spring.jpa`, etc. See the [configuration](docs/configuration.md#database) doc for more info.
-
-Note: Due to an bug that happens when you update from Hibernate 4 to 5, when auto-updating the database it will try to recreate some column constraints that don't need to be recreated. These will fail and print a stack trace in the logs because they already exist. There are no negative effects from this error, so the best thing to do is to run with `spring.jpa.hibernate.ddl-auto=update` once and then change `update` to `none` on subsequent runs to avoid error logs. In production, it is not recommended to use auto-update to migrate your database at all, but instead run migrations on the database yourself.
+    * You will need to update the db-related config values to use spring data. The old `cakeshop.database`, `cakeshop.hibernate`, and `cakeshop.jdbc` settings should change to use `spring.data`, `spring.jpa`, etc. See the [database configuration section](docs/configuration.md#database) for more info.
+    * Due to an bug that happens when you update from Hibernate 4 to 5, when auto updating the database it will try to recreate some column constraints that don't need to be recreated. These will fail and print a stack trace in the logs because they already exist. No negative effects result from this error, so the best thing to do is to run with `spring.jpa.hibernate.ddl-auto=update` once and then change `update` to `none` on subsequent runs. In production, it is not recommended to use auto update to migrate your database at all, but instead run migrations on the database yourself.
 
 ## Further Reading
 
