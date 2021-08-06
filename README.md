@@ -1,14 +1,15 @@
 # Cakeshop
 
+_Cakeshop_ is a set of tools and APIs for working with GoQuorum nodes, packaged as a Java web application archive (WAR) that gets you up and running in under 60 seconds.
+
+It provides tools for attaching to GoQuorum nodes, exploring the state of the chain, and working with contracts.
+
+Cakeshop is supported as part of [quorum-dev-quickstart](https://github.com/ConsenSys/quorum-dev-quickstart) which facilitates the deployment of Quorum networks using docker-compose. We encourage users interested in testing Cakeshop to use quorum-dev-quickstart.
+
 ![screenshot](docs/images/console.png "screenshot")
 
 ![screenshot](docs/images/sandbox.png "sandbox screenshot")
 
-## What is it?
-
-_Cakeshop_ is a set of tools and APIs for working with GoQuorum nodes, packaged as a Java web application archive (WAR) that gets you up and running in under 60 seconds.
-
-It provides tools for attaching to GoQuorum nodes, exploring the state of the chain, and working with contracts.
 
 ## Download
 
@@ -69,9 +70,9 @@ docker run -p 8080:8080 -v "$PWD/data":/opt/cakeshop/data \
 
 The following big changes were made in v0.12.0:
 1. Simplification of config file to better follow Spring Boot standards.
-1. Moved Contract Registry from being stored in a combination of a smart contract and the database to being in the database only.
-1. Elimination of cakeshop's managed node in favor of only attaching to existing nodes.
-1. Simplified DB configuration by using Spring Data.
+2. Moved Contract Registry from being stored in a combination of a smart contract and the database to being in the database only.
+3. Elimination of cakeshop's managed node in favor of only attaching to existing nodes.
+4. Simplified DB configuration by using Spring Data.
 
 To ensure easy transition, Cakeshop will still look in the locations where v0.11.0 commonly stored the config file. But (1) allows you to now place your config in the folder where you run cakeshop, or specify a different location using standard spring boot flags, for easier customization.
 
