@@ -9,6 +9,7 @@
 nb-configuration.xml
 nbactions.xml
 .externalToolBuilders/
+.lh/*
 
 # temp build files
 data

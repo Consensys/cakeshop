@@ -1,0 +1,39 @@
+---
+version: '3.6'
+
+services:
+
+  cakeshop:
+    image: quorumengineering/cakeshop:latest
+    hostname: cakeshop
+    ports:
+    - 8999:8999
+    - 8080:8080
+    restart: "no"
+    volumes:
+    - cakeshop:/data
+    - ./cakeshop:/quorum
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--proxy=off", "http://localhost:8999/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        rm -rf /qdata/cakeshop/local
+        mkdir -p /qdata/cakeshop/local
+        cp /quorum/application.properties /qdata/cakeshop/local/application.properties
+        cp /quorum/8nodes_quorum_docker.json /qdata/cakeshop/local/cakeshop.json
+        java -Xms128M -Xmx128M -Dspring.config.additional-location=file:/qdata/cakeshop/local/ -Dcakeshop.config.dir=/qdata/cakeshop -jar /cakeshop/cakeshop.war
+        ;;
+
+volumes:
+  cakeshop:
+
+networks:
+  default:
+    external: true
+    name: quorum-dev-quickstart

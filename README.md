@@ -4,7 +4,7 @@ _Cakeshop_ is a set of tools and APIs for working with GoQuorum nodes, packaged 
 
 It provides tools for attaching to GoQuorum nodes, exploring the state of the chain, and working with contracts.
 
-Cakeshop is supported as part of [quorum-dev-quickstart](https://github.com/ConsenSys/quorum-dev-quickstart) which facilitates the deployment of Quorum networks using docker-compose. We encourage users interested in testing Cakeshop to use quorum-dev-quickstart.
+Cakeshop can be used with the [quorum-dev-quickstart](https://github.com/ConsenSys/quorum-dev-quickstart). We encourage users interested in testing Cakeshop to use quorum-dev-quickstart.
 
 ![screenshot](docs/images/console.png "screenshot")
 
@@ -19,9 +19,19 @@ Binary packages are available on the [Github releases page](https://github.com/C
 
 Cakeshop is a Spring Boot application, so you may place an `application.properties` file in the working directory to override any default configuration values. For more info, see the [configuration page](docs/configuration.md).
 
-## Running via GoQuorum Wizard
+## Running with the [Quorum Dev Quickstart](https://github.com/ConsenSys/quorum-dev-quickstart)
 
-The easiest way to use Cakeshop is to generate a GoQuorum network with [GoQuorum Wizard](https://docs.goquorum.consensys.net/en/stable/HowTo/GetStarted/Wizard/GettingStarted/) and choose to deploy Cakeshop alongside the network.
+### Requirements
+
+* Running GoQuorum network using the [Quorum Dev Quickstart](https://github.com/ConsenSys/quorum-dev-quickstart)
+
+### Running
+
+* cd into `quorum-dev-quickstart`
+* Run `docker-compose up -d`
+* Navigate to [http://localhost:8999/](http://localhost:8999/)
+* Stop cakeshop with `docker-compose down`
+
 
 ## Running via Spring Boot
 

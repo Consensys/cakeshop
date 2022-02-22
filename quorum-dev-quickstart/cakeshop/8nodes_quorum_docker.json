@@ -1,0 +1,42 @@
+[
+  {
+    "name": "rpcnode",
+    "rpcUrl": "http://rpcnode:8545",
+    "transactionManagerUrl": ""
+  },
+  {
+    "name": "validator1",
+    "rpcUrl": "http://validator1:8545",
+    "transactionManagerUrl": ""
+  },
+  {
+    "name": "validator2",
+    "rpcUrl": "http://validator2:8545",
+    "transactionManagerUrl": ""
+  },
+  {
+    "name": "validator3",
+    "rpcUrl": "http://validator3:8545",
+    "transactionManagerUrl": ""
+  },
+  {
+    "name": "validator4",
+    "rpcUrl": "http://validator4:8545",
+    "transactionManagerUrl": ""
+  },
+  {
+    "name": "member1",
+    "rpcUrl": "http://member1quorum:8545",
+    "transactionManagerUrl": "http://member1tessera:9080"
+  },
+  {
+    "name": "member2",
+    "rpcUrl": "http://member2quorum:8545",
+    "transactionManagerUrl": "http://member2tessera:9080"
+  },
+  {
+    "name": "member3",
+    "rpcUrl": "http://member3quorum:8545",
+    "transactionManagerUrl": "http://member3tessera:9080"
+  }
+]
