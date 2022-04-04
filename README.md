@@ -27,8 +27,8 @@ Cakeshop is a Spring Boot application, so you may place an `application.properti
 
 ### Running
 
-* git clone git@github.com:ConsenSys/cakeshop.git
-* cd `cakeshop/quorum-dev-quickstart`
+* `git clone git@github.com:ConsenSys/cakeshop.git`
+* `cd cakeshop/quorum-dev-quickstart`
 * Run `docker-compose up -d`
 * Navigate to [http://localhost:8999/](http://localhost:8999/)
 * Stop cakeshop with `docker-compose down`
