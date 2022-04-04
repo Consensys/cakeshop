@@ -23,11 +23,12 @@ Cakeshop is a Spring Boot application, so you may place an `application.properti
 
 ### Requirements
 
-* Running GoQuorum network using the [Quorum Dev Quickstart](https://github.com/ConsenSys/quorum-dev-quickstart)
+* You must have a running GoQuorum network using the [Quorum Dev Quickstart](https://github.com/ConsenSys/quorum-dev-quickstart)
 
 ### Running
 
-* cd into `quorum-dev-quickstart`
+* git clone git@github.com:ConsenSys/cakeshop.git
+* cd `cakeshop/quorum-dev-quickstart`
 * Run `docker-compose up -d`
 * Navigate to [http://localhost:8999/](http://localhost:8999/)
 * Stop cakeshop with `docker-compose down`
