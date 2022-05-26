@@ -1,5 +1,12 @@
 # Cakeshop
 
+# ⚠️ Project Deprecation Notice ⚠️
+
+Cakeshop has been deprecated on May 31st 2022, and we are no longer supporting the project.
+
+It has been replaced by [quorum-explorer](https://github.com/ConsenSys/quorum-explorer) that offers wider compatibility with GoQuorum and Hyperledger Besu
+
+
 _Cakeshop_ is a set of tools and APIs for working with GoQuorum nodes, packaged as a Java web application archive (WAR) that gets you up and running in under 60 seconds.
 
 It provides tools for attaching to GoQuorum nodes, exploring the state of the chain, and working with contracts.
